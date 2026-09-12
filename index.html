@@ -5,43 +5,78 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0b1016">
-  <title>Blacksite Mobile</title>
+  <meta name="theme-color" content="#05070a">
+  <title>BLACKSITE: ZERO</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="gameShell">
-    <canvas id="game" width="1280" height="720" aria-label="Blacksite Mobile"></canvas>
+  <canvas id="renderCanvas"></canvas>
 
-    <div id="hud">
-      <div class="hudBox"><span>HP</span><b id="hp">100</b></div>
-      <div class="hudBox"><span>Waffe</span><b id="weapon">Pistol</b></div>
-      <div class="hudBox"><span>Ammo</span><b id="ammo">12 / 48</b></div>
-      <div class="hudBox"><span>Intel</span><b id="intel">0 / 3</b></div>
-      <div class="hudBox"><span>Kills</span><b id="kills">0</b></div>
-    </div>
-
-    <div id="status">STEALTH</div>
-    <div id="objective">3 Intel sichern</div>
-
-    <div id="leftStick" class="stickArea" aria-label="Bewegen"><div class="stickKnob"></div></div>
-    <div id="rightStick" class="stickArea" aria-label="Zielen und schießen"><div class="stickKnob"></div></div>
-
-    <div id="buttons">
-      <button id="reloadBtn" type="button">R</button>
-      <button id="swapBtn" type="button">SWAP</button>
-      <button id="medBtn" type="button">MED ×2</button>
-    </div>
-
-    <div id="overlay" class="show">
-      <div class="panel">
-        <h1>BLACKSITE</h1>
-        <p>Beschaffe 3 Intel-Pakete und erreiche die Extraktionszone. Linker Stick bewegt, rechter Stick zielt und feuert.</p>
-        <button id="startBtn" type="button">MISSION STARTEN</button>
-      </div>
+  <div id="rotateGate">
+    <div class="rotateCard">
+      <div class="phoneIcon">▱</div>
+      <h2>iPhone drehen</h2>
+      <p>BLACKSITE läuft bewusst nur im Querformat.</p>
     </div>
   </div>
+
+  <div id="hud">
+    <div class="topLeft">
+      <div class="eyebrow">OPERATION BLACKSITE // SECTOR 07</div>
+      <div id="objective">INFILTRATE // 0 / 3 CORES</div>
+    </div>
+    <div class="topRight">
+      <div id="status" class="status stealth">STEALTH</div>
+      <div id="fps">-- FPS</div>
+    </div>
+
+    <div id="crosshair"><i></i><i></i><i></i><i></i></div>
+    <div id="damageVignette"></div>
+    <div id="hitmarker">×</div>
+
+    <div class="bottomHud">
+      <div class="healthBlock"><span>VITALS</span><b id="hp">100</b><div class="bar"><em id="hpBar"></em></div></div>
+      <div class="weaponBlock"><span id="weaponName">VX-9</span><b id="ammo">30</b><small id="reserve">120</small></div>
+    </div>
+  </div>
+
+  <div id="leftZone" class="stickZone"><div class="stickRing"><div id="leftKnob" class="stickKnob"></div></div></div>
+  <div id="rightZone" class="lookZone"></div>
+
+  <div id="actionCluster">
+    <button id="adsBtn" class="roundBtn">ADS</button>
+    <button id="reloadBtn" class="roundBtn">R</button>
+    <button id="interactBtn" class="roundBtn wide">USE</button>
+  </div>
+
+  <button id="fireBtn">FIRE</button>
+
+  <div id="startOverlay" class="overlay show">
+    <div class="missionCard">
+      <div class="micro">CLASSIFIED // MOBILE BUILD</div>
+      <h1>BLACKSITE: ZERO</h1>
+      <p>Dringe in Anlage 07 ein. Sichere drei Datenkerne. Überlebe die Reaktion der Wachen und erreiche die Extraktionszone.</p>
+      <div class="briefGrid">
+        <div><span>MOVE</span><b>LINKS</b></div>
+        <div><span>LOOK</span><b>RECHTS</b></div>
+        <div><span>FIRE</span><b>BUTTON</b></div>
+        <div><span>AIM</span><b>ADS</b></div>
+      </div>
+      <button id="startBtn">DEPLOY</button>
+    </div>
+  </div>
+
+  <div id="endOverlay" class="overlay">
+    <div class="missionCard compact">
+      <div class="micro">MISSION REPORT</div>
+      <h1 id="endTitle">EXTRACTED</h1>
+      <p id="endText"></p>
+      <button id="restartBtn">REDEPLOY</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
