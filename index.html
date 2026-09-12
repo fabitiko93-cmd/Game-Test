@@ -1,82 +1,34 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#05070a">
-  <title>BLACKSITE: ZERO</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#100d16">
+<title>Realmfall</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <canvas id="renderCanvas"></canvas>
-
-  <div id="rotateGate">
-    <div class="rotateCard">
-      <div class="phoneIcon">▱</div>
-      <h2>iPhone drehen</h2>
-      <p>BLACKSITE läuft bewusst nur im Querformat.</p>
-    </div>
+<canvas id="game"></canvas>
+<div id="hud">
+  <div class="brand">REALMFALL <span>RUINS OF ASH</span></div>
+  <div class="bars">
+    <div class="bar hp"><i id="hpBar"></i><b id="hpText">100 / 100</b></div>
+    <div class="bar xp"><i id="xpBar"></i><b id="xpText">LV 1</b></div>
   </div>
-
-  <div id="hud">
-    <div class="topLeft">
-      <div class="eyebrow">OPERATION BLACKSITE // SECTOR 07</div>
-      <div id="objective">INFILTRATE // 0 / 3 CORES</div>
-    </div>
-    <div class="topRight">
-      <div id="status" class="status stealth">STEALTH</div>
-      <div id="fps">-- FPS</div>
-    </div>
-
-    <div id="crosshair"><i></i><i></i><i></i><i></i></div>
-    <div id="damageVignette"></div>
-    <div id="hitmarker">×</div>
-
-    <div class="bottomHud">
-      <div class="healthBlock"><span>VITALS</span><b id="hp">100</b><div class="bar"><em id="hpBar"></em></div></div>
-      <div class="weaponBlock"><span id="weaponName">VX-9</span><b id="ammo">30</b><small id="reserve">120</small></div>
-    </div>
-  </div>
-
-  <div id="leftZone" class="stickZone"><div class="stickRing"><div id="leftKnob" class="stickKnob"></div></div></div>
-  <div id="rightZone" class="lookZone"></div>
-
-  <div id="actionCluster">
-    <button id="adsBtn" class="roundBtn">ADS</button>
-    <button id="reloadBtn" class="roundBtn">R</button>
-    <button id="interactBtn" class="roundBtn wide">USE</button>
-  </div>
-
-  <button id="fireBtn">FIRE</button>
-
-  <div id="startOverlay" class="overlay show">
-    <div class="missionCard">
-      <div class="micro">CLASSIFIED // MOBILE BUILD</div>
-      <h1>BLACKSITE: ZERO</h1>
-      <p>Dringe in Anlage 07 ein. Sichere drei Datenkerne. Überlebe die Reaktion der Wachen und erreiche die Extraktionszone.</p>
-      <div class="briefGrid">
-        <div><span>MOVE</span><b>LINKS</b></div>
-        <div><span>LOOK</span><b>RECHTS</b></div>
-        <div><span>FIRE</span><b>BUTTON</b></div>
-        <div><span>AIM</span><b>ADS</b></div>
-      </div>
-      <button id="startBtn">DEPLOY</button>
-    </div>
-  </div>
-
-  <div id="endOverlay" class="overlay">
-    <div class="missionCard compact">
-      <div class="micro">MISSION REPORT</div>
-      <h1 id="endTitle">EXTRACTED</h1>
-      <p id="endText"></p>
-      <button id="restartBtn">REDEPLOY</button>
-    </div>
-  </div>
-
-  <script src="https://cdn.babylonjs.com/babylon.js"></script>
-  <script src="game.js"></script>
+  <div class="topright"><b id="wave">WAVE 1</b><span id="kills">0 KILLS</span><span id="gold">0 GOLD</span></div>
+  <div id="message"></div>
+</div>
+<div id="stick"><div id="knob"></div></div>
+<div id="buttons">
+  <button id="skill"><span>✦</span><small>ARC</small></button>
+  <button id="dash"><span>➤</span><small>DASH</small></button>
+  <button id="attack"><span>⚔</span><small>ATTACK</small></button>
+</div>
+<div id="rotate"><div><strong>iPhone drehen</strong><span>Realmfall wird im Querformat gespielt.</span></div></div>
+<div id="dead" class="hidden"><div><small>THE RUINS CLAIMED YOU</small><h1>GEFALLEN</h1><p id="score"></p><button id="restart">NOCHMAL</button></div></div>
+<script src="game.js"></script>
 </body>
 </html>
