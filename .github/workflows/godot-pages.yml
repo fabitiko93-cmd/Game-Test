@@ -33,15 +33,20 @@ jobs:
           mv templates/* ~/.local/share/godot/export_templates/4.5.1.stable/
       - name: Import and smoke-test project
         run: |
+          set -o pipefail
           cd godot
-          godot --headless --editor --quit-after 2
-          godot --headless --quit-after 2
+          godot --headless --editor --quit-after 2 2>&1 | tee ../godot-editor.log
+          ! grep -E "SCRIPT ERROR|Parse Error|Failed to load script" ../godot-editor.log
+          godot --headless --quit-after 2 2>&1 | tee ../godot-run.log
+          ! grep -E "SCRIPT ERROR|Parse Error|Failed to load script" ../godot-run.log
       - name: Export Web
         run: |
+          set -o pipefail
           rm -rf docs
           mkdir docs
           cd godot
-          godot --headless --export-release Web ../docs/index.html
+          godot --headless --export-release Web ../docs/index.html 2>&1 | tee ../godot-export.log
+          ! grep -E "SCRIPT ERROR|Parse Error|Failed to load script" ../godot-export.log
       - name: Publish generated web build
         run: |
           touch docs/.nojekyll
