@@ -1,9 +1,9 @@
 {
-  "name": "Blacksite Mobile",
-  "short_name": "Blacksite",
+  "name": "Realmfall: Ruins of Ash",
+  "short_name": "Realmfall",
   "start_url": "./",
   "display": "standalone",
   "orientation": "landscape",
-  "background_color": "#070a0e",
-  "theme_color": "#0b1016"
+  "background_color": "#09070d",
+  "theme_color": "#100d16"
 }
