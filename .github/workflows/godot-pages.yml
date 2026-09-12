@@ -1,0 +1,42 @@
+name: Build Godot and deploy Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'godot/**'
+      - '.github/workflows/godot-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Godot 4.5.1
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_64.zip
+          unzip -q Godot_v4.5.1-stable_linux.x86_64.zip
+          sudo mv Godot_v4.5.1-stable_linux.x86_64 /usr/local/bin/godot
+          mkdir -p ~/.local/share/godot/export_templates/4.5.1.stable
+          wget -q https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_export_templates.tpz
+          unzip -q Godot_v4.5.1-stable_export_templates.tpz
+          mv templates/* ~/.local/share/godot/export_templates/4.5.1.stable/
+      - name: Export Web
+        run: |
+          rm -rf web
+          mkdir web
+          cd godot
+          godot --headless --editor --quit-after 2
+          godot --headless --export-release Web ../web/index.html
+      - name: Publish generated web build
+        run: |
+          touch web/.nojekyll
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -f web
+          git commit -m 'Build Godot web export' || exit 0
+          git push
