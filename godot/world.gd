@@ -47,8 +47,8 @@ func _input(event: InputEvent) -> void:
 			joy_vector = Vector2.ZERO
 			joystick_knob.position = Vector2(46, 46)
 	if event is InputEventScreenDrag and event.index == joy_touch:
-		var delta := event.position - joy_origin
-		var limited := delta.limit_length(58.0)
+		var drag_delta: Vector2 = event.position - joy_origin
+		var limited: Vector2 = drag_delta.limit_length(58.0)
 		joy_vector = limited / 58.0
 		joystick_knob.position = Vector2(46, 46) + limited
 
@@ -72,7 +72,6 @@ func _build_environment() -> void:
 	add_child(moon)
 
 func _build_dungeon() -> void:
-	# Distinct connected spaces: entry chapel -> cross hall -> side chambers -> sealed descent -> boss crypt.
 	_add_floor(Vector3(0, -0.3, 4), Vector3(12, 0.6, 10), Color("29292b"))
 	_add_floor(Vector3(0, -0.3, -8), Vector3(8, 0.6, 14), Color("27272a"))
 	_add_floor(Vector3(0, -0.3, -18), Vector3(18, 0.6, 10), Color("2d2b2a"))
@@ -80,21 +79,15 @@ func _build_dungeon() -> void:
 	_add_floor(Vector3(15, -0.3, -18), Vector3(12, 0.6, 10), Color("2a2625"))
 	_add_floor(Vector3(0, -0.3, -28), Vector3(7, 0.6, 10), Color("292727"))
 	_add_floor(Vector3(0, -0.3, -40), Vector3(22, 0.6, 16), Color("302525"))
-
-	# Entry chapel perimeter and corridor mouth.
 	_add_wall(Vector3(-6.2, 1.6, 4), Vector3(0.7, 3.8, 10.8))
 	_add_wall(Vector3(6.2, 1.6, 4), Vector3(0.7, 3.8, 10.8))
 	_add_wall(Vector3(0, 1.6, 9.2), Vector3(12.8, 3.8, 0.7))
 	_add_wall(Vector3(-4.3, 1.6, -1.0), Vector3(3.5, 3.8, 0.7))
 	_add_wall(Vector3(4.3, 1.6, -1.0), Vector3(3.5, 3.8, 0.7))
-
-	# Narrow procession corridor.
 	_add_wall(Vector3(-4.2, 1.6, -8), Vector3(0.7, 3.8, 14))
 	_add_wall(Vector3(4.2, 1.6, -8), Vector3(0.7, 3.8, 14))
 	_add_arch(Vector3(0, 0, -3.0))
 	_add_arch(Vector3(0, 0, -13.0))
-
-	# Cross hall with open east/west chambers.
 	_add_wall(Vector3(-8.8, 1.6, -13.3), Vector3(10.0, 3.8, 0.7))
 	_add_wall(Vector3(8.8, 1.6, -13.3), Vector3(10.0, 3.8, 0.7))
 	_add_wall(Vector3(-8.8, 1.6, -22.7), Vector3(10.0, 3.8, 0.7))
@@ -105,8 +98,6 @@ func _build_dungeon() -> void:
 	_add_wall(Vector3(-15, 1.6, -22.7), Vector3(12.0, 3.8, 0.7))
 	_add_wall(Vector3(15, 1.6, -13.3), Vector3(12.0, 3.8, 0.7))
 	_add_wall(Vector3(15, 1.6, -22.7), Vector3(12.0, 3.8, 0.7))
-
-	# Sealed descent and boss crypt.
 	_add_wall(Vector3(-3.7, 1.6, -28), Vector3(0.7, 3.8, 10))
 	_add_wall(Vector3(3.7, 1.6, -28), Vector3(0.7, 3.8, 10))
 	crypt_door = _add_door(Vector3(0, 1.5, -23.2))
@@ -115,15 +106,12 @@ func _build_dungeon() -> void:
 	_add_wall(Vector3(0, 1.8, -48.2), Vector3(22.8, 4.2, 0.8))
 	_add_wall(Vector3(-7.0, 1.8, -32.0), Vector3(8.0, 4.2, 0.8))
 	_add_wall(Vector3(7.0, 1.8, -32.0), Vector3(8.0, 4.2, 0.8))
-
-	# Pillars, braziers, debris and chamber dressing make each space read as a place rather than an arena.
 	for p in [Vector3(-4.5,0,6.5), Vector3(4.5,0,6.5), Vector3(-4.5,0,1.5), Vector3(4.5,0,1.5), Vector3(-6.5,0,-18), Vector3(6.5,0,-18), Vector3(-8,0,-43), Vector3(8,0,-43), Vector3(-8,0,-36), Vector3(8,0,-36)]:
 		_add_pillar(p)
 	for p in [Vector3(-3.3,0,-5), Vector3(3.3,0,-11), Vector3(-17.8,0,-18), Vector3(17.8,0,-18), Vector3(-8.5,0,-39), Vector3(8.5,0,-39)]:
 		_add_brazier(p)
 	for p in [Vector3(-2.7,0,5.8), Vector3(3.8,0,-16), Vector3(-13,0,-20), Vector3(13,0,-16.5)]:
 		_add_debris(p)
-
 	_add_key_pickup(Vector3(16.0, 0.4, -18.0))
 	_add_chest(Vector3(-16.0, 0.55, -18.0))
 
@@ -133,7 +121,6 @@ func _spawn_player() -> void:
 	add_child(player)
 	player.stats_changed.connect(_update_hud)
 	player.player_died.connect(_on_player_died)
-
 	camera = Camera3D.new()
 	camera.fov = 46.0
 	camera.position = Vector3(10.5, 12.5, 19.5)
@@ -173,23 +160,19 @@ func _spawn_enemy(pos: Vector3, type: String) -> RealmEnemy:
 func _build_ui() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-
 	var title := Label.new()
 	title.text = "REALMFALL  •  THE SUNKEN CRYPT"
 	title.position = Vector2(28, 18)
 	title.add_theme_font_size_override("font_size", 18)
 	layer.add_child(title)
-
 	status_label = Label.new()
 	status_label.position = Vector2(28, 46)
 	status_label.add_theme_font_size_override("font_size", 15)
 	layer.add_child(status_label)
-
 	objective_label = Label.new()
 	objective_label.position = Vector2(28, 76)
 	objective_label.add_theme_font_size_override("font_size", 14)
 	layer.add_child(objective_label)
-
 	var hp_bg := ColorRect.new()
 	hp_bg.color = Color(0.05,0.03,0.03,0.85)
 	hp_bg.position = Vector2(28, 104); hp_bg.size = Vector2(220, 15)
@@ -200,18 +183,15 @@ func _build_ui() -> void:
 	layer.add_child(mana_bg)
 	mana_fill = ColorRect.new(); mana_fill.color = Color("355d91"); mana_fill.size = Vector2(180,10)
 	mana_bg.add_child(mana_fill)
-
 	pickup_label = Label.new()
 	pickup_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	pickup_label.position = Vector2(340, 28); pickup_label.size = Vector2(600, 42)
 	pickup_label.add_theme_font_size_override("font_size", 20)
 	layer.add_child(pickup_label)
-
 	joystick_base = Control.new(); joystick_base.position = Vector2(70, 500); joystick_base.size = Vector2(150,150)
 	layer.add_child(joystick_base)
 	var base := _circle_panel(70, Color(0.15,0.15,0.18,0.55)); base.position = Vector2(5,5); joystick_base.add_child(base)
 	joystick_knob = _circle_panel(30, Color(0.58,0.58,0.62,0.72)); joystick_knob.position = Vector2(46,46); joystick_base.add_child(joystick_knob)
-
 	var attack := _button("ATTACK", Vector2(1080, 550), Vector2(150, 74))
 	layer.add_child(attack); attack.pressed.connect(func(): if player: player.attack())
 	var block := _button("BLOCK", Vector2(920, 590), Vector2(130, 60))
