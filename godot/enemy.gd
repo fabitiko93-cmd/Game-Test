@@ -65,12 +65,12 @@ func _attack() -> void:
 
 func _die() -> void:
 	dead = true
+	velocity = Vector3.ZERO
 	remove_from_group("enemies")
 	emit_signal("defeated", self)
 	var tw := create_tween()
-	tw.tween_property(self, "scale", Vector3(1.2, 0.15, 1.2), 0.22)
-	tw.tween_property(self, "modulate", Color(1,1,1,0), 0.18) if self is CanvasItem else null
-	await get_tree().create_timer(0.28).timeout
+	tw.tween_property(self, "scale", Vector3(1.2, 0.12, 1.2), 0.22)
+	await tw.finished
 	queue_free()
 
 func _flash() -> void:
