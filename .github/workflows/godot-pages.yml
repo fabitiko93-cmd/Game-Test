@@ -11,11 +11,17 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: godot-pages-main
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install Godot 4.5.1
         run: |
           wget -q https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_64.zip
@@ -25,12 +31,16 @@ jobs:
           wget -q https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_export_templates.tpz
           unzip -q Godot_v4.5.1-stable_export_templates.tpz
           mv templates/* ~/.local/share/godot/export_templates/4.5.1.stable/
+      - name: Import and smoke-test project
+        run: |
+          cd godot
+          godot --headless --editor --quit-after 2
+          godot --headless --quit-after 2
       - name: Export Web
         run: |
           rm -rf docs
           mkdir docs
           cd godot
-          godot --headless --editor --quit-after 2
           godot --headless --export-release Web ../docs/index.html
       - name: Publish generated web build
         run: |
@@ -39,4 +49,5 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -f docs
           git commit -m 'Build Godot web export' || exit 0
-          git push
+          git pull --rebase origin main
+          git push origin HEAD:main
