@@ -54,6 +54,10 @@
 
       <div id="message" class="message" role="status"></div>
       <div id="target-label" class="target-label"></div>
+      <div id="enemy-target" class="enemy-target hidden">
+        <div><small>ZIEL</small><strong id="enemy-name">INFIZIERTER</strong></div>
+        <div class="enemy-meter"><i id="enemy-hp-fill"></i></div>
+      </div>
 
       <div id="joystick" class="joystick" aria-hidden="true">
         <div class="joy-ring"></div>
@@ -61,7 +65,7 @@
       </div>
 
       <nav class="actions" aria-label="Aktionen">
-        <button id="attack-button" class="round attack"><span>⌁</span><small>ANGRIFF</small></button>
+        <button id="attack-button" class="round attack"><span>⚔</span><small>KAMPF</small></button>
         <button id="action-button" class="round action"><span>✦</span><small id="action-label">AKTION</small></button>
         <button id="run-button" class="round run"><span>»</span><small>RENNEN</small></button>
       </nav>
@@ -123,4 +127,3 @@
   <script type="module" src="src/main.js"></script>
 </body>
 </html>
-

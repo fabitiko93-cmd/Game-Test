@@ -12,12 +12,11 @@ The published build lives in `docs/` and is designed for Safari on iPhone in lan
 
 - Hold and drag on the left side to move; distance controls walking and running.
 - Tap highlighted objects or use the context button to interact.
-- Use the right-side button to attack.
-- Open the backpack to use, equip, or move items.
+- Activate combat mode, tap a target, then control positioning while attacks follow the weapon rhythm.
+- Tap an inventory item once to select it and a second time to use or equip it.
 
 ## Project
 
 - `docs/` — dependency-free HTML5 game and GitHub Pages build
 - `docs/src/` — modular JavaScript game source
 - `docs/assets/` — original interface artwork
-

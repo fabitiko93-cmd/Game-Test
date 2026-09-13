@@ -19,22 +19,22 @@ export const COLORS = {
 export const ITEMS = {
   kitchen_knife: {
     name: "Küchenmesser", short: "Messer", type: "weapon", weight: 0.35, stack: 1,
-    damage: 24, range: 1.15, cooldown: 0.48, noise: 2.2, condition: 45,
+    damage: 24, range: 1.15, cooldown: 0.95, accuracy: .9, noise: 2.2, condition: 45,
     description: "Kurz, schnell und besser als leere Hände."
   },
   hammer: {
     name: "Schlosserhammer", short: "Hammer", type: "weapon", weight: 0.75, stack: 1,
-    damage: 31, range: 1.05, cooldown: 0.62, noise: 3.8, condition: 70,
+    damage: 31, range: 1.05, cooldown: 1.35, accuracy: .82, noise: 3.8, condition: 70,
     description: "Schwerer Kopf. Macht Lärm."
   },
   baseball_bat: {
     name: "Baseballschläger", short: "Schläger", type: "weapon", weight: 1.1, stack: 1,
-    damage: 27, range: 1.55, cooldown: 0.72, noise: 4.5, condition: 85,
+    damage: 27, range: 1.55, cooldown: 1.5, accuracy: .86, noise: 4.5, condition: 85,
     description: "Gute Reichweite, aber kaum zu überhören."
   },
   axe: {
     name: "Spaltaxt", short: "Axt", type: "weapon", weight: 1.6, stack: 1,
-    damage: 44, range: 1.35, cooldown: 0.88, noise: 5.5, condition: 90,
+    damage: 44, range: 1.35, cooldown: 1.82, accuracy: .78, noise: 5.5, condition: 90,
     description: "Langsam, laut und endgültig."
   },
   bandage: {
@@ -121,4 +121,3 @@ export const OBJECT_LABELS = {
   corpse: "Leiche durchsuchen",
   radio: "Radio einschalten",
 };
-

@@ -8,7 +8,7 @@ export class GameUI {
       "inventory-count","carry-weight","weapon-slot","use-button","drop-button","container-panel",
       "container-kind","container-name","container-items","take-all-button","pause-panel","continue-button",
       "save-button","reset-button","death-panel","death-restart-button","survived-time","toast","quickbar",
-      "action-button","action-label"
+      "action-button","action-label","attack-button","enemy-target","enemy-name","enemy-hp-fill"
     ].map(id => [id.replaceAll("-", "_"), document.getElementById(id)]));
     this.callbacks = {};
     this.selectedItemId = null;
@@ -69,6 +69,14 @@ export class GameUI {
       this.el.action_label.textContent = "AKTION";
       this.el.target_label.classList.remove("show");
     }
+    const enemy = game.combatTarget();
+    this.el.enemy_target.classList.toggle("hidden", !enemy);
+    if (enemy) {
+      this.el.enemy_name.textContent = enemy.name || "INFIZIERTER";
+      this.el.enemy_hp_fill.style.width = `${Math.max(0, enemy.hp / enemy.maxHp * 100)}%`;
+    }
+    this.el.attack_button.classList.toggle("combat-active", player.combatMode);
+    this.el.attack_button.querySelector("small").textContent = player.combatMode ? "KAMPF AN" : "KAMPF";
   }
 
   showMessage(text, duration = 2.3) {
@@ -128,14 +136,18 @@ export class GameUI {
   }
 
   selectInventoryItem(id, player) {
-    this.selectedItemId = this.selectedItemId === id ? null : id;
+    if (this.selectedItemId === id) {
+      this.callbacks.useItem?.(id);
+      return;
+    }
+    this.selectedItemId = id;
     const item = player.inventory.find(entry => entry.id === this.selectedItemId);
     this.el.use_button.disabled = !item;
     this.el.drop_button.disabled = !item;
     if (item) {
       const def = ITEMS[item.type];
       this.el.use_button.textContent = def.type === "weapon" ? "AUSRÜSTEN" : "BENUTZEN";
-      this.showToast(def.description, 2.4);
+      this.showToast(`${def.description} · Nochmals tippen zum ${def.type === "weapon" ? "Ausrüsten" : "Benutzen"}.`, 2.8);
     }
     this.renderInventory(player);
   }
@@ -198,4 +210,3 @@ export class GameUI {
     this.el.survived_time.textContent = `DU HAST ${hours.toFixed(1).replace(".", ",")} STUNDEN ÜBERLEBT`;
   }
 }
-

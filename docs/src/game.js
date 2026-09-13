@@ -31,7 +31,8 @@ export class Game {
       x: 8.1, y: 27.2, facingX: 0, facingY: -1,
       hp: 100, stamina: 100, hunger: 82, thirst: 78,
       moving: false, running: false, hurtFlash: 0, attackTimer: 0,
-      attackCooldown: 0, pendingAttack: 0, selectedZombieId: null,
+      attackCooldown: 0, pendingAttack: 0, pendingTargetId: null,
+      selectedZombieId: null, combatMode: false,
       inventory: [], equipped: null, capacity: 12,
     };
   }
@@ -42,7 +43,7 @@ export class Game {
       [29.2, 27.4], [8.2, 8.2], [27.8, 8.7], [31.5, 18.1], [13.0, 29.0]
     ];
     return positions.map(([x,y], index) => ({
-      id: `zombie-${index}`, x, y, spawnX:x, spawnY:y,
+      id: `zombie-${index}`, name: "INFIZIERTER", x, y, spawnX:x, spawnY:y,
       hp: 52 + (index % 3) * 7, maxHp: 52 + (index % 3) * 7,
       state: "idle", stateTime: Math.random()*2, alertTime: 0,
       facingX: 0, facingY: 1, moving: false, attackCooldown: 0,
@@ -53,7 +54,7 @@ export class Game {
 
   bind() {
     this.input.callbacks = {
-      attack: () => this.attack(), action: () => this.interact(),
+      attack: () => this.toggleCombatMode(), action: () => this.interact(),
       inventory: () => this.toggleInventory(), pause: () => this.togglePause(),
       tap: (x,y) => this.tapWorld(x,y),
     };
@@ -137,13 +138,23 @@ export class Game {
     const length = Math.hypot(wx, wy);
     let dx = length ? wx / length : 0;
     let dy = length ? wy / length : 0;
-    const canRun = p.stamina > 4 && input.run && input.magnitude > .25;
-    const speed = canRun ? 3.45 : 1.95;
-    p.moving = input.magnitude > .08;
+    const target = this.combatTarget();
+    const weapon = p.equipped ? ITEMS[p.equipped.type] : null;
+    const attackRange = weapon?.range || .88;
+    let autoApproach = false;
+    if (input.magnitude <= .08 && p.combatMode && target) {
+      const tx = target.x - p.x, ty = target.y - p.y, targetDistance = Math.hypot(tx, ty);
+      if (targetDistance > attackRange * .92 && targetDistance < 8.5 && this.world.hasLineOfSight(p, target)) {
+        dx = tx / targetDistance; dy = ty / targetDistance; autoApproach = true;
+      }
+    }
+    const canRun = !autoApproach && p.stamina > 4 && input.run && input.magnitude > .25;
+    const speed = autoApproach ? 1.7 : canRun ? 3.45 : 1.95;
+    p.moving = input.magnitude > .08 || autoApproach;
     p.running = p.moving && canRun;
     if (p.moving) {
       p.facingX = dx; p.facingY = dy;
-      const multiplier = input.magnitude < .32 ? .68 : 1;
+      const multiplier = !autoApproach && input.magnitude < .32 ? .68 : 1;
       this.moveEntity(p, dx * speed * multiplier * delta, dy * speed * multiplier * delta, .27);
       if (p.running) p.stamina = Math.max(0, p.stamina - 17 * delta);
       else p.stamina = Math.min(100, p.stamina + 7.5 * delta * (p.hunger < 20 ? .45 : 1));
@@ -155,6 +166,15 @@ export class Game {
     } else {
       p.stamina = Math.min(100, p.stamina + 12 * delta * (p.hunger < 20 ? .45 : 1));
       this.stepTimer = 0;
+    }
+
+    if (p.combatMode && target && !target.removed) {
+      const targetDistance = distance(p, target);
+      if (targetDistance <= attackRange + .35) {
+        const tx = target.x - p.x, ty = target.y - p.y, targetLength = Math.hypot(tx, ty) || 1;
+        p.facingX = tx / targetLength; p.facingY = ty / targetLength;
+      }
+      if (targetDistance <= attackRange + .12 && p.attackCooldown <= 0 && p.pendingAttack <= 0) this.beginAttack(target);
     }
 
     p.hunger = Math.max(0, p.hunger - delta * .033);
@@ -223,26 +243,43 @@ export class Game {
     }
   }
 
-  attack() {
-    if (!this.canAct() || this.player.attackCooldown > 0) return;
+  toggleCombatMode() {
+    if (!this.canAct()) return;
+    const p = this.player;
+    p.combatMode = !p.combatMode;
+    if (p.combatMode && !this.combatTarget()) {
+      const nearby = this.nearestZombie(6.5);
+      if (nearby && this.world.hasLineOfSight(p, nearby)) {
+        p.selectedZombieId = nearby.id;
+        this.renderer.selectedId = nearby.id;
+      }
+    }
+    if (!p.combatMode) {
+      p.selectedZombieId = null; p.pendingTargetId = null; p.pendingAttack = 0;
+      if (this.renderer.selectedId?.startsWith("zombie-")) this.renderer.selectedId = null;
+    }
+    this.ui.showMessage(p.combatMode ? (this.combatTarget() ? "Kampfmodus · Ziel erfasst" : "Kampfmodus · Gegner antippen") : "Kampfmodus beendet", 1.5);
+    this.sound("equip");
+  }
+
+  beginAttack(target) {
     const p=this.player,weapon=p.equipped?ITEMS[p.equipped.type]:null;
-    const range=weapon?.range||.88;
-    let target=this.zombies.find(z=>z.id===p.selectedZombieId&&!z.removed);
-    if(!target||distance(p,target)>range+.55)target=this.nearestZombie(range+.42);
-    if(target){const dx=target.x-p.x,dy=target.y-p.y,len=Math.hypot(dx,dy)||1;p.facingX=dx/len;p.facingY=dy/len;p.selectedZombieId=target.id;this.renderer.selectedId=target.id;}
-    p.attackCooldown=weapon?.cooldown||.7;p.attackTimer=.28;p.pendingAttack=.12;
+    p.attackCooldown=weapon?.cooldown||1.22;p.attackTimer=.32;p.pendingAttack=.14;p.pendingTargetId=target.id;
     this.world.emitNoise(p.x,p.y,weapon?.noise||2.8,"attack");
     this.sound("swing");vibrate(10);
   }
 
   resolveAttack() {
     const p=this.player,weapon=p.equipped?ITEMS[p.equipped.type]:null,range=weapon?.range||.88;
-    let target=this.zombies.find(z=>z.id===p.selectedZombieId&&!z.removed);
-    if(!target||distance(p,target)>range+.28)target=this.nearestZombie(range+.18,true);
+    const pendingId=p.pendingTargetId;p.pendingTargetId=null;
+    const target=this.zombies.find(z=>z.id===pendingId&&!z.removed);
     if(!target)return;
+    if(distance(p,target)>range+.32)return;
     const dx=target.x-p.x,dy=target.y-p.y,len=Math.hypot(dx,dy)||1;
     const facing=(dx/len)*p.facingX+(dy/len)*p.facingY;
     if(facing<-.15)return;
+    const hitChance=clamp((weapon?.accuracy||.78)+(p.stamina/100)*.1-(p.hunger<20?.12:0),.48,.97);
+    if(Math.random()>hitChance){this.ui.showMessage("Verfehlt",.7);return;}
     const damage=(weapon?.damage||11)*(.87+Math.random()*.26);
     target.hp-=damage;target.hurtFlash=.15;target.state="chase";target.alertTime=6;
     target.x+=dx/len*.13;target.y+=dy/len*.13;
@@ -262,9 +299,13 @@ export class Game {
     return result;
   }
 
+  combatTarget() {
+    return this.zombies.find(z=>z.id===this.player.selectedZombieId&&!z.removed)||null;
+  }
+
   killZombie(z) {
     z.removed=true;
-    if(this.player.selectedZombieId===z.id){this.player.selectedZombieId=null;this.renderer.selectedId=null;}
+    if(this.player.selectedZombieId===z.id){this.player.selectedZombieId=null;this.player.pendingTargetId=null;this.renderer.selectedId=null;}
     const corpse=this.world.addObject("corpse",z.x,z.y,{interactable:true,solid:false,container:"corpse",name:"INFIZIERTER"});
     corpse.items=this.world.rollLoot("corpse");
     if(Math.random()<.35)corpse.items.push({id:uid("item"),type:"cloth",count:1});
@@ -285,9 +326,10 @@ export class Game {
       if(d<bestDistance){best=o;bestDistance=d;}
     }
     if(!best)return null;
-    if(best.type==="door")return{...best,actionLabel:best.closed?"ÖFFNEN":"SCHLIESSEN"};
-    if(best.type==="radio")return{...best,actionLabel:"EINSCHALTEN"};
-    return{...best,actionLabel:"DURCHSUCHEN"};
+    if(best.type==="door")best.actionLabel=best.closed?"ÖFFNEN":"SCHLIESSEN";
+    else if(best.type==="radio")best.actionLabel="EINSCHALTEN";
+    else best.actionLabel="DURCHSUCHEN";
+    return best;
   }
 
   interact(object=null) {
@@ -315,8 +357,7 @@ export class Game {
     this.renderer.selectedId=hit.id;
     if(hit.kind==="zombie"){
       this.player.selectedZombieId=hit.id;
-      if(distance(this.player,hit.ref)<1.75)this.attack();
-      else this.ui.showMessage("Infizierter",1);
+      this.ui.showMessage(this.player.combatMode?"Ziel erfasst · Angriff läuft automatisch":"Ziel gewählt · Kampfmodus aktivieren",1.6);
     }else{
       this.player.selectedZombieId=null;
       if(distance(this.player,hit.ref)<1.4)this.interact(hit.ref);

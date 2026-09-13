@@ -89,6 +89,12 @@ h1 span { color: var(--red-bright); }
 .message.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .target-label { position: absolute; left: 50%; bottom: 100px; transform: translateX(-50%); padding: 4px 9px; background: rgba(4,7,5,.72); color: #eee9d8; font: 600 10px "IBM Plex Mono", monospace; opacity: 0; transition: opacity .16s; }
 .target-label.show { opacity: 1; }
+.enemy-target { position: absolute; left: 50%; bottom: calc(63px + var(--safe-bottom)); transform: translateX(-50%); width: 190px; padding: 7px 10px 8px; background: rgba(10,14,12,.88); border: 1px solid rgba(216,211,190,.2); box-shadow: 0 5px 18px #0009; }
+.enemy-target > div:first-child { display: flex; justify-content: space-between; align-items: baseline; }
+.enemy-target small { font: 600 8px "IBM Plex Mono", monospace; color: #a8aa9d; letter-spacing: .15em; }
+.enemy-target strong { font-size: 14px; letter-spacing: .06em; }
+.enemy-meter { height: 5px; margin-top: 4px; background: #21110f; overflow: hidden; }
+.enemy-meter i { display: block; width: 100%; height: 100%; background: linear-gradient(90deg,#742822,#bd493e); transition: width .18s; }
 
 .joystick { position: absolute; left: calc(24px + var(--safe-left)); bottom: calc(20px + var(--safe-bottom)); width: 122px; height: 122px; opacity: .56; transition: opacity .15s; }
 .joystick.active { opacity: .9; }
@@ -103,6 +109,7 @@ h1 span { color: var(--red-bright); }
 .round span { font-size: 28px; line-height: .8; }
 .round small { margin-top: 5px; font: 600 8px "IBM Plex Mono", monospace; }
 .round.attack { right: 0; bottom: 6px; width: 88px; height: 88px; background: rgba(93,34,30,.82); }
+.round.attack.combat-active { background: rgba(145,43,35,.95); border-color: #e2c68a; box-shadow: inset 0 0 18px #0008, 0 0 22px rgba(199,66,53,.62); }
 .round.action { right: 90px; top: 0; }
 .round.run { left: 0; bottom: 0; width: 60px; height: 60px; }
 .round.ready { animation: ready 1.2s ease-in-out infinite; border-color: var(--yellow); }
@@ -185,6 +192,18 @@ h1 span { color: var(--red-bright); }
   .actions { transform: scale(.88); transform-origin: bottom right; }
   .quickbar { transform: translateX(-50%) scale(.88); transform-origin: bottom center; }
   .panel { top: calc(46px + var(--safe-top)); max-height: calc(100% - 52px - var(--safe-top) - var(--safe-bottom)); }
+  .panel header { height: 42px; padding-top: 5px; padding-bottom: 4px; }
+  .panel h2 { font-size: 18px; }
+  .paperdoll { grid-template-columns: 70px 1fr; gap: 7px; padding: 6px 9px; }
+  .portrait { height: 66px; }
+  .portrait span { left: 25px; top: 21px; }
+  .equipment { gap: 4px; }
+  .equip-slot { padding: 4px 7px; }
+  .equip-slot strong { font-size: 13px; }
+  .inventory-grid { min-height: 92px; max-height: 105px; gap: 4px; padding: 6px 9px; }
+  .inventory-slot, .container-item { min-height: 43px; }
+  .panel footer { height: 38px; padding: 4px 8px; }
+  .enemy-target { bottom: calc(54px + var(--safe-bottom)); transform: translateX(-50%) scale(.9); }
 }
 
 @media (pointer: coarse) {

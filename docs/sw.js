@@ -1,4 +1,4 @@
-const CACHE = "sperrkreis98-v1";
+const CACHE = "sperrkreis98-v2";
 const FILES = [
   "./", "./index.html", "./style.css", "./manifest.webmanifest", "./assets/icon.svg",
   "./src/main.js", "./src/game.js", "./src/input.js", "./src/render.js", "./src/ui.js",
@@ -19,4 +19,3 @@ self.addEventListener("fetch", event => {
     const copy = response.clone(); caches.open(CACHE).then(cache => cache.put(event.request, copy)); return response;
   }).catch(() => caches.match(event.request).then(hit => hit || caches.match("./index.html"))));
 });
-
