@@ -4,7 +4,7 @@ Ein mobile-first Isometrie-Survivalspiel im fiktiven Brandenburg des Jahres 1998
 
 ## Spielen
 
-Die veröffentlichte Version liegt in `docs/` und ist für Safari auf dem iPhone im Querformat ausgelegt. Sie benötigt weder Build-Schritt noch externe Abhängigkeiten und funktioniert nach dem ersten Laden auch offline.
+Die aktuelle Version ist unter **[fabitiko93-cmd.github.io/Game-Test](https://fabitiko93-cmd.github.io/Game-Test/)** spielbar. Sie liegt in `docs/`, ist für Safari auf dem iPhone im Querformat ausgelegt, benötigt weder Build-Schritt noch externe Abhängigkeiten und funktioniert nach dem ersten Laden auch offline.
 
 ## Steuerung
 
