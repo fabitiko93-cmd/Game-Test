@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#111714">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Sperrkreis 98">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>SPERRKREIS 98</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="game-shell" aria-label="SPERRKREIS 98">
+    <canvas id="game" aria-label="Spielfeld"></canvas>
+
+    <section id="loading" class="screen visible">
+      <div class="title-card">
+        <p class="eyebrow">BRANDENBURG · OKTOBER 1998</p>
+        <h1>SPERRKREIS <span>98</span></h1>
+        <p class="tagline">Die Leitungen sind tot. Draußen bewegt sich noch etwas.</p>
+        <button id="start-button" class="primary">AUFWACHEN</button>
+        <p class="small">Für Kopfhörer und Querformat optimiert</p>
+      </div>
+    </section>
+
+    <section id="rotate" class="screen">
+      <div class="rotate-phone" aria-hidden="true"></div>
+      <strong>Bitte das iPhone drehen</strong>
+      <span>SPERRKREIS 98 wird im Querformat gespielt.</span>
+    </section>
+
+    <div id="hud" class="hidden">
+      <div class="top-left">
+        <div class="place-line"><span id="location">WALDRAND</span><span id="clock">06:42</span></div>
+        <div class="meters">
+          <div class="meter hp"><i id="hp-fill"></i><b>GESUNDHEIT</b></div>
+          <div class="meter stamina"><i id="stamina-fill"></i><b>AUSDAUER</b></div>
+        </div>
+      </div>
+
+      <div id="needs" class="needs">
+        <div id="hunger-need" title="Hunger"><span>◆</span><i></i></div>
+        <div id="thirst-need" title="Durst"><span>●</span><i></i></div>
+      </div>
+
+      <div id="objective" class="objective">
+        <small>AKTUELLES ZIEL</small>
+        <strong id="objective-text">Durchsuche den Unterschlupf</strong>
+      </div>
+
+      <div id="message" class="message" role="status"></div>
+      <div id="target-label" class="target-label"></div>
+
+      <div id="joystick" class="joystick" aria-hidden="true">
+        <div class="joy-ring"></div>
+        <div id="joy-knob" class="joy-knob"></div>
+      </div>
+
+      <nav class="actions" aria-label="Aktionen">
+        <button id="attack-button" class="round attack"><span>⌁</span><small>ANGRIFF</small></button>
+        <button id="action-button" class="round action"><span>✦</span><small id="action-label">AKTION</small></button>
+        <button id="run-button" class="round run"><span>»</span><small>RENNEN</small></button>
+      </nav>
+
+      <nav class="utility" aria-label="Menü">
+        <button id="inventory-button"><span>▣</span> RUCKSACK <b id="inventory-count">0/12</b></button>
+        <button id="pause-button" aria-label="Pause">Ⅱ</button>
+      </nav>
+
+      <div id="quickbar" class="quickbar"></div>
+    </div>
+
+    <section id="inventory-panel" class="panel hidden" aria-label="Rucksack">
+      <header>
+        <div><small>AUSRÜSTUNG &amp; VORRÄTE</small><h2>RUCKSACK</h2></div>
+        <button class="close" data-close="inventory-panel">×</button>
+      </header>
+      <div class="paperdoll">
+        <div id="player-portrait" class="portrait"><span></span></div>
+        <div class="equipment">
+          <button id="weapon-slot" class="equip-slot"><small>HAND</small><strong>Leer</strong></button>
+          <button id="clothes-slot" class="equip-slot"><small>KLEIDUNG</small><strong>Arbeitsjacke</strong></button>
+        </div>
+      </div>
+      <div id="inventory-grid" class="inventory-grid"></div>
+      <footer><span id="carry-weight">0,0 / 12 kg</span><button id="drop-button" disabled>ABLEGEN</button><button id="use-button" disabled>BENUTZEN</button></footer>
+    </section>
+
+    <section id="container-panel" class="panel container-panel hidden" aria-label="Behälter">
+      <header>
+        <div><small id="container-kind">BEHÄLTER</small><h2 id="container-name">KÜCHENSCHRANK</h2></div>
+        <button class="close" data-close="container-panel">×</button>
+      </header>
+      <div id="container-items" class="container-items"></div>
+      <footer><span>Antippen zum Einpacken</span><button id="take-all-button">ALLES NEHMEN</button></footer>
+    </section>
+
+    <section id="pause-panel" class="modal hidden">
+      <div>
+        <small>SPIEL PAUSIERT</small>
+        <h2>SPERRKREIS 98</h2>
+        <button id="continue-button" class="primary">WEITERSPIELEN</button>
+        <button id="save-button">SPIELSTAND SICHERN</button>
+        <button id="reset-button" class="danger">NEU BEGINNEN</button>
+      </div>
+    </section>
+
+    <section id="death-panel" class="modal hidden">
+      <div>
+        <small id="survived-time">DU HAST 0 STUNDEN ÜBERLEBT</small>
+        <h2>DU BIST TOT</h2>
+        <p>Die Stadt wird sich nicht daran erinnern.</p>
+        <button id="death-restart-button" class="primary">NEU BEGINNEN</button>
+      </div>
+    </section>
+
+    <div id="toast" class="toast"></div>
+  </main>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
+

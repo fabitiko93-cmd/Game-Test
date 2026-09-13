@@ -1,0 +1,26 @@
+name: Verify game
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          for file in docs/src/*.js docs/sw.js; do
+            node --check "$file"
+          done
+      - name: Verify required game files
+        run: test -f docs/index.html && test -f docs/manifest.webmanifest && test -f docs/style.css
+

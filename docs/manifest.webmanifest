@@ -1,0 +1,14 @@
+{
+  "name": "SPERRKREIS 98",
+  "short_name": "Sperrkreis",
+  "description": "Isometrisches Survival-Spiel für das iPhone.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0a0e0c",
+  "theme_color": "#111714",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
+
