@@ -83,14 +83,19 @@ export class Navigator {
 
   pathToInteraction(world, start, object, options = {}) {
     const candidates = [];
-    for (const [dx, dy] of DIRECTIONS) {
-      const target = { x: Math.round(object.x) + dx, y: Math.round(object.y) + dy };
-      if (!world.isPathCellWalkable(target.x, target.y, options)) continue;
-      const path = this.findPath(world, start, target, options);
-      const reachable = path.length > 0 || (Math.round(start.x) === target.x && Math.round(start.y) === target.y);
-      if (reachable) candidates.push(path);
+    const range = options.interactionRange || 1.5;
+    for (let dy = -2; dy <= 2; dy++) {
+      for (let dx = -2; dx <= 2; dx++) {
+        const target = { x: Math.round(object.x) + dx, y: Math.round(object.y) + dy };
+        const targetDistance = Math.hypot(target.x - object.x, target.y - object.y);
+        if (targetDistance > range || !world.isPathCellWalkable(target.x, target.y, options)) continue;
+        const path = this.findPath(world, start, target, options);
+        const sameCell = Math.round(start.x) === target.x && Math.round(start.y) === target.y;
+        const alreadyInRange = Math.hypot(start.x - object.x, start.y - object.y) <= range;
+        if (path.length || (sameCell && alreadyInRange)) candidates.push({ path, targetDistance });
+      }
     }
-    candidates.sort((a, b) => a.length - b.length);
-    return candidates[0] || [];
+    candidates.sort((a, b) => a.path.length - b.path.length || a.targetDistance - b.targetDistance);
+    return candidates[0]?.path || [];
   }
 }

@@ -1,6 +1,6 @@
-import { strongestNoise, visionExposure } from "./perception.js?v=3";
-import { VIEW } from "./config.js?v=3";
-import { clamp, distance, uid } from "./util.js?v=3";
+import { strongestNoise, visionExposure } from "./perception.js?v=4";
+import { VIEW } from "./config.js?v=4";
+import { clamp, distance, uid } from "./util.js?v=4";
 
 const INITIAL_POSITIONS = [
   [14, 18], [9, 21], [24, 20], [36, 20], [43, 18], [31, 9],

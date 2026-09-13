@@ -1,5 +1,5 @@
-import { EQUIPMENT_SLOTS, ITEMS } from "./data.js?v=3";
-import { clamp, uid } from "./util.js?v=3";
+import { EQUIPMENT_SLOTS, ITEMS } from "./data.js?v=4";
+import { clamp, uid } from "./util.js?v=4";
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
 

@@ -1,4 +1,4 @@
-import { vibrate } from "./util.js?v=3";
+import { vibrate } from "./util.js?v=4";
 
 export class InputController {
   constructor(canvas) {

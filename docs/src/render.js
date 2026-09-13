@@ -1,6 +1,6 @@
-import { COLORS, VIEW } from "./config.js?v=3";
-import { activeWeapon, itemDefinition } from "./inventory.js?v=3";
-import { clamp, hash2, lerp } from "./util.js?v=3";
+import { COLORS, VIEW } from "./config.js?v=4";
+import { activeWeapon, itemDefinition } from "./inventory.js?v=4";
+import { clamp, hash2, lerp } from "./util.js?v=4";
 
 export class Renderer {
   constructor(canvas) {

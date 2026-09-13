@@ -1,4 +1,4 @@
-import { ZombieSystem, createInitialZombies } from "./ai.js?v=3";
+import { ZombieSystem, createInitialZombies } from "./ai.js?v=4";
 import {
   backgroundName,
   createPlayer,
@@ -7,10 +7,10 @@ import {
   skillValue,
   treatWithItem,
   updateCharacter,
-} from "./character.js?v=3";
-import { CombatSystem } from "./combat.js?v=3";
-import { GAME, STANCES } from "./config.js?v=3";
-import { ITEMS } from "./data.js?v=3";
+} from "./character.js?v=4";
+import { CombatSystem } from "./combat.js?v=4";
+import { GAME, STANCES } from "./config.js?v=4";
+import { ITEMS } from "./data.js?v=4";
 import {
   activeWeapon,
   addItem,
@@ -27,11 +27,11 @@ import {
   removeMod,
   roundsInWeapon,
   unequipSlot,
-} from "./inventory.js?v=3";
-import { Navigator } from "./navigation.js?v=3";
-import { awarenessForPlayer } from "./perception.js?v=3";
-import { SaveStore } from "./save.js?v=3";
-import { clamp, distance, formatClock, vibrate } from "./util.js?v=3";
+} from "./inventory.js?v=4";
+import { Navigator } from "./navigation.js?v=4";
+import { awarenessForPlayer } from "./perception.js?v=4";
+import { SaveStore } from "./save.js?v=4";
+import { clamp, distance, formatClock, vibrate } from "./util.js?v=4";
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
 
@@ -315,8 +315,9 @@ export class Game {
       const burdenFactor = clamp(1.08 - burden * 0.16, 0.72, 1);
       const moved = this.moveEntity(player, dx * stance.speed * burdenFactor * delta, dy * stance.speed * burdenFactor * delta, 0.27);
       if (!moved && player.navigation.path.length) {
-        player.navigation.path = [];
-        player.navigation.destination = null;
+        const interaction = this.world.objects.find(object => object.id === player.navigation.interactionId && !object.removed);
+        if (interaction && distance(player, interaction) <= GAME.interactionRange + 0.2) this.arriveAtDestination();
+        else this.clearNavigation();
       }
       player.stamina = clamp(player.stamina + stance.stamina * delta * (player.hunger < 20 ? 0.48 : 1), 0, 100);
       this.stepTimer -= delta;
@@ -425,7 +426,10 @@ export class Game {
       this.interact(object);
       return;
     }
-    const path = this.navigator.pathToInteraction(this.world, this.player, object, { allowDoors: true });
+    const path = this.navigator.pathToInteraction(this.world, this.player, object, {
+      allowDoors: true,
+      interactionRange: GAME.interactionRange,
+    });
     if (!path.length) {
       this.ui.showMessage("Kein Weg in Reichweite.", 1.2);
       return;

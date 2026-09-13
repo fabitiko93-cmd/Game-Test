@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createInitialZombies } from "../docs/src/ai.js";
-import { createPlayer, gainSkill, inflictZombieAttack } from "../docs/src/character.js";
+import { createPlayer, gainSkill, inflictZombieAttack, updateCharacter } from "../docs/src/character.js";
 import { ITEMS } from "../docs/src/data.js";
 import {
   addItem,
@@ -29,6 +29,11 @@ const pharmacyDoor = world.objects.find(object => object.id === pharmacy.doorId)
 assert.equal(pharmacyDoor.locked, true);
 assert.ok(navigator.pathToInteraction(world, start, pharmacyDoor, { allowDoors: true }).length > 0);
 assert.equal(navigator.findPath(world, start, { x: 40, y: 36 }, { allowDoors: true }).length, 0);
+const starterCabinet = world.objects.find(object => object.name === "KÜCHENSCHRANK");
+const cabinetPath = navigator.pathToInteraction(world, start, starterCabinet, { allowDoors: true, interactionRange: 1.38 });
+const cabinetDestination = cabinetPath.at(-1);
+assert.ok(cabinetPath.length > 0);
+assert.ok(Math.hypot(cabinetDestination.x - starterCabinet.x, cabinetDestination.y - starterCabinet.y) <= 1.38);
 
 const citizen = createPlayer({ name: "A", background: "citizen" });
 const hunter = createPlayer({ name: "B", background: "hunter" });
@@ -54,6 +59,9 @@ const rolls = [0, 0.5, 0, 0.01, 0.9, 0.2, 0.5, 0.5];
 const bite = inflictZombieAttack(hunter, 400, () => rolls.shift() ?? 0.5, 0);
 assert.equal(bite.kind, "bite");
 assert.equal(bite.wound.zombieInfected, true);
+bite.wound.deathAt = 401;
+bite.wound.symptomAt = 400;
+assert.equal(updateCharacter(hunter, 1, 2, 402).dead, true);
 
 const memory = new Map();
 const storage = {

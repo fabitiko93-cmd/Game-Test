@@ -1,6 +1,6 @@
-import { STANCES } from "./config.js?v=3";
-import { skillValue } from "./character.js?v=3";
-import { clamp, distance } from "./util.js?v=3";
+import { STANCES } from "./config.js?v=4";
+import { skillValue } from "./character.js?v=4";
+import { clamp, distance } from "./util.js?v=4";
 
 export function daylight(minutes) {
   const angle = (minutes / 1440) * Math.PI * 2 - Math.PI / 2;

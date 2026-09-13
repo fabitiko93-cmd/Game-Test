@@ -1,4 +1,4 @@
-import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=3";
+import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=4";
 import {
   activeWeapon,
   ammoLabel,
@@ -10,8 +10,8 @@ import {
   itemDefinition,
   roundsInWeapon,
   weaponCapacity,
-} from "./inventory.js?v=3";
-import { backgroundName, skillRank, visibleInfectionState, woundDisplay } from "./character.js?v=3";
+} from "./inventory.js?v=4";
+import { backgroundName, skillRank, visibleInfectionState, woundDisplay } from "./character.js?v=4";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",

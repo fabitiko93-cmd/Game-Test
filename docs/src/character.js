@@ -1,6 +1,6 @@
-import { BACKGROUNDS, ITEMS, SKILLS } from "./data.js?v=3";
-import { addItem, damageProtection, equipItem, equipmentProtection, createItem } from "./inventory.js?v=3";
-import { clamp, uid } from "./util.js?v=3";
+import { BACKGROUNDS, ITEMS, SKILLS } from "./data.js?v=4";
+import { addItem, damageProtection, equipItem, equipmentProtection, createItem } from "./inventory.js?v=4";
+import { clamp, uid } from "./util.js?v=4";
 
 const RANKS = [
   [90, "MEISTERHAFT"],
