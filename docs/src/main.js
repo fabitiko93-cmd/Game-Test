@@ -1,8 +1,8 @@
-import { Game } from "./game.js";
-import { InputController } from "./input.js";
-import { Renderer } from "./render.js";
-import { GameUI } from "./ui.js";
-import { World } from "./world.js";
+import { Game } from "./game.js?v=3";
+import { InputController } from "./input.js?v=3";
+import { Renderer } from "./render.js?v=3";
+import { GameUI } from "./ui.js?v=3";
+import { World } from "./world.js?v=3";
 
 const canvas = document.getElementById("game");
 const world = new World();
@@ -16,4 +16,3 @@ window.__SPERRKREIS__ = game;
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
 }
-

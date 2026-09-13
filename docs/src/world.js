@@ -1,7 +1,7 @@
-import { COLORS, VIEW } from "./config.js";
-import { LOOT_TABLES, OBJECT_LABELS } from "./data.js";
-import { createItem } from "./inventory.js";
-import { distance, hash2, lineCells, mulberry32, uid } from "./util.js";
+import { COLORS, VIEW } from "./config.js?v=3";
+import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=3";
+import { createItem } from "./inventory.js?v=3";
+import { distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=3";
 
 export const BUILDINGS = [
   { id: "house", name: "REIHENHAUS", x: 3, y: 3, w: 10, h: 11, floor: "floor", door: { x: 8, y: 13 }, wall: "#78695e", roof: "#4b4039", locked: true, lockDifficulty: 14 },

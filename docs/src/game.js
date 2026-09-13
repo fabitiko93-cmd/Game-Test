@@ -1,4 +1,4 @@
-import { ZombieSystem, createInitialZombies } from "./ai.js";
+import { ZombieSystem, createInitialZombies } from "./ai.js?v=3";
 import {
   backgroundName,
   createPlayer,
@@ -7,10 +7,10 @@ import {
   skillValue,
   treatWithItem,
   updateCharacter,
-} from "./character.js";
-import { CombatSystem } from "./combat.js";
-import { GAME, STANCES } from "./config.js";
-import { ITEMS } from "./data.js";
+} from "./character.js?v=3";
+import { CombatSystem } from "./combat.js?v=3";
+import { GAME, STANCES } from "./config.js?v=3";
+import { ITEMS } from "./data.js?v=3";
 import {
   activeWeapon,
   addItem,
@@ -27,11 +27,11 @@ import {
   removeMod,
   roundsInWeapon,
   unequipSlot,
-} from "./inventory.js";
-import { Navigator } from "./navigation.js";
-import { awarenessForPlayer } from "./perception.js";
-import { SaveStore } from "./save.js";
-import { clamp, distance, formatClock, vibrate } from "./util.js";
+} from "./inventory.js?v=3";
+import { Navigator } from "./navigation.js?v=3";
+import { awarenessForPlayer } from "./perception.js?v=3";
+import { SaveStore } from "./save.js?v=3";
+import { clamp, distance, formatClock, vibrate } from "./util.js?v=3";
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
 
