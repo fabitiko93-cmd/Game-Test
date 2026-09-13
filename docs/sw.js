@@ -1,8 +1,10 @@
-const CACHE = "sperrkreis98-v2";
+const CACHE = "sperrkreis98-v3";
 const FILES = [
   "./", "./index.html", "./style.css", "./manifest.webmanifest", "./assets/icon.svg",
   "./src/main.js", "./src/game.js", "./src/input.js", "./src/render.js", "./src/ui.js",
-  "./src/world.js", "./src/config.js", "./src/util.js"
+  "./src/world.js", "./src/config.js", "./src/data.js", "./src/util.js",
+  "./src/navigation.js", "./src/perception.js", "./src/character.js",
+  "./src/inventory.js", "./src/ai.js", "./src/combat.js", "./src/save.js"
 ];
 
 self.addEventListener("install", event => {

@@ -43,8 +43,8 @@ export function vibrate(pattern = 12) {
 
 export function lineCells(x0, y0, x1, y1) {
   const cells = [];
-  let x = Math.floor(x0), y = Math.floor(y0);
-  const tx = Math.floor(x1), ty = Math.floor(y1);
+  let x = Math.round(x0), y = Math.round(y0);
+  const tx = Math.round(x1), ty = Math.round(y1);
   const dx = Math.abs(tx - x), sx = x < tx ? 1 : -1;
   const dy = -Math.abs(ty - y), sy = y < ty ? 1 : -1;
   let error = dx + dy;
@@ -57,4 +57,3 @@ export function lineCells(x0, y0, x1, y1) {
   }
   return cells;
 }
-

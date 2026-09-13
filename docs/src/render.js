@@ -1,4 +1,5 @@
 import { COLORS, VIEW } from "./config.js";
+import { activeWeapon, itemDefinition } from "./inventory.js";
 import { clamp, hash2, lerp } from "./util.js";
 
 export class Renderer {
@@ -13,7 +14,10 @@ export class Renderer {
     this.shake = 0;
     this.hotspots = [];
     this.particles = [];
+    this.tracers = [];
     this.selectedId = null;
+    this.destination = null;
+    this.contextId = null;
     this.frame = 0;
     this.resize();
     window.addEventListener("resize", () => this.resize());
@@ -61,6 +65,7 @@ export class Renderer {
     this.frame++;
     this.shake = Math.max(0, this.shake - delta * 18);
     this.updateParticles(delta);
+    this.updateTracers(delta);
     this.follow(game.player);
     const ctx = this.ctx;
     ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);
@@ -71,6 +76,9 @@ export class Renderer {
 
     this.drawGround(game.world, game.minutes);
     this.drawBlood(game.world);
+    this.drawVisionCones(game);
+    this.drawDestination();
+    this.contextId = game.contextObject()?.id || null;
 
     const drawables = [];
     for (const object of game.world.objects) if (!object.removed) drawables.push({ kind: "object", ref: object, depth: object.x + object.y });
@@ -88,6 +96,7 @@ export class Renderer {
 
     this.drawRoofs(game);
     this.drawParticles();
+    this.drawTracers();
     this.drawNoiseHints(game.world);
     this.drawLighting(game);
     this.drawVignette();
@@ -110,7 +119,7 @@ export class Renderer {
         this.diamond(p.x, p.y, VIEW.tileW + .8, VIEW.tileH + .8, color);
         if (type === "road") this.drawRoadMark(x, y);
         else if (type === "grass" && hash2(x * 9, y * 11, world.seed) > .74) this.drawGrass(p, hash2(x, y, 7));
-        else if (type === "floor" || type === "pharmacyFloor") this.drawFloorSeam(p, x, y, type);
+        else if (["floor", "pharmacyFloor", "policeFloor", "clubFloor"].includes(type)) this.drawFloorSeam(p, x, y, type);
       }
     }
   }
@@ -124,11 +133,11 @@ export class Renderer {
 
   drawRoadMark(x, y) {
     const ctx = this.ctx;
-    if (x === 17 && (y < 14 || y > 20) && y % 3 !== 0) {
+    if (x === 31 && (y < 17 || y > 23) && y % 3 !== 0) {
       const a = this.iso(x + .33, y + .33), b = this.iso(x + .67, y + .67);
       ctx.strokeStyle = "rgba(211,201,155,.5)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
     }
-    if (y === 17 && (x < 14 || x > 20) && x % 3 !== 0) {
+    if (y === 20 && (x < 28 || x > 34) && x % 3 !== 0) {
       const a = this.iso(x + .33, y + .67), b = this.iso(x + .67, y + .33);
       ctx.strokeStyle = "rgba(211,201,155,.5)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
     }
@@ -162,6 +171,9 @@ export class Renderer {
       case "fridge": this.drawFurniture(o, "#c0c1ad", 31, .58, .6); break;
       case "shelf": this.drawShelf(o); break;
       case "toolbox": this.drawFurniture(o, "#6f2d28", 11, .62, .46); break;
+      case "desk": this.drawFurniture(o, "#51483b", 18, .86, .58); break;
+      case "locker": this.drawFurniture(o, "#59625d", 34, .58, .48); break;
+      case "gunlocker": this.drawFurniture(o, o.locked ? "#4c5550" : "#626d65", 37, .68, .48); break;
       case "counter": this.drawFurniture(o, "#544b3b", 19, .88, .5); break;
       case "bed": this.drawBed(o); break;
       case "radio": this.drawRadio(o); break;
@@ -176,7 +188,7 @@ export class Renderer {
     if (o.interactable) {
       const p = this.iso(o.x, o.y, o.type === "door" ? 25 : 34);
       this.hotspots.push({ id: o.id, kind: "object", ref: o, x: p.x, y: p.y, radius: o.type === "door" ? 30 : 25 });
-      if (game.contextObject()?.id === o.id) this.drawContextMarker(p.x, p.y - 10);
+      if (this.contextId === o.id) this.drawContextMarker(p.x, p.y - 10);
     }
   }
 
@@ -198,7 +210,13 @@ export class Renderer {
       return;
     }
     this.drawBlock(o.x, o.y, o.orientation === "x" ? .78 : .14, o.orientation === "x" ? .14 : .78, 35, "#694b35");
-    const p = this.iso(o.x, o.y, 20); this.ctx.fillStyle = "#c3a55b"; this.ctx.fillRect(p.x + 4, p.y, 3, 3);
+    const p = this.iso(o.x, o.y, 20); this.ctx.fillStyle = o.locked ? "#b44a3d" : "#c3a55b"; this.ctx.fillRect(p.x + 4, p.y, 3, 3);
+    if (o.locked) {
+      this.ctx.fillStyle = "#271713";
+      this.ctx.fillRect(p.x + 3, p.y - 1, 5, 5);
+      this.ctx.fillStyle = "#c3a55b";
+      this.ctx.fillRect(p.x + 5, p.y, 1, 3);
+    }
   }
 
   shadow(p, rx, ry, alpha = .25) {
@@ -269,7 +287,7 @@ export class Renderer {
   }
 
   drawSign(o) {
-    const p=this.iso(o.x,o.y),ctx=this.ctx;ctx.strokeStyle="#343b35";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-28);ctx.stroke();ctx.fillStyle=o.name==="APOTHEKE"?"#d7ddd1":"#d3b65e";ctx.fillRect(p.x-17,p.y-38,34,13);ctx.fillStyle="#26352c";ctx.font="bold 7px monospace";ctx.textAlign="center";ctx.fillText(o.name,p.x,p.y-29);
+    const p=this.iso(o.x,o.y),ctx=this.ctx;ctx.strokeStyle="#343b35";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-28);ctx.stroke();ctx.fillStyle=o.name==="APOTHEKE"?"#d7ddd1":"#d3b65e";ctx.fillRect(p.x-22,p.y-38,44,13);ctx.fillStyle="#26352c";ctx.font="bold 6px monospace";ctx.textAlign="center";ctx.fillText(o.name,p.x,p.y-29);
   }
 
   drawSelection(x,y,r=.5) {
@@ -281,33 +299,205 @@ export class Renderer {
   }
 
   drawPlayer(player, game) {
-    const ctx=this.ctx,p=this.iso(player.x,player.y),moving=player.moving;
-    this.shadow(p,13,5,.38);
-    const bob=moving?Math.sin(this.frame*.34)*1.5:0;
-    ctx.save();ctx.translate(Math.round(p.x),Math.round(p.y+bob));
-    if(player.hurtFlash>0){ctx.globalAlpha=.65+.35*Math.sin(this.frame);}
-    const dirX=Math.sign(player.facingX),dirY=Math.sign(player.facingY);
-    ctx.strokeStyle="#292e2a";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-4,-7);ctx.lineTo(-6+dirX*2,1);ctx.moveTo(4,-7);ctx.lineTo(6+dirX*2,1);ctx.stroke();
-    ctx.fillStyle="#46564a";ctx.fillRect(-9,-27,18,20);ctx.fillStyle="#26302a";ctx.fillRect(-9+dirX*2,-22,5,15);
-    ctx.fillStyle="#b78e6e";ctx.fillRect(-5+dirX*2,-36,10,10);ctx.fillStyle="#45392e";ctx.fillRect(-6+dirX*2,-38,12,5);
-    ctx.fillStyle="#677064";ctx.fillRect(-11,-25,4,15);ctx.fillRect(7,-25,4,15);
-    if(player.equipped){ctx.strokeStyle="#c7c4b4";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(8,-19);ctx.lineTo(17+dirX*4,-31+dirY*2);ctx.stroke();ctx.strokeStyle="#76543a";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(7,-17);ctx.lineTo(11,-22);ctx.stroke();}
-    if(player.attackTimer>0){ctx.strokeStyle="rgba(232,225,196,.8)";ctx.lineWidth=3;ctx.beginPath();ctx.arc(dirX*5,-17,25,-1.2,1.0);ctx.stroke();}
+    const ctx = this.ctx;
+    const p = this.iso(player.x, player.y);
+    const crouched = player.stance === "sneak";
+    const weapon = activeWeapon(player);
+    const weaponDefinition = itemDefinition(weapon);
+    const bodyOffset = crouched ? 7 : 0;
+    const bob = player.moving ? Math.sin(this.frame * (player.running ? .44 : .3)) * (crouched ? .7 : 1.4) : 0;
+    this.shadow(p, crouched ? 15 : 13, crouched ? 6 : 5, .38);
+    ctx.save();
+    ctx.translate(Math.round(p.x), Math.round(p.y + bob + bodyOffset));
+    if (player.hurtFlash > 0) ctx.globalAlpha = .62 + .38 * Math.sin(this.frame);
+    if (player.dead) ctx.globalAlpha = .42;
+    const dirX = Math.sign(player.facingX);
+    const dirY = Math.sign(player.facingY);
+    const legTop = crouched ? -5 : -7;
+    ctx.strokeStyle = "#292e2a";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(-4, legTop);
+    ctx.lineTo(-7 + dirX * 2, crouched ? 0 : 1);
+    ctx.moveTo(4, legTop);
+    ctx.lineTo(7 + dirX * 2, crouched ? 0 : 1);
+    ctx.stroke();
+    ctx.fillStyle = "#46564a";
+    ctx.fillRect(-9, crouched ? -23 : -27, 18, crouched ? 18 : 20);
+    ctx.fillStyle = "#26302a";
+    ctx.fillRect(-9 + dirX * 2, crouched ? -19 : -22, 5, crouched ? 12 : 15);
+    ctx.fillStyle = "#b78e6e";
+    ctx.fillRect(-5 + dirX * 2, crouched ? -31 : -36, 10, 10);
+    ctx.fillStyle = "#45392e";
+    ctx.fillRect(-6 + dirX * 2, crouched ? -33 : -38, 12, 5);
+    ctx.fillStyle = "#677064";
+    ctx.fillRect(-11, crouched ? -22 : -25, 4, 14);
+    ctx.fillRect(7, crouched ? -22 : -25, 4, 14);
+    if (weapon) {
+      if (weaponDefinition.weaponKind === "firearm") {
+        ctx.strokeStyle = "#343a35";
+        ctx.lineWidth = weaponDefinition.hands === 2 ? 5 : 4;
+        ctx.beginPath();
+        ctx.moveTo(5, crouched ? -17 : -21);
+        ctx.lineTo(22 + dirX * 7, (crouched ? -22 : -27) + dirY * 3);
+        ctx.stroke();
+        ctx.strokeStyle = "#8f7a56";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(3, crouched ? -15 : -18);
+        ctx.lineTo(10, crouched ? -18 : -22);
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = "#c7c4b4";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(8, crouched ? -16 : -19);
+        ctx.lineTo(17 + dirX * 4, (crouched ? -25 : -31) + dirY * 2);
+        ctx.stroke();
+        ctx.strokeStyle = "#76543a";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(7, crouched ? -14 : -17);
+        ctx.lineTo(11, crouched ? -19 : -22);
+        ctx.stroke();
+      }
+    }
+    if (player.combat?.attackTimer > 0 && weaponDefinition?.weaponKind !== "firearm") {
+      ctx.strokeStyle = "rgba(232,225,196,.8)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(dirX * 5, crouched ? -13 : -17, 25, -1.2, 1);
+      ctx.stroke();
+    }
     ctx.restore();
   }
 
   drawZombie(zombie) {
-    const ctx=this.ctx,p=this.iso(zombie.x,zombie.y),bob=zombie.moving?Math.sin(this.frame*.22+zombie.phase)*1.2:0;
-    if(this.selectedId===zombie.id)this.drawSelection(zombie.x,zombie.y,.5);
-    this.shadow(p,13,5,.4);ctx.save();ctx.translate(Math.round(p.x),Math.round(p.y+bob));
-    if(zombie.hurtFlash>0)ctx.globalAlpha=.55;
-    ctx.strokeStyle="#2f302b";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-4,-7);ctx.lineTo(-7,1);ctx.moveTo(4,-7);ctx.lineTo(7,1);ctx.stroke();
-    ctx.fillStyle=zombie.variant%2?"#535b4d":"#55504b";ctx.fillRect(-9,-27,18,20);ctx.fillStyle="#77806b";ctx.fillRect(-5,-36,10,10);ctx.fillStyle="#382e2a";ctx.fillRect(-6,-28,4,12);
-    ctx.strokeStyle="#777968";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-7,-23);ctx.lineTo(-16,-14);ctx.moveTo(7,-23);ctx.lineTo(16,-18);ctx.stroke();
-    if(zombie.state==="chase"){ctx.fillStyle="#b54a3e";ctx.fillRect(-4,-33,2,2);ctx.fillRect(3,-33,2,2);}
+    const ctx = this.ctx;
+    const p = this.iso(zombie.x, zombie.y);
+    const bob = zombie.moving ? Math.sin(this.frame * .22 + zombie.phase) * 1.2 : 0;
+    if (this.selectedId === zombie.id) this.drawSelection(zombie.x, zombie.y, .5);
+    this.shadow(p, 13, 5, .4);
+    ctx.save();
+    ctx.translate(Math.round(p.x), Math.round(p.y + bob));
+    if (zombie.hurtFlash > 0) ctx.globalAlpha = .55;
+    ctx.strokeStyle = "#2f302b";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(-4, -7);
+    ctx.lineTo(-7, 1);
+    ctx.moveTo(4, -7);
+    ctx.lineTo(7, 1);
+    ctx.stroke();
+    ctx.fillStyle = zombie.variant % 2 ? "#535b4d" : "#55504b";
+    ctx.fillRect(-9, -27, 18, 20);
+    ctx.fillStyle = "#77806b";
+    ctx.fillRect(-5, -36, 10, 10);
+    ctx.fillStyle = "#382e2a";
+    ctx.fillRect(-6, -28, 4, 12);
+    ctx.strokeStyle = "#777968";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(-7, -23);
+    ctx.lineTo(-16, -14);
+    ctx.moveTo(7, -23);
+    ctx.lineTo(16, -18);
+    ctx.stroke();
+    if (zombie.state === "chase") {
+      ctx.fillStyle = "#b54a3e";
+      ctx.fillRect(-4, -33, 2, 2);
+      ctx.fillRect(3, -33, 2, 2);
+    }
     ctx.restore();
-    if(zombie.hp<zombie.maxHp){ctx.fillStyle="#160b0a";ctx.fillRect(p.x-13,p.y-46,26,3);ctx.fillStyle="#a63b32";ctx.fillRect(p.x-13,p.y-46,26*zombie.hp/zombie.maxHp,3);}
-    this.hotspots.push({id:zombie.id,kind:"zombie",ref:zombie,x:p.x,y:p.y-20,radius:24});
+    if (zombie.hp < zombie.maxHp) {
+      ctx.fillStyle = "#160b0a";
+      ctx.fillRect(p.x - 13, p.y - 46, 26, 3);
+      ctx.fillStyle = "#a63b32";
+      ctx.fillRect(p.x - 13, p.y - 46, 26 * zombie.hp / zombie.maxHp, 3);
+    }
+    if (zombie.state !== "idle") {
+      ctx.font = "bold 13px monospace";
+      ctx.textAlign = "center";
+      ctx.fillStyle = zombie.state === "chase" ? "#e55749" : "#d5ba68";
+      ctx.fillText(zombie.state === "chase" ? "!" : "?", p.x, p.y - 51);
+    }
+    this.hotspots.push({ id: zombie.id, kind: "zombie", ref: zombie, x: p.x, y: p.y - 20, radius: 25 });
+  }
+
+  drawVisionCones(game) {
+    const ctx = this.ctx;
+    for (const zombie of game.zombies) {
+      if (zombie.removed || (game.player.stance !== "sneak" && (zombie.awareness || 0) < .12)) continue;
+      const center = this.iso(zombie.x, zombie.y);
+      if (center.x < -250 || center.x > this.width + 250 || center.y < -180 || center.y > this.height + 180) continue;
+      const angle = Math.atan2(zombie.facingY || 1, zombie.facingX || 0);
+      const range = zombie.state === "chase" ? 6.8 : 5.7;
+      const left = this.iso(zombie.x + Math.cos(angle - 1.05) * range, zombie.y + Math.sin(angle - 1.05) * range);
+      const right = this.iso(zombie.x + Math.cos(angle + 1.05) * range, zombie.y + Math.sin(angle + 1.05) * range);
+      ctx.save();
+      ctx.globalAlpha = zombie.state === "chase" ? .095 : .055 + (zombie.awareness || 0) * .07;
+      ctx.fillStyle = zombie.state === "chase" ? "#bc493e" : "#c8ac61";
+      ctx.beginPath();
+      ctx.moveTo(center.x, center.y);
+      ctx.lineTo(left.x, left.y);
+      ctx.quadraticCurveTo(
+        this.iso(zombie.x + Math.cos(angle) * range * 1.08, zombie.y + Math.sin(angle) * range * 1.08).x,
+        this.iso(zombie.x + Math.cos(angle) * range * 1.08, zombie.y + Math.sin(angle) * range * 1.08).y,
+        right.x,
+        right.y,
+      );
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  drawDestination() {
+    if (!this.destination) return;
+    const p = this.iso(this.destination.x, this.destination.y);
+    const pulse = .55 + Math.sin(this.frame * .12) * .18;
+    this.ctx.save();
+    this.ctx.globalAlpha = pulse;
+    this.ctx.strokeStyle = "#d5c685";
+    this.ctx.lineWidth = 1.5;
+    this.ctx.beginPath();
+    this.ctx.ellipse(p.x, p.y, 13, 6, 0, 0, Math.PI * 2);
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  trace(start, end, hit = false) {
+    this.tracers.push({
+      x1: start.x,
+      y1: start.y,
+      x2: end.x,
+      y2: end.y,
+      life: .12,
+      maxLife: .12,
+      color: hit ? "#f0d68b" : "#d7c990",
+    });
+  }
+
+  updateTracers(delta) {
+    for (const tracer of this.tracers) tracer.life -= delta;
+    this.tracers = this.tracers.filter(tracer => tracer.life > 0);
+  }
+
+  drawTracers() {
+    const ctx = this.ctx;
+    for (const tracer of this.tracers) {
+      const from = this.iso(tracer.x1, tracer.y1, 23);
+      const to = this.iso(tracer.x2, tracer.y2, 20);
+      ctx.save();
+      ctx.globalAlpha = clamp(tracer.life / tracer.maxLife, 0, 1);
+      ctx.strokeStyle = tracer.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   drawRoofs(game) {

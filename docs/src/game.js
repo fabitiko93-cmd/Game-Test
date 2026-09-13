@@ -1,7 +1,39 @@
-import { ITEMS } from "./config.js";
-import { clamp, distance, formatClock, uid, vibrate } from "./util.js";
+import { ZombieSystem, createInitialZombies } from "./ai.js";
+import {
+  backgroundName,
+  createPlayer,
+  gainSkill,
+  inflictZombieAttack,
+  skillValue,
+  treatWithItem,
+  updateCharacter,
+} from "./character.js";
+import { CombatSystem } from "./combat.js";
+import { GAME, STANCES } from "./config.js";
+import { ITEMS } from "./data.js";
+import {
+  activeWeapon,
+  addItem,
+  ammoLabel,
+  carryCapacity,
+  compatibleMods,
+  createItem,
+  equipItem,
+  findItem,
+  installMod,
+  inventoryWeight,
+  itemDefinition,
+  removeItem,
+  removeMod,
+  roundsInWeapon,
+  unequipSlot,
+} from "./inventory.js";
+import { Navigator } from "./navigation.js";
+import { awarenessForPlayer } from "./perception.js";
+import { SaveStore } from "./save.js";
+import { clamp, distance, formatClock, vibrate } from "./util.js";
 
-const SAVE_KEY = "sperrkreis98-save-v1";
+const deepCopy = value => JSON.parse(JSON.stringify(value));
 
 export class Game {
   constructor(world, renderer, input, ui) {
@@ -9,466 +41,1038 @@ export class Game {
     this.renderer = renderer;
     this.input = input;
     this.ui = ui;
-    this.player = this.createPlayer();
-    this.zombies = this.createZombies();
-    this.minutes = 6 * 60 + 42;
+    this.navigator = new Navigator();
+    this.zombieSystem = new ZombieSystem(this.navigator);
+    this.combat = new CombatSystem();
+    this.saveStore = new SaveStore();
+    this.player = createPlayer({ name: "Alex", background: "citizen" });
+    this.zombies = createInitialZombies();
+    this.minutes = GAME.startMinutes;
     this.mission = 0;
+    this.survivorCount = 0;
+    this.migrationTimer = GAME.migrationSeconds;
+    this.started = false;
     this.running = false;
     this.paused = false;
     this.dead = false;
-    this.started = false;
     this.lastFrame = performance.now();
+    this.elapsed = 0;
     this.uiTick = 0;
     this.autosaveTick = 0;
     this.stepTimer = 0;
+    this.holdBlocked = false;
+    this.combatPathTick = 0;
     this.audio = null;
+    this.random = () => this.world.random();
     this.bind();
-    this.ui.setHasSave(this.hasSave());
-  }
-
-  createPlayer() {
-    return {
-      x: 8.1, y: 27.2, facingX: 0, facingY: -1,
-      hp: 100, stamina: 100, hunger: 82, thirst: 78,
-      moving: false, running: false, hurtFlash: 0, attackTimer: 0,
-      attackCooldown: 0, pendingAttack: 0, pendingTargetId: null,
-      selectedZombieId: null, combatMode: false,
-      inventory: [], equipped: null, capacity: 12,
-    };
-  }
-
-  createZombies() {
-    const positions = [
-      [17.2, 8.4], [18.4, 25.2], [25.3, 17.3], [9.4, 17.9],
-      [29.2, 27.4], [8.2, 8.2], [27.8, 8.7], [31.5, 18.1], [13.0, 29.0]
-    ];
-    return positions.map(([x,y], index) => ({
-      id: `zombie-${index}`, name: "INFIZIERTER", x, y, spawnX:x, spawnY:y,
-      hp: 52 + (index % 3) * 7, maxHp: 52 + (index % 3) * 7,
-      state: "idle", stateTime: Math.random()*2, alertTime: 0,
-      facingX: 0, facingY: 1, moving: false, attackCooldown: 0,
-      hurtFlash: 0, phase: Math.random()*6, variant: index % 4,
-      target: null, wanderTarget: null, removed: false,
-    }));
+    this.ui.setHasSave(this.saveStore.has());
   }
 
   bind() {
     this.input.callbacks = {
-      attack: () => this.toggleCombatMode(), action: () => this.interact(),
-      inventory: () => this.toggleInventory(), pause: () => this.togglePause(),
-      tap: (x,y) => this.tapWorld(x,y),
+      combat: () => this.combat.toggle(this),
+      action: () => this.primaryAction(),
+      stance: () => this.toggleStance(),
+      reload: () => this.reload(),
+      inventory: () => this.toggleInventory(),
+      character: () => this.toggleCharacter(),
+      pause: () => this.togglePause(),
+      tap: (x, y) => this.tapWorld(x, y),
+      doubleTap: (x, y) => this.doubleTapWorld(x, y),
+      holdStart: (x, y) => this.startGuidedMovement(x, y),
+      holdMove: (x, y) => this.updateGuidedMovement(x, y),
+      holdEnd: () => this.endGuidedMovement(),
     };
     this.ui.callbacks = {
-      start: () => this.start(this.hasSave()),
-      fresh: () => this.freshStart(),
+      start: () => this.requestStart(),
+      fresh: () => this.requestFreshWorld(),
+      createCharacter: profile => this.acceptCharacter(profile),
       continue: () => this.setPaused(false),
-      save: () => { this.save(); this.ui.showToast("SPIELSTAND GESICHERT"); },
-      reset: () => this.reset(),
-      useItem: id => this.useItem(id), dropItem: id => this.dropItem(id),
-      unequip: () => this.unequip(),
-      takeItem: (container,id) => this.takeItem(container,id),
+      reset: () => this.requestFreshWorld(),
+      useItem: id => this.useItem(id),
+      dropItem: id => this.dropItem(id),
+      unequip: slot => this.unequip(slot),
+      takeItem: (container, id) => this.takeItem(container, id),
       takeAll: container => this.takeAll(container),
+      customize: id => this.openWeaponPanel(id),
+      installMod: (weaponId, modId) => this.mountMod(weaponId, modId),
+      removeMod: (weaponId, slot) => this.unmountMod(weaponId, slot),
+      reloadWeapon: () => this.reload(),
+      newSurvivor: () => this.requestSuccessor(),
       panelClosed: () => {},
     };
     window.addEventListener("visibilitychange", () => {
-      if (document.hidden && this.started && !this.dead) { this.save(); this.setPaused(true); }
+      if (document.hidden && this.started) {
+        this.save();
+        if (!this.dead) this.setPaused(true);
+      }
     });
-    window.addEventListener("pagehide", () => { if (this.started && !this.dead) this.save(); });
+    window.addEventListener("pagehide", () => {
+      if (this.started) this.save();
+    });
   }
 
-  hasSave() {
-    try { return Boolean(localStorage.getItem(SAVE_KEY)); } catch (_) { return false; }
+  requestStart() {
+    if (this.saveStore.has()) {
+      this.start(true);
+      return;
+    }
+    this.ui.showCharacterCreator({ survivorNumber: 1, continuing: false });
+  }
+
+  requestFreshWorld() {
+    if (this.started && !window.confirm("DIE GESAMTE WELT UND ALLE ÜBERLEBENDEN LÖSCHEN?")) return;
+    this.saveStore.clear();
+    this.world.reset(GAME.seed);
+    this.zombies = createInitialZombies();
+    this.minutes = GAME.startMinutes;
+    this.mission = 0;
+    this.survivorCount = 0;
+    this.migrationTimer = GAME.migrationSeconds;
+    this.dead = false;
+    this.paused = this.started;
+    this.input.enabled = false;
+    this.ui.hidePause();
+    this.ui.hideDeath();
+    this.ui.showCharacterCreator({ survivorNumber: 1, continuing: false });
+  }
+
+  requestSuccessor() {
+    this.ui.hideDeath();
+    this.ui.showCharacterCreator({ survivorNumber: this.survivorCount + 1, continuing: true });
+  }
+
+  acceptCharacter(profile) {
+    const nextNumber = this.survivorCount + 1;
+    const player = createPlayer({ ...profile, survivorNumber: nextNumber });
+    if (nextNumber > 1) {
+      const spawns = [{ x: 2, y: 20 }, { x: 45, y: 21 }, { x: 30, y: 45 }, { x: 30, y: 2 }];
+      const safest = spawns
+        .map(point => ({ point, danger: this.zombies.reduce((sum, zombie) => sum + (!zombie.removed && distance(point, zombie) < 7 ? 1 : 0), 0) }))
+        .sort((a, b) => a.danger - b.danger)[0].point;
+      player.x = safest.x;
+      player.y = safest.y;
+    }
+    this.player = player;
+    this.survivorCount = nextNumber;
+    this.dead = false;
+    this.player.dead = false;
+    this.ui.hideCharacterCreator();
+    this.ui.hideDeath();
+
+    if (!this.started) {
+      this.started = true;
+      this.beginLoop();
+    } else {
+      this.input.enabled = true;
+      this.paused = false;
+      this.renderer.follow(this.player, true);
+      this.ui.closeAllPanels();
+      this.ui.refreshAll(this.player, this);
+      this.ui.showMessage(`${this.player.name.toUpperCase()} BETRITT DEN SPERRKREIS`, 3);
+    }
+    this.save();
   }
 
   start(load = false) {
     if (this.started) return;
+    if (load && !this.load()) {
+      this.ui.showCharacterCreator({ survivorNumber: 1, continuing: false });
+      return;
+    }
     this.started = true;
-    if (load) this.load();
+    this.dead = Boolean(this.player.dead);
+    this.beginLoop();
+    if (this.dead) {
+      this.input.enabled = false;
+      this.ui.showDeath(this.player, this.minutes);
+    } else {
+      this.ui.showMessage("Die Stadt ist still. Zu still.", 3);
+    }
+  }
+
+  beginLoop() {
     this.initAudio();
     this.renderer.follow(this.player, true);
     this.ui.enterGame();
-    this.input.enabled = true;
+    this.input.enabled = !this.dead;
     this.running = true;
     this.lastFrame = performance.now();
-    this.ui.renderInventory(this.player);
-    this.ui.update(this.player, this);
-    this.ui.showMessage(load ? "Du erinnerst dich, wo du warst." : "Etwas schlägt draußen gegen Metall.", 3.2);
+    this.ui.refreshAll(this.player, this);
     requestAnimationFrame(time => this.loop(time));
-  }
-
-  freshStart() {
-    try { localStorage.removeItem(SAVE_KEY); } catch (_) {}
-    this.start(false);
   }
 
   loop(now) {
     if (!this.running) return;
-    const delta = Math.min(.05, Math.max(0, (now - this.lastFrame) / 1000));
+    const delta = Math.min(0.05, Math.max(0, (now - this.lastFrame) / 1000));
     this.lastFrame = now;
     if (!this.paused && !this.dead) this.update(delta);
     this.renderer.render(this, delta);
     this.uiTick -= delta;
-    if (this.uiTick <= 0) { this.ui.update(this.player, this); this.uiTick = .1; }
+    if (this.uiTick <= 0) {
+      this.ui.update(this.player, this);
+      this.uiTick = 0.1;
+    }
     requestAnimationFrame(time => this.loop(time));
   }
 
   update(delta) {
-    this.minutes += delta * 2.15;
+    const gameDeltaMinutes = delta * GAME.timeScale;
+    this.elapsed += delta;
+    this.minutes += gameDeltaMinutes;
     this.world.update(delta);
-    this.updatePlayer(delta);
-    this.updateZombies(delta);
+    this.player.noisePulse = Math.max(0, this.player.noisePulse - delta * 0.65);
+    this.updateMovement(delta);
+    this.combat.update(this, delta);
+    const aiResult = this.zombieSystem.update(this, delta);
+    if (this.player.stance === "sneak" && this.player.moving && aiResult.nearbyUndetected) {
+      gainSkill(this.player, "stealth", delta * 0.075);
+    }
+    this.updateNeeds(delta);
+    const health = updateCharacter(this.player, delta, gameDeltaMinutes, this.minutes);
+    this.player.bleeding = health.bleeding;
     this.updateMission();
+    this.updateMigration(delta);
+    if (health.dead || this.player.hp <= 0) this.die(this.player.deathCause || "DU BIST DEINEN VERLETZUNGEN ERLEGEN");
     this.autosaveTick += delta;
-    if (this.autosaveTick >= 12) { this.save(); this.autosaveTick = 0; }
+    if (this.autosaveTick >= GAME.autosaveSeconds) {
+      this.save();
+      this.autosaveTick = 0;
+    }
   }
 
-  updatePlayer(delta) {
-    const p = this.player;
-    p.hurtFlash = Math.max(0, p.hurtFlash - delta);
-    p.attackTimer = Math.max(0, p.attackTimer - delta);
-    p.attackCooldown = Math.max(0, p.attackCooldown - delta);
-    if (p.pendingAttack > 0) {
-      p.pendingAttack -= delta;
-      if (p.pendingAttack <= 0) this.resolveAttack();
-    }
+  updateMovement(delta) {
+    const player = this.player;
+    const keyboard = this.input.keyboardMovement();
+    let dx = 0;
+    let dy = 0;
+    let moving = false;
+    let requestedRun = false;
 
-    const input = this.input.movement();
-    const wx = input.y + input.x;
-    const wy = input.y - input.x;
-    const length = Math.hypot(wx, wy);
-    let dx = length ? wx / length : 0;
-    let dy = length ? wy / length : 0;
-    const target = this.combatTarget();
-    const weapon = p.equipped ? ITEMS[p.equipped.type] : null;
-    const attackRange = weapon?.range || .88;
-    let autoApproach = false;
-    if (input.magnitude <= .08 && p.combatMode && target) {
-      const tx = target.x - p.x, ty = target.y - p.y, targetDistance = Math.hypot(tx, ty);
-      if (targetDistance > attackRange * .92 && targetDistance < 8.5 && this.world.hasLineOfSight(p, target)) {
-        dx = tx / targetDistance; dy = ty / targetDistance; autoApproach = true;
+    if (keyboard.magnitude > 0) {
+      player.navigation.path = [];
+      player.navigation.destination = null;
+      player.navigation.interactionId = null;
+      player.navigation.manualUntil = this.elapsed + 0.9;
+      dx = keyboard.y + keyboard.x;
+      dy = keyboard.y - keyboard.x;
+      const length = Math.hypot(dx, dy) || 1;
+      dx /= length;
+      dy /= length;
+      moving = true;
+      requestedRun = keyboard.run;
+    } else {
+      const target = this.combat.target(this);
+      const weapon = activeWeapon(player);
+      const stats = weapon ? itemDefinition(weapon) : null;
+      if (target && stats?.weaponKind === "melee" && distance(player, target) <= (stats.range || 0.9) + 0.08
+        && player.navigation.source === "combat") {
+        this.clearNavigation();
+      }
+
+      const node = player.navigation.path?.[0];
+      if (node) {
+        const door = this.world.doorAtCell(node.x, node.y);
+        if (door?.closed) {
+          if (door.locked) {
+            this.clearNavigation();
+            this.renderer.selectedId = door.id;
+            this.ui.showMessage("Die Tür ist verschlossen.", 1.4);
+          } else if (distance(player, door) <= GAME.interactionRange + 0.2) {
+            this.openDoor(door, true);
+          }
+        }
+      }
+
+      const next = player.navigation.path?.[0];
+      if (next) {
+        const tx = next.x - player.x;
+        const ty = next.y - player.y;
+        const length = Math.hypot(tx, ty);
+        if (length < 0.13) {
+          player.x = next.x;
+          player.y = next.y;
+          player.navigation.path.shift();
+          if (!player.navigation.path.length) this.arriveAtDestination();
+        } else {
+          dx = tx / length;
+          dy = ty / length;
+          moving = true;
+          requestedRun = player.navigation.runRequested;
+        }
       }
     }
-    const canRun = !autoApproach && p.stamina > 4 && input.run && input.magnitude > .25;
-    const speed = autoApproach ? 1.7 : canRun ? 3.45 : 1.95;
-    p.moving = input.magnitude > .08 || autoApproach;
-    p.running = p.moving && canRun;
-    if (p.moving) {
-      p.facingX = dx; p.facingY = dy;
-      const multiplier = !autoApproach && input.magnitude < .32 ? .68 : 1;
-      this.moveEntity(p, dx * speed * multiplier * delta, dy * speed * multiplier * delta, .27);
-      if (p.running) p.stamina = Math.max(0, p.stamina - 17 * delta);
-      else p.stamina = Math.min(100, p.stamina + 7.5 * delta * (p.hunger < 20 ? .45 : 1));
+
+    const canRun = requestedRun && player.stance !== "sneak" && player.stamina > 4;
+    const mode = player.stance === "sneak" ? "sneak" : canRun ? "run" : "walk";
+    const stance = STANCES[mode];
+    player.moving = moving;
+    player.running = moving && mode === "run";
+    if (moving) {
+      player.facingX = dx;
+      player.facingY = dy;
+      const burden = inventoryWeight(player) / Math.max(1, carryCapacity(player));
+      const burdenFactor = clamp(1.08 - burden * 0.16, 0.72, 1);
+      const moved = this.moveEntity(player, dx * stance.speed * burdenFactor * delta, dy * stance.speed * burdenFactor * delta, 0.27);
+      if (!moved && player.navigation.path.length) {
+        player.navigation.path = [];
+        player.navigation.destination = null;
+      }
+      player.stamina = clamp(player.stamina + stance.stamina * delta * (player.hunger < 20 ? 0.48 : 1), 0, 100);
       this.stepTimer -= delta;
       if (this.stepTimer <= 0) {
-        this.world.emitNoise(p.x,p.y,p.running?4.8:1.45,"step");
-        this.stepTimer = p.running ? .28 : .48;
+        const stealthFactor = 1 - skillValue(player, "stealth") * 0.003;
+        const noise = stance.noise * stealthFactor;
+        this.world.emitNoise(player.x, player.y, noise, "step", 1.1, 0.45);
+        player.noisePulse = Math.max(player.noisePulse, clamp(noise / 7, 0, 1));
+        this.stepTimer = mode === "run" ? 0.28 : mode === "sneak" ? 0.68 : 0.46;
       }
     } else {
-      p.stamina = Math.min(100, p.stamina + 12 * delta * (p.hunger < 20 ? .45 : 1));
+      player.stamina = clamp(player.stamina + 10.5 * delta * (player.hunger < 20 ? 0.48 : 1), 0, 100);
       this.stepTimer = 0;
     }
+  }
 
-    if (p.combatMode && target && !target.removed) {
-      const targetDistance = distance(p, target);
-      if (targetDistance <= attackRange + .35) {
-        const tx = target.x - p.x, ty = target.y - p.y, targetLength = Math.hypot(tx, ty) || 1;
-        p.facingX = tx / targetLength; p.facingY = ty / targetLength;
-      }
-      if (targetDistance <= attackRange + .12 && p.attackCooldown <= 0 && p.pendingAttack <= 0) this.beginAttack(target);
+  updateNeeds(delta) {
+    const infection = this.player.infectionStage || 0;
+    this.player.hunger = Math.max(0, this.player.hunger - delta * (0.03 + (this.player.running ? 0.018 : 0)));
+    this.player.thirst = Math.max(0, this.player.thirst - delta * (0.049 + (this.player.running ? 0.03 : 0) + infection * 0.05));
+    if (this.player.hunger <= 0 || this.player.thirst <= 0) {
+      this.player.hp = Math.max(0, this.player.hp - delta * 1.35);
+      this.player.deathCause = this.player.thirst <= 0 ? "DU BIST VERDURSTET" : "DU BIST VERHUNGERT";
     }
+  }
 
-    p.hunger = Math.max(0, p.hunger - delta * .033);
-    p.thirst = Math.max(0, p.thirst - delta * .052);
-    if (p.hunger <= 0 || p.thirst <= 0) this.damagePlayer(delta * 1.6, false);
+  updateMigration(delta) {
+    this.migrationTimer -= delta;
+    if (this.migrationTimer > 0) return;
+    const active = this.zombies.filter(zombie => !zombie.removed).length;
+    if (active < GAME.maxZombies) this.zombieSystem.spawnMigrant(this);
+    this.migrationTimer = GAME.migrationSeconds * (0.82 + this.random() * 0.4);
+  }
+
+  attractMigration(amount = 8) {
+    this.migrationTimer = Math.max(4, this.migrationTimer - amount);
   }
 
   moveEntity(entity, dx, dy, radius) {
     const nx = entity.x + dx;
     const ny = entity.y + dy;
     let moved = false;
-    if (this.world.isWalkable(nx, entity.y, radius, entity.id)) { entity.x = nx; moved = true; }
-    if (this.world.isWalkable(entity.x, ny, radius, entity.id)) { entity.y = ny; moved = true; }
+    if (this.world.isWalkable(nx, entity.y, radius, entity.id)) {
+      entity.x = nx;
+      moved = true;
+    }
+    if (this.world.isWalkable(entity.x, ny, radius, entity.id)) {
+      entity.y = ny;
+      moved = true;
+    }
     return moved;
   }
 
-  updateZombies(delta) {
-    for (const z of this.zombies) {
-      if (z.removed) continue;
-      z.hurtFlash = Math.max(0,z.hurtFlash-delta);
-      z.attackCooldown = Math.max(0,z.attackCooldown-delta);
-      z.stateTime += delta;
-      const d = distance(z,this.player);
-      const sees = d < (this.player.running ? 9.5 : 7.2) && this.world.hasLineOfSight(z,this.player);
-      let heard = null;
-      for (let i=this.world.noises.length-1;i>=0;i--) {
-        const n=this.world.noises[i];
-        if (distance(z,n)<=n.radius) { heard=n; break; }
-      }
-      if (sees) {
-        if (z.state !== "chase") this.sound("alert");
-        z.state="chase"; z.alertTime=4.5; z.target={x:this.player.x,y:this.player.y};
-      } else if (heard) {
-        z.state="investigate"; z.alertTime=3; z.target={x:heard.x,y:heard.y};
-      } else if (z.alertTime>0) {
-        z.alertTime-=delta;
-        if(z.state==="chase")z.target={x:this.player.x,y:this.player.y};
-      } else if (z.state === "chase" || z.state === "investigate") {
-        z.state="idle"; z.target=null; z.stateTime=0;
-      }
+  setDestination(point, options = {}) {
+    if (!this.canAct()) return false;
+    const navigation = this.player.navigation;
+    const path = this.navigator.findPath(this.world, this.player, point, { allowDoors: true });
+    const sameCell = Math.round(this.player.x) === Math.round(point.x) && Math.round(this.player.y) === Math.round(point.y);
+    if (!path.length && !sameCell) {
+      this.ui.showMessage("Kein begehbarer Weg.", 1.1);
+      return false;
+    }
+    navigation.path = path;
+    navigation.destination = { x: Math.round(point.x), y: Math.round(point.y) };
+    navigation.interactionId = options.interactionId || null;
+    navigation.runRequested = Boolean(options.run);
+    navigation.guided = Boolean(options.guided);
+    navigation.source = options.source || "manual";
+    if (navigation.source === "manual") navigation.manualUntil = this.elapsed + 1.25;
+    this.renderer.destination = navigation.destination;
+    if (sameCell) this.arriveAtDestination();
+    return true;
+  }
 
-      if (d < .82 && sees) {
-        z.moving=false;
-        if(z.attackCooldown<=0){z.attackCooldown=1.15;window.setTimeout(()=>{if(!z.removed&&!this.dead&&distance(z,this.player)<1.05)this.damagePlayer(7+Math.random()*6,true);},220);}
-        continue;
-      }
+  clearNavigation() {
+    const navigation = this.player.navigation;
+    navigation.path = [];
+    navigation.destination = null;
+    navigation.interactionId = null;
+    navigation.runRequested = false;
+    navigation.guided = false;
+    navigation.source = null;
+    this.renderer.destination = null;
+  }
 
-      let target=z.target;
-      if(!target && z.stateTime>2.3+z.variant*.4){
-        z.stateTime=0;
-        z.wanderTarget={x:clamp(z.spawnX+(Math.random()-.5)*5,1,34),y:clamp(z.spawnY+(Math.random()-.5)*5,1,34)};
-      }
-      if(!target)target=z.wanderTarget;
-      if(target){
-        const tx=target.x-z.x,ty=target.y-z.y,len=Math.hypot(tx,ty);
-        if(len<.22){z.wanderTarget=null;z.moving=false;continue;}
-        const dx=tx/len,dy=ty/len;z.facingX=dx;z.facingY=dy;
-        const speed=z.state==="chase"?1.28:z.state==="investigate"?.92:.38;
-        let moved=this.moveEntity(z,dx*speed*delta,dy*speed*delta,.25);
-        if(!moved){
-          moved=this.moveEntity(z,-dy*speed*delta,dx*speed*delta,.25);
-          if(!moved)this.moveEntity(z,dy*speed*delta,-dx*speed*delta,.25);
-        }
-        z.moving=moved;
-      } else z.moving=false;
+  arriveAtDestination() {
+    const interactionId = this.player.navigation.interactionId;
+    const wasGuided = this.player.navigation.guided;
+    this.player.navigation.path = [];
+    this.player.navigation.destination = null;
+    this.player.navigation.interactionId = null;
+    this.player.navigation.runRequested = false;
+    this.renderer.destination = null;
+    if (interactionId) {
+      const object = this.world.objects.find(entry => entry.id === interactionId && !entry.removed);
+      if (object) this.interact(object);
+    } else if (!wasGuided) {
+      this.player.navigation.source = null;
     }
   }
 
-  toggleCombatMode() {
+  queueInteraction(object) {
+    if (!object?.interactable) return;
+    this.renderer.selectedId = object.id;
+    if (distance(this.player, object) <= GAME.interactionRange) {
+      this.interact(object);
+      return;
+    }
+    const path = this.navigator.pathToInteraction(this.world, this.player, object, { allowDoors: true });
+    if (!path.length) {
+      this.ui.showMessage("Kein Weg in Reichweite.", 1.2);
+      return;
+    }
+    const destination = path[path.length - 1];
+    this.player.navigation.path = path;
+    this.player.navigation.destination = { ...destination };
+    this.player.navigation.interactionId = object.id;
+    this.player.navigation.runRequested = false;
+    this.player.navigation.guided = false;
+    this.player.navigation.source = "manual";
+    this.player.navigation.manualUntil = this.elapsed + 1.25;
+    this.renderer.destination = { ...destination };
+  }
+
+  approachCombatTarget(target, range) {
+    if (this.player.navigation.manualUntil > this.elapsed || this.player.navigation.guided) return;
+    if (this.player.navigation.source === "combat" && this.player.navigation.path.length && this.elapsed < this.combatPathTick) return;
+    if (distance(this.player, target) <= range + 0.04) return;
+    const path = this.navigator.findPath(this.world, this.player, target, { allowDoors: true, maxNodes: 1800 });
+    if (!path.length) return;
+    this.player.navigation.path = path;
+    this.player.navigation.destination = path[path.length - 1];
+    this.player.navigation.interactionId = null;
+    this.player.navigation.runRequested = false;
+    this.player.navigation.guided = false;
+    this.player.navigation.source = "combat";
+    this.renderer.destination = null;
+    this.combatPathTick = this.elapsed + 0.35;
+  }
+
+  tapWorld(x, y) {
     if (!this.canAct()) return;
-    const p = this.player;
-    p.combatMode = !p.combatMode;
-    if (p.combatMode && !this.combatTarget()) {
-      const nearby = this.nearestZombie(6.5);
-      if (nearby && this.world.hasLineOfSight(p, nearby)) {
-        p.selectedZombieId = nearby.id;
-        this.renderer.selectedId = nearby.id;
+    const hit = this.renderer.pick(x, y);
+    if (hit?.kind === "zombie") {
+      this.combat.selectTarget(this, hit.ref);
+      this.ui.showMessage(this.player.combat.enabled ? "Ziel erfasst" : "Ziel gewählt · Kampfmodus aktivieren", 1.4);
+      return;
+    }
+    if (hit?.kind === "object") {
+      this.renderer.selectedId = hit.id;
+      this.player.combat.targetId = null;
+      this.ui.showMessage(hit.ref.name || "Objekt gewählt", 1.1);
+      return;
+    }
+    this.renderer.selectedId = null;
+    if (!this.player.combat.enabled) this.player.combat.targetId = null;
+    this.setDestination(this.renderer.screenToWorld(x, y), { source: "manual" });
+  }
+
+  doubleTapWorld(x, y) {
+    if (!this.canAct()) return;
+    const hit = this.renderer.pick(x, y);
+    if (hit?.kind === "object") {
+      this.queueInteraction(hit.ref);
+      return;
+    }
+    if (hit?.kind === "zombie") {
+      this.combat.selectTarget(this, hit.ref);
+      if (!this.player.combat.enabled) this.combat.toggle(this);
+    }
+  }
+
+  startGuidedMovement(x, y) {
+    if (!this.canAct()) return;
+    const hit = this.renderer.pick(x, y);
+    this.holdBlocked = Boolean(hit);
+    if (hit) {
+      if (hit.kind === "zombie") this.combat.selectTarget(this, hit.ref);
+      else this.renderer.selectedId = hit.id;
+      return;
+    }
+    this.updateGuidedMovement(x, y);
+  }
+
+  updateGuidedMovement(x, y) {
+    if (this.holdBlocked || !this.canAct()) return;
+    const playerScreen = this.renderer.iso(this.player.x, this.player.y);
+    const screenDistance = Math.hypot(x - playerScreen.x, y - playerScreen.y);
+    this.setDestination(this.renderer.screenToWorld(x, y), {
+      source: "manual",
+      guided: true,
+      run: screenDistance > 112 && this.player.stance !== "sneak",
+    });
+  }
+
+  endGuidedMovement() {
+    if (!this.holdBlocked && this.player.navigation.guided) this.clearNavigation();
+    this.holdBlocked = false;
+  }
+
+  toggleStance() {
+    if (!this.canAct()) return;
+    this.player.stance = this.player.stance === "sneak" ? "walk" : "sneak";
+    this.player.navigation.runRequested = false;
+    this.ui.showToast(this.player.stance === "sneak" ? "SCHLEICHMODUS" : "NORMALES GEHEN");
+  }
+
+  selectedObject() {
+    return this.world.objects.find(object => object.id === this.renderer.selectedId && object.interactable && !object.removed) || null;
+  }
+
+  contextObject() {
+    const selected = this.selectedObject();
+    if (selected && distance(this.player, selected) <= GAME.interactionRange) return this.decorateAction(selected);
+    let best = null;
+    let bestDistance = GAME.interactionRange;
+    for (const object of this.world.objects) {
+      if (object.removed || !object.interactable) continue;
+      const d = distance(this.player, object);
+      if (d < bestDistance) {
+        best = object;
+        bestDistance = d;
       }
     }
-    if (!p.combatMode) {
-      p.selectedZombieId = null; p.pendingTargetId = null; p.pendingAttack = 0;
-      if (this.renderer.selectedId?.startsWith("zombie-")) this.renderer.selectedId = null;
+    return best ? this.decorateAction(best) : null;
+  }
+
+  decorateAction(object) {
+    if (object.locked) object.actionLabel = this.hasKeyFor(object) ? "AUFSCHLIESSEN" : "ÖFFNEN";
+    else if (object.type === "door") object.actionLabel = object.closed ? "ÖFFNEN" : "SCHLIESSEN";
+    else if (object.type === "radio") object.actionLabel = "EINSCHALTEN";
+    else object.actionLabel = "DURCHSUCHEN";
+    return object;
+  }
+
+  primaryAction() {
+    if (!this.canAct()) return;
+    const weapon = activeWeapon(this.player);
+    if (itemDefinition(weapon)?.weaponKind === "firearm" && this.player.combat.enabled && this.combat.target(this)) {
+      const result = this.combat.fire(this);
+      if (!result.ok) this.ui.showToast(result.message);
+      this.ui.refreshAll(this.player, this);
+      return;
     }
-    this.ui.showMessage(p.combatMode ? (this.combatTarget() ? "Kampfmodus · Ziel erfasst" : "Kampfmodus · Gegner antippen") : "Kampfmodus beendet", 1.5);
-    this.sound("equip");
+    const object = this.selectedObject() || this.contextObject();
+    if (object) this.queueInteraction(object);
+    else this.ui.showMessage("Hier ist nichts ausgewählt.", 1.1);
   }
 
-  beginAttack(target) {
-    const p=this.player,weapon=p.equipped?ITEMS[p.equipped.type]:null;
-    p.attackCooldown=weapon?.cooldown||1.22;p.attackTimer=.32;p.pendingAttack=.14;p.pendingTargetId=target.id;
-    this.world.emitNoise(p.x,p.y,weapon?.noise||2.8,"attack");
-    this.sound("swing");vibrate(10);
+  interact(object) {
+    if (!this.canAct() || !object || object.removed) return;
+    if (distance(this.player, object) > GAME.interactionRange + 0.08) {
+      this.queueInteraction(object);
+      return;
+    }
+    this.clearNavigation();
+    if (object.locked && !this.unlock(object)) return;
+
+    if (object.type === "door") {
+      object.closed = !object.closed;
+      object.solid = object.closed;
+      object.blocksSight = object.closed;
+      this.world.emitNoise(object.x, object.y, object.closed ? 2.6 : 1.8, "door", 2.2);
+      this.sound("door");
+      this.ui.showMessage(object.closed ? "Tür geschlossen" : "Tür geöffnet", 1.1);
+      this.save();
+      return;
+    }
+    if (object.items) {
+      const search = skillValue(this.player, "search");
+      const noise = 1.6 * (1 - search * 0.004);
+      this.world.emitNoise(object.x, object.y, noise, "search", 2.4, 0.6);
+      if (!object.searched) {
+        object.searched = true;
+        gainSkill(this.player, "search", 0.38);
+      }
+      this.ui.openContainerPanel(object, this.player);
+      this.renderer.selectedId = object.id;
+      if (object.tutorial && this.mission === 0) {
+        this.mission = 1;
+        this.ui.showMessage("Das Radio erwähnt Medikamente in der Apotheke.", 3.2);
+        this.sound("objective");
+      }
+      return;
+    }
+    if (object.type === "radio") {
+      object.used = true;
+      this.world.emitNoise(object.x, object.y, 7.5, "radio", 5, 1);
+      this.ui.showMessage("…Sperrbezirk nicht verlassen… Apotheke am Ostplatz…", 4.4);
+      this.sound("radio");
+    }
   }
 
-  resolveAttack() {
-    const p=this.player,weapon=p.equipped?ITEMS[p.equipped.type]:null,range=weapon?.range||.88;
-    const pendingId=p.pendingTargetId;p.pendingTargetId=null;
-    const target=this.zombies.find(z=>z.id===pendingId&&!z.removed);
-    if(!target)return;
-    if(distance(p,target)>range+.32)return;
-    const dx=target.x-p.x,dy=target.y-p.y,len=Math.hypot(dx,dy)||1;
-    const facing=(dx/len)*p.facingX+(dy/len)*p.facingY;
-    if(facing<-.15)return;
-    const hitChance=clamp((weapon?.accuracy||.78)+(p.stamina/100)*.1-(p.hunger<20?.12:0),.48,.97);
-    if(Math.random()>hitChance){this.ui.showMessage("Verfehlt",.7);return;}
-    const damage=(weapon?.damage||11)*(.87+Math.random()*.26);
-    target.hp-=damage;target.hurtFlash=.15;target.state="chase";target.alertTime=6;
-    target.x+=dx/len*.13;target.y+=dy/len*.13;
-    this.renderer.burst(target.x,target.y,"#832d29",8);this.renderer.shake=4;
-    this.world.blood.push({x:target.x+(Math.random()-.5)*.2,y:target.y+(Math.random()-.5)*.2,size:.4+Math.random()*.45,rotation:Math.random()*Math.PI,life:1});
-    this.sound("hit");vibrate([12,18,12]);
-    if(target.hp<=0)this.killZombie(target);
+  openDoor(door, automatic = false) {
+    if (!door || door.type !== "door" || !door.closed || door.locked) return false;
+    door.closed = false;
+    door.solid = false;
+    door.blocksSight = false;
+    this.world.emitNoise(door.x, door.y, automatic ? 1.65 : 2.1, "door", 2.2);
+    this.sound("door");
+    return true;
   }
 
-  nearestZombie(range=Infinity, inFront=false) {
-    let result=null,best=range;
-    for(const z of this.zombies){
-      if(z.removed)continue;const d=distance(this.player,z);if(d>=best)continue;
-      if(inFront){const dx=(z.x-this.player.x)/d,dy=(z.y-this.player.y)/d;if(dx*this.player.facingX+dy*this.player.facingY<-.2)continue;}
-      best=d;result=z;
+  hasKeyFor(object) {
+    return Boolean(object.keyId && this.player.inventory.some(item => itemDefinition(item)?.keyId === object.keyId));
+  }
+
+  unlock(object) {
+    if (this.hasKeyFor(object)) {
+      object.locked = false;
+      this.ui.showMessage("Aufgeschlossen", 1.2);
+      this.sound("unlock");
+      gainSkill(this.player, "burglary", 0.08);
+      return true;
+    }
+
+    const lockpick = this.player.inventory.find(item => item.type === "lockpick");
+    if (lockpick) {
+      const skill = skillValue(this.player, "burglary");
+      const chance = clamp(0.45 + skill * 0.008 - (object.lockDifficulty || 18) * 0.012, 0.12, 0.94);
+      lockpick.uses = Math.max(0, (lockpick.uses ?? 1) - 1);
+      if (lockpick.uses <= 0) removeItem(this.player, lockpick.id);
+      if (this.random() <= chance) {
+        object.locked = false;
+        gainSkill(this.player, "burglary", 0.9);
+        this.ui.showMessage("Schloss leise geöffnet", 1.4);
+        this.sound("unlock");
+        return true;
+      }
+      gainSkill(this.player, "burglary", 0.28);
+      this.world.emitNoise(object.x, object.y, 2.4, "lock", 2.4);
+      this.ui.showMessage("Dietrich abgerutscht", 1.3);
+      this.sound("lock");
+      return false;
+    }
+
+    const crowbar = this.player.inventory.find(item => item.type === "crowbar");
+    if (crowbar) {
+      object.locked = false;
+      this.world.emitNoise(object.x, object.y, 10.5, "breach", 4.2, 1.15);
+      this.player.noisePulse = 1;
+      crowbar.condition = Math.max(0, (crowbar.condition ?? 100) - 2);
+      gainSkill(this.player, "burglary", 0.45);
+      this.ui.showMessage("Mit Gewalt aufgebrochen", 1.5);
+      this.sound("breach");
+      return true;
+    }
+    this.ui.showMessage("Verschlossen · Schlüssel, Dietrich oder Brecheisen nötig", 2.2);
+    return false;
+  }
+
+  takeItem(container, itemId) {
+    const item = container.items?.find(entry => entry.id === itemId);
+    if (!item) return;
+    if (!addItem(this.player, item)) {
+      this.ui.showToast("ZU SCHWER · RUCKSACK PRÜFEN");
+      return;
+    }
+    container.items = container.items.filter(entry => entry.id !== itemId);
+    if (item.type === "sealed_antibiotics" && this.mission < 2) {
+      this.mission = 2;
+      this.ui.showMessage("Medikament gesichert. Zurück zum Unterschlupf.", 3.4);
+      this.sound("objective");
+    }
+    gainSkill(this.player, "search", 0.05);
+    this.ui.renderContainer(container, this.player);
+    this.ui.refreshAll(this.player, this);
+    this.ui.showToast(`${ITEMS[item.type].name.toUpperCase()} EINGEPACKT`);
+    this.sound("pickup");
+    this.save();
+  }
+
+  takeAll(container) {
+    for (const item of [...(container.items || [])]) this.takeItem(container, item.id);
+  }
+
+  useItem(id) {
+    if (!this.canAct(true)) return;
+    const item = findItem(this.player, id);
+    const definition = itemDefinition(item);
+    if (!item || !definition) return;
+    let consume = false;
+    let message = "";
+
+    if (definition.type === "weapon" || definition.equipSlot) {
+      const result = equipItem(this.player, id);
+      message = result.message;
+      if (result.ok) this.sound("equip");
+    } else if (definition.effect) {
+      if (definition.needs && !this.player.inventory.some(entry => entry.type === definition.needs)) {
+        this.ui.showToast(`DU BRAUCHST: ${ITEMS[definition.needs].name.toUpperCase()}`);
+        return;
+      }
+      for (const [stat, value] of Object.entries(definition.effect)) {
+        this.player[stat] = clamp((this.player[stat] || 0) + value, 0, 100);
+      }
+      consume = true;
+      message = `${definition.name.toUpperCase()} BENUTZT`;
+      this.sound("consume");
+    } else if (definition.type === "medical" || item.type === "cloth") {
+      const result = treatWithItem(this.player, item.type);
+      if (!result.used) {
+        this.ui.showToast(result.message);
+        return;
+      }
+      consume = true;
+      message = result.message;
+      this.sound("consume");
+    } else if (definition.type === "ammo" || definition.type === "magazine") {
+      const result = this.combat.reload(this);
+      message = result.message;
+      if (!result.ok) {
+        this.ui.showToast(message);
+        return;
+      }
+    } else if (definition.type === "mod") {
+      const weapon = activeWeapon(this.player);
+      if (!weapon || !compatibleMods(this.player, weapon).some(mod => mod.id === item.id)) {
+        this.ui.showToast("KEINE PASSENDE WAFFE AUSGERÜSTET");
+        return;
+      }
+      const result = installMod(this.player, weapon.id, item.id);
+      message = result.message;
+      if (!result.ok) {
+        this.ui.showToast(message);
+        return;
+      }
+      this.sound("equip");
+    } else if (definition.quest) {
+      this.ui.showToast("DIESE PACKUNG GEHÖRT ZUM FUNKSPRUCH");
+      return;
+    } else {
+      this.ui.showToast("DAS KANNST DU JETZT NICHT BENUTZEN");
+      return;
+    }
+
+    if (consume) removeItem(this.player, item.id, 1);
+    this.ui.selectedItemId = null;
+    this.ui.refreshAll(this.player, this);
+    this.ui.showToast(message);
+    this.save();
+  }
+
+  dropItem(id) {
+    const item = findItem(this.player, id);
+    if (!item) return;
+    const dropped = removeItem(this.player, id);
+    const bag = this.world.addObject("groundloot", this.player.x + 0.3, this.player.y + 0.18, {
+      static: false,
+      interactable: true,
+      solid: false,
+      name: "ABGELEGTE SACHEN",
+      items: [dropped],
+    });
+    this.renderer.selectedId = bag.id;
+    this.ui.selectedItemId = null;
+    this.ui.refreshAll(this.player, this);
+    this.ui.showToast("GEGENSTAND ABGELEGT");
+    this.save();
+  }
+
+  unequip(slot) {
+    const item = unequipSlot(this.player, slot);
+    if (!item) return;
+    this.ui.refreshAll(this.player, this);
+    this.ui.showToast(`${itemDefinition(item).name.toUpperCase()} ABGELEGT`);
+  }
+
+  openWeaponPanel(id) {
+    const weapon = findItem(this.player, id);
+    if (itemDefinition(weapon)?.weaponKind !== "firearm") return;
+    this.ui.openWeaponPanel(weapon, this.player);
+  }
+
+  mountMod(weaponId, modId) {
+    const result = installMod(this.player, weaponId, modId);
+    this.ui.showToast(result.message);
+    if (result.ok) this.sound("equip");
+    const weapon = findItem(this.player, weaponId);
+    this.ui.openWeaponPanel(weapon, this.player);
+    this.ui.refreshAll(this.player, this);
+    this.save();
+  }
+
+  unmountMod(weaponId, slot) {
+    const result = removeMod(this.player, weaponId, slot);
+    this.ui.showToast(result.message);
+    const weapon = findItem(this.player, weaponId);
+    this.ui.openWeaponPanel(weapon, this.player);
+    this.ui.refreshAll(this.player, this);
+    this.save();
+  }
+
+  reload() {
+    if (!this.canAct(true)) return;
+    const result = this.combat.reload(this);
+    this.ui.showToast(result.message);
+    this.ui.refreshAll(this.player, this);
+    this.save();
+  }
+
+  onZombieAttack(zombie) {
+    if (this.dead) return;
+    const nearby = this.zombies.filter(entry => !entry.removed && distance(entry, this.player) < 1.45).length;
+    const result = inflictZombieAttack(this.player, this.minutes, this.random, clamp((nearby - 1) * 0.12, 0, 0.35));
+    this.renderer.shake = 7;
+    this.renderer.burst(this.player.x, this.player.y, "#8d302b", 5);
+    this.sound("hurt");
+    vibrate([25, 20, 25]);
+    this.ui.showMessage(result.label, 1.5);
+    if (this.player.hp <= 0) this.die(this.player.deathCause || "DU WURDEST ZERRISSEN");
+  }
+
+  killZombie(zombie) {
+    zombie.removed = true;
+    this.player.kills += 1;
+    if (this.player.combat.targetId === zombie.id) {
+      this.player.combat.targetId = null;
+      this.player.combat.pendingTargetId = null;
+      this.renderer.selectedId = null;
+    }
+    const corpse = this.world.addObject("corpse", zombie.x, zombie.y, {
+      static: false,
+      interactable: true,
+      solid: false,
+      container: "corpse",
+      name: "INFIZIERTER",
+      items: this.world.rollLoot("corpse"),
+    });
+    this.world.emitNoise(zombie.x, zombie.y, 2.1, "body", 2.2);
+    this.renderer.selectedId = corpse.id;
+    this.ui.showMessage("Der Infizierte bleibt liegen.", 1.2);
+  }
+
+  die(cause) {
+    if (this.dead) return;
+    this.dead = true;
+    this.player.dead = true;
+    this.player.deathCause = cause;
+    this.clearNavigation();
+    const belongings = deepCopy(this.player.inventory);
+    this.world.addCorpse(this.player.x, this.player.y, `${this.player.name.toUpperCase()} · LEICHNAM`, belongings, {
+      survivorId: this.player.id,
+      deathCause: cause,
+    });
+    this.player.inventory = [];
+    this.player.equipment = { mainHand: null, offHand: null, head: null, torso: null, legs: null, back: null };
+    this.input.enabled = false;
+    this.ui.closeAllPanels();
+    this.ui.showDeath(this.player, this.minutes);
+    this.sound("death");
+    this.save();
+  }
+
+  nearestZombie(range = Infinity) {
+    let result = null;
+    let best = range;
+    for (const zombie of this.zombies) {
+      if (zombie.removed) continue;
+      const d = distance(this.player, zombie);
+      if (d < best) {
+        best = d;
+        result = zombie;
+      }
     }
     return result;
   }
 
-  combatTarget() {
-    return this.zombies.find(z=>z.id===this.player.selectedZombieId&&!z.removed)||null;
-  }
-
-  killZombie(z) {
-    z.removed=true;
-    if(this.player.selectedZombieId===z.id){this.player.selectedZombieId=null;this.player.pendingTargetId=null;this.renderer.selectedId=null;}
-    const corpse=this.world.addObject("corpse",z.x,z.y,{interactable:true,solid:false,container:"corpse",name:"INFIZIERTER"});
-    corpse.items=this.world.rollLoot("corpse");
-    if(Math.random()<.35)corpse.items.push({id:uid("item"),type:"cloth",count:1});
-    this.world.emitNoise(z.x,z.y,2.2,"body");this.ui.showMessage("Der Infizierte bleibt liegen.");
-  }
-
-  damagePlayer(amount, feedback=true) {
-    if(this.dead)return;
-    this.player.hp=Math.max(0,this.player.hp-amount);this.player.hurtFlash=.24;
-    if(feedback){this.renderer.shake=7;this.renderer.burst(this.player.x,this.player.y,"#8d302b",5);this.sound("hurt");vibrate([25,20,25]);}
-    if(this.player.hp<=0)this.die();
-  }
-
-  contextObject() {
-    let best=null,bestDistance=1.28;
-    for(const o of this.world.objects){
-      if(o.removed||!o.interactable)continue;const d=distance(this.player,o);
-      if(d<bestDistance){best=o;bestDistance=d;}
-    }
-    if(!best)return null;
-    if(best.type==="door")best.actionLabel=best.closed?"ÖFFNEN":"SCHLIESSEN";
-    else if(best.type==="radio")best.actionLabel="EINSCHALTEN";
-    else best.actionLabel="DURCHSUCHEN";
-    return best;
-  }
-
-  interact(object=null) {
-    if(!this.canAct())return;
-    const target=object||this.contextObject();
-    if(!target){this.ui.showMessage("Hier ist nichts in Reichweite.",1.2);return;}
-    if(distance(this.player,target)>1.4){this.renderer.selectedId=target.id;this.ui.showMessage("Zu weit entfernt.",1.2);return;}
-    if(target.type==="door"){
-      target.closed=!target.closed;target.solid=target.closed;
-      this.world.emitNoise(target.x,target.y,target.closed?3.2:2.2,"door");
-      this.sound("door");this.ui.showMessage(target.closed?"Tür geschlossen":"Tür geöffnet",1.2);
-    }else if(target.items){
-      this.ui.openContainerPanel(target);this.renderer.selectedId=target.id;
-      if(target.tutorial&&this.mission===0){this.mission=1;this.ui.showMessage("Die Apotheke am südlichen Platz hat Medikamente.",3.4);this.sound("objective");}
-    }else if(target.type==="radio"){
-      target.used=true;this.world.emitNoise(target.x,target.y,7.5,"radio");
-      this.ui.showMessage("…Sperrbezirk nicht verlassen… Kontakt vermeiden…",4.5);this.sound("radio");
-    }
-  }
-
-  tapWorld(x,y) {
-    if(!this.canAct())return;
-    const hit=this.renderer.pick(x,y);
-    if(!hit){this.renderer.selectedId=null;this.player.selectedZombieId=null;return;}
-    this.renderer.selectedId=hit.id;
-    if(hit.kind==="zombie"){
-      this.player.selectedZombieId=hit.id;
-      this.ui.showMessage(this.player.combatMode?"Ziel erfasst · Angriff läuft automatisch":"Ziel gewählt · Kampfmodus aktivieren",1.6);
-    }else{
-      this.player.selectedZombieId=null;
-      if(distance(this.player,hit.ref)<1.4)this.interact(hit.ref);
-      else this.ui.showMessage(hit.ref.name||"Nicht in Reichweite",1.2);
-    }
-  }
-
-  takeItem(container,itemId) {
-    const item=container.items.find(i=>i.id===itemId);if(!item)return;
-    if(!this.addInventory(item.type,item.count)){this.ui.showToast("RUCKSACK IST VOLL");return;}
-    container.items=container.items.filter(i=>i.id!==itemId);
-    if(item.type==="antibiotics"&&this.mission<2){this.mission=2;this.ui.showMessage("Medikament gefunden. Zurück zum Unterschlupf.",3.5);this.sound("objective");}
-    this.ui.renderContainer(container);this.ui.renderInventory(this.player);this.ui.showToast(`${ITEMS[item.type].name.toUpperCase()} EINGEPACKT`);this.sound("pickup");
-  }
-
-  takeAll(container) {
-    for(const item of [...container.items])this.takeItem(container,item.id);
-  }
-
-  addInventory(type,count=1) {
-    const def=ITEMS[type];
-    const existingRoom=this.player.inventory.filter(item=>item.type===type).reduce((sum,item)=>sum+Math.max(0,def.stack-item.count),0);
-    const emptyRoom=(this.player.capacity-this.player.inventory.length)*def.stack;
-    if(existingRoom+emptyRoom<count)return false;
-    let remaining=count;
-    for(const item of this.player.inventory){if(item.type===type&&item.count<def.stack){const add=Math.min(remaining,def.stack-item.count);item.count+=add;remaining-=add;if(!remaining)return true;}}
-    const needed=Math.ceil(remaining/def.stack);
-    if(this.player.inventory.length+needed>this.player.capacity)return false;
-    while(remaining>0){const add=Math.min(remaining,def.stack);this.player.inventory.push({id:uid("inv"),type,count:add});remaining-=add;}
-    return true;
-  }
-
-  useItem(id) {
-    if(!this.canAct(true))return;
-    const item=this.player.inventory.find(i=>i.id===id);if(!item)return;
-    const def=ITEMS[item.type];
-    if(def.type==="weapon"){
-      this.player.equipped=item;this.ui.showToast(`${def.name.toUpperCase()} AUSGERÜSTET`);this.sound("equip");
-    }else if(def.quest){this.ui.showToast("DAS MUSS ZURÜCK ZUM UNTERSCHLUPF");return;
-    }else if(def.needsOpener&&!this.player.inventory.some(i=>i.type==="can_opener")){this.ui.showToast("DU BRAUCHST EINEN DOSENÖFFNER");return;
-    }else if(def.effect){
-      for(const [stat,value] of Object.entries(def.effect))this.player[stat]=clamp(this.player[stat]+value,0,100);
-      item.count--;if(item.count<=0){this.player.inventory=this.player.inventory.filter(i=>i.id!==id);if(this.player.equipped?.id===id)this.player.equipped=null;}
-      this.ui.showToast(`${def.name.toUpperCase()} BENUTZT`);this.sound("consume");
-    }else{this.ui.showToast("DAS KANNST DU JETZT NICHT BENUTZEN");return;}
-    this.ui.selectedItemId=null;this.ui.renderInventory(this.player);
-  }
-
-  dropItem(id) {
-    const item=this.player.inventory.find(i=>i.id===id);if(!item)return;
-    const bag=this.world.addObject("groundloot",this.player.x+.28,this.player.y+.2,{interactable:true,solid:false,name:"ABGELEGTE SACHEN"});
-    bag.items=[{...item,id:uid("item")}];
-    this.player.inventory=this.player.inventory.filter(i=>i.id!==id);if(this.player.equipped?.id===id)this.player.equipped=null;
-    this.ui.selectedItemId=null;this.ui.renderInventory(this.player);this.ui.showToast("GEGENSTAND ABGELEGT");
-  }
-
-  unequip() {this.player.equipped=null;this.ui.renderInventory(this.player);this.ui.showToast("HÄNDE FREI");}
-
   updateMission() {
-    if(this.mission===2&&this.world.insideBuilding(this.player,"safehouse")){
-      this.mission=3;this.ui.showMessage("MEDIKAMENT GESICHERT · DU HAST ES ZURÜCKGESCHAFFT",5);this.sound("success");vibrate([30,50,30]);this.save();
+    if (this.mission === 2 && this.world.insideBuilding(this.player, "safehouse")) {
+      this.mission = 3;
+      this.ui.showMessage("MEDIKAMENT GESICHERT · DER SPERRKREIS BLEIBT OFFEN", 5);
+      this.sound("success");
+      vibrate([30, 50, 30]);
+      this.save();
     }
   }
 
   objectiveText() {
-    return ["Durchsuche den Küchenschrank","Finde das Antibiotikum in der Apotheke","Kehre mit dem Medikament zurück","Überlebe · der Sperrkreis bleibt offen"][this.mission]||"Überlebe";
+    return [
+      "Durchsuche den Küchenschrank",
+      "Finde das versiegelte Medikament",
+      "Kehre zum Unterschlupf zurück",
+      "Überlebe · deine Entscheidungen bleiben",
+    ][this.mission] || "Überlebe";
   }
 
   locationName() {
-    const building=this.world.insideBuilding(this.player);if(building)return building.name;
-    const {x,y}=this.player;if(x>=14&&x<=20||y>=14&&y<=20)return "KREUZUNG · AM WALDRAND";
-    if(x>20&&y>20)return "APOTHEKENPLATZ";if(x>20&&y<15)return "NAHKAUF-PARKPLATZ";if(x<14&&y<15)return "ALTE REIHENHÄUSER";return "WALDRAND-SIEDLUNG";
+    const building = this.world.insideBuilding(this.player);
+    if (building) return building.name;
+    const { x, y } = this.player;
+    if (x >= 28 && x <= 34) return "HAUPTSTRASSE";
+    if (y >= 17 && y <= 23) return "OST-WEST-TRASSE";
+    if (x > 34 && y > 23) return "APOTHEKENVIERTEL";
+    if (x > 34) return "MARKTPLATZ";
+    if (x < 14 && y > 23) return "WALDRAND";
+    if (x < 14) return "REIHENHAUSSIEDLUNG";
+    return "SPERRKREIS";
   }
 
-  clockText(){return formatClock(this.minutes);}
+  clockText() {
+    return formatClock(this.minutes);
+  }
+
+  awareness() {
+    return awarenessForPlayer(this.zombies);
+  }
+
+  activeWeapon() {
+    return activeWeapon(this.player);
+  }
+
+  ammoText() {
+    return ammoLabel(activeWeapon(this.player));
+  }
 
   toggleInventory() {
-    if(!this.started||this.dead)return;
-    this.ui.toggleInventory(this.player);
+    if (!this.canAct(true)) return;
+    this.ui.toggleInventory(this.player, this);
   }
 
-  togglePause(){if(!this.started||this.dead)return;this.setPaused(!this.paused);}
-  setPaused(value){this.paused=value;this.input.enabled=!value;this.ui.setPaused(value);if(!value)this.lastFrame=performance.now();}
-  canAct(allowMenu=false){return this.started&&!this.paused&&!this.dead&&(allowMenu||this.ui.el.inventory_panel.classList.contains("hidden"))&&this.ui.el.container_panel.classList.contains("hidden");}
+  toggleCharacter() {
+    if (!this.canAct(true)) return;
+    this.ui.toggleCharacter(this.player);
+  }
 
-  die(){this.dead=true;this.input.enabled=false;try{localStorage.removeItem(SAVE_KEY);}catch(_){}this.ui.showDeath((this.minutes-(6*60+42))/60);this.sound("death");}
+  togglePause() {
+    if (!this.started || this.dead) return;
+    this.setPaused(!this.paused);
+  }
+
+  setPaused(paused) {
+    this.paused = paused;
+    this.input.enabled = !paused && !this.dead;
+    this.ui.setPaused(paused);
+    if (!paused) this.lastFrame = performance.now();
+    else this.save();
+  }
+
+  canAct(allowMenu = false) {
+    return this.started && !this.paused && !this.dead && (allowMenu || !this.ui.hasBlockingPanel());
+  }
+
+  serialize() {
+    const player = deepCopy(this.player);
+    player.navigation = {
+      path: [],
+      destination: null,
+      interactionId: null,
+      runRequested: false,
+      guided: false,
+      manualUntil: 0,
+      source: null,
+    };
+    const zombies = deepCopy(this.zombies).map(zombie => ({ ...zombie, path: [] }));
+    return {
+      seed: this.world.seed,
+      minutes: this.minutes,
+      mission: this.mission,
+      survivorCount: this.survivorCount,
+      migrationTimer: this.migrationTimer,
+      player,
+      zombies,
+      world: this.world.serialize(),
+    };
+  }
 
   save() {
-    if(!this.started||this.dead)return;
-    try{
-      const payload={version:1,minutes:this.minutes,mission:this.mission,player:{...this.player,equipped:this.player.equipped?.id||null},zombies:this.zombies,world:this.world.serialize()};
-      localStorage.setItem(SAVE_KEY,JSON.stringify(payload));
-    }catch(_){this.ui.showToast("SPIELSTAND KONNTE NICHT GESICHERT WERDEN");}
+    if (!this.started) return false;
+    const ok = this.saveStore.write(this.serialize());
+    if (!ok) this.ui.showToast("AUTOSAVE FEHLGESCHLAGEN");
+    return ok;
   }
 
   load() {
-    try{
-      const saved=JSON.parse(localStorage.getItem(SAVE_KEY));if(!saved||saved.version!==1)return;
-      this.minutes=saved.minutes??this.minutes;this.mission=saved.mission??0;
-      const equippedId=saved.player?.equipped;Object.assign(this.player,saved.player||{});
-      this.player.equipped=this.player.inventory.find(i=>i.id===equippedId)||null;
-      if(Array.isArray(saved.zombies))this.zombies=saved.zombies;
-      this.world.restore(saved.world);
-    }catch(_){try{localStorage.removeItem(SAVE_KEY);}catch(__){}}
+    const saved = this.saveStore.read();
+    if (!saved?.player) return false;
+    this.world.reset(saved.seed || GAME.seed);
+    this.world.restore(saved.world || []);
+    this.minutes = saved.minutes ?? GAME.startMinutes;
+    this.mission = saved.mission ?? 0;
+    this.survivorCount = saved.survivorCount ?? saved.player.survivorNumber ?? 1;
+    this.migrationTimer = saved.migrationTimer ?? GAME.migrationSeconds;
+    this.player = saved.player;
+    this.zombies = Array.isArray(saved.zombies) ? saved.zombies : createInitialZombies();
+    this.player.navigation ||= { path: [], destination: null, interactionId: null, runRequested: false, guided: false, manualUntil: 0 };
+    this.player.combat ||= { enabled: false, targetId: null, attackCooldown: 0, attackTimer: 0, pendingAttack: 0, pendingTargetId: null, aim: 0, recoil: 0 };
+    this.player.equipment ||= { mainHand: null, offHand: null, head: null, torso: null, legs: null, back: null };
+    this.renderer.destination = null;
+    return true;
   }
 
-  reset(){try{localStorage.removeItem(SAVE_KEY);}catch(_){}location.reload();}
+  initAudio() {
+    if (this.audio) return;
+    try {
+      this.audio = new AudioContext();
+    } catch (_) {
+      try {
+        this.audio = new webkitAudioContext();
+      } catch (_) {
+        this.audio = null;
+      }
+    }
+  }
 
-  initAudio(){try{this.audio=new(window.AudioContext||window.webkitAudioContext)();this.audio.resume?.();}catch(_){}}
-  sound(kind){
-    if(!this.audio)return;const presets={pickup:[660,.06,"sine"],equip:[240,.05,"square"],consume:[420,.08,"sine"],door:[105,.12,"triangle"],swing:[180,.05,"sawtooth"],hit:[72,.1,"square"],hurt:[55,.16,"sawtooth"],alert:[145,.13,"triangle"],objective:[520,.16,"sine"],success:[720,.25,"sine"],radio:[90,.3,"sawtooth"],death:[46,.6,"sawtooth"]};
-    const p=presets[kind];if(!p)return;try{const o=this.audio.createOscillator(),g=this.audio.createGain();o.type=p[2];o.frequency.setValueAtTime(p[0],this.audio.currentTime);o.frequency.exponentialRampToValueAtTime(Math.max(35,p[0]*.65),this.audio.currentTime+p[1]);g.gain.setValueAtTime(.035,this.audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.audio.currentTime+p[1]);o.connect(g).connect(this.audio.destination);o.start();o.stop(this.audio.currentTime+p[1]);}catch(_){}
+  sound(kind) {
+    if (!this.audio) return;
+    const presets = {
+      pickup: [660, 0.06, "sine"],
+      equip: [240, 0.05, "square"],
+      consume: [420, 0.08, "sine"],
+      door: [105, 0.12, "triangle"],
+      unlock: [510, 0.05, "square"],
+      lock: [180, 0.08, "square"],
+      breach: [68, 0.2, "sawtooth"],
+      swing: [180, 0.05, "sawtooth"],
+      gunshot: [52, 0.2, "square"],
+      reload: [320, 0.07, "square"],
+      hit: [72, 0.1, "square"],
+      hurt: [55, 0.16, "sawtooth"],
+      alert: [145, 0.13, "triangle"],
+      objective: [520, 0.16, "sine"],
+      success: [720, 0.25, "sine"],
+      radio: [90, 0.3, "sawtooth"],
+      death: [46, 0.6, "sawtooth"],
+    };
+    const preset = presets[kind];
+    if (!preset) return;
+    try {
+      const oscillator = this.audio.createOscillator();
+      const gain = this.audio.createGain();
+      oscillator.type = preset[2];
+      oscillator.frequency.setValueAtTime(preset[0], this.audio.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(Math.max(30, preset[0] * 0.55), this.audio.currentTime + preset[1]);
+      gain.gain.setValueAtTime(kind === "gunshot" ? 0.07 : 0.035, this.audio.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.audio.currentTime + preset[1]);
+      oscillator.connect(gain).connect(this.audio.destination);
+      oscillator.start();
+      oscillator.stop(this.audio.currentTime + preset[1]);
+    } catch (_) {
+      // Audio is non-critical and can be disabled by iOS.
+    }
+  }
+
+  debugSummary() {
+    const weapon = activeWeapon(this.player);
+    return {
+      survivor: `${this.player.name} · ${backgroundName(this.player)}`,
+      position: [this.player.x, this.player.y],
+      stance: this.player.stance,
+      hp: this.player.hp,
+      wounds: this.player.wounds.length,
+      weapon: weapon?.type || null,
+      rounds: weapon ? roundsInWeapon(weapon) : 0,
+      zombies: this.zombies.filter(zombie => !zombie.removed).length,
+      saveVersion: 3,
+    };
   }
 }

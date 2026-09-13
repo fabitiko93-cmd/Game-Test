@@ -21,9 +21,28 @@
       <div class="title-card">
         <p class="eyebrow">BRANDENBURG · OKTOBER 1998</p>
         <h1>SPERRKREIS <span>98</span></h1>
-        <p class="tagline">Die Leitungen sind tot. Draußen bewegt sich noch etwas.</p>
-        <button id="start-button" class="primary">AUFWACHEN</button>
-        <p class="small">Für Kopfhörer und Querformat optimiert</p>
+        <p class="tagline">Eine Welt bleibt. Überlebende nicht.</p>
+        <button id="start-button" class="primary">ÜBERLEBENDEN ERSTELLEN</button>
+        <p class="small">iPhone · Querformat · Autosave</p>
+      </div>
+    </section>
+
+    <section id="character-creator" class="screen character-screen">
+      <div class="creator-card">
+        <div class="creator-heading">
+          <div>
+            <p id="creator-kicker" class="eyebrow">ERSTER ÜBERLEBENDER</p>
+            <h2>WER BETRITT DEN SPERRKREIS?</h2>
+          </div>
+          <span id="creator-number">01</span>
+        </div>
+        <label class="name-field">
+          <span>NAME</span>
+          <input id="character-name" maxlength="18" autocomplete="off" value="Alex">
+        </label>
+        <div id="background-options" class="background-options"></div>
+        <div id="background-description" class="background-description"></div>
+        <button id="character-confirm" class="primary">SPERRKREIS BETRETEN</button>
       </div>
     </section>
 
@@ -45,6 +64,12 @@
       <div id="needs" class="needs">
         <div id="hunger-need" title="Hunger"><span>◆</span><i></i></div>
         <div id="thirst-need" title="Durst"><span>●</span><i></i></div>
+        <div id="wound-need" title="Verletzungen"><span>✚</span><i></i></div>
+      </div>
+
+      <div id="stealth-status" class="stealth-status">
+        <div title="Entdeckungsgefahr"><span>◉</span><i><b id="awareness-fill"></b></i></div>
+        <div title="Aktueller Geräuschpegel"><span>◖</span><i><b id="noise-fill"></b></i></div>
       </div>
 
       <div id="objective" class="objective">
@@ -54,44 +79,51 @@
 
       <div id="message" class="message" role="status"></div>
       <div id="target-label" class="target-label"></div>
-      <div id="enemy-target" class="enemy-target hidden">
-        <div><small>ZIEL</small><strong id="enemy-name">INFIZIERTER</strong></div>
-        <div class="enemy-meter"><i id="enemy-hp-fill"></i></div>
-      </div>
 
-      <div id="joystick" class="joystick" aria-hidden="true">
-        <div class="joy-ring"></div>
-        <div id="joy-knob" class="joy-knob"></div>
+      <div id="enemy-target" class="enemy-target hidden">
+        <div class="enemy-heading">
+          <span><small id="enemy-state">ZIEL</small><strong id="enemy-name">INFIZIERTER</strong></span>
+          <b id="ammo-label"></b>
+        </div>
+        <div class="enemy-meter"><i id="enemy-hp-fill"></i></div>
+        <div id="aim-meter" class="aim-meter"><i id="aim-fill"></i><small>ZIELERFASSUNG</small></div>
       </div>
 
       <nav class="actions" aria-label="Aktionen">
         <button id="attack-button" class="round attack"><span>⚔</span><small>KAMPF</small></button>
         <button id="action-button" class="round action"><span>✦</span><small id="action-label">AKTION</small></button>
-        <button id="run-button" class="round run"><span>»</span><small>RENNEN</small></button>
+        <button id="stance-button" class="round stance"><span>◒</span><small id="stance-label">SCHLEICHEN</small></button>
+        <button id="reload-button" class="reload hidden"><span>↻</span><small>NACHLADEN</small></button>
       </nav>
 
       <nav class="utility" aria-label="Menü">
-        <button id="inventory-button"><span>▣</span> RUCKSACK <b id="inventory-count">0/12</b></button>
+        <button id="inventory-button"><span>▣</span> RUCKSACK <b id="inventory-count">0,0 KG</b></button>
+        <button id="character-button"><span>◇</span> FIGUR</button>
         <button id="pause-button" aria-label="Pause">Ⅱ</button>
       </nav>
 
       <div id="quickbar" class="quickbar"></div>
+      <div class="control-hint">TIPP: LAUFZIEL · HALTEN: STEUERN · DOPPELTIPP: BENUTZEN</div>
     </div>
 
-    <section id="inventory-panel" class="panel hidden" aria-label="Rucksack">
+    <section id="inventory-panel" class="panel inventory-panel hidden" aria-label="Rucksack">
       <header>
         <div><small>AUSRÜSTUNG &amp; VORRÄTE</small><h2>RUCKSACK</h2></div>
         <button class="close" data-close="inventory-panel">×</button>
       </header>
-      <div class="paperdoll">
-        <div id="player-portrait" class="portrait"><span></span></div>
-        <div class="equipment">
-          <button id="weapon-slot" class="equip-slot"><small>HAND</small><strong>Leer</strong></button>
-          <button id="clothes-slot" class="equip-slot"><small>KLEIDUNG</small><strong>Arbeitsjacke</strong></button>
+      <div class="inventory-layout">
+        <div id="equipment-grid" class="equipment-grid"></div>
+        <div>
+          <div id="inventory-grid" class="inventory-grid"></div>
+          <div id="item-description" class="item-description">Gegenstand auswählen</div>
         </div>
       </div>
-      <div id="inventory-grid" class="inventory-grid"></div>
-      <footer><span id="carry-weight">0,0 / 12 kg</span><button id="drop-button" disabled>ABLEGEN</button><button id="use-button" disabled>BENUTZEN</button></footer>
+      <footer>
+        <span id="carry-weight">0,0 / 14,0 kg</span>
+        <button id="customize-button" disabled>ANPASSEN</button>
+        <button id="drop-button" disabled>ABLEGEN</button>
+        <button id="use-button" disabled>BENUTZEN</button>
+      </footer>
     </section>
 
     <section id="container-panel" class="panel container-panel hidden" aria-label="Behälter">
@@ -103,22 +135,55 @@
       <footer><span>Antippen zum Einpacken</span><button id="take-all-button">ALLES NEHMEN</button></footer>
     </section>
 
-    <section id="pause-panel" class="modal hidden">
-      <div>
-        <small>SPIEL PAUSIERT</small>
-        <h2>SPERRKREIS 98</h2>
-        <button id="continue-button" class="primary">WEITERSPIELEN</button>
-        <button id="save-button">SPIELSTAND SICHERN</button>
-        <button id="reset-button" class="danger">NEU BEGINNEN</button>
+    <section id="character-panel" class="panel character-panel hidden" aria-label="Charakter">
+      <header>
+        <div><small id="character-background">HINTERGRUND</small><h2 id="character-title">ÜBERLEBENDER</h2></div>
+        <button class="close" data-close="character-panel">×</button>
+      </header>
+      <div class="character-layout">
+        <div>
+          <h3>FÄHIGKEITEN</h3>
+          <div id="skill-list" class="skill-list"></div>
+        </div>
+        <div>
+          <h3>ZUSTAND</h3>
+          <div id="condition-summary" class="condition-summary"></div>
+          <div id="wound-list" class="wound-list"></div>
+        </div>
       </div>
     </section>
 
-    <section id="death-panel" class="modal hidden">
+    <section id="weapon-panel" class="panel weapon-panel hidden" aria-label="Waffe anpassen">
+      <header>
+        <div><small>WAFFENBANK</small><h2 id="weapon-title">WAFFE</h2></div>
+        <button class="close" data-close="weapon-panel">×</button>
+      </header>
+      <div class="weapon-summary">
+        <span id="weapon-ammo">0/0</span>
+        <span id="weapon-condition">ZUSTAND 100 %</span>
+      </div>
+      <div id="mod-slots" class="mod-slots"></div>
+      <h3>PASSENDE TEILE IM RUCKSACK</h3>
+      <div id="available-mods" class="available-mods"></div>
+      <footer><span>Anbauteile antippen</span><button id="weapon-reload-button">NACHLADEN</button></footer>
+    </section>
+
+    <section id="pause-panel" class="modal hidden">
       <div>
-        <small id="survived-time">DU HAST 0 STUNDEN ÜBERLEBT</small>
+        <small>AUTOSAVE AKTIV · WELT BLEIBT BESTEHEN</small>
+        <h2>SPERRKREIS 98</h2>
+        <button id="continue-button" class="primary">WEITERSPIELEN</button>
+        <button id="reset-button" class="danger">NEUE WELT BEGINNEN</button>
+      </div>
+    </section>
+
+    <section id="death-panel" class="modal death-modal hidden">
+      <div>
+        <small id="survived-time">ÜBERLEBENDER 01</small>
         <h2>DU BIST TOT</h2>
-        <p>Die Stadt wird sich nicht daran erinnern.</p>
-        <button id="death-restart-button" class="primary">NEU BEGINNEN</button>
+        <p id="death-cause">Der Sperrkreis bleibt zurück.</p>
+        <p class="death-note">Dein Besitz liegt an deinem Leichnam. Die nächste Figur betritt dieselbe Welt.</p>
+        <button id="new-survivor-button" class="primary">NÄCHSTEN ÜBERLEBENDEN ERSTELLEN</button>
       </div>
     </section>
 
