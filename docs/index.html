@@ -11,7 +11,7 @@
   <title>SPERRKREIS 98</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
   <main id="game-shell" aria-label="SPERRKREIS 98">
@@ -59,16 +59,6 @@
           <div class="meter hp"><i id="hp-fill"></i><b>GESUNDHEIT</b></div>
           <div class="meter stamina"><i id="stamina-fill"></i><b>AUSDAUER</b></div>
         </div>
-        <div id="needs" class="needs" aria-label="Bedürfnisse">
-          <div id="hunger-need"><span>HUNGER</span><i><b></b></i><strong id="hunger-state">SATT</strong></div>
-          <div id="thirst-need"><span>DURST</span><i><b></b></i><strong id="thirst-state">GESTILLT</strong></div>
-          <div id="wound-need"><span>WUNDEN</span><i><b></b></i><strong id="wound-state">KEINE</strong></div>
-        </div>
-        <div id="stealth-status" class="stealth-status" aria-label="Stealth-Status">
-          <div><span>ENTDECKUNG</span><i><b id="awareness-fill"></b></i><strong id="awareness-state">SICHER</strong></div>
-          <div><span>GERÄUSCH</span><i><b id="noise-fill"></b></i><strong id="noise-state">STILL</strong></div>
-          <div class="cover-meter"><span>DECKUNG</span><i><b id="cover-fill"></b></i><strong id="cover-state">KEINE</strong></div>
-        </div>
       </div>
 
       <div id="message" class="message" role="status"></div>
@@ -81,6 +71,9 @@
         </div>
         <div class="enemy-meter"><i id="enemy-hp-fill"></i></div>
         <div id="aim-meter" class="aim-meter"><i id="aim-fill"></i><small>ZIELERFASSUNG</small></div>
+        <button id="execute-button" class="execute-action hidden" disabled>
+          <span>†</span><strong id="execute-label">AUSSCHALTEN</strong><small id="execute-hint">VERBORGEN BLEIBEN</small>
+        </button>
       </div>
 
       <nav class="actions" aria-label="Aktionen">
@@ -92,6 +85,7 @@
 
       <nav class="utility" aria-label="Menü">
         <button id="mission-button"><span>◆</span> MISSIONEN <b id="mission-indicator">01</b></button>
+        <button id="status-button"><span>◉</span> STATUS</button>
         <button id="inventory-button"><span>▣</span> RUCKSACK <b id="inventory-count">0,0 KG</b></button>
         <button id="character-button"><span>◇</span> FIGUR</button>
         <button id="recenter-button" aria-label="Kamera auf Figur zentrieren" title="Kamera zentrieren">◎</button>
@@ -118,6 +112,38 @@
         <div id="mission-steps" class="mission-steps"></div>
       </div>
       <footer><span>Fortschritt wird automatisch gespeichert.</span></footer>
+    </section>
+
+    <section id="status-panel" class="panel status-panel hidden" aria-label="Status">
+      <header>
+        <div><small>ÜBERBLICK &amp; HINWEISE</small><h2>STATUS</h2></div>
+        <button class="close" data-close="status-panel">×</button>
+      </header>
+      <div class="status-layout">
+        <div class="status-group">
+          <h3>BEDÜRFNISSE</h3>
+          <div id="needs" class="needs" aria-label="Bedürfnisse">
+            <div id="hunger-need"><span>HUNGER</span><i><b></b></i><strong id="hunger-state">SATT</strong></div>
+            <div id="thirst-need"><span>DURST</span><i><b></b></i><strong id="thirst-state">GESTILLT</strong></div>
+            <div id="wound-need"><span>WUNDEN</span><i><b></b></i><strong id="wound-state">KEINE</strong></div>
+          </div>
+        </div>
+        <div class="status-group">
+          <h3>WAHRNEHMUNG</h3>
+          <div id="stealth-status" class="stealth-status" aria-label="Stealth-Status">
+            <div><span>ENTDECKUNG</span><i><b id="awareness-fill"></b></i><strong id="awareness-state">SICHER</strong></div>
+            <div><span>GERÄUSCH</span><i><b id="noise-fill"></b></i><strong id="noise-state">STILL</strong></div>
+            <div class="cover-meter"><span>DECKUNG</span><i><b id="cover-fill"></b></i><strong id="cover-state">KEINE</strong></div>
+          </div>
+        </div>
+      </div>
+      <div class="status-help">
+        <strong>SO LIEST DU DEN STATUS</strong>
+        <p><b>Hunger / Durst:</b> sinkende Werte bremsen Regeneration und Ausdauer. Essen und Trinken findest du in Behältern.</p>
+        <p><b>Deckung:</b> <b>SCHLEICHEN</b> aktivieren, an eine Mauer, einen Baum, Busch oder Wagen treten und <b>VERBERGEN</b> drücken. Gelbe Ringe markieren nutzbare Deckung, grün bedeutet verborgen.</p>
+        <p><b>Exekution:</b> verborgen bleiben, ein Messer ausrüsten und einen ruhigen Zombie antippen. Im Ziel-Fenster erscheint dann <b>† AUSSCHALTEN</b>. Rennen oder Entdeckung beendet den Vorteil.</p>
+      </div>
+      <footer><span>Werte aktualisieren sich laufend.</span></footer>
     </section>
 
     <section id="inventory-panel" class="panel inventory-panel hidden" aria-label="Rucksack">
@@ -204,6 +230,6 @@
 
     <div id="toast" class="toast"></div>
   </main>
-  <script type="module" src="src/main.js?v=7"></script>
+  <script type="module" src="src/main.js?v=8"></script>
 </body>
 </html>

@@ -17,7 +17,8 @@ Die aktuelle Version ist unter **[fabitiko93-cmd.github.io/Game-Test](https://fa
 - Kampfmodus: Nahkampf läuft im Waffenrhythmus; Schusswaffen werden bewusst über den Aktionsknopf abgefeuert.
 - Haltung wechseln: Schleichen, Gehen und Rennen verändern Tempo, Sichtbarkeit und Geräusch.
 - Inventargegenstand erneut antippen oder `BENUTZEN` wählen: benutzen, ausrüsten oder nachladen; Schusswaffen lassen sich über `ANPASSEN` modifizieren.
-- Missionsziele stehen im Missionsmenü. Beschriftete Bedürfnis- und Stealthanzeigen erklären den aktuellen Zustand direkt im HUD.
+- Missionsziele sowie Bedürfnis-, Wahrnehmungs- und Deckungsanzeigen stehen im separaten Status-/Missionsmenü; das HUD bleibt auf die unmittelbare Spielsituation konzentriert.
+- Bei Gegenständen mit Voraussetzungen nennt die Detailbeschreibung das benötigte Werkzeug direkt (z. B. „BENÖTIGT: DOSENÖFFNER“). Eine ausgeblendete Exekution wird im Ziel-Fenster als eigener, erklärter Aktionsknopf eingeblendet.
 
 ## Enthaltener Spielstand
 

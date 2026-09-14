@@ -13,7 +13,7 @@ export const GAME = {
   autosaveSeconds: 8,
   interactionRange: 1.38,
   migrationSeconds: 78,
-  maxZombies: 24,
+  maxZombies: 20,
   maxRenderFps: 60,
   aiStep: 1 / 30,
 };

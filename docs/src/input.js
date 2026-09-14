@@ -1,4 +1,4 @@
-import { vibrate } from "./util.js?v=7";
+import { vibrate } from "./util.js?v=8";
 
 export const TAP_GESTURE = Object.freeze({
   doubleMs: 460,
@@ -41,6 +41,7 @@ export class InputController {
       if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) event.preventDefault();
       if (key === " " && !event.repeat) this.callbacks.combat?.();
       if (key === "e" && !event.repeat) this.callbacks.action?.();
+      if (key === "x" && !event.repeat) this.callbacks.execute?.();
       if (key === "c" && !event.repeat) this.callbacks.stance?.();
       if (key === "r" && !event.repeat) this.callbacks.reload?.();
       if (key === "i" && !event.repeat) this.callbacks.inventory?.();
@@ -60,9 +61,11 @@ export class InputController {
 
     this.button("attack-button", () => this.callbacks.combat?.());
     this.button("action-button", () => this.callbacks.action?.());
+    this.button("execute-button", () => this.callbacks.execute?.());
     this.button("stance-button", () => this.callbacks.stance?.());
     this.button("reload-button", () => this.callbacks.reload?.());
     this.button("mission-button", () => this.callbacks.mission?.());
+    this.button("status-button", () => this.callbacks.status?.());
     this.button("inventory-button", () => this.callbacks.inventory?.());
     this.button("character-button", () => this.callbacks.character?.());
     this.button("recenter-button", () => this.callbacks.recenter?.());

@@ -1,4 +1,4 @@
-import { ZombieSystem, createInitialZombies } from "./ai.js?v=7";
+import { ZombieSystem, createInitialZombies } from "./ai.js?v=8";
 import {
   backgroundName,
   createPlayer,
@@ -8,10 +8,10 @@ import {
   treatWound as treatWoundWithItem,
   treatWithItem,
   updateCharacter,
-} from "./character.js?v=7";
-import { CombatSystem } from "./combat.js?v=7";
-import { GAME, STANCES } from "./config.js?v=7";
-import { ITEMS } from "./data.js?v=7";
+} from "./character.js?v=8";
+import { CombatSystem } from "./combat.js?v=8";
+import { GAME, STANCES } from "./config.js?v=8";
+import { ITEMS } from "./data.js?v=8";
 import {
   activeWeapon,
   addItem,
@@ -28,13 +28,13 @@ import {
   removeMod,
   roundsInWeapon,
   unequipSlot,
-} from "./inventory.js?v=7";
-import { Navigator } from "./navigation.js?v=7";
-import { missionAt, missionSteps } from "./missions.js?v=7";
-import { awarenessForPlayer } from "./perception.js?v=7";
-import { SaveStore } from "./save.js?v=7";
-import { StealthSystem, ensureStealthState } from "./stealth.js?v=7";
-import { clamp, distance, formatClock, vibrate } from "./util.js?v=7";
+} from "./inventory.js?v=8";
+import { Navigator } from "./navigation.js?v=8";
+import { missionAt, missionSteps } from "./missions.js?v=8";
+import { awarenessForPlayer } from "./perception.js?v=8";
+import { SaveStore } from "./save.js?v=8";
+import { StealthSystem, ensureStealthState } from "./stealth.js?v=8";
+import { clamp, distance, formatClock, vibrate } from "./util.js?v=8";
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
 
@@ -79,10 +79,12 @@ export class Game {
     this.input.callbacks = {
       combat: () => this.combat.toggle(this),
       action: () => this.primaryAction(),
+      execute: () => this.executeAction(),
       stance: () => this.toggleStance(),
       reload: () => this.reload(),
       inventory: () => this.toggleInventory(),
       mission: () => this.toggleMission(),
+      status: () => this.toggleStatus(),
       character: () => this.toggleCharacter(),
       recenter: () => this.recenterCamera(),
       pause: () => this.togglePause(),
@@ -644,6 +646,17 @@ export class Game {
     else this.ui.showMessage("Hier ist nichts ausgewählt.", 1.1);
   }
 
+  executeAction() {
+    if (!this.canAct()) return;
+    const context = this.stealth.executionContext(this);
+    if (context?.actionable) {
+      this.stealth.executionAction(this);
+      this.ui.refreshAll(this.player, this);
+      return;
+    }
+    this.ui.showToast(context?.hint || "SCHLEICHEN · MESSER AUSWÄHLEN · ZIEL ANTIPPEN");
+  }
+
   interact(object) {
     if (!this.canAct() || !object || object.removed) return;
     if (distance(this.player, object) > GAME.interactionRange + 0.08) {
@@ -1048,6 +1061,11 @@ export class Game {
   toggleMission() {
     if (!this.canAct(true)) return;
     this.ui.toggleMission(this);
+  }
+
+  toggleStatus() {
+    if (!this.canAct(true)) return;
+    this.ui.toggleStatus(this.player, this);
   }
 
   toggleCharacter() {

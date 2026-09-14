@@ -1,4 +1,4 @@
-import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=7";
+import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=8";
 import {
   activeWeapon,
   ammoLabel,
@@ -11,8 +11,8 @@ import {
   itemDefinition,
   roundsInWeapon,
   weaponCapacity,
-} from "./inventory.js?v=7";
-import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js?v=7";
+} from "./inventory.js?v=8";
+import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js?v=8";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -30,10 +30,11 @@ export class GameUI {
       "hunger-state", "thirst-state", "wound-state", "awareness-fill", "noise-fill",
       "awareness-state", "noise-state", "cover-fill", "cover-state", "location", "clock", "message", "target-label",
       "enemy-target", "enemy-state", "enemy-name", "enemy-hp-fill", "aim-meter", "aim-fill", "ammo-label",
+      "execute-button", "execute-label", "execute-hint",
       "action-button", "action-label", "attack-button", "stance-button", "stance-label", "reload-button",
-      "mission-button", "mission-indicator", "inventory-button", "inventory-count", "character-button",
+      "mission-button", "mission-indicator", "status-button", "inventory-button", "inventory-count", "character-button",
       "recenter-button", "pause-button", "quickbar", "debug-stats",
-      "mission-panel", "mission-title", "mission-objective", "mission-description", "mission-steps",
+      "mission-panel", "mission-title", "mission-objective", "mission-description", "mission-steps", "status-panel",
       "inventory-panel", "equipment-grid", "inventory-grid", "item-description", "carry-weight",
       "customize-button", "drop-button", "use-button",
       "container-panel", "container-kind", "container-name", "container-items", "take-all-button",
@@ -212,10 +213,10 @@ export class GameUI {
       this.el.target_label.classList.remove("show");
       return;
     }
-    const stealthContext = game.stealth?.executionContext(game) || game.stealth?.hideContext(game);
+    const stealthContext = game.stealth?.hideContext(game);
     if (stealthContext) {
       this.el.action_button.classList.remove("fire-ready");
-      this.el.action_button.querySelector("span").textContent = stealthContext.kind === "execution" ? "†" : "◌";
+      this.el.action_button.querySelector("span").textContent = "◌";
       this.el.action_button.classList.toggle("ready", Boolean(stealthContext.actionable || game.stealth?.state(game).hidden));
       this.el.action_label.textContent = game.stealth?.state(game).hidden && stealthContext.kind === "hidden"
         ? "AUFDECKEN" : stealthContext.label;
@@ -240,7 +241,11 @@ export class GameUI {
   updateTarget(player, game) {
     const enemy = game.combat.target(game);
     this.el.enemy_target.classList.toggle("hidden", !enemy);
-    if (!enemy) return;
+    if (!enemy) {
+      this.el.execute_button.classList.add("hidden");
+      this.el.execute_button.disabled = true;
+      return;
+    }
     const stateNames = {
       idle: "RUHIG",
       suspicious: "MISSTRAUISCH",
@@ -256,6 +261,18 @@ export class GameUI {
     this.el.ammo_label.textContent = firearm ? ammoLabel(weapon) : "";
     this.el.aim_meter.classList.toggle("hidden", !firearm);
     this.el.aim_fill.style.width = `${(player.combat.aim || 0) * 100}%`;
+
+    const execution = game.stealth?.executionContext(game);
+    const showExecution = Boolean(execution && execution.kind === "execution");
+    this.el.execute_button.classList.toggle("hidden", !showExecution);
+    if (showExecution) {
+      const ready = Boolean(execution.ready);
+      this.el.execute_button.disabled = !execution.actionable;
+      this.el.execute_button.classList.toggle("ready", ready);
+      this.el.execute_button.classList.toggle("attention", Boolean(execution.actionable));
+      this.el.execute_label.textContent = execution.label;
+      this.el.execute_hint.textContent = execution.hint || "VERBORGEN BLEIBEN";
+    }
   }
 
   showMessage(text, duration = 2.3) {
@@ -273,7 +290,7 @@ export class GameUI {
   }
 
   hasBlockingPanel() {
-    return ["mission-panel", "inventory-panel", "container-panel", "character-panel", "weapon-panel"]
+    return ["mission-panel", "status-panel", "inventory-panel", "container-panel", "character-panel", "weapon-panel"]
       .some(id => !document.getElementById(id).classList.contains("hidden"));
   }
 
@@ -285,7 +302,7 @@ export class GameUI {
   }
 
   closeAllPanels() {
-    for (const id of ["mission-panel", "inventory-panel", "container-panel", "character-panel", "weapon-panel"]) this.closePanel(id);
+    for (const id of ["mission-panel", "status-panel", "inventory-panel", "container-panel", "character-panel", "weapon-panel"]) this.closePanel(id);
   }
 
   toggleMission(game) {
@@ -317,6 +334,14 @@ export class GameUI {
       entry.append(number, copy);
       this.el.mission_steps.append(entry);
     }
+  }
+
+  toggleStatus(player, game) {
+    const opening = this.el.status_panel.classList.contains("hidden");
+    this.closeAllPanels();
+    this.el.status_panel.classList.toggle("hidden", !opening);
+    if (opening) this.update(player, game);
+    return opening;
   }
 
   toggleInventory(player, game) {
@@ -406,6 +431,10 @@ export class GameUI {
     if (definition.weaponKind === "firearm") extra = ` · MUNITION ${ammoLabel(item)} · ZUSTAND ${Math.round(item.condition || 0)} %`;
     else if (definition.type === "magazine") extra = ` · ${item.rounds || 0}/${definition.capacity}`;
     else if ("condition" in item) extra = ` · ZUSTAND ${Math.round(item.condition)} %`;
+    if (definition.needs) {
+      const required = ITEMS[definition.needs]?.name || definition.needs;
+      extra += ` · BENÖTIGT: ${required.toUpperCase()}`;
+    }
     this.el.item_description.textContent = `${definition.description}${extra}`;
     this.el.use_button.textContent = definition.type === "weapon" || definition.equipSlot ? "AUSRÜSTEN"
       : definition.type === "ammo" || definition.type === "magazine" ? "NACHLADEN"

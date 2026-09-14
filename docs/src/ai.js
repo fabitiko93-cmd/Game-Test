@@ -1,11 +1,11 @@
-import { strongestNoise, visionExposure } from "./perception.js?v=7";
-import { VIEW } from "./config.js?v=7";
-import { clamp, distance, uid } from "./util.js?v=7";
+import { strongestNoise, visionExposure } from "./perception.js?v=8";
+import { VIEW } from "./config.js?v=8";
+import { clamp, distance, uid } from "./util.js?v=8";
 
 const INITIAL_POSITIONS = [
   [14, 18], [9, 21], [24, 20], [36, 20], [43, 18], [31, 9],
   [31, 39], [10, 29], [14, 40], [27, 29], [42, 29], [8, 15],
-  [20, 16], [40, 15], [26, 42], [44, 42], [5, 26], [22, 28],
+  [20, 16], [40, 15], [26, 42], [46, 42], [5, 26], [22, 27],
 ];
 
 export function createZombie(x, y, index = 0, id = null) {
@@ -198,7 +198,7 @@ export class ZombieSystem {
     const ny = dy / length;
     zombie.desiredFacingX = nx;
     zombie.desiredFacingY = ny;
-    const speed = zombie.state === "chase" ? 1.25 : zombie.state === "investigate" ? 0.88 : zombie.state === "search" ? 0.62 : 0.36;
+    const speed = zombie.state === "chase" ? 1.1 : zombie.state === "investigate" ? 0.82 : zombie.state === "search" ? 0.58 : 0.36;
     zombie.moving = game.moveEntity(zombie, nx * speed * delta, ny * speed * delta, 0.25);
     if (!zombie.moving) zombie.repathTimer = 0;
   }
@@ -213,8 +213,8 @@ export class ZombieSystem {
     }
     if (zombie.state !== "chase" || playerDistance >= 0.82 || exposure <= 0 || zombie.attackCooldown > 0) return;
     zombie.moving = false;
-    zombie.attackCooldown = 1.2;
-    zombie.attackWindup = 0.24;
+    zombie.attackCooldown = 1.42;
+    zombie.attackWindup = 0.28;
     this.face(zombie, game.player);
   }
 

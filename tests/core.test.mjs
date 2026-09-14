@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { createInitialZombies } from "../docs/src/ai.js";
 import { createPlayer, gainSkill, inflictZombieAttack, updateCharacter } from "../docs/src/character.js";
 import { CombatSystem } from "../docs/src/combat.js";
+import { GAME } from "../docs/src/config.js";
 import { ITEMS } from "../docs/src/data.js";
 import {
   addItem,
@@ -22,9 +23,12 @@ import { World } from "../docs/src/world.js";
 
 const world = new World();
 const navigator = new Navigator();
+const initialZombies = createInitialZombies();
 assert.equal(world.tiles.length, 48);
 assert.equal(world.buildings.length, 6);
 assert.ok(world.objects.length > 300);
+assert.equal(GAME.maxZombies, 20);
+assert.ok(initialZombies.every(zombie => world.isPathCellWalkable(zombie.x, zombie.y, { allowDoors: false })));
 assert.deepEqual(world.clampPoint({ x: -40, y: 90 }), { x: 1, y: 46 });
 assert.ok(world.objectsInBounds(4, 36, 6, 40).some(object => object.name === "KÜCHENSCHRANK"));
 
@@ -46,6 +50,8 @@ assert.equal(matchingTap({ time: 100, x: 20, y: 20 }, { x: 100, y: 100 }, 120), 
 assert.equal(matchingTap({ time: 100, x: 20, y: 20 }, { x: 20, y: 20 }, 100 + TAP_GESTURE.doubleMs + 1), false);
 assert.equal(missionAt(99).title, "FREIES ÜBERLEBEN");
 assert.deepEqual(missionSteps(1).map(step => step.state), ["completed", "active", "pending", "pending"]);
+assert.equal(ITEMS.kitchen_knife.execution, true);
+assert.equal(ITEMS.canned_beans.needs, "can_opener");
 
 const citizen = createPlayer({ name: "A", background: "citizen" });
 const hunter = createPlayer({ name: "B", background: "hunter" });
@@ -105,7 +111,7 @@ const storage = {
 };
 const saves = new SaveStore(storage);
 assert.equal(saves.has(), false);
-assert.equal(saves.write({ player: hunter, zombies: createInitialZombies() }), true);
+assert.equal(saves.write({ player: hunter, zombies: initialZombies }), true);
 assert.equal(saves.has(), true);
 assert.equal(saves.read().player.name, "B");
 saves.clear();
@@ -119,16 +125,19 @@ assert.ok(clubLocker.items.some(item => item.type === "shotgun_12g"));
 assert.ok(clubLocker.items.some(item => item.type === "hunting_rifle"));
 
 const html = readFileSync(new URL("../docs/index.html", import.meta.url), "utf8");
+const uiSource = readFileSync(new URL("../docs/src/ui.js", import.meta.url), "utf8");
 const serviceWorker = readFileSync(new URL("../docs/sw.js", import.meta.url), "utf8");
 for (const id of [
-  "hunger-state", "thirst-state", "wound-state", "awareness-state", "noise-state",
+  "hunger-state", "thirst-state", "wound-state", "awareness-state", "noise-state", "cover-state", "cover-fill",
+  "execute-button", "execute-label", "execute-hint", "status-button", "status-panel",
   "mission-button", "mission-panel", "mission-title", "mission-objective", "mission-steps",
   "recenter-button", "diagnostics-button", "debug-stats",
 ]) {
   assert.match(html, new RegExp(`id=["']${id}["']`), `missing UI contract: ${id}`);
 }
-assert.match(html, /style\.css\?v=7/);
-assert.match(html, /src\/main\.js\?v=7/);
+assert.match(html, /style\.css\?v=8/);
+assert.match(html, /src\/main\.js\?v=8/);
+assert.match(uiSource, /BENÖTIGT:/);
 assert.match(serviceWorker, /src\/missions\.js/);
 assert.match(serviceWorker, /ignoreSearch:\s*true/);
 

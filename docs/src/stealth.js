@@ -1,7 +1,7 @@
-import { gainSkill, skillValue } from "./character.js?v=7";
-import { activeWeapon, itemDefinition } from "./inventory.js?v=7";
-import { behindTarget } from "./perception.js?v=7";
-import { clamp, distance, vibrate } from "./util.js?v=7";
+import { gainSkill, skillValue } from "./character.js?v=8";
+import { activeWeapon, itemDefinition } from "./inventory.js?v=8";
+import { behindTarget } from "./perception.js?v=8";
+import { clamp, distance, vibrate } from "./util.js?v=8";
 
 export const STEALTH_RULES = Object.freeze({
   minimumCover: 0.42,
@@ -69,7 +69,7 @@ export class StealthSystem {
     if (closePursuer) {
       return { kind: "hide", actionable: false, label: "BEOBACHTET", hint: "SICHTKONTAKT ABBRECHEN", cover };
     }
-    return { kind: "hide", actionable: true, label: "VERBERGEN", hint: cover.label, cover };
+    return { kind: "hide", actionable: true, label: "VERBERGEN", hint: `AKTION DRÜCKEN · ${cover.label}`, cover };
   }
 
   action(game) {
@@ -115,7 +115,7 @@ export class StealthSystem {
     player.combat.enabled = false;
     player.navigation.runRequested = false;
     gainSkill(player, "stealth", 0.2);
-    game.ui?.showMessage(`VERBORGEN · ${context.cover.label}`, 1.6);
+    game.ui?.showMessage(`VERBORGEN · ${context.cover.label} · ZIEL ANTIPPEN · † AUSSCHALTEN`, 2.1);
     game.sound?.("hide");
     vibrate(8);
     return true;
@@ -164,9 +164,23 @@ export class StealthSystem {
         ready: true,
       };
     }
-    if (!target || target.removed || player.stance !== "sneak" || !executionWeapon(player)) return null;
-    if (target.state === "chase" || (target.awareness || 0) >= 0.72) return null;
-    if (!state.hidden) return null;
+    if (!target || target.removed) return null;
+    if (!state.hidden) {
+      return {
+        kind: "execution",
+        actionable: false,
+        label: "NICHT MÖGLICH",
+        hint: player.stance === "sneak" ? "DECKUNG SUCHEN · VERBERGEN" : "SCHLEICHEN AKTIVIEREN",
+        ready: false,
+      };
+    }
+    if (player.stance !== "sneak") return { kind: "execution", actionable: false, label: "NICHT MÖGLICH", hint: "SCHLEICHEN AKTIVIEREN", ready: false };
+    if (!executionWeapon(player)) {
+      return { kind: "execution", actionable: false, label: "MESSER FEHLT", hint: "KÜCHENMESSER AUSWÄHLEN", ready: false };
+    }
+    if (target.state === "chase" || (target.awareness || 0) >= 0.72) {
+      return { kind: "execution", actionable: false, label: "NICHT MÖGLICH", hint: "ZIEL IST AUF DER SUCHE", ready: false };
+    }
     const d = distance(player, target);
     if (player.stamina < STEALTH_RULES.executionStamina) {
       return { kind: "execution", actionable: false, label: "ERSCHÖPFT", hint: "18 AUSDAUER BENÖTIGT", ready: false };

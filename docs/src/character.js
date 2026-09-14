@@ -1,6 +1,6 @@
-import { BACKGROUNDS, ITEMS, SKILLS } from "./data.js?v=7";
-import { addItem, damageProtection, equipItem, equipmentProtection, createItem } from "./inventory.js?v=7";
-import { clamp, uid } from "./util.js?v=7";
+import { BACKGROUNDS, ITEMS, SKILLS } from "./data.js?v=8";
+import { addItem, damageProtection, equipItem, equipmentProtection, createItem } from "./inventory.js?v=8";
+import { clamp, uid } from "./util.js?v=8";
 
 const RANKS = [
   [90, "MEISTERHAFT"],
@@ -138,11 +138,11 @@ export function inflictZombieAttack(player, gameMinutes, random = Math.random, d
   const zoneEntry = ZONES[Math.floor(random() * ZONES.length)];
   const zone = zoneEntry[0];
   const protection = protectionForAttack(player, zone);
-  const rawDamage = 4 + random() * 5.5;
+  const rawDamage = 3.5 + random() * 4.5;
   player.hp = Math.max(0, player.hp - rawDamage * (1 - protection * 0.45));
   player.hurtFlash = 0.24;
 
-  const woundChance = clamp(0.64 + danger * 0.15 - protection * 0.62, 0.18, 0.85);
+  const woundChance = clamp(0.56 + danger * 0.13 - protection * 0.62, 0.16, 0.78);
   if (random() > woundChance) {
     damageProtection(player, zone, 1.5);
     return { kind: "bruise", zone, label: `TREFFER · ${zoneEntry[1]}`, damage: rawDamage };
