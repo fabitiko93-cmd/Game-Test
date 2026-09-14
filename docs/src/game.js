@@ -1,16 +1,17 @@
-import { ZombieSystem, createInitialZombies } from "./ai.js?v=6";
+import { ZombieSystem, createInitialZombies } from "./ai.js?v=7";
 import {
   backgroundName,
   createPlayer,
   gainSkill,
   inflictZombieAttack,
   skillValue,
+  treatWound as treatWoundWithItem,
   treatWithItem,
   updateCharacter,
-} from "./character.js?v=6";
-import { CombatSystem } from "./combat.js?v=6";
-import { GAME, STANCES } from "./config.js?v=6";
-import { ITEMS } from "./data.js?v=6";
+} from "./character.js?v=7";
+import { CombatSystem } from "./combat.js?v=7";
+import { GAME, STANCES } from "./config.js?v=7";
+import { ITEMS } from "./data.js?v=7";
 import {
   activeWeapon,
   addItem,
@@ -27,12 +28,13 @@ import {
   removeMod,
   roundsInWeapon,
   unequipSlot,
-} from "./inventory.js?v=6";
-import { Navigator } from "./navigation.js?v=6";
-import { missionAt, missionSteps } from "./missions.js?v=6";
-import { awarenessForPlayer } from "./perception.js?v=6";
-import { SaveStore } from "./save.js?v=6";
-import { clamp, distance, formatClock, vibrate } from "./util.js?v=6";
+} from "./inventory.js?v=7";
+import { Navigator } from "./navigation.js?v=7";
+import { missionAt, missionSteps } from "./missions.js?v=7";
+import { awarenessForPlayer } from "./perception.js?v=7";
+import { SaveStore } from "./save.js?v=7";
+import { StealthSystem, ensureStealthState } from "./stealth.js?v=7";
+import { clamp, distance, formatClock, vibrate } from "./util.js?v=7";
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
 
@@ -45,8 +47,10 @@ export class Game {
     this.navigator = new Navigator();
     this.zombieSystem = new ZombieSystem(this.navigator);
     this.combat = new CombatSystem();
+    this.stealth = new StealthSystem();
     this.saveStore = new SaveStore();
     this.player = createPlayer({ name: "Alex", background: "citizen" });
+    ensureStealthState(this.player);
     this.zombies = createInitialZombies();
     this.minutes = GAME.startMinutes;
     this.mission = 0;
@@ -98,6 +102,7 @@ export class Game {
       continue: () => this.setPaused(false),
       reset: () => this.requestFreshWorld(),
       useItem: id => this.useItem(id),
+      treatWound: (woundId, itemType) => this.treatWound(woundId, itemType),
       dropItem: id => this.dropItem(id),
       unequip: slot => this.unequip(slot),
       takeItem: (container, id) => this.takeItem(container, id),
@@ -154,6 +159,7 @@ export class Game {
   acceptCharacter(profile) {
     const nextNumber = this.survivorCount + 1;
     const player = createPlayer({ ...profile, survivorNumber: nextNumber });
+    ensureStealthState(player);
     if (nextNumber > 1) {
       const spawns = [{ x: 2, y: 20 }, { x: 45, y: 21 }, { x: 30, y: 45 }, { x: 30, y: 2 }];
       const safest = spawns
@@ -237,6 +243,7 @@ export class Game {
     this.minutes += gameDeltaMinutes;
     this.world.update(delta);
     this.player.noisePulse = Math.max(0, this.player.noisePulse - delta * 0.65);
+    this.player.hurtFlash = Math.max(0, (this.player.hurtFlash || 0) - delta);
     this.player.hitKick = Math.max(0, (this.player.hitKick || 0) - delta * 8);
     this.updateMovement(delta);
     this.combat.update(this, delta);
@@ -246,6 +253,7 @@ export class Game {
       this.aiAccumulator = 0;
       this.lastAiResult = this.zombieSystem.update(this, aiDelta);
     }
+    this.stealth.update(this, delta);
     if (this.player.stance === "sneak" && this.player.moving && this.lastAiResult.nearbyUndetected) {
       gainSkill(this.player, "stealth", delta * 0.075);
     }
@@ -335,8 +343,12 @@ export class Game {
       const burden = inventoryWeight(player) / Math.max(1, carryCapacity(player));
       const burdenFactor = clamp(1.08 - burden * 0.16, 0.72, 1);
       const stealthFactor = 1 - skillValue(player, "stealth") * 0.003;
-      player.noiseRadius = stance.noise * stealthFactor;
+      const hiddenNoise = this.stealth.hiddenNoiseMultiplier(player);
+      player.noiseRadius = stance.noise * stealthFactor * hiddenNoise;
+      const previousX = player.x;
+      const previousY = player.y;
       const moved = this.moveEntity(player, dx * stance.speed * burdenFactor * delta, dy * stance.speed * burdenFactor * delta, 0.27);
+      this.stealth.onMove(this, Math.hypot(player.x - previousX, player.y - previousY), mode);
       if (!moved && player.navigation.path.length) {
         const interaction = this.world.objects.find(object => object.id === player.navigation.interactionId && !object.removed);
         if (interaction && distance(player, interaction) <= GAME.interactionRange + 0.2) this.arriveAtDestination();
@@ -345,7 +357,7 @@ export class Game {
       player.stamina = clamp(player.stamina + stance.stamina * delta * (player.hunger < 20 ? 0.48 : 1), 0, 100);
       this.stepTimer -= delta;
       if (this.stepTimer <= 0) {
-        const noise = stance.noise * stealthFactor;
+        const noise = stance.noise * stealthFactor * hiddenNoise;
         this.world.emitNoise(player.x, player.y, noise, "step", 1.1, 0.45);
         player.noisePulse = Math.max(player.noisePulse, clamp(noise / 7, 0, 1));
         this.stepTimer = mode === "run" ? 0.28 : mode === "sneak" ? 0.68 : 0.46;
@@ -580,6 +592,7 @@ export class Game {
 
   toggleStance() {
     if (!this.canAct()) return;
+    if (this.stealth.state(this).hidden) this.stealth.breakHidden(this, "DECKUNG VERLASSEN", true);
     this.player.stance = this.player.stance === "sneak" ? "walk" : "sneak";
     this.player.navigation.runRequested = false;
     this.ui.showToast(this.player.stance === "sneak" ? "SCHLEICHMODUS" : "NORMALES GEHEN");
@@ -619,6 +632,10 @@ export class Game {
     if (itemDefinition(weapon)?.weaponKind === "firearm" && this.player.combat.enabled && this.combat.target(this)) {
       const result = this.combat.fire(this);
       if (!result.ok) this.ui.showToast(result.message);
+      this.ui.refreshAll(this.player, this);
+      return;
+    }
+    if (this.stealth.action(this)) {
       this.ui.refreshAll(this.player, this);
       return;
     }
@@ -750,6 +767,25 @@ export class Game {
 
   takeAll(container) {
     for (const item of [...(container.items || [])]) this.takeItem(container, item.id);
+  }
+
+  treatWound(woundId, itemType) {
+    if (!this.canAct(true)) return;
+    const item = this.player.inventory.find(entry => entry.type === itemType && (entry.count || 1) > 0);
+    if (!item) {
+      this.ui.showToast("DAS BENÖTIGTE MEDIZINMATERIAL FEHLT");
+      return;
+    }
+    const result = treatWoundWithItem(this.player, itemType, woundId);
+    if (!result.used) {
+      this.ui.showToast(result.message);
+      return;
+    }
+    removeItem(this.player, item.id, 1);
+    this.ui.showToast(result.message);
+    this.ui.refreshAll(this.player, this);
+    this.sound("consume");
+    this.save();
   }
 
   useItem(id) {
@@ -894,7 +930,7 @@ export class Game {
     if (this.player.hp <= 0) this.die(this.player.deathCause || "DU WURDEST ZERRISSEN");
   }
 
-  killZombie(zombie) {
+  killZombie(zombie, options = {}) {
     zombie.removed = true;
     this.player.kills += 1;
     if (this.player.combat.targetId === zombie.id) {
@@ -910,7 +946,7 @@ export class Game {
       name: "INFIZIERTER",
       items: this.world.rollLoot("corpse"),
     });
-    this.world.emitNoise(zombie.x, zombie.y, 2.1, "body", 2.2);
+    if (!options.silent) this.world.emitNoise(zombie.x, zombie.y, 2.1, "body", 2.2);
     this.renderer.selectedId = corpse.id;
     this.ui.showMessage("Der Infizierte bleibt liegen.", 1.2);
   }
@@ -1016,7 +1052,7 @@ export class Game {
 
   toggleCharacter() {
     if (!this.canAct(true)) return;
-    this.ui.toggleCharacter(this.player);
+    this.ui.toggleCharacter(this.player, this);
   }
 
   toggleDiagnostics() {
@@ -1082,6 +1118,9 @@ export class Game {
     this.survivorCount = saved.survivorCount ?? saved.player.survivorNumber ?? 1;
     this.migrationTimer = saved.migrationTimer ?? GAME.migrationSeconds;
     this.player = saved.player;
+    ensureStealthState(this.player);
+    this.player.stealthState.hidden = false;
+    this.player.stealthState.execution = null;
     this.zombies = Array.isArray(saved.zombies) ? saved.zombies : createInitialZombies();
     for (const zombie of this.zombies) {
       zombie.desiredFacingX ??= zombie.facingX ?? 0;
@@ -1117,6 +1156,7 @@ export class Game {
     const presets = {
       pickup: [660, 0.06, "sine"],
       equip: [240, 0.05, "square"],
+      hide: [180, 0.08, "triangle"],
       consume: [420, 0.08, "sine"],
       door: [105, 0.12, "triangle"],
       unlock: [510, 0.05, "square"],
@@ -1126,6 +1166,7 @@ export class Game {
       gunshot: [52, 0.2, "square"],
       reload: [320, 0.07, "square"],
       hit: [72, 0.1, "square"],
+      execution: [110, 0.16, "triangle"],
       hurt: [55, 0.16, "sawtooth"],
       alert: [145, 0.13, "triangle"],
       objective: [520, 0.16, "sine"],

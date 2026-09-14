@@ -1,7 +1,7 @@
-import { gainSkill, skillValue } from "./character.js?v=6";
-import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponStats } from "./inventory.js?v=6";
-import { behindTarget } from "./perception.js?v=6";
-import { clamp, distance, vibrate } from "./util.js?v=6";
+import { gainSkill, skillValue } from "./character.js?v=7";
+import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponStats } from "./inventory.js?v=7";
+import { behindTarget } from "./perception.js?v=7";
+import { clamp, distance, vibrate } from "./util.js?v=7";
 
 export class CombatSystem {
   target(game) {
@@ -119,6 +119,28 @@ export class CombatSystem {
     if (weapon) weapon.condition = Math.max(0, (weapon.condition ?? 100) - 0.07);
   }
 
+  execute(game, target) {
+    const player = game.player;
+    const weapon = activeWeapon(player);
+    const definition = itemDefinition(weapon);
+    const stats = weaponStats(weapon);
+    if (!target || target.removed || !weapon || !definition?.execution || !stats) return { ok: false, message: "KEIN AUSFÜHRUNGSWERKZEUG" };
+    if (distance(player, target) > (stats.range || 1) + 0.12) return { ok: false, message: "ZU WEIT FÜR AUSSCHALTUNG" };
+    if (player.stamina < 18) return { ok: false, message: "ZU WENIG AUSDAUER" };
+    player.stamina = Math.max(0, player.stamina - 18);
+    const skill = skillValue(player, definition.skill || "blades");
+    const damage = Math.max(target.hp + 1, stats.damage * (2.6 + skill * 0.012));
+    this.facePlayer(player, target);
+    this.damageZombie(game, target, damage, null, { silent: true, execution: true });
+    gainSkill(player, definition.skill || "blades", 1.1);
+    gainSkill(player, "stealth", 0.85);
+    if (weapon) weapon.condition = Math.max(0, (weapon.condition ?? 100) - 0.18);
+    game.ui?.showMessage("LAUTLOS AUSGESCHALTET", 1.1);
+    game.sound("execution");
+    vibrate(16);
+    return { ok: true, message: "LAUTLOS AUSGESCHALTET" };
+  }
+
   fire(game) {
     const player = game.player;
     const combat = player.combat;
@@ -199,26 +221,30 @@ export class CombatSystem {
     return result;
   }
 
-  damageZombie(game, target, damage, callout) {
+  damageZombie(game, target, damage, callout, options = {}) {
     target.hp -= damage;
-    target.hurtFlash = 0.16;
-    target.state = "chase";
-    target.awareness = 1;
-    target.stimulus = "vision";
-    target.stateTimer = 1.1;
-    target.lastSeen = { x: game.player.x, y: game.player.y };
-    target.target = { ...target.lastSeen };
-    target.path = [];
-    target.repathTimer = 0;
+    target.hurtFlash = options.silent ? 0 : 0.16;
+    if (!options.silent) {
+      target.state = "chase";
+      target.awareness = 1;
+      target.stimulus = "vision";
+      target.stateTimer = 1.1;
+      target.lastSeen = { x: game.player.x, y: game.player.y };
+      target.target = { ...target.lastSeen };
+      target.path = [];
+      target.repathTimer = 0;
+    }
     const dx = target.x - game.player.x;
     const dy = target.y - game.player.y;
     const length = Math.hypot(dx, dy) || 1;
     target.impactX = dx / length;
     target.impactY = dy / length;
-    target.hitKick = 1;
-    target.x += dx / length * 0.12;
-    target.y += dy / length * 0.12;
-    game.renderer.burst(target.x, target.y, "#832d29", 8);
+    target.hitKick = options.silent ? 0 : 1;
+    if (!options.silent) {
+      target.x += dx / length * 0.12;
+      target.y += dy / length * 0.12;
+    }
+    game.renderer.burst(target.x, target.y, "#832d29", options.silent ? 4 : 8);
     game.world.blood.push({
       x: target.x + (game.random() - 0.5) * 0.2,
       y: target.y + (game.random() - 0.5) * 0.2,
@@ -226,9 +252,9 @@ export class CombatSystem {
       rotation: game.random() * Math.PI,
       life: 1,
     });
-    game.sound("hit");
+    if (!options.silent) game.sound("hit");
     if (callout) game.ui.showMessage(callout, 0.9);
-    if (target.hp <= 0) game.killZombie(target);
+    if (target.hp <= 0) game.killZombie(target, { silent: Boolean(options.silent) });
   }
 
   facePlayer(player, target) {

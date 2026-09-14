@@ -1,7 +1,7 @@
-import { COLORS, VIEW } from "./config.js?v=6";
-import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=6";
-import { createItem } from "./inventory.js?v=6";
-import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=6";
+import { COLORS, VIEW } from "./config.js?v=7";
+import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=7";
+import { createItem } from "./inventory.js?v=7";
+import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=7";
 
 export const BUILDINGS = [
   { id: "house", name: "REIHENHAUS", x: 3, y: 3, w: 10, h: 11, floor: "floor", door: { x: 8, y: 13 }, wall: "#78695e", roof: "#4b4039", locked: true, lockDifficulty: 14 },
@@ -78,6 +78,8 @@ export class World {
     const door = this.addObject("door", building.door.x, building.door.y, {
       solid: true,
       blocksSight: true,
+      cover: 0.52,
+      coverLabel: "TÜRRAHMEN",
       interactable: true,
       closed: true,
       locked: Boolean(building.locked),
@@ -95,6 +97,8 @@ export class World {
     this.addObject("wall", x, y, {
       solid: true,
       blocksSight: true,
+      cover: 0.58,
+      coverLabel: "MAUER",
       side,
       building: building.id,
       color: building.wall,
@@ -171,11 +175,11 @@ export class World {
     for (let x = 3; x < VIEW.worldW - 3; x += 7) {
       if (x < 28 || x > 34) this.addObject("streetlamp", x, 23.8, { solid: true, light: true, blocksSight: false });
     }
-    this.addObject("car", 31.2, 8.0, { solid: true, blocksSight: true, orientation: "y", color: "#6d392f", name: "ROTER WARTBURG" });
-    this.addObject("car", 32.0, 39.0, { solid: true, blocksSight: true, orientation: "y", color: "#455d67", name: "BLAUER GOLF" });
-    this.addObject("car", 9.0, 20.0, { solid: true, blocksSight: true, orientation: "x", color: "#77715a", name: "BEIGER TRABANT" });
-    this.addObject("car", 39.2, 20.8, { solid: true, blocksSight: true, orientation: "x", color: "#4b5b48", name: "GRÜNER PASSAT" });
-    this.addObject("busstop", 34.8, 20.2, { solid: true, blocksSight: true, name: "BUSHALTESTELLE" });
+    this.addObject("car", 31.2, 8.0, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "y", color: "#6d392f", name: "ROTER WARTBURG" });
+    this.addObject("car", 32.0, 39.0, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "y", color: "#455d67", name: "BLAUER GOLF" });
+    this.addObject("car", 9.0, 20.0, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "x", color: "#77715a", name: "BEIGER TRABANT" });
+    this.addObject("car", 39.2, 20.8, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "x", color: "#4b5b48", name: "GRÜNER PASSAT" });
+    this.addObject("busstop", 34.8, 20.2, { solid: true, blocksSight: true, cover: 0.62, coverLabel: "BUSHALTESTELLE", name: "BUSHALTESTELLE" });
     this.addObject("sign", 34.7, 35.0, { solid: false, name: "APOTHEKE" });
     this.addObject("sign", 34.7, 12.5, { solid: false, name: "NAHKAUF" });
     this.addObject("sign", 15.0, 35.0, { solid: false, name: "JAGDVEREIN" });
@@ -188,8 +192,12 @@ export class World {
         const tile = this.tiles[y][x];
         if (!["grass", "dirt"].includes(tile) || this.insideAnyBuilding(x, y, 1.3)) continue;
         const r = hash2(x * 3, y * 5, this.seed + 31);
-        if (r > 0.93) this.addObject("tree", x + 0.15, y + 0.12, { solid: true, blocksSight: true, variant: Math.floor(r * 10) % 3 });
-        else if (r > 0.85) this.addObject("bush", x + 0.2, y + 0.15, { solid: false, cover: 0.28, variant: Math.floor(r * 20) % 2 });
+        if (r > 0.93) this.addObject("tree", x + 0.15, y + 0.12, {
+          solid: true, blocksSight: true, cover: 0.68, coverLabel: "BAUM", variant: Math.floor(r * 10) % 3,
+        });
+        else if (r > 0.85) this.addObject("bush", x + 0.2, y + 0.15, {
+          solid: false, cover: 0.74, coverLabel: "BUSCH", variant: Math.floor(r * 20) % 2,
+        });
       }
     }
   }
@@ -203,6 +211,8 @@ export class World {
       solid: false,
       blocksSight: false,
       interactable: false,
+      cover: 0,
+      coverLabel: "DECKUNG",
       static: options.static !== false,
       name: options.name || OBJECT_LABELS[type] || type,
       ...options,
@@ -348,9 +358,24 @@ export class World {
   }
 
   concealmentAt(point) {
-    let cover = 0;
-    for (const object of this.objectsNear(point.x, point.y, 0.78)) cover = Math.max(cover, object.cover || 0);
-    return cover;
+    return this.coverAt(point).score;
+  }
+
+  coverAt(point, radius = 0.92) {
+    let best = { score: 0, label: "KEINE DECKUNG", sourceId: null, object: null };
+    for (const object of this.objectsNear(point.x, point.y, radius)) {
+      if (!object.cover || object.removed) continue;
+      if (object.type === "door" && !object.closed) continue;
+      if (object.cover > best.score) {
+        best = {
+          score: object.cover,
+          label: object.coverLabel || object.name || "DECKUNG",
+          sourceId: object.id,
+          object,
+        };
+      }
+    }
+    return best;
   }
 
   insideBuilding(point, buildingId = null) {

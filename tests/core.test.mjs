@@ -127,8 +127,8 @@ for (const id of [
 ]) {
   assert.match(html, new RegExp(`id=["']${id}["']`), `missing UI contract: ${id}`);
 }
-assert.match(html, /style\.css\?v=6/);
-assert.match(html, /src\/main\.js\?v=6/);
+assert.match(html, /style\.css\?v=7/);
+assert.match(html, /src\/main\.js\?v=7/);
 assert.match(serviceWorker, /src\/missions\.js/);
 assert.match(serviceWorker, /ignoreSearch:\s*true/);
 

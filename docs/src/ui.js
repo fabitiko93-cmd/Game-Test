@@ -1,17 +1,18 @@
-import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=6";
+import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=7";
 import {
   activeWeapon,
   ammoLabel,
   carryCapacity,
   compatibleMods,
+  countType,
   equipmentSummary,
   findItem,
   inventoryWeight,
   itemDefinition,
   roundsInWeapon,
   weaponCapacity,
-} from "./inventory.js?v=6";
-import { backgroundName, skillRank, visibleInfectionState, woundDisplay } from "./character.js?v=6";
+} from "./inventory.js?v=7";
+import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js?v=7";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -27,7 +28,7 @@ export class GameUI {
       "character-name", "background-options", "background-description", "character-confirm",
       "hp-fill", "stamina-fill", "hunger-need", "thirst-need", "wound-need",
       "hunger-state", "thirst-state", "wound-state", "awareness-fill", "noise-fill",
-      "awareness-state", "noise-state", "location", "clock", "message", "target-label",
+      "awareness-state", "noise-state", "cover-fill", "cover-state", "location", "clock", "message", "target-label",
       "enemy-target", "enemy-state", "enemy-name", "enemy-hp-fill", "aim-meter", "aim-fill", "ammo-label",
       "action-button", "action-label", "attack-button", "stance-button", "stance-label", "reload-button",
       "mission-button", "mission-indicator", "inventory-button", "inventory-count", "character-button",
@@ -149,6 +150,10 @@ export class GameUI {
       ? awareness.source === "sound" ? "GEHÖRT" : "BEMERKT"
       : awareness.awareness > .08 ? "RISIKO" : "SICHER";
     this.el.noise_state.textContent = noiseLevel > .68 ? "LAUT" : noiseLevel > .3 ? "HÖRBAR" : noiseLevel > .05 ? "LEISE" : "STILL";
+    const cover = game.stealth?.coverStatus(game) || { value: 0, label: "KEINE", detail: "UNGESCHÜTZT", hidden: false };
+    this.el.cover_fill.style.width = `${cover.value * 100}%`;
+    this.el.cover_fill.style.background = cover.hidden ? "#8c9f78" : "#9a8658";
+    this.el.cover_state.textContent = cover.hidden ? `${cover.label} · ${cover.detail}` : cover.label;
 
     this.el.location.textContent = game.locationName();
     this.el.clock.textContent = game.clockText();
@@ -205,6 +210,17 @@ export class GameUI {
       this.el.action_button.querySelector("span").textContent = "◎";
       this.el.action_label.textContent = "SCHUSS";
       this.el.target_label.classList.remove("show");
+      return;
+    }
+    const stealthContext = game.stealth?.executionContext(game) || game.stealth?.hideContext(game);
+    if (stealthContext) {
+      this.el.action_button.classList.remove("fire-ready");
+      this.el.action_button.querySelector("span").textContent = stealthContext.kind === "execution" ? "†" : "◌";
+      this.el.action_button.classList.toggle("ready", Boolean(stealthContext.actionable || game.stealth?.state(game).hidden));
+      this.el.action_label.textContent = game.stealth?.state(game).hidden && stealthContext.kind === "hidden"
+        ? "AUFDECKEN" : stealthContext.label;
+      this.el.target_label.textContent = stealthContext.hint || "DECKUNG";
+      this.el.target_label.classList.add("show");
       return;
     }
     this.el.action_button.classList.remove("fire-ready");
@@ -434,14 +450,14 @@ export class GameUI {
     }
   }
 
-  toggleCharacter(player) {
+  toggleCharacter(player, game) {
     const opening = this.el.character_panel.classList.contains("hidden");
     this.closeAllPanels();
     this.el.character_panel.classList.toggle("hidden", !opening);
-    if (opening) this.renderCharacter(player);
+    if (opening) this.renderCharacter(player, game);
   }
 
-  renderCharacter(player) {
+  renderCharacter(player, game) {
     this.el.character_title.textContent = player.name.toUpperCase();
     this.el.character_background.textContent = `${backgroundName(player).toUpperCase()} · ÜBERLEBENDER ${String(player.survivorNumber).padStart(2, "0")}`;
     this.el.skill_list.replaceChildren();
@@ -491,9 +507,36 @@ export class GameUI {
       this.el.wound_list.append(empty);
     } else {
       for (const wound of player.wounds) {
-        const entry = document.createElement("div");
+        const entry = document.createElement("article");
         entry.className = "wound-entry";
-        entry.textContent = woundDisplay(wound, player);
+        const copy = document.createElement("div");
+        const title = document.createElement("strong");
+        title.textContent = woundDisplay(wound, player);
+        const detail = document.createElement("small");
+        detail.textContent = wound.bandaged
+          ? wound.bandageType === "cloth" ? "Notverband hält die Blutung nur gedämpft." : "Blutung gedämpft · bei Bedarf später neu verbinden."
+          : "Offen · zuerst Blutung stillen.";
+        copy.append(title, detail);
+        entry.append(copy);
+        const actions = document.createElement("div");
+        actions.className = "wound-actions";
+        for (const option of woundTreatmentOptions(player, wound)) {
+          const button = document.createElement("button");
+          button.className = `wound-action ${option.tone || ""}`;
+          button.textContent = `${option.label} · ${countType(player, option.type)}`;
+          button.addEventListener("click", event => {
+            event.stopPropagation();
+            this.callbacks.treatWound?.(wound.id, option.type);
+          });
+          actions.append(button);
+        }
+        if (!actions.childElementCount) {
+          const empty = document.createElement("small");
+          empty.className = "wound-no-action";
+          empty.textContent = wound.normalInfected ? "KEIN PASSENDES MATERIAL" : "BEOBACHTEN";
+          actions.append(empty);
+        }
+        entry.append(actions);
         this.el.wound_list.append(entry);
       }
     }
@@ -595,7 +638,7 @@ export class GameUI {
     this.renderQuickbar(player);
     if (!this.el.mission_panel.classList.contains("hidden")) this.renderMission(game);
     if (!this.el.inventory_panel.classList.contains("hidden")) this.renderInventory(player, game);
-    if (!this.el.character_panel.classList.contains("hidden")) this.renderCharacter(player);
+    if (!this.el.character_panel.classList.contains("hidden")) this.renderCharacter(player, game);
     if (!this.el.weapon_panel.classList.contains("hidden")) {
       const weapon = findItem(player, this.weaponId);
       if (weapon) this.renderWeaponPanel(weapon, player);

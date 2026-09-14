@@ -51,9 +51,9 @@ export const EQUIPMENT_SLOTS = {
   back: "RÜCKEN",
 };
 
-const melee = (name, short, skill, damage, range, cooldown, accuracy, noise, weight, hands, description) => ({
+const melee = (name, short, skill, damage, range, cooldown, accuracy, noise, weight, hands, description, options = {}) => ({
   name, short, type: "weapon", icon: "weapon", weaponKind: "melee", skill,
-  damage, range, cooldown, accuracy, noise, weight, hands, stack: 1, condition: 100, description,
+  damage, range, cooldown, accuracy, noise, weight, hands, stack: 1, condition: 100, description, ...options,
 });
 
 const firearm = (name, short, options) => ({
@@ -62,7 +62,7 @@ const firearm = (name, short, options) => ({
 });
 
 export const ITEMS = {
-  kitchen_knife: melee("Küchenmesser", "Messer", "blades", 20, 1.13, 0.95, 0.84, 1.8, 0.35, 1, "Schnell und leise, aber ohne große Reichweite."),
+  kitchen_knife: melee("Küchenmesser", "Messer", "blades", 20, 1.13, 0.95, 0.84, 1.8, 0.35, 1, "Schnell und leise, aber ohne große Reichweite.", { execution: true }),
   hammer: melee("Schlosserhammer", "Hammer", "blunt", 27, 1.04, 1.28, 0.8, 3.4, 0.75, 1, "Kurze Reichweite, kräftiger Taumelschlag."),
   baseball_bat: melee("Baseballschläger", "Schläger", "blunt", 25, 1.55, 1.42, 0.85, 4.1, 1.15, 2, "Reichweite und Kontrolle gegen einzelne Infizierte."),
   axe: melee("Spaltaxt", "Axt", "blades", 42, 1.34, 1.75, 0.78, 5.2, 1.65, 2, "Langsam und anstrengend, dafür verheerend."),

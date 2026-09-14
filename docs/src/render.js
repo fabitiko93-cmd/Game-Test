@@ -1,7 +1,7 @@
-import { COLORS, VIEW } from "./config.js?v=6";
-import { activeWeapon, itemDefinition } from "./inventory.js?v=6";
-import { VISION, visionGeometry } from "./perception.js?v=6";
-import { clamp, hash2, lerp } from "./util.js?v=6";
+import { COLORS, VIEW } from "./config.js?v=7";
+import { activeWeapon, itemDefinition } from "./inventory.js?v=7";
+import { VISION, visionGeometry } from "./perception.js?v=7";
+import { clamp, hash2, lerp } from "./util.js?v=7";
 
 export class Renderer {
   constructor(canvas) {
@@ -24,6 +24,7 @@ export class Renderer {
     this.contextId = null;
     this.frame = 0;
     this.visionCache = new Map();
+    this.coverHintCache = { key: "", objects: [] };
     this.diagnostics = false;
     this.metrics = { fps: 0, frames: 0, time: 0, visibleTiles: 0, visibleObjects: 0 };
     this.backgroundGradient = null;
@@ -156,6 +157,7 @@ export class Renderer {
     this.drawGround(game.world, game.minutes);
     this.drawBlood(game.world);
     this.drawPlayerNoise(game);
+    this.drawCoverHints(game);
     this.drawVisionCones(game);
     this.drawDestination();
     this.contextId = game.contextObject()?.id || null;
@@ -440,7 +442,10 @@ export class Renderer {
     this.shadow(p, crouched ? 15 : 13, crouched ? 6 : 5, .38);
     ctx.save();
     ctx.translate(Math.round(p.x), Math.round(p.y + bob + bodyOffset));
-    if (player.hurtFlash > 0) ctx.globalAlpha = .62 + .38 * Math.sin(this.frame);
+    if (player.hurtFlash > 0) {
+      const hitPulse = clamp((player.hurtFlash || 0) / 0.24, 0, 1);
+      ctx.globalAlpha = clamp(1 - hitPulse * 0.28 + Math.sin(this.frame * 0.9) * hitPulse * 0.08, 0.62, 1);
+    }
     if (player.dead) ctx.globalAlpha = .42;
     const dirX = Math.sign(player.facingX);
     const dirY = Math.sign(player.facingY);
@@ -464,6 +469,15 @@ export class Renderer {
     ctx.fillStyle = "#677064";
     ctx.fillRect(-11, crouched ? -22 : -25, 4, 14);
     ctx.fillRect(7, crouched ? -22 : -25, 4, 14);
+    if (game.stealth?.state(game).hidden) {
+      ctx.strokeStyle = "rgba(154,174,117,.9)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 2]);
+      ctx.beginPath();
+      ctx.ellipse(0, crouched ? -15 : -18, 14, crouched ? 18 : 22, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
     if (weapon) {
       if (weaponDefinition.weaponKind === "firearm") {
         ctx.strokeStyle = "#343a35";
@@ -558,6 +572,37 @@ export class Renderer {
       }
     }
     this.hotspots.push({ id: zombie.id, kind: "zombie", ref: zombie, x: p.x, y: p.y - 20, radius: 25 });
+  }
+
+  drawCoverHints(game) {
+    const player = game.player;
+    const inSneak = player.stance === "sneak";
+    const stealthState = game.stealth?.state(game) || {};
+    const hidden = stealthState.hidden;
+    if (!inSneak && !hidden) return;
+    const ctx = this.ctx;
+    const cacheKey = `${Math.round(player.x)},${Math.round(player.y)}:${inSneak ? 1 : 0}:${hidden ? 1 : 0}:${stealthState.coverId || ""}`;
+    if (this.coverHintCache.key !== cacheKey) {
+      this.coverHintCache = {
+        key: cacheKey,
+        objects: game.world.objectsNear(player.x, player.y, 5.2)
+          .filter(object => !object.removed && (object.cover || 0) >= 0.42),
+      };
+    }
+    for (const object of this.coverHintCache.objects) {
+      if (object.removed || (object.cover || 0) < 0.42) continue;
+      const point = this.iso(object.x, object.y, 2);
+      const distanceFactor = clamp(1 - Math.hypot(object.x - player.x, object.y - player.y) / 5.2, 0.18, 1);
+      ctx.save();
+      ctx.globalAlpha = (hidden && object.id === stealthState.coverId ? 0.7 : 0.2) * distanceFactor;
+      ctx.strokeStyle = hidden && object.id === stealthState.coverId ? "#a4bb83" : "#c4a75e";
+      ctx.lineWidth = object.id === stealthState.coverId ? 2 : 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.ellipse(point.x, point.y, 22, 9, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   withImpact(point, entity, amount) {

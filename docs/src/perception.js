@@ -1,6 +1,6 @@
-import { STANCES } from "./config.js?v=6";
-import { skillValue } from "./character.js?v=6";
-import { clamp, distance } from "./util.js?v=6";
+import { STANCES } from "./config.js?v=7";
+import { skillValue } from "./character.js?v=7";
+import { clamp, distance } from "./util.js?v=7";
 
 export const VISION = Object.freeze({
   range: 8.2,
@@ -20,7 +20,8 @@ export function playerVisibility(player, minutes) {
   const stealth = skillValue(player, "stealth");
   const skillReduction = 1 - stealth * 0.003;
   const movement = player.running ? 1.28 : player.moving ? 1.06 : 0.82;
-  return stance.visibility * skillReduction * movement * daylight(minutes);
+  const hidden = player.stealthState?.hidden ? 0.28 : 1;
+  return stance.visibility * skillReduction * movement * daylight(minutes) * hidden;
 }
 
 export function visionGeometry(observer, player, world, minutes) {

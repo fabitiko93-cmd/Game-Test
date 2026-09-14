@@ -1,6 +1,6 @@
-import { BACKGROUNDS, ITEMS, SKILLS } from "./data.js?v=6";
-import { addItem, damageProtection, equipItem, equipmentProtection, createItem } from "./inventory.js?v=6";
-import { clamp, uid } from "./util.js?v=6";
+import { BACKGROUNDS, ITEMS, SKILLS } from "./data.js?v=7";
+import { addItem, damageProtection, equipItem, equipmentProtection, createItem } from "./inventory.js?v=7";
+import { clamp, uid } from "./util.js?v=7";
 
 const RANKS = [
   [90, "MEISTERHAFT"],
@@ -40,6 +40,16 @@ export function createPlayer({ name, background = "citizen", survivorNumber = 1 
     noiseRadius: 0,
     visibilityPulse: 0,
     hurtFlash: 0,
+    stealthState: {
+      hidden: false,
+      coverId: null,
+      coverLabel: null,
+      reserve: 0,
+      maxReserve: 0,
+      moved: 0,
+      cooldown: 0,
+      execution: null,
+    },
     hitKick: 0,
     impactX: 0,
     impactY: 0,
@@ -105,11 +115,11 @@ export function protectionForAttack(player, zone) {
   return equipmentProtection(player, zone);
 }
 
-const WOUND_DATA = {
+export const WOUND_DATA = Object.freeze({
   scratch: { label: "KRATZER", infection: 0.05, damage: 3, bleed: 0.026 },
   laceration: { label: "RISSWUNDE", infection: 0.2, damage: 7, bleed: 0.065 },
   bite: { label: "BISSWUNDE", infection: 1, damage: 11, bleed: 0.09 },
-};
+});
 
 const ZONES = [
   ["torso", "OBERKÖRPER"],
@@ -209,34 +219,70 @@ export function updateCharacter(player, realDelta, gameDeltaMinutes, gameMinutes
 }
 
 export function treatWithItem(player, itemType) {
+  return treatWound(player, itemType);
+}
+
+function itemCount(player, type) {
+  return (player.inventory || [])
+    .filter(item => item.type === type)
+    .reduce((sum, item) => sum + (item.count || 1), 0);
+}
+
+export function woundTreatmentOptions(player, wound) {
+  if (!wound) return [];
+  const options = [];
+  if (!wound.bandaged) {
+    if (itemCount(player, "bandage") > 0) options.push({ type: "bandage", label: "VERBINDEN", tone: "good" });
+    if (itemCount(player, "cloth") > 0) options.push({ type: "cloth", label: "NOTVERBAND", tone: "warn" });
+  }
+  if (!wound.disinfected && itemCount(player, "disinfectant") > 0) {
+    options.push({ type: "disinfectant", label: "DESINFIZIEREN", tone: "good" });
+  }
+  if (wound.normalInfected && itemCount(player, "antibiotics") > 0) {
+    options.push({ type: "antibiotics", label: "ANTIBIOTIKA", tone: "warn" });
+  }
+  return options;
+}
+
+export function treatWound(player, itemType, woundId = null) {
   if (itemType === "bandage" || itemType === "cloth") {
-    const wound = [...player.wounds]
-      .filter(entry => !entry.bandaged && entry.bleed > 0)
-      .sort((a, b) => b.bleed - a.bleed)[0];
+    const wound = (woundId ? player.wounds.find(entry => entry.id === woundId) : null)
+      || [...player.wounds].filter(entry => !entry.bandaged && entry.bleed > 0)
+        .sort((a, b) => b.bleed - a.bleed)[0];
     if (!wound) return { used: false, message: "KEINE OFFENE BLUTUNG" };
+    if (wound.bandaged) return { used: false, message: "DIE WUNDE IST BEREITS VERBUNDEN" };
     wound.bandaged = true;
-    if (itemType === "cloth") wound.bleed *= 1.35;
+    wound.bandageType = itemType;
+    wound.bandagedAt = wound.ageMinutes;
+    if (itemType === "cloth") {
+      wound.bleed *= 1.35;
+      wound.contaminated = true;
+    }
     gainSkill(player, "firstAid", itemType === "bandage" ? 0.7 : 0.45);
-    return { used: true, message: `${WOUND_DATA[wound.type].label} VERBUNDEN` };
+    return { used: true, wound, message: itemType === "cloth"
+      ? `${WOUND_DATA[wound.type].label} MIT NOTVERBAND VERSORGT`
+      : `${WOUND_DATA[wound.type].label} SAUBER VERBUNDEN` };
   }
 
   if (itemType === "disinfectant") {
-    const wound = [...player.wounds]
-      .filter(entry => !entry.disinfected)
-      .sort((a, b) => b.bleed - a.bleed)[0];
-    if (!wound) return { used: false, message: "KEINE UNVERSORGTE WUNDE" };
+    const wound = (woundId ? player.wounds.find(entry => entry.id === woundId) : null)
+      || [...player.wounds].filter(entry => !entry.disinfected).sort((a, b) => b.bleed - a.bleed)[0];
+    if (!wound) return { used: false, message: "ALLE WUNDEN SIND BEREITS DESINFIZIERT" };
     wound.disinfected = true;
     wound.normalInfected = false;
+    wound.contaminated = false;
     gainSkill(player, "firstAid", 0.45);
-    return { used: true, message: "WUNDE DESINFIZIERT" };
+    return { used: true, wound, message: `${WOUND_DATA[wound.type].label} DESINFIZIERT` };
   }
 
   if (itemType === "antibiotics") {
-    const infection = player.wounds.find(wound => wound.normalInfected);
+    const infection = (woundId ? player.wounds.find(wound => wound.id === woundId && wound.normalInfected) : null)
+      || player.wounds.find(wound => wound.normalInfected);
     if (!infection) return { used: false, message: "KEINE BEHANDELBARE INFEKTION" };
     infection.normalInfected = false;
+    infection.contaminated = false;
     gainSkill(player, "firstAid", 0.35);
-    return { used: true, message: "BAKTERIELLE INFEKTION BEHANDELT" };
+    return { used: true, wound: infection, message: "BAKTERIELLE INFEKTION BEHANDELT" };
   }
 
   if (itemType === "painkillers") {
@@ -259,8 +305,11 @@ export function visibleInfectionState(player) {
 export function woundDisplay(wound, player) {
   const definition = WOUND_DATA[wound.type];
   const details = [definition.label, wound.zoneLabel];
-  if (wound.bandaged) details.push("VERBUNDEN");
+  details.push(wound.bandaged ? wound.bandageType === "cloth" ? "NOTVERBAND" : "VERBUNDEN" : "OFFEN");
+  if (!wound.bandaged && wound.bleed > 0.03) details.push("BLUTUNG");
+  if (wound.disinfected) details.push("DESINFIZIERT");
   if (wound.normalInfected && (wound.ageMinutes > 120 || skillValue(player, "firstAid") >= 30)) details.push("ENTZÜNDET");
+  else if (wound.type === "bite") details.push("INFEKTIONSRISIKO");
   return details.join(" · ");
 }
 
