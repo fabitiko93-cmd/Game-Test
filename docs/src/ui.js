@@ -1,4 +1,4 @@
-import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=9";
+import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=11";
 import {
   activeWeapon,
   ammoLabel,
@@ -11,8 +11,8 @@ import {
   itemDefinition,
   roundsInWeapon,
   weaponCapacity,
-} from "./inventory.js?v=9";
-import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js?v=9";
+} from "./inventory.js?v=11";
+import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js?v=11";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -26,7 +26,9 @@ export class GameUI {
     const ids = [
       "loading", "start-button", "hud", "character-creator", "creator-kicker", "creator-number",
       "character-name", "background-options", "background-description", "character-confirm",
-      "hp-fill", "stamina-fill", "hunger-need", "thirst-need", "wound-need",
+      "hp-fill", "stamina-fill", "hud-tactical-stealth", "hud-stealth-state", "hud-tactical-cover", "hud-cover-state",
+      "hud-tactical-awareness", "hud-awareness-state", "hud-tactical-noise", "hud-noise-state",
+      "hunger-need", "thirst-need", "wound-need",
       "hunger-state", "thirst-state", "wound-state", "awareness-fill", "noise-fill",
       "awareness-state", "noise-state", "cover-fill", "cover-state", "location", "clock", "message", "target-label",
       "enemy-target", "enemy-state", "enemy-name", "enemy-hp-fill", "aim-meter", "aim-fill", "ammo-label",
@@ -156,6 +158,21 @@ export class GameUI {
     this.el.cover_fill.style.background = cover.hidden ? "#8c9f78" : "#9a8658";
     this.el.cover_state.textContent = cover.hidden ? `${cover.label} · ${cover.detail}` : cover.label;
 
+    const stealth = game.stealth?.state(game) || {};
+    const awarenessLabel = awareness.pursuing ? "ENTDECKT" : awareness.suspicious
+      ? awareness.source === "sound" ? "GEHÖRT" : "BEMERKT"
+      : awareness.awareness > .08 ? "RISIKO" : "SICHER";
+    const noiseLabel = noiseLevel > .68 ? "LAUT" : noiseLevel > .3 ? "HÖRBAR" : noiseLevel > .05 ? "LEISE" : "STILL";
+    const stealthLabel = stealth.hidden ? "VERBORGEN" : player.stance === "sneak" ? "SCHLEICHEN" : "AUS";
+    const coverLabel = cover.hidden ? cover.label : cover.value >= .42 ? cover.label : "KEINE";
+    this.el.hud_stealth_state.textContent = stealthLabel;
+    this.el.hud_cover_state.textContent = coverLabel;
+    this.el.hud_awareness_state.textContent = awarenessLabel;
+    this.el.hud_noise_state.textContent = noiseLabel;
+    this.el.hud_tactical_stealth.className = `tactical-signal ${stealth.hidden ? "active" : player.stance === "sneak" ? "ready" : ""}`;
+    this.el.hud_tactical_cover.className = `tactical-signal ${cover.hidden ? "active" : cover.value >= .42 ? "ready" : ""}`;
+    this.el.hud_tactical_awareness.className = `tactical-signal ${awareness.pursuing ? "critical" : awareness.suspicious || awareness.awareness > .08 ? "warning" : ""}`;
+    this.el.hud_tactical_noise.className = `tactical-signal ${noiseLevel > .68 ? "critical" : noiseLevel > .3 ? "warning" : ""}`;
     this.el.location.textContent = game.locationName();
     this.el.clock.textContent = game.clockText();
     this.el.mission_indicator.textContent = String(game.mission + 1).padStart(2, "0");

@@ -137,15 +137,17 @@ for (const id of [
   "execute-button", "execute-label", "execute-hint", "status-button", "status-panel",
   "mission-button", "mission-panel", "mission-title", "mission-objective", "mission-steps",
   "recenter-button", "diagnostics-button", "debug-stats",
+  "hud-tactical-stealth", "hud-stealth-state", "hud-tactical-cover", "hud-cover-state",
+  "hud-tactical-awareness", "hud-awareness-state", "hud-tactical-noise", "hud-noise-state",
 ]) {
   assert.match(html, new RegExp(`id=["']${id}["']`), `missing UI contract: ${id}`);
 }
-assert.match(html, /style\.css\?v=8/);
-assert.match(html, /src\/main\.js\?v=10/);
+assert.match(html, /style\.css\?v=11/);
+assert.match(html, /src\/main\.js\?v=11/);
 assert.match(uiSource, /BENÖTIGT:/);
 assert.match(serviceWorker, /src\/missions\.js/);
 assert.match(serviceWorker, /ignoreSearch:\s*true/);
 
-assert.match(serviceWorker, /sperrkreis98-v10/);
+assert.match(serviceWorker, /sperrkreis98-v11/);
 
 console.log("SPERRKREIS 98 core tests passed");

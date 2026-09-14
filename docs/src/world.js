@@ -1,7 +1,7 @@
-import { COLORS, VIEW } from "./config.js?v=9";
-import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=9";
-import { createItem } from "./inventory.js?v=9";
-import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=9";
+import { COLORS, VIEW } from "./config.js?v=11";
+import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=11";
+import { createItem } from "./inventory.js?v=11";
+import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=11";
 
 export const BUILDINGS = [
   { id: "police", name: "POLIZEIPOSTEN", x: 15, y: 4, w: 10, h: 9, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
@@ -191,8 +191,8 @@ export class World {
     this.addVehicle(4.8, 11.6, {
       orientation: "x", color: "#77705a", name: "AUSGEBLICHENER KOMBI",
     });
-    this.addObject("locker", 10.2, 5.4, {
-      solid: true, interactable: true, container: "clothing", name: "GARTENSCHRANK",
+    this.addObject("groundloot", 10.2, 5.4, {
+      interactable: true, solid: false, container: "tools", name: "GARTENWERKZEUGTASCHE",
     });
     this.addObject("corpse", 8.8, 11.1, {
       interactable: true, solid: false, container: "corpse", name: "REGLOSE PERSON",
@@ -219,8 +219,8 @@ export class World {
     this.addObject("toolbox", 23.5, 37.4, {
       interactable: true, solid: true, container: "tools", name: "WERKBANK",
     });
-    this.addObject("locker", 17.5, 41.8, {
-      interactable: true, solid: true, container: "clothing", name: "UMKLEIDESPIND",
+    this.addObject("groundloot", 17.5, 41.8, {
+      interactable: true, solid: false, container: "clothing", name: "JAGDRUCKSACK",
     });
     this.addVehicle(16.3, 39.5, {
       orientation: "x", color: "#49554c", name: "ALTES JAGDFAHRZEUG",
@@ -259,7 +259,7 @@ export class World {
           solid: true, blocksSight: true, cover: 0.68, coverLabel: "BAUM", variant: Math.floor(r * 10) % 3,
         });
         else if (r > 0.85) this.addObject("bush", x + 0.2, y + 0.15, {
-          solid: false, cover: 0.74, coverLabel: "BUSCH", variant: Math.floor(r * 20) % 2,
+          solid: false, blocksSight: true, cover: 0.74, coverLabel: "BUSCH", variant: Math.floor(r * 20) % 2,
         });
       }
     }

@@ -11,7 +11,7 @@
   <title>SPERRKREIS 98</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
   <main id="game-shell" aria-label="SPERRKREIS 98">
@@ -58,6 +58,12 @@
         <div class="meters">
           <div class="meter hp"><i id="hp-fill"></i><b>GESUNDHEIT</b></div>
           <div class="meter stamina"><i id="stamina-fill"></i><b>AUSDAUER</b></div>
+        </div>
+        <div class="tactical-hud" aria-label="Taktische Anzeigen">
+          <div id="hud-tactical-stealth" class="tactical-signal"><span>TARNUNG</span><strong id="hud-stealth-state">AUS</strong></div>
+          <div id="hud-tactical-cover" class="tactical-signal"><span>DECKUNG</span><strong id="hud-cover-state">KEINE</strong></div>
+          <div id="hud-tactical-awareness" class="tactical-signal"><span>ENTDECKUNG</span><strong id="hud-awareness-state">SICHER</strong></div>
+          <div id="hud-tactical-noise" class="tactical-signal"><span>GERÄUSCH</span><strong id="hud-noise-state">STILL</strong></div>
         </div>
       </div>
 
@@ -140,7 +146,7 @@
       <div class="status-help">
         <strong>SO LIEST DU DEN STATUS</strong>
         <p><b>Hunger / Durst:</b> sinkende Werte bremsen Regeneration und Ausdauer. Essen und Trinken findest du in Behältern.</p>
-        <p><b>Deckung:</b> <b>SCHLEICHEN</b> aktivieren, an eine Mauer, einen Baum, Busch oder Wagen treten und <b>VERBERGEN</b> drücken. Gelbe Ringe markieren nutzbare Deckung, grün bedeutet verborgen.</p>
+        <p><b>Deckung:</b> <b>SCHLEICHEN</b> aktivieren, an eine Mauer, einen Baum, Busch oder Wagen treten und <b>VERBERGEN</b> drücken. Die Deckung muss zwischen dir und dem Zombie liegen; gelbe Ringe markieren sie, grün bedeutet verborgen.</p>
         <p><b>Exekution:</b> verborgen bleiben, ein Messer ausrüsten und einen ruhigen Zombie antippen. Im Ziel-Fenster erscheint dann <b>† AUSSCHALTEN</b>. Rennen oder Entdeckung beendet den Vorteil.</p>
       </div>
       <footer><span>Werte aktualisieren sich laufend.</span></footer>
@@ -230,6 +236,6 @@
 
     <div id="toast" class="toast"></div>
   </main>
-  <script type="module" src="src/main.js?v=10"></script>
+  <script type="module" src="src/main.js?v=11"></script>
 </body>
 </html>

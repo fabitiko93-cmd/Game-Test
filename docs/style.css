@@ -162,6 +162,45 @@ h1 span { color: var(--red-bright); }
 .meter.stamina i { background: linear-gradient(90deg, #506947, #8ba077); }
 .meter b { position: relative; display: block; padding: 1px 6px; font: 600 8px "IBM Plex Mono", monospace; letter-spacing: .08em; text-shadow: 0 1px 2px #000; }
 
+.tactical-hud {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  margin-top: 4px;
+}
+.tactical-signal {
+  min-width: 0;
+  min-height: 21px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  padding: 3px 5px;
+  overflow: hidden;
+  border-left: 2px solid #64705f;
+  background: rgba(9,13,11,.72);
+  box-shadow: 0 2px 8px #0008;
+}
+.tactical-signal span {
+  color: #9fa69a;
+  font: 600 6px "IBM Plex Mono", monospace;
+  letter-spacing: .08em;
+}
+.tactical-signal strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #b9c4ac;
+  font: 700 7px "IBM Plex Mono", monospace;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tactical-signal.active { border-left-color: #a8c08a; background: rgba(53,78,54,.78); }
+.tactical-signal.ready { border-left-color: #c5a052; }
+.tactical-signal.warning { border-left-color: #c5a052; background: rgba(67,52,26,.74); }
+.tactical-signal.critical { border-left-color: #cf4a3f; background: rgba(60,23,20,.82); }
+.tactical-signal.critical strong { color: #e36a5e; }
+
 .needs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; margin-top: 4px; }
 .needs > div {
   min-width: 0;

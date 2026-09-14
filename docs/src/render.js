@@ -1,7 +1,7 @@
-import { COLORS, VIEW } from "./config.js?v=9";
-import { activeWeapon, itemDefinition } from "./inventory.js?v=9";
-import { VISION, visionGeometry } from "./perception.js?v=9";
-import { clamp, hash2, lerp } from "./util.js?v=9";
+import { COLORS, VIEW } from "./config.js?v=11";
+import { activeWeapon, itemDefinition } from "./inventory.js?v=11";
+import { VISION, visionGeometry } from "./perception.js?v=11";
+import { clamp, hash2, lerp } from "./util.js?v=11";
 
 export class Renderer {
   constructor(canvas) {
@@ -405,12 +405,77 @@ export class Renderer {
   }
 
   drawCar(o) {
-    const ctx=this.ctx,p=this.iso(o.x,o.y);this.shadow(p,36,12,.35);
-    const w=o.orientation==="x"?1.55:.86,d=o.orientation==="x"?.86:1.55;
-    this.drawBlock(o.x,o.y,w,d,18,o.color);
-    this.drawBlock(o.x,o.y,w*.62,d*.62,30,this.shiftColor(o.color,10));
-    const wind=this.iso(o.x,o.y,28);ctx.fillStyle="rgba(120,151,153,.65)";ctx.fillRect(wind.x-10,wind.y-3,20,5);
-    ctx.fillStyle="#171a18";ctx.fillRect(p.x-25,p.y-1,10,4);ctx.fillRect(p.x+15,p.y-1,10,4);
+    const ctx = this.ctx;
+    const horizontal = o.orientation === "x";
+    const p = this.iso(o.x, o.y);
+    const bodyW = horizontal ? 1.72 : .94;
+    const bodyD = horizontal ? .94 : 1.72;
+    const bodyColor = o.color || "#59615b";
+    this.shadow(p, horizontal ? 38 : 25, horizontal ? 12 : 25, .34);
+
+    // Low body, cabin and a separate glass roof make the silhouette read as a car.
+    this.drawBlock(o.x, o.y, bodyW, bodyD, 15, bodyColor);
+    this.drawBlock(o.x, o.y, bodyW * .62, bodyD * .62, 27, this.shiftColor(bodyColor, 8));
+    const roofW = bodyW * .56;
+    const roofD = bodyD * .56;
+    const roof = [
+      this.iso(o.x - roofW / 2, o.y - roofD / 2, 29),
+      this.iso(o.x + roofW / 2, o.y - roofD / 2, 29),
+      this.iso(o.x + roofW / 2, o.y + roofD / 2, 29),
+      this.iso(o.x - roofW / 2, o.y + roofD / 2, 29),
+    ];
+    ctx.fillStyle = "rgba(111,145,145,.72)";
+    ctx.beginPath();
+    ctx.moveTo(roof[0].x, roof[0].y);
+    for (const point of roof.slice(1)) ctx.lineTo(point.x, point.y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "rgba(24,35,34,.72)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Windshield divider and hood/trunk seams provide orientation at a glance.
+    ctx.strokeStyle = "rgba(202,195,155,.46)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (horizontal) {
+      const seam = this.iso(o.x, o.y, 28);
+      ctx.moveTo(seam.x - 9, seam.y - 4);
+      ctx.lineTo(seam.x + 9, seam.y + 4);
+    } else {
+      const seam = this.iso(o.x, o.y, 28);
+      ctx.moveTo(seam.x - 9, seam.y + 4);
+      ctx.lineTo(seam.x + 9, seam.y - 4);
+    }
+    ctx.stroke();
+
+    const wheelOffsets = horizontal
+      ? [[-.57, -.43], [.57, -.43], [-.57, .43], [.57, .43]]
+      : [[-.43, -.57], [.43, -.57], [-.43, .57], [.43, .57]];
+    for (const [dx, dy] of wheelOffsets) {
+      const wheel = this.iso(o.x + dx, o.y + dy, 4);
+      ctx.fillStyle = "#171a18";
+      ctx.beginPath();
+      ctx.ellipse(wheel.x, wheel.y, 5, 2.8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(174,166,138,.55)";
+      ctx.fillRect(wheel.x - 1, wheel.y - 1, 2, 1);
+    }
+
+    const front = horizontal ? this.iso(o.x + bodyW * .43, o.y, 16) : this.iso(o.x, o.y + bodyD * .43, 16);
+    const rear = horizontal ? this.iso(o.x - bodyW * .43, o.y, 16) : this.iso(o.x, o.y - bodyD * .43, 16);
+    ctx.fillStyle = "#d7c979";
+    ctx.fillRect(front.x - 3, front.y - 2, 3, 2);
+    ctx.fillStyle = "#7e302b";
+    ctx.fillRect(rear.x, rear.y - 1, 3, 2);
+    if (o.searched) {
+      ctx.strokeStyle = "rgba(204,194,149,.58)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(p.x - 8, p.y - 7);
+      ctx.lineTo(p.x + 8, p.y + 7);
+      ctx.stroke();
+    }
   }
 
   drawShed(o) {
