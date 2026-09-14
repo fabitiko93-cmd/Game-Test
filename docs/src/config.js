@@ -19,8 +19,8 @@ export const GAME = {
 };
 
 export const SAVE = {
-  key: "sperrkreis98-save-v3",
-  version: 3,
+  key: "sperrkreis98-save-v4",
+  version: 4,
 };
 
 export const STANCES = {

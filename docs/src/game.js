@@ -1,4 +1,4 @@
-import { ZombieSystem, createInitialZombies } from "./ai.js?v=8";
+import { ZombieSystem, createInitialZombies } from "./ai.js?v=9";
 import {
   backgroundName,
   createPlayer,
@@ -8,10 +8,10 @@ import {
   treatWound as treatWoundWithItem,
   treatWithItem,
   updateCharacter,
-} from "./character.js?v=8";
-import { CombatSystem } from "./combat.js?v=8";
-import { GAME, STANCES } from "./config.js?v=8";
-import { ITEMS } from "./data.js?v=8";
+} from "./character.js?v=9";
+import { CombatSystem } from "./combat.js?v=9";
+import { GAME, STANCES } from "./config.js?v=10";
+import { ITEMS } from "./data.js?v=9";
 import {
   activeWeapon,
   addItem,
@@ -28,13 +28,13 @@ import {
   removeMod,
   roundsInWeapon,
   unequipSlot,
-} from "./inventory.js?v=8";
-import { Navigator } from "./navigation.js?v=8";
-import { missionAt, missionSteps } from "./missions.js?v=8";
-import { awarenessForPlayer } from "./perception.js?v=8";
-import { SaveStore } from "./save.js?v=8";
-import { StealthSystem, ensureStealthState } from "./stealth.js?v=8";
-import { clamp, distance, formatClock, vibrate } from "./util.js?v=8";
+} from "./inventory.js?v=9";
+import { Navigator } from "./navigation.js?v=9";
+import { missionAt, missionSteps } from "./missions.js?v=9";
+import { awarenessForPlayer } from "./perception.js?v=9";
+import { SaveStore } from "./save.js?v=10";
+import { StealthSystem, ensureStealthState } from "./stealth.js?v=9";
+import { clamp, distance, formatClock, vibrate } from "./util.js?v=9";
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
 

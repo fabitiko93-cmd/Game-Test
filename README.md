@@ -32,6 +32,7 @@ Die aktuelle Version ist unter **[fabitiko93-cmd.github.io/Game-Test](https://fa
 - Verletzungen, Blutung, behandelbare Wundinfektion und tödliche Zombieinfektion
 - Ironman-Autosave, permanenter Charaktertod und fortbestehende Welt mit plünderbarem Leichnam
 - auf mobile Safari begrenzte Pixeldichte, Sichtbereich-Culling und lokale Trefferreaktionen ohne globales Bildschirmwackeln
+- versionierter Autosave; ein struktureller Kartenwechsel startet bewusst mit einem frischen Spielstand
 
 ## Architektur
 

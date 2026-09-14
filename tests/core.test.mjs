@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { createInitialZombies } from "../docs/src/ai.js";
 import { createPlayer, gainSkill, inflictZombieAttack, updateCharacter } from "../docs/src/character.js";
 import { CombatSystem } from "../docs/src/combat.js";
-import { GAME } from "../docs/src/config.js";
+import { GAME, SAVE } from "../docs/src/config.js";
 import { ITEMS } from "../docs/src/data.js";
 import {
   addItem,
@@ -31,6 +31,8 @@ assert.ok(world.objects.length > 280);
 assert.ok(world.objects.filter(object => object.type === "car" && object.interactable).length >= 10);
 assert.ok(world.objects.filter(object => object.container === "vehicle").length >= 10);
 assert.equal(GAME.maxZombies, 20);
+assert.equal(SAVE.version, 4);
+assert.equal(SAVE.key, "sperrkreis98-save-v4");
 assert.ok(initialZombies.every(zombie => world.isPathCellWalkable(zombie.x, zombie.y, { allowDoors: false })));
 assert.deepEqual(world.clampPoint({ x: -40, y: 90 }), { x: 1, y: 46 });
 assert.ok(world.objectsInBounds(4, 36, 6, 40).some(object => object.name === "KÜCHENSCHRANK"));
@@ -139,11 +141,11 @@ for (const id of [
   assert.match(html, new RegExp(`id=["']${id}["']`), `missing UI contract: ${id}`);
 }
 assert.match(html, /style\.css\?v=8/);
-assert.match(html, /src\/main\.js\?v=9/);
+assert.match(html, /src\/main\.js\?v=10/);
 assert.match(uiSource, /BENÖTIGT:/);
 assert.match(serviceWorker, /src\/missions\.js/);
 assert.match(serviceWorker, /ignoreSearch:\s*true/);
 
-assert.match(serviceWorker, /sperrkreis98-v9/);
+assert.match(serviceWorker, /sperrkreis98-v10/);
 
 console.log("SPERRKREIS 98 core tests passed");

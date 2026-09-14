@@ -1,4 +1,4 @@
-import { SAVE } from "./config.js?v=7";
+import { SAVE } from "./config.js?v=10";
 
 export class SaveStore {
   constructor(storage = globalThis.localStorage) {

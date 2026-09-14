@@ -1,4 +1,4 @@
-import { Game } from "./game.js?v=9";
+import { Game } from "./game.js?v=10";
 import { InputController } from "./input.js?v=9";
 import { Renderer } from "./render.js?v=9";
 import { GameUI } from "./ui.js?v=9";
