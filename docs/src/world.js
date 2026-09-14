@@ -1,7 +1,7 @@
-import { COLORS, VIEW } from "./config.js?v=4";
-import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=4";
-import { createItem } from "./inventory.js?v=4";
-import { distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=4";
+import { COLORS, VIEW } from "./config.js?v=6";
+import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=6";
+import { createItem } from "./inventory.js?v=6";
+import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=6";
 
 export const BUILDINGS = [
   { id: "house", name: "REIHENHAUS", x: 3, y: 3, w: 10, h: 11, floor: "floor", door: { x: 8, y: 13 }, wall: "#78695e", roof: "#4b4039", locked: true, lockDifficulty: 14 },
@@ -20,10 +20,12 @@ export class World {
     this.random = mulberry32(seed);
     this.tiles = [];
     this.objects = [];
+    this.objectGrid = new Map();
     this.buildings = [];
     this.noises = [];
     this.blood = [];
     this.objectCounter = 0;
+    this.sightRevision = 0;
     this.generate();
   }
 
@@ -32,9 +34,11 @@ export class World {
     this.random = mulberry32(seed);
     this.tiles = [];
     this.objects = [];
+    this.objectGrid = new Map();
     this.noises = [];
     this.blood = [];
     this.objectCounter = 0;
+    this.sightRevision = 0;
     this.generate();
   }
 
@@ -205,7 +209,21 @@ export class World {
     };
     if (options.container && !options.items) object.items = this.rollLoot(options.container);
     this.objects.push(object);
+    const cellKey = this.cellKey(x, y);
+    if (!this.objectGrid.has(cellKey)) this.objectGrid.set(cellKey, []);
+    this.objectGrid.get(cellKey).push(object);
     return object;
+  }
+
+  cellKey(x, y) {
+    return `${Math.round(x)},${Math.round(y)}`;
+  }
+
+  clampPoint(point, margin = 1) {
+    return {
+      x: clamp(Number(point?.x) || margin, margin, VIEW.worldW - 1 - margin),
+      y: clamp(Number(point?.y) || margin, margin, VIEW.worldH - 1 - margin),
+    };
   }
 
   addCorpse(x, y, name, items, metadata = {}) {
@@ -244,10 +262,7 @@ export class World {
   }
 
   objectAtCell(x, y, predicate = () => true) {
-    return this.objects.find(object => !object.removed
-      && Math.round(object.x) === Math.round(x)
-      && Math.round(object.y) === Math.round(y)
-      && predicate(object)) || null;
+    return this.objectGrid.get(this.cellKey(x, y))?.find(object => !object.removed && predicate(object)) || null;
   }
 
   doorAtCell(x, y) {
@@ -255,7 +270,30 @@ export class World {
   }
 
   objectsNear(x, y, radius = 1) {
-    return this.objects.filter(object => !object.removed && distance({ x, y }, object) <= radius);
+    const result = [];
+    const reach = Math.ceil(radius + 0.75);
+    const centerX = Math.round(x);
+    const centerY = Math.round(y);
+    for (let cellY = centerY - reach; cellY <= centerY + reach; cellY++) {
+      for (let cellX = centerX - reach; cellX <= centerX + reach; cellX++) {
+        for (const object of this.objectGrid.get(this.cellKey(cellX, cellY)) || []) {
+          if (!object.removed && distance({ x, y }, object) <= radius) result.push(object);
+        }
+      }
+    }
+    return result;
+  }
+
+  objectsInBounds(minX, minY, maxX, maxY) {
+    const result = [];
+    for (let y = Math.max(0, Math.floor(minY)); y <= Math.min(VIEW.worldH - 1, Math.ceil(maxY)); y++) {
+      for (let x = Math.max(0, Math.floor(minX)); x <= Math.min(VIEW.worldW - 1, Math.ceil(maxX)); x++) {
+        for (const object of this.objectGrid.get(this.cellKey(x, y)) || []) {
+          if (!object.removed) result.push(object);
+        }
+      }
+    }
+    return result;
   }
 
   isPathCellWalkable(x, y, options = {}) {
@@ -269,7 +307,7 @@ export class World {
 
   isWalkable(x, y, radius = 0.27, ignoreId = null) {
     if (this.tileAt(x, y) === "water") return false;
-    for (const object of this.objects) {
+    for (const object of this.objectsNear(x, y, radius + 0.78)) {
       if (object.removed || !object.solid || object.id === ignoreId) continue;
       let objectRadius = 0.43;
       if (object.type === "tree" || object.type === "streetlamp") objectRadius = 0.34;
@@ -289,6 +327,24 @@ export class World {
       if (blocker) return false;
     }
     return true;
+  }
+
+  sightDistance(origin, angle, maxDistance) {
+    const step = 0.24;
+    let previous = 0;
+    for (let current = step; current <= maxDistance; current += step) {
+      const x = origin.x + Math.cos(angle) * current;
+      const y = origin.y + Math.sin(angle) * current;
+      if (x < 1 || y < 1 || x >= VIEW.worldW - 1 || y >= VIEW.worldH - 1) return previous;
+      const blocker = this.objectAtCell(x, y, object => object.type === "door" ? object.closed : object.blocksSight);
+      if (blocker) return Math.max(0, previous);
+      previous = current;
+    }
+    return maxDistance;
+  }
+
+  touchSight() {
+    this.sightRevision += 1;
   }
 
   concealmentAt(point) {

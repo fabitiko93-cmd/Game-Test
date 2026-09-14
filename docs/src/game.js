@@ -1,4 +1,4 @@
-import { ZombieSystem, createInitialZombies } from "./ai.js?v=4";
+import { ZombieSystem, createInitialZombies } from "./ai.js?v=6";
 import {
   backgroundName,
   createPlayer,
@@ -7,10 +7,10 @@ import {
   skillValue,
   treatWithItem,
   updateCharacter,
-} from "./character.js?v=4";
-import { CombatSystem } from "./combat.js?v=4";
-import { GAME, STANCES } from "./config.js?v=4";
-import { ITEMS } from "./data.js?v=4";
+} from "./character.js?v=6";
+import { CombatSystem } from "./combat.js?v=6";
+import { GAME, STANCES } from "./config.js?v=6";
+import { ITEMS } from "./data.js?v=6";
 import {
   activeWeapon,
   addItem,
@@ -27,11 +27,12 @@ import {
   removeMod,
   roundsInWeapon,
   unequipSlot,
-} from "./inventory.js?v=4";
-import { Navigator } from "./navigation.js?v=4";
-import { awarenessForPlayer } from "./perception.js?v=4";
-import { SaveStore } from "./save.js?v=4";
-import { clamp, distance, formatClock, vibrate } from "./util.js?v=4";
+} from "./inventory.js?v=6";
+import { Navigator } from "./navigation.js?v=6";
+import { missionAt, missionSteps } from "./missions.js?v=6";
+import { awarenessForPlayer } from "./perception.js?v=6";
+import { SaveStore } from "./save.js?v=6";
+import { clamp, distance, formatClock, vibrate } from "./util.js?v=6";
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
 
@@ -59,6 +60,8 @@ export class Game {
     this.elapsed = 0;
     this.uiTick = 0;
     this.autosaveTick = 0;
+    this.aiAccumulator = 0;
+    this.lastAiResult = { nearbyUndetected: false };
     this.stepTimer = 0;
     this.holdBlocked = false;
     this.combatPathTick = 0;
@@ -75,13 +78,18 @@ export class Game {
       stance: () => this.toggleStance(),
       reload: () => this.reload(),
       inventory: () => this.toggleInventory(),
+      mission: () => this.toggleMission(),
       character: () => this.toggleCharacter(),
+      recenter: () => this.recenterCamera(),
       pause: () => this.togglePause(),
       tap: (x, y) => this.tapWorld(x, y),
       doubleTap: (x, y) => this.doubleTapWorld(x, y),
-      holdStart: (x, y) => this.startGuidedMovement(x, y),
-      holdMove: (x, y) => this.updateGuidedMovement(x, y),
+      holdStart: (x, y, options) => this.startGuidedMovement(x, y, options),
+      holdMove: (x, y, options) => this.updateGuidedMovement(x, y, options),
       holdEnd: () => this.endGuidedMovement(),
+      panStart: () => this.startCameraPan(),
+      panMove: (dx, dy) => this.panCamera(dx, dy),
+      panEnd: () => this.endCameraPan(),
     };
     this.ui.callbacks = {
       start: () => this.requestStart(),
@@ -99,6 +107,7 @@ export class Game {
       removeMod: (weaponId, slot) => this.unmountMod(weaponId, slot),
       reloadWeapon: () => this.reload(),
       newSurvivor: () => this.requestSuccessor(),
+      diagnostics: () => this.toggleDiagnostics(),
       panelClosed: () => {},
     };
     window.addEventListener("visibilitychange", () => {
@@ -204,7 +213,13 @@ export class Game {
 
   loop(now) {
     if (!this.running) return;
-    const delta = Math.min(0.05, Math.max(0, (now - this.lastFrame) / 1000));
+    const frameMilliseconds = now - this.lastFrame;
+    const minimumFrame = 1000 / GAME.maxRenderFps - 1;
+    if (frameMilliseconds < minimumFrame) {
+      requestAnimationFrame(time => this.loop(time));
+      return;
+    }
+    const delta = Math.min(0.05, Math.max(0, frameMilliseconds / 1000));
     this.lastFrame = now;
     if (!this.paused && !this.dead) this.update(delta);
     this.renderer.render(this, delta);
@@ -222,10 +237,16 @@ export class Game {
     this.minutes += gameDeltaMinutes;
     this.world.update(delta);
     this.player.noisePulse = Math.max(0, this.player.noisePulse - delta * 0.65);
+    this.player.hitKick = Math.max(0, (this.player.hitKick || 0) - delta * 8);
     this.updateMovement(delta);
     this.combat.update(this, delta);
-    const aiResult = this.zombieSystem.update(this, delta);
-    if (this.player.stance === "sneak" && this.player.moving && aiResult.nearbyUndetected) {
+    this.aiAccumulator += delta;
+    if (this.aiAccumulator >= GAME.aiStep) {
+      const aiDelta = Math.min(0.1, this.aiAccumulator);
+      this.aiAccumulator = 0;
+      this.lastAiResult = this.zombieSystem.update(this, aiDelta);
+    }
+    if (this.player.stance === "sneak" && this.player.moving && this.lastAiResult.nearbyUndetected) {
       gainSkill(this.player, "stealth", delta * 0.075);
     }
     this.updateNeeds(delta);
@@ -313,6 +334,8 @@ export class Game {
       player.facingY = dy;
       const burden = inventoryWeight(player) / Math.max(1, carryCapacity(player));
       const burdenFactor = clamp(1.08 - burden * 0.16, 0.72, 1);
+      const stealthFactor = 1 - skillValue(player, "stealth") * 0.003;
+      player.noiseRadius = stance.noise * stealthFactor;
       const moved = this.moveEntity(player, dx * stance.speed * burdenFactor * delta, dy * stance.speed * burdenFactor * delta, 0.27);
       if (!moved && player.navigation.path.length) {
         const interaction = this.world.objects.find(object => object.id === player.navigation.interactionId && !object.removed);
@@ -322,13 +345,13 @@ export class Game {
       player.stamina = clamp(player.stamina + stance.stamina * delta * (player.hunger < 20 ? 0.48 : 1), 0, 100);
       this.stepTimer -= delta;
       if (this.stepTimer <= 0) {
-        const stealthFactor = 1 - skillValue(player, "stealth") * 0.003;
         const noise = stance.noise * stealthFactor;
         this.world.emitNoise(player.x, player.y, noise, "step", 1.1, 0.45);
         player.noisePulse = Math.max(player.noisePulse, clamp(noise / 7, 0, 1));
         this.stepTimer = mode === "run" ? 0.28 : mode === "sneak" ? 0.68 : 0.46;
       }
     } else {
+      player.noiseRadius = Math.max(0, (player.noiseRadius || 0) - delta * 4.5);
       player.stamina = clamp(player.stamina + 10.5 * delta * (player.hunger < 20 ? 0.48 : 1), 0, 100);
       this.stepTimer = 0;
     }
@@ -371,12 +394,14 @@ export class Game {
     return moved;
   }
 
-  setDestination(point, options = {}) {
+  setDestination(requestedPoint, options = {}) {
     if (!this.canAct()) return false;
+    const point = this.world.clampPoint(requestedPoint);
     const navigation = this.player.navigation;
     const path = this.navigator.findPath(this.world, this.player, point, { allowDoors: true });
     const sameCell = Math.round(this.player.x) === Math.round(point.x) && Math.round(this.player.y) === Math.round(point.y);
     if (!path.length && !sameCell) {
+      this.renderer.rejectDestination(point);
       this.ui.showMessage("Kein begehbarer Weg.", 1.1);
       return false;
     }
@@ -388,6 +413,7 @@ export class Game {
     navigation.source = options.source || "manual";
     if (navigation.source === "manual") navigation.manualUntil = this.elapsed + 1.25;
     this.renderer.destination = navigation.destination;
+    this.renderer.destinationRun = navigation.runRequested;
     if (sameCell) this.arriveAtDestination();
     return true;
   }
@@ -401,6 +427,7 @@ export class Game {
     navigation.guided = false;
     navigation.source = null;
     this.renderer.destination = null;
+    this.renderer.destinationRun = false;
   }
 
   arriveAtDestination() {
@@ -411,6 +438,7 @@ export class Game {
     this.player.navigation.interactionId = null;
     this.player.navigation.runRequested = false;
     this.renderer.destination = null;
+    this.renderer.destinationRun = false;
     if (interactionId) {
       const object = this.world.objects.find(entry => entry.id === interactionId && !entry.removed);
       if (object) this.interact(object);
@@ -431,6 +459,7 @@ export class Game {
       interactionRange: GAME.interactionRange,
     });
     if (!path.length) {
+      this.renderer.rejectDestination(this.world.clampPoint(object));
       this.ui.showMessage("Kein Weg in Reichweite.", 1.2);
       return;
     }
@@ -443,6 +472,8 @@ export class Game {
     this.player.navigation.source = "manual";
     this.player.navigation.manualUntil = this.elapsed + 1.25;
     this.renderer.destination = { ...destination };
+    this.renderer.destinationRun = false;
+    this.ui.showMessage(`GEHE ZU: ${object.name || "OBJEKT"}`, 1.1);
   }
 
   approachCombatTarget(target, range) {
@@ -470,6 +501,10 @@ export class Game {
       return;
     }
     if (hit?.kind === "object") {
+      if (this.renderer.selectedId === hit.id) {
+        this.queueInteraction(hit.ref);
+        return;
+      }
       this.renderer.selectedId = hit.id;
       this.player.combat.targetId = null;
       this.ui.showMessage(hit.ref.name || "Objekt gewählt", 1.1);
@@ -490,10 +525,13 @@ export class Game {
     if (hit?.kind === "zombie") {
       this.combat.selectTarget(this, hit.ref);
       if (!this.player.combat.enabled) this.combat.toggle(this);
+      return;
     }
+    this.renderer.selectedId = null;
+    this.setDestination(this.renderer.screenToWorld(x, y), { source: "manual", run: true });
   }
 
-  startGuidedMovement(x, y) {
+  startGuidedMovement(x, y, options = {}) {
     if (!this.canAct()) return;
     const hit = this.renderer.pick(x, y);
     this.holdBlocked = Boolean(hit);
@@ -502,23 +540,42 @@ export class Game {
       else this.renderer.selectedId = hit.id;
       return;
     }
-    this.updateGuidedMovement(x, y);
+    this.updateGuidedMovement(x, y, options);
   }
 
-  updateGuidedMovement(x, y) {
+  updateGuidedMovement(x, y, options = {}) {
     if (this.holdBlocked || !this.canAct()) return;
-    const playerScreen = this.renderer.iso(this.player.x, this.player.y);
-    const screenDistance = Math.hypot(x - playerScreen.x, y - playerScreen.y);
     this.setDestination(this.renderer.screenToWorld(x, y), {
       source: "manual",
       guided: true,
-      run: screenDistance > 112 && this.player.stance !== "sneak",
+      run: Boolean(options.run) && this.player.stance !== "sneak",
     });
   }
 
   endGuidedMovement() {
     if (!this.holdBlocked && this.player.navigation.guided) this.clearNavigation();
     this.holdBlocked = false;
+  }
+
+  startCameraPan() {
+    if (!this.canAct()) return;
+    if (this.player.navigation.guided) this.clearNavigation();
+    this.renderer.beginPan();
+  }
+
+  panCamera(dx, dy) {
+    if (!this.canAct()) return;
+    this.renderer.panBy(dx, dy);
+  }
+
+  endCameraPan() {
+    this.renderer.endPan();
+  }
+
+  recenterCamera() {
+    if (!this.started) return;
+    this.renderer.recenter(this.player);
+    this.ui.showToast("KAMERA ZENTRIERT", 1.1);
   }
 
   toggleStance() {
@@ -537,7 +594,7 @@ export class Game {
     if (selected && distance(this.player, selected) <= GAME.interactionRange) return this.decorateAction(selected);
     let best = null;
     let bestDistance = GAME.interactionRange;
-    for (const object of this.world.objects) {
+    for (const object of this.world.objectsNear(this.player.x, this.player.y, GAME.interactionRange)) {
       if (object.removed || !object.interactable) continue;
       const d = distance(this.player, object);
       if (d < bestDistance) {
@@ -583,6 +640,7 @@ export class Game {
       object.closed = !object.closed;
       object.solid = object.closed;
       object.blocksSight = object.closed;
+      this.world.touchSight();
       this.world.emitNoise(object.x, object.y, object.closed ? 2.6 : 1.8, "door", 2.2);
       this.sound("door");
       this.ui.showMessage(object.closed ? "Tür geschlossen" : "Tür geöffnet", 1.1);
@@ -600,9 +658,7 @@ export class Game {
       this.ui.openContainerPanel(object, this.player);
       this.renderer.selectedId = object.id;
       if (object.tutorial && this.mission === 0) {
-        this.mission = 1;
-        this.ui.showMessage("Das Radio erwähnt Medikamente in der Apotheke.", 3.2);
-        this.sound("objective");
+        this.advanceMission(1, "Das Radio erwähnt Medikamente in der Apotheke.");
       }
       return;
     }
@@ -619,6 +675,7 @@ export class Game {
     door.closed = false;
     door.solid = false;
     door.blocksSight = false;
+    this.world.touchSight();
     this.world.emitNoise(door.x, door.y, automatic ? 1.65 : 2.1, "door", 2.2);
     this.sound("door");
     return true;
@@ -681,9 +738,7 @@ export class Game {
     }
     container.items = container.items.filter(entry => entry.id !== itemId);
     if (item.type === "sealed_antibiotics" && this.mission < 2) {
-      this.mission = 2;
-      this.ui.showMessage("Medikament gesichert. Zurück zum Unterschlupf.", 3.4);
-      this.sound("objective");
+      this.advanceMission(2, "Medikament gesichert. Zurück zum Unterschlupf.");
     }
     gainSkill(this.player, "search", 0.05);
     this.ui.renderContainer(container, this.player);
@@ -826,7 +881,12 @@ export class Game {
     if (this.dead) return;
     const nearby = this.zombies.filter(entry => !entry.removed && distance(entry, this.player) < 1.45).length;
     const result = inflictZombieAttack(this.player, this.minutes, this.random, clamp((nearby - 1) * 0.12, 0, 0.35));
-    this.renderer.shake = 7;
+    const dx = this.player.x - zombie.x;
+    const dy = this.player.y - zombie.y;
+    const length = Math.hypot(dx, dy) || 1;
+    this.player.impactX = dx / length;
+    this.player.impactY = dy / length;
+    this.player.hitKick = 1;
     this.renderer.burst(this.player.x, this.player.y, "#8d302b", 5);
     this.sound("hurt");
     vibrate([25, 20, 25]);
@@ -891,21 +951,28 @@ export class Game {
 
   updateMission() {
     if (this.mission === 2 && this.world.insideBuilding(this.player, "safehouse")) {
-      this.mission = 3;
-      this.ui.showMessage("MEDIKAMENT GESICHERT · DER SPERRKREIS BLEIBT OFFEN", 5);
-      this.sound("success");
+      this.advanceMission(3, "MEDIKAMENT GESICHERT · DER SPERRKREIS BLEIBT OFFEN", "success");
       vibrate([30, 50, 30]);
-      this.save();
     }
   }
 
+  advanceMission(index, message, sound = "objective") {
+    if (index <= this.mission) return false;
+    this.mission = index;
+    if (message) this.ui.showMessage(message, index === 3 ? 5 : 3.4);
+    this.ui.showToast("MISSION AKTUALISIERT", 2.1);
+    this.sound(sound);
+    this.ui.renderMission(this);
+    this.save();
+    return true;
+  }
+
   objectiveText() {
-    return [
-      "Durchsuche den Küchenschrank",
-      "Finde das versiegelte Medikament",
-      "Kehre zum Unterschlupf zurück",
-      "Überlebe · deine Entscheidungen bleiben",
-    ][this.mission] || "Überlebe";
+    return missionAt(this.mission).objective;
+  }
+
+  missionDetails() {
+    return { ...missionAt(this.mission), steps: missionSteps(this.mission) };
   }
 
   locationName() {
@@ -942,9 +1009,19 @@ export class Game {
     this.ui.toggleInventory(this.player, this);
   }
 
+  toggleMission() {
+    if (!this.canAct(true)) return;
+    this.ui.toggleMission(this);
+  }
+
   toggleCharacter() {
     if (!this.canAct(true)) return;
     this.ui.toggleCharacter(this.player);
+  }
+
+  toggleDiagnostics() {
+    const enabled = this.renderer.toggleDiagnostics();
+    this.ui.setDiagnostics(enabled, this.renderer.diagnosticsText());
   }
 
   togglePause() {
@@ -1006,10 +1083,19 @@ export class Game {
     this.migrationTimer = saved.migrationTimer ?? GAME.migrationSeconds;
     this.player = saved.player;
     this.zombies = Array.isArray(saved.zombies) ? saved.zombies : createInitialZombies();
+    for (const zombie of this.zombies) {
+      zombie.desiredFacingX ??= zombie.facingX ?? 0;
+      zombie.desiredFacingY ??= zombie.facingY ?? 1;
+      zombie.stimulus ??= null;
+      zombie.hitKick ??= 0;
+    }
     this.player.navigation ||= { path: [], destination: null, interactionId: null, runRequested: false, guided: false, manualUntil: 0 };
     this.player.combat ||= { enabled: false, targetId: null, attackCooldown: 0, attackTimer: 0, pendingAttack: 0, pendingTargetId: null, aim: 0, recoil: 0 };
     this.player.equipment ||= { mainHand: null, offHand: null, head: null, torso: null, legs: null, back: null };
+    this.player.noiseRadius ??= 0;
+    this.player.hitKick ??= 0;
     this.renderer.destination = null;
+    this.renderer.destinationRun = false;
     return true;
   }
 

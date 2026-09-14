@@ -9,12 +9,15 @@ Die aktuelle Version ist unter **[fabitiko93-cmd.github.io/Game-Test](https://fa
 ## Steuerung
 
 - Boden antippen: zum Ziel laufen.
-- Auf dem Boden halten und ziehen: die Laufrichtung fortlaufend vorgeben.
+- Boden doppelt antippen: bewusst zum Ziel rennen.
+- Auf dem Boden halten und ziehen: die Laufrichtung fortlaufend im Gehtempo vorgeben.
+- Mit zwei Fingern ziehen: den Bildausschnitt verschieben; `◎` zentriert wieder auf die Figur.
 - Objekt oder Zombie antippen: auswählen.
-- Objekt doppelt antippen: hinlaufen und benutzen.
+- Dasselbe Objekt erneut oder doppelt antippen: hinlaufen und benutzen.
 - Kampfmodus: Nahkampf läuft im Waffenrhythmus; Schusswaffen werden bewusst über den Aktionsknopf abgefeuert.
 - Haltung wechseln: Schleichen, Gehen und Rennen verändern Tempo, Sichtbarkeit und Geräusch.
-- Inventargegenstand antippen: auswählen; die eingeblendeten Aktionen benutzen ihn, rüsten ihn aus oder bearbeiten Waffenmods.
+- Inventargegenstand erneut antippen oder `BENUTZEN` wählen: benutzen, ausrüsten oder nachladen; Schusswaffen lassen sich über `ANPASSEN` modifizieren.
+- Missionsziele stehen im Missionsmenü. Beschriftete Bedürfnis- und Stealthanzeigen erklären den aktuellen Zustand direkt im HUD.
 
 ## Enthaltener Spielstand
 
@@ -23,8 +26,10 @@ Die aktuelle Version ist unter **[fabitiko93-cmd.github.io/Game-Test](https://fa
 - kontextabhängiger Loot, Gewicht, Behälter und echte Ausrüstungsplätze
 - Nahkampf, vier Schusswaffen, physische Munition/Magazine und acht Waffenmods
 - Sichtlinien, Geräusche, drei Haltungen und mehrstufiges Zombieverhalten
+- sichtbare, von Hindernissen abgeschnittene Sichtkegel beim Schleichen; hohe Wahrnehmung macht sie auch beim Gehen lesbar
 - Verletzungen, Blutung, behandelbare Wundinfektion und tödliche Zombieinfektion
 - Ironman-Autosave, permanenter Charaktertod und fortbestehende Welt mit plünderbarem Leichnam
+- auf mobile Safari begrenzte Pixeldichte, Sichtbereich-Culling und lokale Trefferreaktionen ohne globales Bildschirmwackeln
 
 ## Architektur
 

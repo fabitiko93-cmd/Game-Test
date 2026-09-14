@@ -3,7 +3,7 @@ export const VIEW = {
   tileH: 32,
   worldW: 48,
   worldH: 48,
-  pixelRatioMax: 2,
+  pixelRatioMax: 1.5,
 };
 
 export const GAME = {
@@ -14,6 +14,8 @@ export const GAME = {
   interactionRange: 1.38,
   migrationSeconds: 78,
   maxZombies: 24,
+  maxRenderFps: 60,
+  aiStep: 1 / 30,
 };
 
 export const SAVE = {

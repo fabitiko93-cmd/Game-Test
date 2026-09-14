@@ -1,6 +1,7 @@
-import { COLORS, VIEW } from "./config.js?v=4";
-import { activeWeapon, itemDefinition } from "./inventory.js?v=4";
-import { clamp, hash2, lerp } from "./util.js?v=4";
+import { COLORS, VIEW } from "./config.js?v=6";
+import { activeWeapon, itemDefinition } from "./inventory.js?v=6";
+import { VISION, visionGeometry } from "./perception.js?v=6";
+import { clamp, hash2, lerp } from "./util.js?v=6";
 
 export class Renderer {
   constructor(canvas) {
@@ -11,14 +12,24 @@ export class Renderer {
     this.scale = 1;
     this.camera = { x: 0, y: 0 };
     this.cameraTarget = { x: 0, y: 0 };
-    this.shake = 0;
+    this.cameraFollowing = true;
+    this.cameraPanning = false;
     this.hotspots = [];
     this.particles = [];
     this.tracers = [];
     this.selectedId = null;
     this.destination = null;
+    this.destinationRun = false;
+    this.invalidDestination = null;
     this.contextId = null;
     this.frame = 0;
+    this.visionCache = new Map();
+    this.diagnostics = false;
+    this.metrics = { fps: 0, frames: 0, time: 0, visibleTiles: 0, visibleObjects: 0 };
+    this.backgroundGradient = null;
+    this.vignetteGradient = null;
+    this.streetlightGlow = this.createGlowSprite(70, "238,194,111", .22);
+    this.playerGlow = this.createGlowSprite(130, "220,181,105", .1);
     this.resize();
     window.addEventListener("resize", () => this.resize());
     window.visualViewport?.addEventListener("resize", () => this.resize());
@@ -33,6 +44,33 @@ export class Renderer {
     this.canvas.height = Math.floor(this.height * this.scale);
     this.ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);
     this.ctx.imageSmoothingEnabled = false;
+    this.backgroundGradient = this.ctx.createLinearGradient(0, 0, 0, this.height);
+    this.backgroundGradient.addColorStop(0, "#17231d");
+    this.backgroundGradient.addColorStop(1, "#0b100d");
+    this.vignetteGradient = this.ctx.createRadialGradient(
+      this.width / 2,
+      this.height / 2,
+      Math.min(this.width, this.height) * .25,
+      this.width / 2,
+      this.height / 2,
+      Math.max(this.width, this.height) * .7,
+    );
+    this.vignetteGradient.addColorStop(0, "rgba(0,0,0,0)");
+    this.vignetteGradient.addColorStop(1, "rgba(0,0,0,.46)");
+    this.clampCamera();
+  }
+
+  createGlowSprite(radius, color, alpha) {
+    const sprite = document.createElement("canvas");
+    sprite.width = radius * 2;
+    sprite.height = radius * 2;
+    const context = sprite.getContext("2d");
+    const gradient = context.createRadialGradient(radius, radius, 2, radius, radius, radius);
+    gradient.addColorStop(0, `rgba(${color},${alpha})`);
+    gradient.addColorStop(1, `rgba(${color},0)`);
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, sprite.width, sprite.height);
+    return sprite;
   }
 
   rawIso(x, y, z = 0) {
@@ -41,9 +79,7 @@ export class Renderer {
 
   iso(x, y, z = 0) {
     const p = this.rawIso(x, y, z);
-    const sx = this.shake ? (Math.random() - .5) * this.shake : 0;
-    const sy = this.shake ? (Math.random() - .5) * this.shake : 0;
-    return { x: p.x - this.camera.x + this.width * .5 + sx, y: p.y - this.camera.y + this.height * .5 + sy };
+    return { x: p.x - this.camera.x + this.width * .5, y: p.y - this.camera.y + this.height * .5 };
   }
 
   screenToWorld(x, y) {
@@ -53,42 +89,97 @@ export class Renderer {
   }
 
   follow(player, snap = false) {
+    if (!this.cameraFollowing && !snap) return;
+    if (snap) this.cameraFollowing = true;
     const p = this.rawIso(player.x, player.y, 0);
     this.cameraTarget.x = p.x;
     this.cameraTarget.y = p.y - 34;
     const amount = snap ? 1 : .105;
     this.camera.x = lerp(this.camera.x, this.cameraTarget.x, amount);
     this.camera.y = lerp(this.camera.y, this.cameraTarget.y, amount);
+    this.clampCamera();
+  }
+
+  beginPan() {
+    this.cameraFollowing = false;
+    this.cameraPanning = true;
+  }
+
+  panBy(dx, dy) {
+    if (!this.cameraPanning) return;
+    this.camera.x -= dx;
+    this.camera.y -= dy;
+    this.clampCamera();
+  }
+
+  endPan() {
+    this.cameraPanning = false;
+  }
+
+  recenter(player, snap = false) {
+    this.cameraFollowing = true;
+    this.cameraPanning = false;
+    this.follow(player, snap);
+  }
+
+  clampCamera() {
+    const corners = [
+      this.rawIso(1, 1), this.rawIso(VIEW.worldW - 2, 1),
+      this.rawIso(VIEW.worldW - 2, VIEW.worldH - 2), this.rawIso(1, VIEW.worldH - 2),
+    ];
+    const xs = corners.map(point => point.x);
+    const ys = corners.map(point => point.y);
+    const minX = Math.min(...xs) + this.width * .5 - VIEW.tileW;
+    const maxX = Math.max(...xs) - this.width * .5 + VIEW.tileW;
+    const minY = Math.min(...ys) + this.height * .5 - VIEW.tileH * 1.5;
+    const maxY = Math.max(...ys) - this.height * .5 + VIEW.tileH * 1.5;
+    this.camera.x = minX > maxX ? (minX + maxX) * .5 : clamp(this.camera.x, minX, maxX);
+    this.camera.y = minY > maxY ? (minY + maxY) * .5 : clamp(this.camera.y, minY, maxY);
   }
 
   render(game, delta) {
     this.frame++;
-    this.shake = Math.max(0, this.shake - delta * 18);
+    this.updateMetrics(delta);
+    if (this.invalidDestination) {
+      this.invalidDestination.life -= delta;
+      if (this.invalidDestination.life <= 0) this.invalidDestination = null;
+    }
     this.updateParticles(delta);
     this.updateTracers(delta);
     this.follow(game.player);
     const ctx = this.ctx;
     ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);
-    const sky = ctx.createLinearGradient(0, 0, 0, this.height);
-    sky.addColorStop(0, "#17231d"); sky.addColorStop(1, "#0b100d");
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, this.width, this.height);
+    ctx.fillStyle = this.backgroundGradient || "#101a15";
+    ctx.fillRect(0, 0, this.width, this.height);
     this.hotspots.length = 0;
 
     this.drawGround(game.world, game.minutes);
     this.drawBlood(game.world);
+    this.drawPlayerNoise(game);
     this.drawVisionCones(game);
     this.drawDestination();
     this.contextId = game.contextObject()?.id || null;
 
     const drawables = [];
-    for (const object of game.world.objects) if (!object.removed) drawables.push({ kind: "object", ref: object, depth: object.x + object.y });
-    for (const zombie of game.zombies) if (!zombie.removed) drawables.push({ kind: "zombie", ref: zombie, depth: zombie.x + zombie.y + .06 });
+    const bounds = this.visibleWorldBounds(4);
+    for (const object of game.world.objectsInBounds(bounds.minX, bounds.minY, bounds.maxX, bounds.maxY)) {
+      const p = this.iso(object.x, object.y);
+      if (p.x >= -130 && p.x <= this.width + 130 && p.y >= -160 && p.y <= this.height + 100) {
+        drawables.push({ kind: "object", ref: object, depth: object.x + object.y });
+      }
+    }
+    for (const zombie of game.zombies) {
+      if (zombie.removed) continue;
+      const p = this.iso(zombie.x, zombie.y);
+      if (p.x >= -130 && p.x <= this.width + 130 && p.y >= -160 && p.y <= this.height + 100) {
+        drawables.push({ kind: "zombie", ref: zombie, depth: zombie.x + zombie.y + .06 });
+      }
+    }
     drawables.push({ kind: "player", ref: game.player, depth: game.player.x + game.player.y + .08 });
     drawables.sort((a, b) => a.depth - b.depth);
+    this.metrics.visibleObjects = drawables.length;
 
     for (const drawable of drawables) {
-      const p = this.iso(drawable.ref.x, drawable.ref.y);
-      if (p.x < -130 || p.x > this.width + 130 || p.y < -160 || p.y > this.height + 100) continue;
       if (drawable.kind === "object") this.drawObject(drawable.ref, game);
       else if (drawable.kind === "zombie") this.drawZombie(drawable.ref, game);
       else this.drawPlayer(drawable.ref, game);
@@ -102,12 +193,49 @@ export class Renderer {
     this.drawVignette();
   }
 
+  visibleWorldBounds(padding = 2) {
+    const corners = [
+      this.screenToWorld(-VIEW.tileW, -VIEW.tileH),
+      this.screenToWorld(this.width + VIEW.tileW, -VIEW.tileH),
+      this.screenToWorld(this.width + VIEW.tileW, this.height + VIEW.tileH),
+      this.screenToWorld(-VIEW.tileW, this.height + VIEW.tileH),
+    ];
+    return {
+      minX: clamp(Math.floor(Math.min(...corners.map(point => point.x))) - padding, 0, VIEW.worldW - 1),
+      minY: clamp(Math.floor(Math.min(...corners.map(point => point.y))) - padding, 0, VIEW.worldH - 1),
+      maxX: clamp(Math.ceil(Math.max(...corners.map(point => point.x))) + padding, 0, VIEW.worldW - 1),
+      maxY: clamp(Math.ceil(Math.max(...corners.map(point => point.y))) + padding, 0, VIEW.worldH - 1),
+    };
+  }
+
+  updateMetrics(delta) {
+    this.metrics.frames += 1;
+    this.metrics.time += delta;
+    if (this.metrics.time >= .5) {
+      this.metrics.fps = Math.round(this.metrics.frames / this.metrics.time);
+      this.metrics.frames = 0;
+      this.metrics.time = 0;
+    }
+  }
+
+  toggleDiagnostics() {
+    this.diagnostics = !this.diagnostics;
+    return this.diagnostics;
+  }
+
+  diagnosticsText() {
+    return `${this.metrics.fps || "–"} FPS · ${this.metrics.visibleTiles} TILES · ${this.metrics.visibleObjects} OBJEKTE · DPR ${this.scale.toFixed(1)}`;
+  }
+
   drawGround(world, minutes) {
     const ctx = this.ctx;
-    for (let y = 0; y < VIEW.worldH; y++) {
-      for (let x = 0; x < VIEW.worldW; x++) {
+    const bounds = this.visibleWorldBounds(1);
+    let visibleTiles = 0;
+    for (let y = bounds.minY; y <= bounds.maxY; y++) {
+      for (let x = bounds.minX; x <= bounds.maxX; x++) {
         const p = this.iso(x, y);
         if (p.x < -VIEW.tileW || p.x > this.width + VIEW.tileW || p.y < -VIEW.tileH || p.y > this.height + VIEW.tileH) continue;
+        visibleTiles += 1;
         const type = world.tiles[y][x];
         const palette = COLORS[type] || COLORS.grass;
         const variant = Math.floor(hash2(x, y, world.seed) * palette.length) % palette.length;
@@ -122,6 +250,7 @@ export class Renderer {
         else if (["floor", "pharmacyFloor", "policeFloor", "clubFloor"].includes(type)) this.drawFloorSeam(p, x, y, type);
       }
     }
+    this.metrics.visibleTiles = visibleTiles;
   }
 
   diamond(x, y, w, h, fill, stroke = null) {
@@ -186,8 +315,10 @@ export class Renderer {
       default: break;
     }
     if (o.interactable) {
-      const p = this.iso(o.x, o.y, o.type === "door" ? 25 : 34);
-      this.hotspots.push({ id: o.id, kind: "object", ref: o, x: p.x, y: p.y, radius: o.type === "door" ? 30 : 25 });
+      const hitZ = o.type === "corpse" || o.type === "groundloot" ? 7 : o.type === "radio" ? 12 : 19;
+      const p = this.iso(o.x, o.y, hitZ);
+      const radius = o.type === "door" ? 38 : o.type === "corpse" ? 36 : 34;
+      this.hotspots.push({ id: o.id, kind: "object", ref: o, x: p.x, y: p.y, radius });
       if (this.contextId === o.id) this.drawContextMarker(p.x, p.y - 10);
     }
   }
@@ -300,7 +431,7 @@ export class Renderer {
 
   drawPlayer(player, game) {
     const ctx = this.ctx;
-    const p = this.iso(player.x, player.y);
+    const p = this.withImpact(this.iso(player.x, player.y), player, .11);
     const crouched = player.stance === "sneak";
     const weapon = activeWeapon(player);
     const weaponDefinition = itemDefinition(weapon);
@@ -374,7 +505,7 @@ export class Renderer {
 
   drawZombie(zombie) {
     const ctx = this.ctx;
-    const p = this.iso(zombie.x, zombie.y);
+    const p = this.withImpact(this.iso(zombie.x, zombie.y), zombie, .11);
     const bob = zombie.moving ? Math.sin(this.frame * .22 + zombie.phase) * 1.2 : 0;
     if (this.selectedId === zombie.id) this.drawSelection(zombie.x, zombie.y, .5);
     this.shadow(p, 13, 5, .4);
@@ -420,50 +551,115 @@ export class Renderer {
       ctx.textAlign = "center";
       ctx.fillStyle = zombie.state === "chase" ? "#e55749" : "#d5ba68";
       ctx.fillText(zombie.state === "chase" ? "!" : "?", p.x, p.y - 51);
+      if (zombie.state !== "chase" && zombie.stimulus) {
+        ctx.font = "bold 7px monospace";
+        ctx.fillStyle = zombie.stimulus === "sound" ? "#88adb3" : "#d8c577";
+        ctx.fillText(zombie.stimulus === "sound" ? "OHR" : "AUGE", p.x, p.y - 61);
+      }
     }
     this.hotspots.push({ id: zombie.id, kind: "zombie", ref: zombie, x: p.x, y: p.y - 20, radius: 25 });
   }
 
+  withImpact(point, entity, amount) {
+    if (!(entity.hitKick > 0)) return point;
+    const offset = this.rawIso((entity.impactX || 0) * amount, (entity.impactY || 0) * amount);
+    return { x: point.x + offset.x * entity.hitKick, y: point.y + offset.y * entity.hitKick };
+  }
+
   drawVisionCones(game) {
     const ctx = this.ctx;
+    const tacticalVision = game.player.stance === "sneak" || (game.player.skills?.perception || 0) >= 25;
     for (const zombie of game.zombies) {
-      if (zombie.removed || (game.player.stance !== "sneak" && (zombie.awareness || 0) < .12)) continue;
+      const visibleByState = zombie.state === "chase" || (zombie.stimulus === "vision" && (zombie.awareness || 0) >= .12);
+      if (zombie.removed || (!tacticalVision && !visibleByState)) continue;
       const center = this.iso(zombie.x, zombie.y);
       if (center.x < -250 || center.x > this.width + 250 || center.y < -180 || center.y > this.height + 180) continue;
       const angle = Math.atan2(zombie.facingY || 1, zombie.facingX || 0);
-      const range = zombie.state === "chase" ? 6.8 : 5.7;
-      const left = this.iso(zombie.x + Math.cos(angle - 1.05) * range, zombie.y + Math.sin(angle - 1.05) * range);
-      const right = this.iso(zombie.x + Math.cos(angle + 1.05) * range, zombie.y + Math.sin(angle + 1.05) * range);
+      const geometry = visionGeometry(zombie, game.player, game.world, game.minutes);
+      const cacheKey = `${Math.round(zombie.x * 4)},${Math.round(zombie.y * 4)},${Math.round(angle * 20)},${Math.round(geometry.range * 4)},${game.world.sightRevision}`;
+      let cached = this.visionCache.get(zombie.id);
+      if (!cached || cached.key !== cacheKey || this.frame - cached.frame > 10) {
+        const points = [];
+        for (let sample = 0; sample <= VISION.renderSamples; sample++) {
+          const rayAngle = angle - geometry.halfAngle + geometry.halfAngle * 2 * sample / VISION.renderSamples;
+          const rayDistance = game.world.sightDistance(zombie, rayAngle, geometry.range);
+          points.push({
+            x: zombie.x + Math.cos(rayAngle) * rayDistance,
+            y: zombie.y + Math.sin(rayAngle) * rayDistance,
+          });
+        }
+        cached = { key: cacheKey, frame: this.frame, points };
+        this.visionCache.set(zombie.id, cached);
+      }
       ctx.save();
-      ctx.globalAlpha = zombie.state === "chase" ? .095 : .055 + (zombie.awareness || 0) * .07;
+      ctx.globalAlpha = zombie.state === "chase" ? .11 : (tacticalVision ? .065 : .04) + (zombie.awareness || 0) * .075;
       ctx.fillStyle = zombie.state === "chase" ? "#bc493e" : "#c8ac61";
       ctx.beginPath();
       ctx.moveTo(center.x, center.y);
-      ctx.lineTo(left.x, left.y);
-      ctx.quadraticCurveTo(
-        this.iso(zombie.x + Math.cos(angle) * range * 1.08, zombie.y + Math.sin(angle) * range * 1.08).x,
-        this.iso(zombie.x + Math.cos(angle) * range * 1.08, zombie.y + Math.sin(angle) * range * 1.08).y,
-        right.x,
-        right.y,
-      );
+      for (const point of cached.points) {
+        const projected = this.iso(point.x, point.y);
+        ctx.lineTo(projected.x, projected.y);
+      }
       ctx.closePath();
       ctx.fill();
+      if (tacticalVision) {
+        ctx.globalAlpha = .18;
+        ctx.strokeStyle = "#cfbd77";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(center.x, center.y, geometry.nearRadius * 32, geometry.nearRadius * 15, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
       ctx.restore();
     }
   }
 
+  drawPlayerNoise(game) {
+    if (game.player.stance !== "sneak" || !(game.player.noiseRadius > .05)) return;
+    const point = this.iso(game.player.x, game.player.y);
+    const radius = game.player.noiseRadius;
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.globalAlpha = .16 + Math.min(.14, (game.player.noisePulse || 0) * .14);
+    ctx.strokeStyle = "#83a9ae";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.ellipse(point.x, point.y, radius * 32, radius * 15, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   drawDestination() {
-    if (!this.destination) return;
-    const p = this.iso(this.destination.x, this.destination.y);
-    const pulse = .55 + Math.sin(this.frame * .12) * .18;
-    this.ctx.save();
-    this.ctx.globalAlpha = pulse;
-    this.ctx.strokeStyle = "#d5c685";
-    this.ctx.lineWidth = 1.5;
-    this.ctx.beginPath();
-    this.ctx.ellipse(p.x, p.y, 13, 6, 0, 0, Math.PI * 2);
-    this.ctx.stroke();
-    this.ctx.restore();
+    const ctx = this.ctx;
+    if (this.destination) {
+      const p = this.iso(this.destination.x, this.destination.y);
+      const pulse = .55 + Math.sin(this.frame * .12) * .18;
+      ctx.save();
+      ctx.globalAlpha = pulse;
+      ctx.strokeStyle = this.destinationRun ? "#d29b55" : "#d5c685";
+      ctx.lineWidth = this.destinationRun ? 2.2 : 1.5;
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y, this.destinationRun ? 17 : 13, this.destinationRun ? 8 : 6, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    if (this.invalidDestination) {
+      const p = this.iso(this.invalidDestination.x, this.invalidDestination.y);
+      ctx.save();
+      ctx.globalAlpha = clamp(this.invalidDestination.life / .75, 0, 1);
+      ctx.strokeStyle = "#db574c";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(p.x - 8, p.y - 5); ctx.lineTo(p.x + 8, p.y + 5);
+      ctx.moveTo(p.x + 8, p.y - 5); ctx.lineTo(p.x - 8, p.y + 5);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  rejectDestination(point) {
+    this.invalidDestination = { x: point.x, y: point.y, life: .75 };
   }
 
   trace(start, end, hit = false) {
@@ -521,12 +717,13 @@ export class Renderer {
     const ctx=this.ctx;const angle=(game.minutes/1440)*Math.PI*2-Math.PI/2;const sun=clamp((Math.sin(angle)+.25)/1.25,0,1);const dark=.5*(1-sun);
     if(dark>.02){ctx.fillStyle=`rgba(13,24,31,${dark})`;ctx.fillRect(0,0,this.width,this.height);}
     ctx.globalCompositeOperation="screen";
-    for(const o of game.world.objects){if(o.removed||!o.light)continue;const p=this.iso(o.x,o.y,42);const g=ctx.createRadialGradient(p.x,p.y,2,p.x,p.y,70);g.addColorStop(0,"rgba(238,194,111,.22)");g.addColorStop(1,"rgba(238,194,111,0)");ctx.fillStyle=g;ctx.fillRect(p.x-70,p.y-70,140,140);}
+    const bounds=this.visibleWorldBounds(3);
+    for(const o of game.world.objectsInBounds(bounds.minX,bounds.minY,bounds.maxX,bounds.maxY)){if(o.removed||!o.light)continue;const p=this.iso(o.x,o.y,42);ctx.drawImage(this.streetlightGlow,p.x-70,p.y-70);}
     ctx.globalCompositeOperation="source-over";
-    if(sun<.35){const p=this.iso(game.player.x,game.player.y,12);const g=ctx.createRadialGradient(p.x,p.y,6,p.x,p.y,130);g.addColorStop(0,"rgba(220,181,105,.10)");g.addColorStop(1,"rgba(220,181,105,0)");ctx.fillStyle=g;ctx.fillRect(p.x-130,p.y-130,260,260);}
+    if(sun<.35){const p=this.iso(game.player.x,game.player.y,12);ctx.globalCompositeOperation="screen";ctx.drawImage(this.playerGlow,p.x-130,p.y-130);ctx.globalCompositeOperation="source-over";}
   }
 
-  drawVignette(){const ctx=this.ctx,g=ctx.createRadialGradient(this.width/2,this.height/2,Math.min(this.width,this.height)*.25,this.width/2,this.height/2,Math.max(this.width,this.height)*.7);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,"rgba(0,0,0,.46)");ctx.fillStyle=g;ctx.fillRect(0,0,this.width,this.height);}
+  drawVignette(){const ctx=this.ctx;ctx.fillStyle=this.vignetteGradient||"rgba(0,0,0,.2)";ctx.fillRect(0,0,this.width,this.height);}
 
   burst(x,y,color="#b94138",count=8){for(let i=0;i<count;i++)this.particles.push({x,y,z:18+Math.random()*8,vx:(Math.random()-.5)*1.5,vy:(Math.random()-.5)*1.5,vz:18+Math.random()*15,life:.45+Math.random()*.25,maxLife:.7,size:1+Math.random()*2,color});}
   updateParticles(delta){for(const p of this.particles){p.x+=p.vx*delta;p.y+=p.vy*delta;p.z+=p.vz*delta;p.vz-=65*delta;p.life-=delta;}this.particles=this.particles.filter(p=>p.life>0);}

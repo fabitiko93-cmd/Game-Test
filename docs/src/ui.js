@@ -1,4 +1,4 @@
-import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=4";
+import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=6";
 import {
   activeWeapon,
   ammoLabel,
@@ -10,8 +10,8 @@ import {
   itemDefinition,
   roundsInWeapon,
   weaponCapacity,
-} from "./inventory.js?v=4";
-import { backgroundName, skillRank, visibleInfectionState, woundDisplay } from "./character.js?v=4";
+} from "./inventory.js?v=6";
+import { backgroundName, skillRank, visibleInfectionState, woundDisplay } from "./character.js?v=6";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -26,16 +26,19 @@ export class GameUI {
       "loading", "start-button", "hud", "character-creator", "creator-kicker", "creator-number",
       "character-name", "background-options", "background-description", "character-confirm",
       "hp-fill", "stamina-fill", "hunger-need", "thirst-need", "wound-need",
-      "awareness-fill", "noise-fill", "location", "clock", "objective-text", "message", "target-label",
+      "hunger-state", "thirst-state", "wound-state", "awareness-fill", "noise-fill",
+      "awareness-state", "noise-state", "location", "clock", "message", "target-label",
       "enemy-target", "enemy-state", "enemy-name", "enemy-hp-fill", "aim-meter", "aim-fill", "ammo-label",
       "action-button", "action-label", "attack-button", "stance-button", "stance-label", "reload-button",
-      "inventory-button", "inventory-count", "character-button", "pause-button", "quickbar",
+      "mission-button", "mission-indicator", "inventory-button", "inventory-count", "character-button",
+      "recenter-button", "pause-button", "quickbar", "debug-stats",
+      "mission-panel", "mission-title", "mission-objective", "mission-description", "mission-steps",
       "inventory-panel", "equipment-grid", "inventory-grid", "item-description", "carry-weight",
       "customize-button", "drop-button", "use-button",
       "container-panel", "container-kind", "container-name", "container-items", "take-all-button",
       "character-panel", "character-background", "character-title", "skill-list", "condition-summary", "wound-list",
       "weapon-panel", "weapon-title", "weapon-ammo", "weapon-condition", "mod-slots", "available-mods", "weapon-reload-button",
-      "pause-panel", "continue-button", "reset-button", "death-panel", "survived-time", "death-cause",
+      "pause-panel", "continue-button", "diagnostics-button", "reset-button", "death-panel", "survived-time", "death-cause",
       "new-survivor-button", "toast",
     ];
     this.el = Object.fromEntries(ids.map(id => [id.replaceAll("-", "_"), document.getElementById(id)]));
@@ -67,6 +70,7 @@ export class GameUI {
     this.el.customize_button.addEventListener("click", () => this.selectedItemId && this.callbacks.customize?.(this.selectedItemId));
     this.el.take_all_button.addEventListener("click", () => this.openContainer && this.callbacks.takeAll?.(this.openContainer));
     this.el.weapon_reload_button.addEventListener("click", () => this.callbacks.reloadWeapon?.());
+    this.el.diagnostics_button.addEventListener("click", () => this.callbacks.diagnostics?.());
   }
 
   renderBackgroundOptions() {
@@ -129,22 +133,26 @@ export class GameUI {
   update(player, game) {
     this.el.hp_fill.style.width = `${Math.max(0, player.hp)}%`;
     this.el.stamina_fill.style.width = `${Math.max(0, player.stamina)}%`;
-    this.el.hunger_need.querySelector("i").style.height = `${100 - player.hunger}%`;
-    this.el.thirst_need.querySelector("i").style.height = `${100 - player.thirst}%`;
+    const hungerSeverity = 100 - player.hunger;
+    const thirstSeverity = 100 - player.thirst;
     const woundSeverity = Math.min(100, (player.wounds?.length || 0) * 24 + (player.bleeding || 0) * 350);
-    this.el.wound_need.querySelector("i").style.height = `${woundSeverity}%`;
-    this.el.hunger_need.style.opacity = player.hunger < 70 ? "1" : ".5";
-    this.el.thirst_need.style.opacity = player.thirst < 70 ? "1" : ".5";
-    this.el.wound_need.style.opacity = player.wounds?.length ? "1" : ".42";
+    this.setStatusBar(this.el.hunger_need, hungerSeverity, this.el.hunger_state, this.hungerLabel(player.hunger));
+    this.setStatusBar(this.el.thirst_need, thirstSeverity, this.el.thirst_state, this.thirstLabel(player.thirst));
+    this.setStatusBar(this.el.wound_need, woundSeverity, this.el.wound_state, this.woundLabel(player));
 
     const awareness = game.awareness();
     this.el.awareness_fill.style.width = `${awareness.awareness * 100}%`;
     this.el.awareness_fill.style.background = awareness.pursuing ? "#c94a3f" : awareness.suspicious ? "#c5a052" : "#718672";
-    this.el.noise_fill.style.width = `${(player.noisePulse || 0) * 100}%`;
+    const noiseLevel = Math.max(player.noisePulse || 0, Math.min(1, (player.noiseRadius || 0) / 7));
+    this.el.noise_fill.style.width = `${noiseLevel * 100}%`;
+    this.el.awareness_state.textContent = awareness.pursuing ? "ENTDECKT" : awareness.suspicious
+      ? awareness.source === "sound" ? "GEHÖRT" : "BEMERKT"
+      : awareness.awareness > .08 ? "RISIKO" : "SICHER";
+    this.el.noise_state.textContent = noiseLevel > .68 ? "LAUT" : noiseLevel > .3 ? "HÖRBAR" : noiseLevel > .05 ? "LEISE" : "STILL";
 
     this.el.location.textContent = game.locationName();
     this.el.clock.textContent = game.clockText();
-    this.el.objective_text.textContent = game.objectiveText();
+    this.el.mission_indicator.textContent = String(game.mission + 1).padStart(2, "0");
     this.el.inventory_count.textContent = `${this.decimal(inventoryWeight(player))} KG`;
     this.updateAction(player, game);
     this.updateTarget(player, game);
@@ -156,6 +164,36 @@ export class GameUI {
     const weapon = activeWeapon(player);
     const firearm = itemDefinition(weapon)?.weaponKind === "firearm";
     this.el.reload_button.classList.toggle("hidden", !firearm);
+    if (!this.el.debug_stats.classList.contains("hidden")) this.el.debug_stats.textContent = game.renderer.diagnosticsText();
+  }
+
+  setStatusBar(container, severity, label, text) {
+    const value = Math.max(0, Math.min(100, severity));
+    container.querySelector("i > b").style.width = `${value}%`;
+    container.classList.toggle("warning", value >= 35);
+    container.classList.toggle("critical", value >= 70);
+    label.textContent = text;
+  }
+
+  hungerLabel(value) {
+    if (value >= 72) return "SATT";
+    if (value >= 42) return "OKAY";
+    if (value >= 18) return "HUNGRIG";
+    return "AUSGEHUNGERT";
+  }
+
+  thirstLabel(value) {
+    if (value >= 72) return "GESTILLT";
+    if (value >= 42) return "OKAY";
+    if (value >= 18) return "DURSTIG";
+    return "DEHYDRIERT";
+  }
+
+  woundLabel(player) {
+    if (!(player.wounds?.length || player.bleeding > .01)) return "KEINE";
+    if (player.bleeding > .04) return "BLUTUNG";
+    if (player.wounds.some(wound => !wound.bandaged)) return "OFFEN";
+    return "VERSORGT";
   }
 
   updateAction(player, game) {
@@ -219,7 +257,7 @@ export class GameUI {
   }
 
   hasBlockingPanel() {
-    return ["inventory-panel", "container-panel", "character-panel", "weapon-panel"]
+    return ["mission-panel", "inventory-panel", "container-panel", "character-panel", "weapon-panel"]
       .some(id => !document.getElementById(id).classList.contains("hidden"));
   }
 
@@ -231,7 +269,38 @@ export class GameUI {
   }
 
   closeAllPanels() {
-    for (const id of ["inventory-panel", "container-panel", "character-panel", "weapon-panel"]) this.closePanel(id);
+    for (const id of ["mission-panel", "inventory-panel", "container-panel", "character-panel", "weapon-panel"]) this.closePanel(id);
+  }
+
+  toggleMission(game) {
+    const opening = this.el.mission_panel.classList.contains("hidden");
+    this.closeAllPanels();
+    this.el.mission_panel.classList.toggle("hidden", !opening);
+    if (opening) this.renderMission(game);
+    return opening;
+  }
+
+  renderMission(game) {
+    const details = game.missionDetails();
+    this.el.mission_title.textContent = details.title;
+    this.el.mission_objective.textContent = details.objective;
+    this.el.mission_description.textContent = details.description;
+    this.el.mission_indicator.textContent = String(details.index + 1).padStart(2, "0");
+    this.el.mission_steps.replaceChildren();
+    for (const mission of details.steps) {
+      const entry = document.createElement("article");
+      entry.className = `mission-step ${mission.state}`;
+      const number = document.createElement("b");
+      number.textContent = mission.state === "completed" ? "✓" : String(mission.step + 1).padStart(2, "0");
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = mission.title;
+      const objective = document.createElement("span");
+      objective.textContent = mission.objective;
+      copy.append(title, objective);
+      entry.append(number, copy);
+      this.el.mission_steps.append(entry);
+    }
   }
 
   toggleInventory(player, game) {
@@ -524,6 +593,7 @@ export class GameUI {
   refreshAll(player, game) {
     this.update(player, game);
     this.renderQuickbar(player);
+    if (!this.el.mission_panel.classList.contains("hidden")) this.renderMission(game);
     if (!this.el.inventory_panel.classList.contains("hidden")) this.renderInventory(player, game);
     if (!this.el.character_panel.classList.contains("hidden")) this.renderCharacter(player);
     if (!this.el.weapon_panel.classList.contains("hidden")) {
@@ -540,6 +610,12 @@ export class GameUI {
 
   hidePause() {
     this.el.pause_panel.classList.add("hidden");
+  }
+
+  setDiagnostics(enabled, text = "– FPS") {
+    this.el.debug_stats.classList.toggle("hidden", !enabled);
+    this.el.debug_stats.textContent = text;
+    this.el.diagnostics_button.textContent = enabled ? "DIAGNOSE AUSBLENDEN" : "DIAGNOSEANZEIGE";
   }
 
   showDeath(player) {

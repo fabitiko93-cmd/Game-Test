@@ -1,6 +1,6 @@
-import { strongestNoise, visionExposure } from "./perception.js?v=4";
-import { VIEW } from "./config.js?v=4";
-import { clamp, distance, uid } from "./util.js?v=4";
+import { strongestNoise, visionExposure } from "./perception.js?v=6";
+import { VIEW } from "./config.js?v=6";
+import { clamp, distance, uid } from "./util.js?v=6";
 
 const INITIAL_POSITIONS = [
   [14, 18], [9, 21], [24, 20], [36, 20], [43, 18], [31, 9],
@@ -31,10 +31,14 @@ export function createZombie(x, y, index = 0, id = null) {
     repathTimer: 0,
     facingX: 0,
     facingY: 1,
+    desiredFacingX: 0,
+    desiredFacingY: 1,
+    stimulus: null,
     moving: false,
     attackCooldown: 0,
     attackWindup: 0,
     hurtFlash: 0,
+    hitKick: 0,
     phase: Math.random() * 6,
     variant: index % 5,
     removed: false,
@@ -55,15 +59,17 @@ export class ZombieSystem {
     for (const zombie of game.zombies) {
       if (zombie.removed) continue;
       zombie.hurtFlash = Math.max(0, (zombie.hurtFlash || 0) - delta);
+      zombie.hitKick = Math.max(0, (zombie.hitKick || 0) - delta * 7.5);
       zombie.attackCooldown = Math.max(0, (zombie.attackCooldown || 0) - delta);
       zombie.stateTime = (zombie.stateTime || 0) + delta;
       zombie.stateTimer = Math.max(0, (zombie.stateTimer || 0) - delta);
       zombie.repathTimer = Math.max(0, (zombie.repathTimer || 0) - delta);
+      this.updateFacing(zombie, delta);
       const playerDistance = distance(zombie, game.player);
       const exposure = game.player.dead ? 0 : visionExposure(zombie, game.player, game.world, game.minutes);
 
-      this.updateAwareness(zombie, game, delta, exposure);
       this.updateHearing(zombie, game);
+      this.updateAwareness(zombie, game, delta, exposure);
       this.updateState(zombie, game, exposure);
       this.updateMovement(zombie, game, delta);
       this.updateAttack(zombie, game, delta, playerDistance, exposure);
@@ -77,6 +83,7 @@ export class ZombieSystem {
 
   updateAwareness(zombie, game, delta, exposure) {
     if (exposure > 0) {
+      zombie.stimulus = "vision";
       zombie.awareness = clamp((zombie.awareness || 0) + delta * (0.22 + exposure * 0.96), 0, 1);
       zombie.lastSeen = { x: game.player.x, y: game.player.y };
       if (zombie.awareness >= 1) {
@@ -96,6 +103,7 @@ export class ZombieSystem {
     const heard = strongestNoise(zombie, game.world.noises);
     if (!heard || heard.noise.id === zombie.lastNoiseId || zombie.state === "chase") return;
     zombie.lastNoiseId = heard.noise.id;
+    zombie.stimulus = "sound";
     zombie.lastSeen = { x: heard.noise.x, y: heard.noise.y };
     zombie.target = { ...zombie.lastSeen };
     zombie.awareness = Math.max(zombie.awareness || 0, clamp(heard.score * 0.55, 0.16, 0.72));
@@ -135,6 +143,7 @@ export class ZombieSystem {
       if (zombie.stateTimer <= 0) {
         zombie.target = null;
         zombie.lastSeen = null;
+        zombie.stimulus = null;
         zombie.awareness = Math.min(zombie.awareness, 0.08);
         this.setState(zombie, "idle", 0);
       } else if (!zombie.target || distance(zombie, zombie.target) < 0.45) {
@@ -170,7 +179,7 @@ export class ZombieSystem {
     }
     if (zombie.repathTimer <= 0 || !zombie.path?.length) {
       zombie.path = this.navigator.findPath(game.world, zombie, target, { allowDoors: false, maxNodes: 1500 });
-      zombie.repathTimer = zombie.state === "chase" ? 0.42 : 1.2;
+      zombie.repathTimer = zombie.state === "chase" ? 0.55 : 1.4;
     }
     const node = zombie.path?.[0];
     if (!node) {
@@ -187,8 +196,8 @@ export class ZombieSystem {
     }
     const nx = dx / length;
     const ny = dy / length;
-    zombie.facingX = nx;
-    zombie.facingY = ny;
+    zombie.desiredFacingX = nx;
+    zombie.desiredFacingY = ny;
     const speed = zombie.state === "chase" ? 1.25 : zombie.state === "investigate" ? 0.88 : zombie.state === "search" ? 0.62 : 0.36;
     zombie.moving = game.moveEntity(zombie, nx * speed * delta, ny * speed * delta, 0.25);
     if (!zombie.moving) zombie.repathTimer = 0;
@@ -213,8 +222,18 @@ export class ZombieSystem {
     const dx = target.x - zombie.x;
     const dy = target.y - zombie.y;
     const length = Math.hypot(dx, dy) || 1;
-    zombie.facingX = dx / length;
-    zombie.facingY = dy / length;
+    zombie.desiredFacingX = dx / length;
+    zombie.desiredFacingY = dy / length;
+  }
+
+  updateFacing(zombie, delta) {
+    const current = Math.atan2(zombie.facingY || 1, zombie.facingX || 0);
+    const desired = Math.atan2(zombie.desiredFacingY ?? zombie.facingY ?? 1, zombie.desiredFacingX ?? zombie.facingX ?? 0);
+    const difference = Math.atan2(Math.sin(desired - current), Math.cos(desired - current));
+    const turnRate = zombie.state === "chase" ? 5.2 : 3.6;
+    const next = current + clamp(difference, -turnRate * delta, turnRate * delta);
+    zombie.facingX = Math.cos(next);
+    zombie.facingY = Math.sin(next);
   }
 
   setState(zombie, state, timer = 0) {

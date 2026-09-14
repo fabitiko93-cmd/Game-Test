@@ -1,7 +1,7 @@
-import { gainSkill, skillValue } from "./character.js?v=4";
-import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponStats } from "./inventory.js?v=4";
-import { behindTarget } from "./perception.js?v=4";
-import { clamp, distance, vibrate } from "./util.js?v=4";
+import { gainSkill, skillValue } from "./character.js?v=6";
+import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponStats } from "./inventory.js?v=6";
+import { behindTarget } from "./perception.js?v=6";
+import { clamp, distance, vibrate } from "./util.js?v=6";
 
 export class CombatSystem {
   target(game) {
@@ -204,6 +204,7 @@ export class CombatSystem {
     target.hurtFlash = 0.16;
     target.state = "chase";
     target.awareness = 1;
+    target.stimulus = "vision";
     target.stateTimer = 1.1;
     target.lastSeen = { x: game.player.x, y: game.player.y };
     target.target = { ...target.lastSeen };
@@ -212,10 +213,12 @@ export class CombatSystem {
     const dx = target.x - game.player.x;
     const dy = target.y - game.player.y;
     const length = Math.hypot(dx, dy) || 1;
+    target.impactX = dx / length;
+    target.impactY = dy / length;
+    target.hitKick = 1;
     target.x += dx / length * 0.12;
     target.y += dy / length * 0.12;
     game.renderer.burst(target.x, target.y, "#832d29", 8);
-    game.renderer.shake = Math.max(game.renderer.shake, 4);
     game.world.blood.push({
       x: target.x + (game.random() - 0.5) * 0.2,
       y: target.y + (game.random() - 0.5) * 0.2,

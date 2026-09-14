@@ -11,7 +11,7 @@
   <title>SPERRKREIS 98</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <main id="game-shell" aria-label="SPERRKREIS 98">
@@ -59,22 +59,15 @@
           <div class="meter hp"><i id="hp-fill"></i><b>GESUNDHEIT</b></div>
           <div class="meter stamina"><i id="stamina-fill"></i><b>AUSDAUER</b></div>
         </div>
-      </div>
-
-      <div id="needs" class="needs">
-        <div id="hunger-need" title="Hunger"><span>◆</span><i></i></div>
-        <div id="thirst-need" title="Durst"><span>●</span><i></i></div>
-        <div id="wound-need" title="Verletzungen"><span>✚</span><i></i></div>
-      </div>
-
-      <div id="stealth-status" class="stealth-status">
-        <div title="Entdeckungsgefahr"><span>◉</span><i><b id="awareness-fill"></b></i></div>
-        <div title="Aktueller Geräuschpegel"><span>◖</span><i><b id="noise-fill"></b></i></div>
-      </div>
-
-      <div id="objective" class="objective">
-        <small>AKTUELLES ZIEL</small>
-        <strong id="objective-text">Durchsuche den Unterschlupf</strong>
+        <div id="needs" class="needs" aria-label="Bedürfnisse">
+          <div id="hunger-need"><span>HUNGER</span><i><b></b></i><strong id="hunger-state">SATT</strong></div>
+          <div id="thirst-need"><span>DURST</span><i><b></b></i><strong id="thirst-state">GESTILLT</strong></div>
+          <div id="wound-need"><span>WUNDEN</span><i><b></b></i><strong id="wound-state">KEINE</strong></div>
+        </div>
+        <div id="stealth-status" class="stealth-status" aria-label="Stealth-Status">
+          <div><span>ENTDECKUNG</span><i><b id="awareness-fill"></b></i><strong id="awareness-state">SICHER</strong></div>
+          <div><span>GERÄUSCH</span><i><b id="noise-fill"></b></i><strong id="noise-state">STILL</strong></div>
+        </div>
       </div>
 
       <div id="message" class="message" role="status"></div>
@@ -97,14 +90,34 @@
       </nav>
 
       <nav class="utility" aria-label="Menü">
+        <button id="mission-button"><span>◆</span> MISSIONEN <b id="mission-indicator">01</b></button>
         <button id="inventory-button"><span>▣</span> RUCKSACK <b id="inventory-count">0,0 KG</b></button>
         <button id="character-button"><span>◇</span> FIGUR</button>
+        <button id="recenter-button" aria-label="Kamera auf Figur zentrieren" title="Kamera zentrieren">◎</button>
         <button id="pause-button" aria-label="Pause">Ⅱ</button>
       </nav>
 
       <div id="quickbar" class="quickbar"></div>
-      <div class="control-hint">TIPP: LAUFZIEL · HALTEN: STEUERN · DOPPELTIPP: BENUTZEN</div>
+      <div class="control-hint">TIPP: GEHEN · 2× BODEN: RENNEN · HALTEN: LENKEN · 2 FINGER: KAMERA</div>
+      <div id="debug-stats" class="debug-stats hidden">– FPS</div>
     </div>
+
+    <section id="mission-panel" class="panel mission-panel hidden" aria-label="Missionen">
+      <header>
+        <div><small>ÜBERLEBENSZIELE</small><h2>MISSIONEN</h2></div>
+        <button class="close" data-close="mission-panel">×</button>
+      </header>
+      <div class="mission-content">
+        <article class="mission-current">
+          <small>AKTIVES ZIEL</small>
+          <h3 id="mission-title">ERSTE VORRÄTE</h3>
+          <strong id="mission-objective">Durchsuche den Küchenschrank</strong>
+          <p id="mission-description"></p>
+        </article>
+        <div id="mission-steps" class="mission-steps"></div>
+      </div>
+      <footer><span>Fortschritt wird automatisch gespeichert.</span></footer>
+    </section>
 
     <section id="inventory-panel" class="panel inventory-panel hidden" aria-label="Rucksack">
       <header>
@@ -173,6 +186,7 @@
         <small>AUTOSAVE AKTIV · WELT BLEIBT BESTEHEN</small>
         <h2>SPERRKREIS 98</h2>
         <button id="continue-button" class="primary">WEITERSPIELEN</button>
+        <button id="diagnostics-button">DIAGNOSEANZEIGE</button>
         <button id="reset-button" class="danger">NEUE WELT BEGINNEN</button>
       </div>
     </section>
@@ -189,6 +203,6 @@
 
     <div id="toast" class="toast"></div>
   </main>
-  <script type="module" src="src/main.js?v=4"></script>
+  <script type="module" src="src/main.js?v=6"></script>
 </body>
 </html>
