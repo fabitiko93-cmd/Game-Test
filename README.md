@@ -18,12 +18,13 @@ Die aktuelle Version ist unter **[fabitiko93-cmd.github.io/Game-Test](https://fa
 - Haltung wechseln: Schleichen, Gehen und Rennen verändern Tempo, Sichtbarkeit und Geräusch.
 - Inventargegenstand erneut antippen oder `BENUTZEN` wählen: benutzen, ausrüsten oder nachladen; Schusswaffen lassen sich über `ANPASSEN` modifizieren.
 - Missionsziele sowie Bedürfnis-, Wahrnehmungs- und Deckungsanzeigen stehen im separaten Status-/Missionsmenü; das HUD bleibt auf die unmittelbare Spielsituation konzentriert.
+- Liegengebliebene Fahrzeuge, Schuppen und Außenlager sind eigene Lootquellen und zugleich Deckungsobjekte.
 - Bei Gegenständen mit Voraussetzungen nennt die Detailbeschreibung das benötigte Werkzeug direkt (z. B. „BENÖTIGT: DOSENÖFFNER“). Eine ausgeblendete Exekution wird im Ziel-Fenster als eigener, erklärter Aktionsknopf eingeblendet.
 
 ## Enthaltener Spielstand
 
 - Charaktererstellung mit fünf Hintergründen und acht nutzungsbasierten Fähigkeiten
-- zusammenhängende Karte mit Safehouse, Wohnhäusern, Markt, Apotheke, Polizeiposten und Jagdverein
+- zusammenhängende Karte mit vier Ankergebäuden, offenem Wohnhof, Jagdgelände und lootbaren Fahrzeugen
 - kontextabhängiger Loot, Gewicht, Behälter und echte Ausrüstungsplätze
 - Nahkampf, vier Schusswaffen, physische Munition/Magazine und acht Waffenmods
 - Sichtlinien, Geräusche, drei Haltungen und mehrstufiges Zombieverhalten
@@ -39,7 +40,7 @@ Das Spiel ist bewusst in austauschbare ES-Module getrennt:
 | Modul | Verantwortung |
 | --- | --- |
 | `data.js` | Gegenstände, Waffen, Mods, Skills und Hintergründe |
-| `world.js` | Karte, Gebäude, Türen, Behälter und Loot |
+| `world.js` | Karte, POIs, Gebäude, Türen, Fahrzeuge, Behälter und Loot |
 | `navigation.js` | Wegfindung und Interaktionswege |
 | `perception.js` / `ai.js` | Sicht, Geräusch und Zombie-Zustände |
 | `inventory.js` / `character.js` | Ausrüstung, Magazine, Fortschritt und Wunden |

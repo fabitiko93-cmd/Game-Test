@@ -1,7 +1,7 @@
-import { COLORS, VIEW } from "./config.js?v=7";
-import { activeWeapon, itemDefinition } from "./inventory.js?v=7";
-import { VISION, visionGeometry } from "./perception.js?v=7";
-import { clamp, hash2, lerp } from "./util.js?v=7";
+import { COLORS, VIEW } from "./config.js?v=9";
+import { activeWeapon, itemDefinition } from "./inventory.js?v=9";
+import { VISION, visionGeometry } from "./perception.js?v=9";
+import { clamp, hash2, lerp } from "./util.js?v=9";
 
 export class Renderer {
   constructor(canvas) {
@@ -311,6 +311,8 @@ export class Renderer {
       case "corpse": this.drawCorpse(o); break;
       case "groundloot": this.drawGroundLoot(o); break;
       case "car": this.drawCar(o); break;
+      case "shed": this.drawShed(o); break;
+      case "fence": this.drawFence(o); break;
       case "streetlamp": this.drawStreetlamp(o); break;
       case "busstop": this.drawBusStop(o); break;
       case "sign": this.drawSign(o); break;
@@ -409,6 +411,20 @@ export class Renderer {
     this.drawBlock(o.x,o.y,w*.62,d*.62,30,this.shiftColor(o.color,10));
     const wind=this.iso(o.x,o.y,28);ctx.fillStyle="rgba(120,151,153,.65)";ctx.fillRect(wind.x-10,wind.y-3,20,5);
     ctx.fillStyle="#171a18";ctx.fillRect(p.x-25,p.y-1,10,4);ctx.fillRect(p.x+15,p.y-1,10,4);
+  }
+
+  drawShed(o) {
+    const color = o.color || "#675742";
+    this.drawBlock(o.x, o.y, 1.28, 0.96, 23, color);
+    const p = this.iso(o.x, o.y, 24);
+    this.ctx.fillStyle = "#3a3025";
+    this.ctx.fillRect(p.x - 6, p.y - 9, 12, 8);
+  }
+
+  drawFence(o) {
+    const width = o.orientation === "x" ? 1.38 : 0.16;
+    const depth = o.orientation === "x" ? 0.16 : 1.38;
+    this.drawBlock(o.x, o.y, width, depth, 10, o.color || "#5b5343");
   }
 
   drawStreetlamp(o) {

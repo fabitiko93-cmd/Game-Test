@@ -1,4 +1,4 @@
-import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=8";
+import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=9";
 import {
   activeWeapon,
   ammoLabel,
@@ -11,8 +11,8 @@ import {
   itemDefinition,
   roundsInWeapon,
   weaponCapacity,
-} from "./inventory.js?v=8";
-import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js?v=8";
+} from "./inventory.js?v=9";
+import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js?v=9";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -445,7 +445,15 @@ export class GameUI {
     this.closeAllPanels();
     this.openContainer = object;
     this.el.container_panel.classList.remove("hidden");
-    this.el.container_kind.textContent = object.survivor ? "VERSTORBENER ÜBERLEBENDER" : object.type === "corpse" ? "PERSON" : "BEHÄLTER";
+    this.el.container_kind.textContent = object.survivor
+      ? "VERSTORBENER ÜBERLEBENDER"
+      : object.type === "corpse"
+        ? "PERSON"
+        : object.type === "car"
+          ? "FAHRZEUG"
+          : object.type === "shed"
+            ? "SCHUPPEN"
+            : "BEHÄLTER";
     this.el.container_name.textContent = object.name || "UNBEKANNT";
     this.renderContainer(object, player);
   }

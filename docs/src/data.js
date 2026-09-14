@@ -161,6 +161,13 @@ export const LOOT_TABLES = {
     ["shell_12g", 0.62, 2, 7], ["ammo_rifle", 0.5, 2, 7], ["hunting_scope", 0.24, 1, 1],
     ["shotgun_choke", 0.2, 1, 1], ["recoil_pad", 0.24, 1, 1], ["weapon_sling", 0.32, 1, 1],
   ],
+  vehicle: [
+    ["water", 0.3, 1, 1], ["soda", 0.34, 1, 2], ["canned_beans", 0.24, 1, 1],
+    ["bread", 0.18, 1, 1], ["bandage", 0.14, 1, 1], ["painkillers", 0.08, 1, 1],
+    ["cloth", 0.22, 1, 2], ["batteries", 0.2, 1, 2], ["can_opener", 0.08, 1, 1],
+    ["ammo_9mm", 0.08, 2, 5], ["ammo_38", 0.05, 2, 4], ["lockpick", 0.05, 1, 1],
+    ["work_jacket", 0.1, 1, 1], ["crowbar", 0.035, 1, 1], ["pistol_suppressor", 0.025, 1, 1],
+  ],
   clothing: [
     ["work_jacket", 0.42, 1, 1], ["leather_jacket", 0.16, 1, 1], ["jeans", 0.42, 1, 1],
     ["canvas_bag", 0.22, 1, 1], ["hiking_pack", 0.08, 1, 1],
@@ -182,4 +189,7 @@ export const OBJECT_LABELS = {
   corpse: "Leiche",
   radio: "Kofferradio",
   groundloot: "Abgelegte Sachen",
+  car: "Liegengebliebenes Fahrzeug",
+  shed: "Schuppen",
+  fence: "Zaun",
 };

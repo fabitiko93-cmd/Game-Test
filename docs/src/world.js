@@ -1,15 +1,18 @@
-import { COLORS, VIEW } from "./config.js?v=7";
-import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=7";
-import { createItem } from "./inventory.js?v=7";
-import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=7";
+import { COLORS, VIEW } from "./config.js?v=9";
+import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=9";
+import { createItem } from "./inventory.js?v=9";
+import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=9";
 
 export const BUILDINGS = [
-  { id: "house", name: "REIHENHAUS", x: 3, y: 3, w: 10, h: 11, floor: "floor", door: { x: 8, y: 13 }, wall: "#78695e", roof: "#4b4039", locked: true, lockDifficulty: 14 },
-  { id: "police", name: "POLIZEIPOSTEN", x: 16, y: 3, w: 10, h: 11, floor: "policeFloor", door: { x: 21, y: 13 }, wall: "#68726d", roof: "#34423d" },
-  { id: "market", name: "NAHKAUF", x: 35, y: 3, w: 10, h: 11, floor: "floor", door: { x: 40, y: 13 }, wall: "#777565", roof: "#4c5148" },
-  { id: "safehouse", name: "UNTERSCHLUPF", x: 3, y: 34, w: 10, h: 11, floor: "floor", door: { x: 8, y: 34 }, wall: "#6e6658", roof: "#354237" },
-  { id: "club", name: "JAGDVEREIN", x: 16, y: 34, w: 10, h: 11, floor: "clubFloor", door: { x: 21, y: 34 }, wall: "#71634f", roof: "#453d31", locked: true, lockDifficulty: 22 },
-  { id: "pharmacy", name: "APOTHEKE", x: 35, y: 34, w: 10, h: 11, floor: "pharmacyFloor", door: { x: 40, y: 34 }, wall: "#6f786d", roof: "#314239", locked: true, keyId: "pharmacy", lockDifficulty: 24 },
+  { id: "police", name: "POLIZEIPOSTEN", x: 15, y: 4, w: 10, h: 9, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
+  { id: "market", name: "NAHKAUF", x: 36, y: 4, w: 9, h: 10, floor: "floor", door: { x: 40, y: 13 }, wall: "#777565", roof: "#4c5148" },
+  { id: "safehouse", name: "UNTERSCHLUPF", x: 4, y: 35, w: 9, h: 9, floor: "floor", door: { x: 8, y: 35 }, wall: "#6e6658", roof: "#354237" },
+  { id: "pharmacy", name: "APOTHEKE", x: 36, y: 35, w: 9, h: 10, floor: "pharmacyFloor", door: { x: 40, y: 35 }, wall: "#6f786d", roof: "#314239", locked: true, keyId: "pharmacy", lockDifficulty: 24 },
+];
+
+export const OPEN_POIS = [
+  { id: "residential-yard", name: "WOHNHOF", x: 3, y: 3, w: 10, h: 11, theme: "residential" },
+  { id: "hunting-yard", name: "JAGDGELÄNDE", x: 15, y: 34, w: 11, h: 11, theme: "hunting" },
 ];
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
@@ -22,6 +25,7 @@ export class World {
     this.objects = [];
     this.objectGrid = new Map();
     this.buildings = [];
+    this.openPOIs = [];
     this.noises = [];
     this.blood = [];
     this.objectCounter = 0;
@@ -44,6 +48,7 @@ export class World {
 
   generate() {
     this.buildings = BUILDINGS.map(building => deepCopy(building));
+    this.openPOIs = OPEN_POIS.map(poi => deepCopy(poi));
     for (let y = 0; y < VIEW.worldH; y++) {
       const row = [];
       for (let x = 0; x < VIEW.worldW; x++) row.push(this.baseTile(x, y));
@@ -51,16 +56,26 @@ export class World {
     }
     for (const building of this.buildings) this.addBuilding(building);
     this.addStreetDetails();
+    this.addOutdoorLots();
     this.addVegetation();
     this.addContainers();
   }
 
   baseTile(x, y) {
     if (x === 0 || y === 0 || x === VIEW.worldW - 1 || y === VIEW.worldH - 1) return "water";
-    if (x >= 29 && x <= 33) return "road";
-    if (y >= 18 && y <= 22) return "road";
-    if (x === 28 || x === 34 || y === 17 || y === 23) return "sidewalk";
-    return hash2(x, y, this.seed) > 0.85 ? "dirt" : "grass";
+
+    const mainRoad = (x >= 29 && x <= 33) || (y >= 18 && y <= 22);
+    const ringRoad = ((y >= 14 && y <= 15) || (y >= 30 && y <= 31)) && x >= 2 && x <= 45;
+    const sideRoad = ((x >= 13 && x <= 14) || (x >= 34 && x <= 35)) && y >= 14 && y <= 31;
+    if (mainRoad || ringRoad || sideRoad) return "road";
+
+    const sidewalk = (x >= 28 && x <= 34 && (y === 17 || y === 23))
+      || (y >= 17 && y <= 23 && (x === 28 || x === 34))
+      || ((y === 13 || y === 16 || y === 29 || y === 32) && x >= 2 && x <= 45)
+      || ((x === 12 || x === 15 || x === 33 || x === 36) && y >= 14 && y <= 31);
+    if (sidewalk) return "sidewalk";
+
+    return hash2(x, y, this.seed) > 0.82 ? "dirt" : "grass";
   }
 
   addBuilding(building) {
@@ -114,12 +129,6 @@ export class World {
     this.addObject("radio", 10.7, 42.0, { interactable: true, solid: true, name: "KOFFERRADIO", used: false });
     this.addObject("bed", 10.3, 36.5, { solid: true, name: "MATRATZE" });
 
-    this.addObject("cabinet", 5.1, 5.2, { interactable: true, solid: true, container: "kitchen", name: "HÄNGESCHRANK" });
-    this.addObject("fridge", 5.1, 7.2, { interactable: true, solid: true, container: "fridge", name: "KÜHLSCHRANK" });
-    this.addObject("toolbox", 10.5, 11.2, { interactable: true, solid: true, container: "tools", name: "WERKZEUGKISTE" });
-    const houseCorpse = this.addObject("corpse", 8.2, 8.4, { interactable: true, solid: false, container: "corpse", name: "REGLOSE PERSON" });
-    this.ensureItem(houseCorpse, createItem("pharmacy_key"));
-
     this.addObject("desk", 18.2, 5.2, { interactable: true, solid: true, container: "police", name: "DIENSTSCHREIBTISCH" });
     const policeLocker = this.addObject("gunlocker", 23.5, 5.2, {
       interactable: true, solid: true, container: "police", name: "GESICHERTER WAFFENSCHRANK",
@@ -142,23 +151,6 @@ export class World {
     this.addObject("counter", 42, 12.2, { solid: true, name: "KASSE" });
     this.addObject("locker", 36.5, 12, { interactable: true, solid: true, container: "clothing", name: "PERSONALSPIND" });
 
-    const clubLocker = this.addObject("gunlocker", 18.1, 36.4, {
-      interactable: true, solid: true, container: "hunting", name: "VEREINSSCHRANK",
-      locked: true, lockDifficulty: 26,
-    });
-    clubLocker.items.push(
-      createItem("shotgun_12g", 1, { rounds: 1 }),
-      createItem("shell_12g", 6),
-      createItem("hunting_rifle", 1, { rounds: 1 }),
-      createItem("ammo_rifle", 5),
-      createItem("shotgun_choke"),
-      createItem("recoil_pad"),
-      createItem("weapon_sling"),
-      createItem("shell_holder"),
-    );
-    this.addObject("toolbox", 23.4, 36.4, { interactable: true, solid: true, container: "tools", name: "WERKBANK" });
-    this.addObject("locker", 23.4, 41.3, { interactable: true, solid: true, container: "clothing", name: "UMKLEIDESPIND" });
-
     const medicine = this.addObject("shelf", 37.2, 36.2, { interactable: true, solid: true, container: "pharmacy", name: "MEDIKAMENTENSCHRANK" });
     medicine.items.push(createItem("sealed_antibiotics"));
     this.addObject("shelf", 37.2, 39.2, { interactable: true, solid: true, container: "pharmacy", name: "VERBANDSSCHRANK" });
@@ -175,22 +167,93 @@ export class World {
     for (let x = 3; x < VIEW.worldW - 3; x += 7) {
       if (x < 28 || x > 34) this.addObject("streetlamp", x, 23.8, { solid: true, light: true, blocksSight: false });
     }
-    this.addObject("car", 31.2, 8.0, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "y", color: "#6d392f", name: "ROTER WARTBURG" });
-    this.addObject("car", 32.0, 39.0, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "y", color: "#455d67", name: "BLAUER GOLF" });
-    this.addObject("car", 9.0, 20.0, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "x", color: "#77715a", name: "BEIGER TRABANT" });
-    this.addObject("car", 39.2, 20.8, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "x", color: "#4b5b48", name: "GRÜNER PASSAT" });
+    this.addVehicle( 31.2, 8.0, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "y", color: "#6d392f", name: "ROTER WARTBURG" });
+    this.addVehicle( 32.0, 39.0, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "y", color: "#455d67", name: "BLAUER GOLF" });
+    this.addVehicle( 9.0, 20.0, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "x", color: "#77715a", name: "BEIGER TRABANT" });
+    this.addVehicle( 39.2, 20.8, { solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG", orientation: "x", color: "#4b5b48", name: "GRÜNER PASSAT" });
     this.addObject("busstop", 34.8, 20.2, { solid: true, blocksSight: true, cover: 0.62, coverLabel: "BUSHALTESTELLE", name: "BUSHALTESTELLE" });
     this.addObject("sign", 34.7, 35.0, { solid: false, name: "APOTHEKE" });
     this.addObject("sign", 34.7, 12.5, { solid: false, name: "NAHKAUF" });
-    this.addObject("sign", 15.0, 35.0, { solid: false, name: "JAGDVEREIN" });
+    this.addObject("sign", 15.0, 35.0, { solid: false, name: "JAGDGELÄNDE" });
+    this.addObject("sign", 3.0, 3.0, { solid: false, name: "WOHNHOF" });
     this.addObject("sign", 15.0, 12.5, { solid: false, name: "POLIZEI" });
+  }
+
+  addOutdoorLots() {
+    const residentialShed = this.addObject("shed", 7.1, 8.0, {
+      solid: true, blocksSight: true, interactable: true, container: "tools",
+      name: "GARTENSCHUPPEN", color: "#665540",
+    });
+    const residentialCar = this.addVehicle(10.9, 8.2, {
+      orientation: "y", color: "#665947", name: "BRAUNER KLEINWAGEN",
+    });
+    this.ensureItem(residentialCar, createItem("pharmacy_key"));
+    this.addVehicle(4.8, 11.6, {
+      orientation: "x", color: "#77705a", name: "AUSGEBLICHENER KOMBI",
+    });
+    this.addObject("locker", 10.2, 5.4, {
+      solid: true, interactable: true, container: "clothing", name: "GARTENSCHRANK",
+    });
+    this.addObject("corpse", 8.8, 11.1, {
+      interactable: true, solid: false, container: "corpse", name: "REGLOSE PERSON",
+    });
+    this.addObject("fence", 3.2, 14.3, { orientation: "x", color: "#5b5343" });
+    this.addObject("fence", 7.0, 14.3, { orientation: "x", color: "#5b5343" });
+    this.addObject("fence", 10.8, 14.3, { orientation: "x", color: "#5b5343" });
+
+    const huntingCache = this.addObject("shed", 20.2, 38.4, {
+      solid: true, blocksSight: true, interactable: true, container: "hunting",
+      items: [], locked: true, lockDifficulty: 26,
+      name: "JAGDLAGER", color: "#6d6047",
+    });
+    huntingCache.items.push(
+      createItem("shotgun_12g", 1, { rounds: 1 }),
+      createItem("shell_12g", 6),
+      createItem("hunting_rifle", 1, { rounds: 1 }),
+      createItem("ammo_rifle", 5),
+      createItem("shotgun_choke"),
+      createItem("recoil_pad"),
+      createItem("weapon_sling"),
+      createItem("shell_holder"),
+    );
+    this.addObject("toolbox", 23.5, 37.4, {
+      interactable: true, solid: true, container: "tools", name: "WERKBANK",
+    });
+    this.addObject("locker", 17.5, 41.8, {
+      interactable: true, solid: true, container: "clothing", name: "UMKLEIDESPIND",
+    });
+    this.addVehicle(16.3, 39.5, {
+      orientation: "x", color: "#49554c", name: "ALTES JAGDFAHRZEUG",
+    });
+    this.addVehicle(25.1, 42.0, {
+      orientation: "y", color: "#5f4e43", name: "ABGESTELLTER TRANSPORTER",
+    });
+    this.addObject("fence", 15.2, 34.1, { orientation: "x", color: "#5b5343" });
+    this.addObject("fence", 19.0, 34.1, { orientation: "x", color: "#5b5343" });
+    this.addObject("fence", 24.0, 34.1, { orientation: "x", color: "#5b5343" });
+
+    this.addVehicle(28.3, 15.0, {
+      orientation: "x", color: "#4d514e", name: "LIEFERWAGEN",
+    });
+    this.addVehicle(26.6, 31.0, {
+      orientation: "y", color: "#53636a", name: "KLEINER TRANSPORTER",
+    });
+  }
+
+  addVehicle(x, y, options = {}) {
+    return this.addObject("car", x, y, {
+      solid: true, blocksSight: true, cover: 0.56, coverLabel: "FAHRZEUG",
+      orientation: "x", interactable: true, container: "vehicle",
+      color: "#59615b", name: "LIEGEN GEBLIEBENES FAHRZEUG",
+      ...options,
+    });
   }
 
   addVegetation() {
     for (let y = 2; y < VIEW.worldH - 2; y++) {
       for (let x = 2; x < VIEW.worldW - 2; x++) {
         const tile = this.tiles[y][x];
-        if (!["grass", "dirt"].includes(tile) || this.insideAnyBuilding(x, y, 1.3)) continue;
+        if (!["grass", "dirt"].includes(tile) || this.insideAnyBuilding(x, y, 1.3) || this.objectAtCell(x, y, object => object.solid)) continue;
         const r = hash2(x * 3, y * 5, this.seed + 31);
         if (r > 0.93) this.addObject("tree", x + 0.15, y + 0.12, {
           solid: true, blocksSight: true, cover: 0.68, coverLabel: "BAUM", variant: Math.floor(r * 10) % 3,

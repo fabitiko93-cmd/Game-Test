@@ -25,8 +25,11 @@ const world = new World();
 const navigator = new Navigator();
 const initialZombies = createInitialZombies();
 assert.equal(world.tiles.length, 48);
-assert.equal(world.buildings.length, 6);
-assert.ok(world.objects.length > 300);
+assert.equal(world.buildings.length, 4);
+assert.equal(world.openPOIs.length, 2);
+assert.ok(world.objects.length > 280);
+assert.ok(world.objects.filter(object => object.type === "car" && object.interactable).length >= 10);
+assert.ok(world.objects.filter(object => object.container === "vehicle").length >= 10);
 assert.equal(GAME.maxZombies, 20);
 assert.ok(initialZombies.every(zombie => world.isPathCellWalkable(zombie.x, zombie.y, { allowDoors: false })));
 assert.deepEqual(world.clampPoint({ x: -40, y: 90 }), { x: 1, y: 46 });
@@ -118,7 +121,7 @@ saves.clear();
 assert.equal(saves.has(), false);
 
 const policeLocker = world.objects.find(object => object.name === "GESICHERTER WAFFENSCHRANK");
-const clubLocker = world.objects.find(object => object.name === "VEREINSSCHRANK");
+const clubLocker = world.objects.find(object => object.name === "JAGDLAGER");
 assert.ok(policeLocker.items.some(item => item.type === "pistol_9mm"));
 assert.ok(policeLocker.items.some(item => item.type === "revolver_38"));
 assert.ok(clubLocker.items.some(item => item.type === "shotgun_12g"));
@@ -136,9 +139,11 @@ for (const id of [
   assert.match(html, new RegExp(`id=["']${id}["']`), `missing UI contract: ${id}`);
 }
 assert.match(html, /style\.css\?v=8/);
-assert.match(html, /src\/main\.js\?v=8/);
+assert.match(html, /src\/main\.js\?v=9/);
 assert.match(uiSource, /BENÖTIGT:/);
 assert.match(serviceWorker, /src\/missions\.js/);
 assert.match(serviceWorker, /ignoreSearch:\s*true/);
+
+assert.match(serviceWorker, /sperrkreis98-v9/);
 
 console.log("SPERRKREIS 98 core tests passed");
