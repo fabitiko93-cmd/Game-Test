@@ -32,6 +32,11 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
 5. Bestehendes Spiel modular erweitern, nicht neu schreiben. Bestehende Klicksteuerung
    beibehalten: Tippen geht, Doppeltippen auf Boden sprintet, Halten lenkt im Gehtempo,
    zwei Finger bewegen die Kamera.
+6. Bestehende Verfolgungs- und Suchzeiten sowie die allgemeine Verfolgungslogik beibehalten.
+   Nutzerentscheidung nach dem UO-Abgleich: keine neue globale Verfolgungsobergrenze,
+   keine Übernahme fremder Zeitwerte und keine vorsorgliche Neubalance. Erst konkrete
+   Auffälligkeiten in seinen Spieltests sind Anlass für Anpassungen. Die vereinbarte
+   deckungsbezogene Suche einschließlich Timerbeginn beim Eintritt bleibt Patchumfang.
 
 ## Vereinbarte Richtung: Ducken, Hide und Zombie-Wissen
 
@@ -81,20 +86,27 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
 - Genaues Verhalten der Erkennungsfrist bei mehreren sehr kurzen Sichtunterbrechungen ist
   noch zu definieren. Kein pauschaler Erkennungsreset durch jeden kleinen ID-Wechsel.
 
-### Suchende und Naherkennung: Auftrag und noch offene Kalibrierung
+### Suchende und Naherkennung: bestehende Grundlage im neuen Deckungsbezug
 
-- Nutzerauftrag: zuerst etablierte Mechaniken einfacher Zombies als Testgrundlage verwenden;
-  keine unnötig ausgefeilte neue Suchintelligenz erfinden.
+- Nutzerentscheidung nach dem UO-Abgleich: Verfolgungs- und Suchzeiten des vorhandenen
+  Spiels verwenden. Keine zusätzliche allgemeine Verfolgungs-/Gedächtnisregel einführen;
+  erst auf unpassende Mechaniken in den Spieltests reagieren.
 - Bei der Untersuchung beginnt der Timer am Eintritt in die Deckung. Der Suchbereich bleibt
   die konkrete kontaminierte Deckung. Benachbarte Deckungen gehören nicht zur Suchausweitung.
+- Dabei bleibt die vorhandene Suchdauer des jeweiligen Auslösers die Grundlage. Der spätere
+  Beginn der deckungsbezogenen Untersuchung ist die bereits vereinbarte Verhaltensänderung,
+  keine neue Auswahl oder Verlängerung der Dauer. Ohne Deckungsbezug bleibt der Ablauf bestehen.
 - Gezielte Naherkennung soll durch tatsächliche Wahrnehmung beim Absuchen möglich sein;
   keine Entdeckung durch eine dazwischenliegende undurchsichtige Wand.
-- Konkrete Dauer und Nähegrenze sind noch nicht als Referenzwerte abgesichert. Vor Umsetzung
-  begründete Startwerte wählen und als Spieltestwerte kennzeichnen; nicht als Branchenstandard ausgeben.
-- Ebenfalls noch festzulegen: Ende der Kontamination nach erfolgloser Suche und Umgang mit
-  einem tatsächlich unerreichbaren Suchbereich. Hieraus keine Suche in beliebigen Nachbarbereichen ableiten.
+- Bestehende Naherkennungsgrundlage mit diesen Deckungsregeln vereinbar machen; keine
+  unbelegten Fremdspielwerte als neue Balance festlegen. Der vorhandene Nahbereich ist
+  dabei kein pauschaler automatischer Entdeckungsradius für versteckte Figuren.
+- Die Kontamination gehört zum Suchversuch des jeweiligen Zombies und darf nach dessen
+  Ende keine weitere Suche erzwingen. Unerreichbare Suchbereiche dürfen keinen dauerhaft
+  aktiven Anmarsch verursachen. Daraus weder eine neue allgemeine Chase-Regel noch eine
+  Suche in beliebigen Nachbarbereichen ableiten.
 
-### Geprüfter Iststand – kein Beschluss für neue Balance
+### Geprüfter Iststand – vorhandene Zeitwerte bleiben Grundlage
 
 - `ai.js`: Nach Sichtverlust Wechsel in `search` mit 6,5 Sekunden, nach `investigate`
   mit 5,5 Sekunden. `stateTimer` läuft derzeit bereits während der Annäherung herunter.
@@ -103,8 +115,9 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
 - `ai.js`: Schon kleine positive Exposition erhöht die Wahrnehmung mit einer festen
   Grundrate und aktualisiert `lastSeen` auf die Spielerposition. Das muss bei wirksamer
   Deckung mit der vereinbarten festen Erinnerung vereinbar werden.
-- Diese Zahlen sind belegte Werte unseres Codes. Sie sind weder als bewährte Fremdspielwerte
-  belegt noch durch den Nutzer als endgültige neue Parameter festgelegt.
+- Diese Zahlen sind belegte Werte unseres Codes. Nach der neuesten Nutzerentscheidung
+  werden die vorhandenen Zeitwerte beibehalten und erst bei auffälligen Spieltests angepasst.
+  Sie sind damit nicht als bewährte Fremdspielwerte oder unveränderliche Endbalance festgelegt.
 - Abgleich am 21.09.2026: Die offizielle [PZwiki-Dokumentation zu Zombie Lore](https://pzwiki.net/wiki/Custom_Sandbox#Zombie_Lore)
   beschreibt unterschiedliche Gedächtnis- und Sichtstufen, belegt dort jedoch keine feste
   Sekunden-/Nahdistanzkombination für unser Deckungsmodell. Die eingesehene Seite bezieht
@@ -178,6 +191,9 @@ Wünsche bei Erweiterungen verloren gehen; Dokumentationsbehauptungen ersetzen k
 - 1,5 Sekunden pauschaler Hide-Nachlauf nach Verlassen einer Deckung war nur ein früherer
   Assistentenvorschlag. Nicht als beschlossen behandeln; Verhältnis zur später vorgeschlagenen
   Erkennungsfrist ungeklärt.
+- Eine neue allgemeine Verfolgungsobergrenze und die Übernahme von UO-/Fremdspiel-Zeitwerten
+  sind nach dem UO-Abgleich ausdrücklich aus dem aktuellen Patch genommen. Bestehende
+  Verfolgungs-/Suchzeiten und allgemeine Verfolgungslogik bleiben Grundlage bis zu Spieltestbefunden.
 
 ## Beispiele für die spätere Prüfung des vereinbarten Verhaltens
 
@@ -192,6 +208,8 @@ Wünsche bei Erweiterungen verloren gehen; Dokumentationsbehauptungen ersetzen k
 - Suchender Zombie kann bei tatsächlichem nahen Wiederfinden aufdecken; reine Nähe
   hinter einer undurchsichtigen Wand liefert keine Sicht.
 - Bestehende Geräuschereignisse und Ausdauerwerte bleiben erhalten.
+- Bestehende Verfolgungs-/Suchzeiten bleiben erhalten; außerhalb der Deckungsänderungen
+  bleibt der allgemeine Ablauf bestehen. Kein zusätzlicher globaler Verfolgungs-Countdown.
 - Bestehende Exekution von hinten funktioniert mit der neuen Hide-Grundlage;
   neue Exekutionsvarianten gehören nicht zu dieser Abnahme.
 
@@ -201,3 +219,9 @@ Letzte Nutzervorgaben aufgenommen: keine Geräuschänderungen; Untersuchungszeit
 Eintritt in den Deckungsbereich; etablierte Such-/Naherkennungsmechaniken zunächst testen;
 offene Nutzerideen mit frühzeitiger Wiedervorlage erhalten; Exekutions-Skillset einschließlich
 Frontal- und Über-Deckung-Varianten ausdrücklich für später vormerken.
+
+Ergänzung nach dem UO-Abgleich: Die Abschweifung zu neuen allgemeinen Verfolgungsgrenzen
+und fremden Zeitwerten ist beendet. Der Nutzer möchte den bestehenden Ablauf und dessen
+Zeitwerte zunächst testen und nur bei konkreten Auffälligkeiten anpassen. Der aktuelle
+Patch bleibt bei den vereinbarten Deckungs-/Hide-Änderungen und den weiteren vorgemerkten
+Bereichen; die Untersuchungszeit beginnt weiterhin erst beim Eintritt in den Deckungsbereich.
