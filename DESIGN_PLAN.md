@@ -11,6 +11,8 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
   einer Festlegung ansprechen, die ihre spätere Integration wesentlich verteuert.
 - Die Wiedervorlage ist ein Gespräch über die anstehende Entscheidung, kein automatischer
   Auftrag, das zukünftige Feature jetzt einzubauen.
+- Nutzerpräzisierung: zurückgestellte Ideen nicht ständig aufzählen. Die explizite
+  Ansprache erfolgt am vermerkten Entscheidungspunkt oder auf Nachfrage.
 - Status unterscheiden: beschlossen, Nutzeridee für später, Assistentenvorschlag,
   offen, umgesetzt oder ausdrücklich verworfen/ersetzt. Den Anlass einer Statusänderung festhalten.
 - Aktuelle Phase: Patchnotes abstimmen; noch keine Umsetzung des Spielpatches.
@@ -79,12 +81,53 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
 - Zusammenstehende Büsche können solche Übergänge bieten. Sichtbare Lücken zwischen
   auseinanderstehenden Deckungen erlauben die Wahrnehmung des Wechsels.
 - Bei einem kurz sichtbar werdenden geduckten Wechsel ist eine Erkennungsfrist vorgesehen.
-  0,6 Sekunden waren ein Assistentenvorschlag als Testwert, keine endgültige Balanceentscheidung.
+  Nutzerziel: ein aufmerksamer, aber einfacher/dummer Zombie. Aktueller Assistentenvorschlag
+  als Testwert: 1,0 Sekunde tatsächliche Sicht beim geduckten Wechsel; ersetzt den früheren
+  Vorschlag von 0,6 Sekunden, noch keine ausdrücklich bestätigte Nutzerentscheidung.
+  Nur tatsächliche Sicht zählt; Zeit hinter wirksamer Deckung zählt nicht weiter.
+  Erreicht die Beobachtung die Frist, kann der Zombie den Wechsel erkennen und die neue
+  Deckung als Suchbereich übernehmen. Ohne erneute Sicht keine Verfolgung versteckter Koordinaten.
 - Aufrechter beobachteter Wechsel macht die neue Ankunftsdeckung sofort bekannt.
 - Sichtbares Sprinten führt unmittelbar zur Verfolgung der Figur. Nach tatsächlichem
   Sichtverlust bleibt der letzte wahrgenommene Ort beziehungsweise die bekannte Deckung.
 - Genaues Verhalten der Erkennungsfrist bei mehreren sehr kurzen Sichtunterbrechungen ist
   noch zu definieren. Kein pauschaler Erkennungsreset durch jeden kleinen ID-Wechsel.
+- Die Frist gilt für den beobachtbaren geduckten Deckungswechsel ohne aktives Openfield-Hide.
+  Sie verkürzt weder die zugesagte Perk-Dauer noch verändert sie allgemeine Chase-/Suchzeiten.
+
+### Referenzprüfung zur Erkennungsfrist
+
+- Die Projekt-Dokumentation von [The Dark Mod: Visual scan](https://wiki.thedarkmod.com/index.php?title=Visual_scan)
+  beschreibt eine von Helligkeit, Entfernung und visueller Wahrnehmungsfähigkeit abhängige
+  Wahrscheinlichkeit. Ihr Bezug auf ein halbes Sekundenintervall ist eine
+  Wahrscheinlichkeitsnormalisierung, keine garantierte Erkennungsfrist von 0,5 Sekunden.
+- [The Dark Mod: AI stats](https://wiki.thedarkmod.com/index.php?title=AI_stats) beschreibt
+  gestufte Aufmerksamkeit und Grace-Zeiten. Die dort angegebenen 2–3 Sekunden dürfen nicht
+  als direkte Frist für einen sichtbaren Deckungswechsel übernommen werden: der geprüfte
+  [AI-Quellcode](https://svn.thedarkmod.com/publicsvn/darkmod_src/trunk/game/ai/AI.cpp) nimmt
+  Spieler-Sichterkennung von dieser Grace-Prüfung aus (`m_AlertGraceTime && !AI_VISALERT`).
+- Schluss für unser Design: verzögerte Erkennung ist als Referenzprinzip nachvollziehbar;
+  1,0 Sekunde ist unser vorgeschlagener, transparenter Spieltestwert für kurze geduckte
+  Übergänge auf dem iPhone, kein belegter übernommener Standard anderer Stealth-Spiele.
+
+### Openfield-Stealth: festgelegte erste Perk-Version
+
+- Eigener Button nur bei vorhandenem Perk, zunächst beim Einbrecher. Aktivierung bewusst
+  per Button; keine automatische Verwendung beim Verlassen der Deckung.
+- Nutzerentscheidung: sofortiger Hide für vorerst 10 Sekunden, ohne Kanalisierung.
+- Nutzerentscheidung: Cooldown vorerst 30 Sekunden; ersetzt die früheren Vorschläge von
+  8 Sekunden Dauer und 25 Sekunden Cooldown.
+- Nutzerentscheidung: zunächst nur geduckt nutzbar. Geduckte Bewegung ist möglich;
+  aufrechtes Gehen und Sprinten sind durch diese erste Perk-Stufe nicht abgedeckt.
+- Nutzerentscheidung: im aktiven Kampf nicht aktivierbar. Diese Beschränkung betrifft
+  den Openfield-Perk, nicht die vereinbarte Sichtunterbrechung durch tatsächliche Deckung.
+  Den aktiven Kampfzustand nicht allein aus dem eingeschalteten Kampfmodus-Button ableiten.
+- Normales Deckungshide bleibt vom Perk-Cooldown unabhängig.
+- Assistentenvorschlag zur noch nicht ausdrücklich festgelegten Zeitrechnung: Cooldown
+  ab erfolgreicher Aktivierung, also bei ununterbrochener Nutzung 10 Sekunden Wirkung
+  und danach noch 20 Sekunden bis zur erneuten Verfügbarkeit.
+- Der Perk soll später skillbar sein. Als Nutzeridee mit Wiedervorlage erhalten;
+  noch keine Stufen, Fortschrittswerte oder neuen Fähigkeiten in diesem Patch bauen.
 
 ### Suchende und Naherkennung: bestehende Grundlage im neuen Deckungsbezug
 
@@ -127,8 +170,8 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
 
 | Bereich | Stand und Grenze |
 | --- | --- |
-| Openfield-Stealth | Nutzerentscheidung: eigener Button nur mit Perk, zunächst Einbrecher; bewusste Aktivierung, keine Kanalisierung. Normales Deckungshide unabhängig vom Cooldown. Dauer, Bewegung und Einsatz unter Beobachtung noch abzustimmen. |
-| Testwerte des Perks | 8 Sekunden Dauer waren ein Assistentenvorschlag. 25 Sekunden Cooldown sind für den Nutzer höchstens ein Mechanik-Testwert, keine akzeptierte endgültige Balance. |
+| Openfield-Stealth | Nutzerentscheidung: eigener Button nur mit Perk, zunächst Einbrecher; sofortiger Hide für 10 Sekunden, 30 Sekunden Cooldown, zunächst ausschließlich geduckt und im aktiven Kampf nicht aktivierbar. Normales Deckungshide unabhängig vom Cooldown. |
+| Zeitrechnung des Perks | Dauer und Cooldown sind als vorläufige Nutzerwerte festgelegt. Cooldown ab Aktivierung ist ein Assistentenvorschlag; alte Werte von 8/25 Sekunden sind ersetzt. |
 | HUD | Tarnung/Deckung/Geräusch und akute Verletzungen unmittelbar lesbar; Bedürfnisse und Missionen in Menüs. Aktuelle Verdeckung und bekannte/durchsuchte Deckung müssen unterscheidbar sein. |
 | Fahrzeuge | Klar erkennbare stehende, lootbare Fahrzeuge. Grafik, Kollision und Deckung sollen zusammenpassen. Keine Fahrmechanik im Autofix. |
 | Behälter | Unplausible frei aufgestellte Spinde und andere Außenbehälter prüfen; nur tatsächlich problematische Platzierungen durch passende Lootquellen ersetzen. |
@@ -151,6 +194,7 @@ Zurückgestellt ist kein vergebener Implementierungsauftrag.
 | I-07 | Organische Karte mit Umwegen/Fluchtmöglichkeiten und lootbaren, nicht fahrbereiten Autos statt Gebäude gleichmäßig zu verkleinern; Nutzer | Teilweise im vorhandenen Stand angelegt, Wirkung weiter zu prüfen | … neue Gebäude, Engstellen, Deckungsketten oder zusätzliche Lootquellen platziert werden. |
 | I-08 | Crafting und Barrikadenbau; früher als spätere Ausbaustufe vom Assistenten genannt | Assistentenvorschlag, keine bestätigte Nutzerentscheidung | … Interaktionen, Itemrezepte oder veränderbare Weltobjekte erweitert werden; dann erst Interesse und Umfang klären. |
 | I-09 | Fahrbare Fahrzeuge; frühere allgemeine spätere Fahrzeugperspektive | Keine belegte Nutzerentscheidung für Fahrbarkeit; aktueller Wunsch sind nicht fahrbereite Lootfahrzeuge | … Fahrzeugdaten irreversibel auf reine Behälter zugeschnitten werden; Option kurz ansprechen, nicht als beschlossenen Ausbau behandeln. |
+| I-10 | Openfield-Stealth-Perk soll skillbar werden; Nutzer, 21.09.2026 | Nutzeridee für später; erste Version bleibt 10 Sekunden Hide / 30 Sekunden Cooldown und nur geduckt | … Perk-/Skillfortschritt, Speicherung von Fähigkeiten oder deren Stufen dauerhaft festgelegt werden. Erst dann konkrete Fortschrittswirkungen besprechen; nicht in jeder Patchnote wiederholen. |
 
 ### Wiedervorlage, die schon die anstehende Planung betrifft
 
@@ -186,8 +230,8 @@ Wünsche bei Erweiterungen verloren gehen; Dokumentationsbehauptungen ersetzen k
   durch die feste Erinnerung und Kontamination der beobachteten Deckung pro Zombie.
 - Neue Geräuschregeln für weitere Handlungen: aktuell ausdrücklich ausgeschlossen.
 - Großes Exekutions-Skillset im aktuellen Patch: ausdrücklich auf später verschoben, nicht verworfen.
-- 25 Sekunden Cooldown als endgültige Feld-Hide-Balance: vom Nutzer nicht akzeptiert;
-  lediglich als möglicher Testwert einordnen.
+- Die früher vorgeschlagenen 8 Sekunden Openfield-Hide und 25 Sekunden Cooldown sind
+  durch die Nutzerwerte 10 Sekunden Hide und 30 Sekunden Cooldown vorerst ersetzt.
 - 1,5 Sekunden pauschaler Hide-Nachlauf nach Verlassen einer Deckung war nur ein früherer
   Assistentenvorschlag. Nicht als beschlossen behandeln; Verhältnis zur später vorgeschlagenen
   Erkennungsfrist ungeklärt.
@@ -225,3 +269,9 @@ und fremden Zeitwerten ist beendet. Der Nutzer möchte den bestehenden Ablauf un
 Zeitwerte zunächst testen und nur bei konkreten Auffälligkeiten anpassen. Der aktuelle
 Patch bleibt bei den vereinbarten Deckungs-/Hide-Änderungen und den weiteren vorgemerkten
 Bereichen; die Untersuchungszeit beginnt weiterhin erst beim Eintritt in den Deckungsbereich.
+
+Ergänzung zum Openfield-Perk: Nutzer legt 10 Sekunden sofortigen Hide und 30 Sekunden
+Cooldown fest, zunächst nur geduckt und im aktiven Kampf nicht aktivierbar. Skillbarkeit
+als spätere Idee aufgenommen. Zurückgestellte Ideen nur am relevanten Entscheidungspunkt
+wieder ansprechen. Für den geduckten Deckungswechsel nach Referenzprüfung 1,0 Sekunde
+Erkennungszeit als eigenen Assistenten-Testvorschlag dokumentiert; kein Fremdspielstandard.

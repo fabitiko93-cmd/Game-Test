@@ -11,6 +11,8 @@ Vor Entscheidungen an betroffenen Systemen passende Ideen erneut ansprechen,
 insbesondere wenn die Entscheidung ihre spätere Umsetzung erschwert. Den konkreten
 Zusammenhang und die anstehende Entscheidung nennen. Assistentenvorschläge getrennt
 von Nutzerentscheidungen führen; keinen Vorschlag stillschweigend zum Beschluss machen.
+Zurückgestellte Ideen nicht bei jeder Zusammenfassung erneut aufzählen. Sie nur am
+jeweils festgehaltenen Entscheidungspunkt oder auf Nachfrage ausdrücklich ansprechen.
 
 Aktueller Auftrag: Patchnotes abstimmen. Der Nutzer möchte vor Abschluss dieser
 Abstimmung noch keine Umsetzung des Spielpatches. Dokumentationsarbeit ist davon
