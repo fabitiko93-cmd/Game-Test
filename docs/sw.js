@@ -1,4 +1,4 @@
-const CACHE = "sperrkreis98-v12";
+const CACHE = "sperrkreis98-v12.1";
 const FILES = [
   "./", "./index.html", "./style.css", "./manifest.webmanifest", "./assets/icon.svg",
   "./src/main.js", "./src/game.js", "./src/input.js", "./src/render.js", "./src/ui.js",

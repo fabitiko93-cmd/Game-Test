@@ -453,7 +453,16 @@ h1 span { color: var(--red-bright); }
 .mission-step.completed { opacity: .58; }
 .mission-step.completed > b { color: #7f9a78; }
 
-.status-panel { left: 50%; width: min(520px, calc(100vw - 24px - var(--safe-left) - var(--safe-right))); transform: translateX(-50%); }
+.status-panel {
+  left: 50%;
+  width: min(520px, calc(100vw - 24px - var(--safe-left) - var(--safe-right)));
+  transform: translateX(-50%);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+.status-panel > header { position: sticky; top: 0; z-index: 1; }
 .status-layout { display: grid; grid-template-columns: 1fr 1fr; min-height: 158px; }
 .status-group { min-width: 0; }
 .status-group + .status-group { border-left: 1px solid var(--line); }

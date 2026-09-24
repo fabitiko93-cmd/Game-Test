@@ -1,3 +1,9 @@
+# Patch v12.1 · 24.09.2026
+
+- Statusmenü lässt sich bei geringer Bildschirmhöhe per Wischen scrollen. Kopfzeile
+  mit Schließen-Knopf bleibt sichtbar; Hinweise und Symbollegende bleiben erreichbar.
+- Neuer Stylesheet-/Offline-Cache-Stand für bestehende Installationen.
+
 # Patch v12 · 24.09.2026
 
 ## Verbergen und Zombie-Wissen
