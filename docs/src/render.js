@@ -1,7 +1,9 @@
-import { COLORS, VIEW } from "./config.js?v=11";
-import { activeWeapon, itemDefinition } from "./inventory.js?v=11";
-import { VISION, visionGeometry } from "./perception.js?v=11";
-import { clamp, hash2, lerp } from "./util.js?v=11";
+import { COLORS, VIEW } from "./config.js?v=12";
+import { activeWeapon, itemDefinition } from "./inventory.js?v=12";
+import { VISION, visionGeometry } from "./perception.js?v=12";
+import { clamp, hash2, lerp } from "./util.js?v=12";
+import { STATUS_ICONS, playerStatusIcons, zombieStatusIcons } from "./status-icons.js?v=12";
+import { vehicleFootprint, usableCover } from "./cover.js?v=12";
 
 export class Renderer {
   constructor(canvas) {
@@ -24,6 +26,7 @@ export class Renderer {
     this.contextId = null;
     this.frame = 0;
     this.visionCache = new Map();
+    this.statusPaths = new Map(Object.entries(STATUS_ICONS).map(([id, icon]) => [id, new Path2D(icon.path)]));
     this.coverHintCache = { key: "", objects: [] };
     this.diagnostics = false;
     this.metrics = { fps: 0, frames: 0, time: 0, visibleTiles: 0, visibleObjects: 0 };
@@ -193,6 +196,43 @@ export class Renderer {
     this.drawNoiseHints(game.world);
     this.drawLighting(game);
     this.drawVignette();
+    // Draw after scenery/lighting: cover never hides the player's status icons.
+    this.drawEntityStatuses(game, drawables);
+  }
+
+  drawEntityStatuses(game, drawables) {
+    for (const drawable of drawables) {
+      if (drawable.kind === "object") continue;
+      const isPlayer = drawable.kind === "player";
+      const entity = drawable.ref;
+      const p = this.iso(entity.x, entity.y);
+      if (p.x < -20 || p.x > this.width + 20 || p.y < 0 || p.y > this.height + 70) continue;
+      const icons = isPlayer ? playerStatusIcons(game) : zombieStatusIcons(entity, game);
+      for (const icon of icons) {
+        const x = isPlayer ? clamp(p.x + 20, 4, this.width - 63) + (icon.slot % 3) * 21 : p.x - 20 + icon.slot * 21;
+        const y = Math.max(5, isPlayer ? p.y - 43 + Math.floor(icon.slot / 3) * 21 : p.y - 72);
+        this.drawStatusIcon(icon, x, y);
+      }
+    }
+  }
+
+  drawStatusIcon(icon, x, y) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+    ctx.fillStyle = "rgba(12,19,16,.94)";
+    ctx.fillRect(0, 0, 19, 19);
+    ctx.strokeStyle = "rgba(211,222,200,.35)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(.5, .5, 18, 18);
+    if (icon.progress > 0) {
+      ctx.strokeStyle = icon.color;
+      ctx.beginPath(); ctx.arc(9.5, 9.5, 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * icon.progress); ctx.stroke();
+    }
+    ctx.translate(3, 3); ctx.scale(13 / 24, 13 / 24);
+    ctx.strokeStyle = icon.color; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.stroke(this.statusPaths.get(icon.id));
+    ctx.restore();
   }
 
   visibleWorldBounds(padding = 2) {
@@ -405,77 +445,48 @@ export class Renderer {
   }
 
   drawCar(o) {
-    const ctx = this.ctx;
-    const horizontal = o.orientation === "x";
-    const p = this.iso(o.x, o.y);
-    const bodyW = horizontal ? 1.72 : .94;
-    const bodyD = horizontal ? .94 : 1.72;
-    const bodyColor = o.color || "#59615b";
-    this.shadow(p, horizontal ? 38 : 25, horizontal ? 12 : 25, .34);
-
-    // Low body, cabin and a separate glass roof make the silhouette read as a car.
-    this.drawBlock(o.x, o.y, bodyW, bodyD, 15, bodyColor);
-    this.drawBlock(o.x, o.y, bodyW * .62, bodyD * .62, 27, this.shiftColor(bodyColor, 8));
-    const roofW = bodyW * .56;
-    const roofD = bodyD * .56;
-    const roof = [
-      this.iso(o.x - roofW / 2, o.y - roofD / 2, 29),
-      this.iso(o.x + roofW / 2, o.y - roofD / 2, 29),
-      this.iso(o.x + roofW / 2, o.y + roofD / 2, 29),
-      this.iso(o.x - roofW / 2, o.y + roofD / 2, 29),
-    ];
-    ctx.fillStyle = "rgba(111,145,145,.72)";
-    ctx.beginPath();
-    ctx.moveTo(roof[0].x, roof[0].y);
-    for (const point of roof.slice(1)) ctx.lineTo(point.x, point.y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = "rgba(24,35,34,.72)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // Windshield divider and hood/trunk seams provide orientation at a glance.
-    ctx.strokeStyle = "rgba(202,195,155,.46)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    if (horizontal) {
-      const seam = this.iso(o.x, o.y, 28);
-      ctx.moveTo(seam.x - 9, seam.y - 4);
-      ctx.lineTo(seam.x + 9, seam.y + 4);
-    } else {
-      const seam = this.iso(o.x, o.y, 28);
-      ctx.moveTo(seam.x - 9, seam.y + 4);
-      ctx.lineTo(seam.x + 9, seam.y - 4);
-    }
-    ctx.stroke();
-
-    const wheelOffsets = horizontal
-      ? [[-.57, -.43], [.57, -.43], [-.57, .43], [.57, .43]]
-      : [[-.43, -.57], [.43, -.57], [-.43, .57], [.43, .57]];
-    for (const [dx, dy] of wheelOffsets) {
-      const wheel = this.iso(o.x + dx, o.y + dy, 4);
-      ctx.fillStyle = "#171a18";
+    const ctx = this.ctx, alongX = o.orientation === "x";
+    const footprint = vehicleFootprint(o);
+    const length = alongX ? footprint.x : footprint.y;
+    const width = alongX ? footprint.y : footprint.x;
+    const color = o.color || "#66736e";
+    const point = (u, v, z) => this.iso(o.x + (alongX ? u : v), o.y + (alongX ? v : u), z);
+    const face = (vertices, fill, stroke = "#26312d") => {
+      ctx.fillStyle = fill; ctx.strokeStyle = stroke; ctx.lineWidth = .8;
       ctx.beginPath();
-      ctx.ellipse(wheel.x, wheel.y, 5, 2.8, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "rgba(174,166,138,.55)";
-      ctx.fillRect(wheel.x - 1, wheel.y - 1, 2, 1);
+      vertices.forEach(([u, v, z], index) => { const p = point(u, v, z); if (index) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y); });
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+    };
+    this.shadow(this.iso(o.x, o.y), 39, 15, .38);
+    // Chassis, separate bonnet, sloping glass and painted roof. Wheels sit on
+    // the side faces, not on top of the body as in the previous block model.
+    face([[-length,-width,7],[length,-width,7],[length,width,7],[-length,width,7]], "#252b29");
+    face([[-length,width,7],[length,width,7],[length,width,17],[-length,width,17]], this.shiftColor(color,-18));
+    face([[length,-width,7],[length,width,7],[length,width,17],[length,-width,17]], this.shiftColor(color,-28));
+    face([[-length,-width,17],[length,-width,17],[length,width,17],[-length,width,17]], color);
+    const back = -.52, front = .33, roofBack = -.30, roofFront = .13, roofWidth = width * .83;
+    face([[front,-width,17],[front,width,17],[roofFront,roofWidth,31],[roofFront,-roofWidth,31]], "#8aadb0");
+    face([[back,-width,17],[back,width,17],[roofBack,roofWidth,31],[roofBack,-roofWidth,31]], "#577780");
+    face([[back,width,18],[front,width,18],[roofFront,roofWidth,30],[roofBack,roofWidth,30]], "#486770");
+    face([[roofBack,-roofWidth,31],[roofFront,-roofWidth,31],[roofFront,roofWidth,31],[roofBack,roofWidth,31]], this.shiftColor(color,16));
+    // B-pillar and door handles remain visible at mobile scale.
+    const pillarA = point(-.11,width,18), pillarB = point(-.11,roofWidth,30);
+    ctx.strokeStyle = color; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(pillarA.x,pillarA.y); ctx.lineTo(pillarB.x,pillarB.y); ctx.stroke();
+    for (const u of [-.6,.57]) {
+      const wheel = point(u,width + .025,7);
+      ctx.save(); ctx.translate(wheel.x,wheel.y); ctx.rotate(alongX ? .46 : -.46);
+      ctx.fillStyle = "#161c1a"; ctx.beginPath(); ctx.ellipse(0,0,5.6,7,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#8a8d80"; ctx.beginPath(); ctx.ellipse(0,0,2.5,3.2,0,0,Math.PI*2); ctx.fill(); ctx.restore();
     }
-
-    const front = horizontal ? this.iso(o.x + bodyW * .43, o.y, 16) : this.iso(o.x, o.y + bodyD * .43, 16);
-    const rear = horizontal ? this.iso(o.x - bodyW * .43, o.y, 16) : this.iso(o.x, o.y - bodyD * .43, 16);
-    ctx.fillStyle = "#d7c979";
-    ctx.fillRect(front.x - 3, front.y - 2, 3, 2);
-    ctx.fillStyle = "#7e302b";
-    ctx.fillRect(rear.x, rear.y - 1, 3, 2);
-    if (o.searched) {
-      ctx.strokeStyle = "rgba(204,194,149,.58)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(p.x - 8, p.y - 7);
-      ctx.lineTo(p.x + 8, p.y + 7);
-      ctx.stroke();
+    face([[length,-width*.9,10],[length,width*.9,10],[length,width*.9,12],[length,-width*.9,12]], "#a3a394");
+    for (const v of [-width*.62,width*.62]) {
+      const lamp = point(length+.01,v,15);
+      ctx.fillStyle = "#ece0ae"; ctx.fillRect(lamp.x-2.5,lamp.y-1.5,5,3);
+      const tail = point(-length,v,15); ctx.fillStyle = "#ae4f42"; ctx.fillRect(tail.x-2,tail.y-1,4,2);
     }
+    const handle = point(-.02,width+.01,16); ctx.fillStyle = "#c2bcaa"; ctx.fillRect(handle.x-2,handle.y,4,1.5);
+    const hoodA = point(.48,-width*.75,17.5), hoodB = point(.48,width*.75,17.5);
+    ctx.strokeStyle = this.shiftColor(color,-20); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(hoodA.x,hoodA.y); ctx.lineTo(hoodB.x,hoodB.y); ctx.stroke();
   }
 
   drawShed(o) {
@@ -523,10 +534,6 @@ export class Renderer {
     this.shadow(p, crouched ? 15 : 13, crouched ? 6 : 5, .38);
     ctx.save();
     ctx.translate(Math.round(p.x), Math.round(p.y + bob + bodyOffset));
-    if (player.hurtFlash > 0) {
-      const hitPulse = clamp((player.hurtFlash || 0) / 0.24, 0, 1);
-      ctx.globalAlpha = clamp(1 - hitPulse * 0.28 + Math.sin(this.frame * 0.9) * hitPulse * 0.08, 0.62, 1);
-    }
     if (player.dead) ctx.globalAlpha = .42;
     const dirX = Math.sign(player.facingX);
     const dirY = Math.sign(player.facingY);
@@ -539,7 +546,7 @@ export class Renderer {
     ctx.moveTo(4, legTop);
     ctx.lineTo(7 + dirX * 2, crouched ? 0 : 1);
     ctx.stroke();
-    ctx.fillStyle = "#46564a";
+    ctx.fillStyle = player.hurtFlash > 0 ? "#856255" : "#46564a";
     ctx.fillRect(-9, crouched ? -23 : -27, 18, crouched ? 18 : 20);
     ctx.fillStyle = "#26302a";
     ctx.fillRect(-9 + dirX * 2, crouched ? -19 : -22, 5, crouched ? 12 : 15);
@@ -641,17 +648,6 @@ export class Renderer {
       ctx.fillStyle = "#a63b32";
       ctx.fillRect(p.x - 13, p.y - 46, 26 * zombie.hp / zombie.maxHp, 3);
     }
-    if (zombie.state !== "idle") {
-      ctx.font = "bold 13px monospace";
-      ctx.textAlign = "center";
-      ctx.fillStyle = zombie.state === "chase" ? "#e55749" : "#d5ba68";
-      ctx.fillText(zombie.state === "chase" ? "!" : "?", p.x, p.y - 51);
-      if (zombie.state !== "chase" && zombie.stimulus) {
-        ctx.font = "bold 7px monospace";
-        ctx.fillStyle = zombie.stimulus === "sound" ? "#88adb3" : "#d8c577";
-        ctx.fillText(zombie.stimulus === "sound" ? "OHR" : "AUGE", p.x, p.y - 61);
-      }
-    }
     this.hotspots.push({ id: zombie.id, kind: "zombie", ref: zombie, x: p.x, y: p.y - 20, radius: 25 });
   }
 
@@ -662,7 +658,7 @@ export class Renderer {
     const hidden = stealthState.hidden;
     if (!inSneak && !hidden) return;
     const ctx = this.ctx;
-    const cacheKey = `${Math.round(player.x)},${Math.round(player.y)}:${inSneak ? 1 : 0}:${hidden ? 1 : 0}:${stealthState.coverId || ""}`;
+    const cacheKey = `${Math.round(player.x)},${Math.round(player.y)}:${inSneak ? 1 : 0}:${hidden ? 1 : 0}:${stealthState.coverSourceId || ""}`;
     if (this.coverHintCache.key !== cacheKey) {
       this.coverHintCache = {
         key: cacheKey,
@@ -671,13 +667,13 @@ export class Renderer {
       };
     }
     for (const object of this.coverHintCache.objects) {
-      if (object.removed || (object.cover || 0) < 0.42) continue;
+      if (!usableCover(object)) continue;
       const point = this.iso(object.x, object.y, 2);
       const distanceFactor = clamp(1 - Math.hypot(object.x - player.x, object.y - player.y) / 5.2, 0.18, 1);
       ctx.save();
-      ctx.globalAlpha = (hidden && object.id === stealthState.coverId ? 0.7 : 0.2) * distanceFactor;
-      ctx.strokeStyle = hidden && object.id === stealthState.coverId ? "#a4bb83" : "#c4a75e";
-      ctx.lineWidth = object.id === stealthState.coverId ? 2 : 1;
+      ctx.globalAlpha = (hidden && object.id === stealthState.coverSourceId ? 0.7 : 0.2) * distanceFactor;
+      ctx.strokeStyle = hidden && object.id === stealthState.coverSourceId ? "#a4bb83" : "#c4a75e";
+      ctx.lineWidth = object.id === stealthState.coverSourceId ? 2 : 1;
       ctx.setLineDash([4, 3]);
       ctx.beginPath();
       ctx.ellipse(point.x, point.y, 22, 9, 0, 0, Math.PI * 2);
@@ -701,7 +697,7 @@ export class Renderer {
       const center = this.iso(zombie.x, zombie.y);
       if (center.x < -250 || center.x > this.width + 250 || center.y < -180 || center.y > this.height + 180) continue;
       const angle = Math.atan2(zombie.facingY || 1, zombie.facingX || 0);
-      const geometry = visionGeometry(zombie, game.player, game.world, game.minutes);
+      const geometry = visionGeometry(zombie, game.player, game.world, game.minutes, true);
       const cacheKey = `${Math.round(zombie.x * 4)},${Math.round(zombie.y * 4)},${Math.round(angle * 20)},${Math.round(geometry.range * 4)},${game.world.sightRevision}`;
       let cached = this.visionCache.get(zombie.id);
       if (!cached || cached.key !== cacheKey || this.frame - cached.frame > 10) {

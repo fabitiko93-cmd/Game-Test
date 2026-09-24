@@ -11,7 +11,7 @@
   <title>SPERRKREIS 98</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=11">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
   <main id="game-shell" aria-label="SPERRKREIS 98">
@@ -59,12 +59,6 @@
           <div class="meter hp"><i id="hp-fill"></i><b>GESUNDHEIT</b></div>
           <div class="meter stamina"><i id="stamina-fill"></i><b>AUSDAUER</b></div>
         </div>
-        <div class="tactical-hud" aria-label="Taktische Anzeigen">
-          <div id="hud-tactical-stealth" class="tactical-signal"><span>TARNUNG</span><strong id="hud-stealth-state">AUS</strong></div>
-          <div id="hud-tactical-cover" class="tactical-signal"><span>DECKUNG</span><strong id="hud-cover-state">KEINE</strong></div>
-          <div id="hud-tactical-awareness" class="tactical-signal"><span>ENTDECKUNG</span><strong id="hud-awareness-state">SICHER</strong></div>
-          <div id="hud-tactical-noise" class="tactical-signal"><span>GERÄUSCH</span><strong id="hud-noise-state">STILL</strong></div>
-        </div>
       </div>
 
       <div id="message" class="message" role="status"></div>
@@ -86,6 +80,7 @@
         <button id="attack-button" class="round attack"><span>⚔</span><small>KAMPF</small></button>
         <button id="action-button" class="round action"><span>✦</span><small id="action-label">AKTION</small></button>
         <button id="stance-button" class="round stance"><span>◒</span><small id="stance-label">SCHLEICHEN</small></button>
+        <button id="openfield-button" class="round openfield hidden" aria-label="Freifeldtarnung"><span>◈</span><small id="openfield-label">TARNEN</small></button>
         <button id="reload-button" class="reload hidden"><span>↻</span><small>NACHLADEN</small></button>
       </nav>
 
@@ -146,8 +141,12 @@
       <div class="status-help">
         <strong>SO LIEST DU DEN STATUS</strong>
         <p><b>Hunger / Durst:</b> sinkende Werte bremsen Regeneration und Ausdauer. Essen und Trinken findest du in Behältern.</p>
-        <p><b>Deckung:</b> <b>SCHLEICHEN</b> aktivieren, an eine Mauer, einen Baum, Busch oder Wagen treten und <b>VERBERGEN</b> drücken. Die Deckung muss zwischen dir und dem Zombie liegen; gelbe Ringe markieren sie, grün bedeutet verborgen.</p>
-        <p><b>Exekution:</b> verborgen bleiben, ein Messer ausrüsten und einen ruhigen Zombie antippen. Im Ziel-Fenster erscheint dann <b>† AUSSCHALTEN</b>. Rennen oder Entdeckung beendet den Vorteil.</p>
+        <p><b>Deckung:</b> SCHLEICHEN aktivieren. Im markierten Deckungsbereich bist du sofort verborgen, auch beim geduckten Bewegen. Im Freien gelten weiter Sichtkegel und Geräusche.</p>
+        <p><b>Suche:</b> Die Lupe am Zombie bedeutet: Er untersucht die letzte bekannte Position und die zugehörige Deckung. Er kennt deine aktuelle Position nicht. Direktes Absuchen aus nächster Nähe kann dich aufdecken.</p>
+        <p><b>Einbrecher:</b> ◈ TARNEN verbirgt dich geduckt für 10 Sekunden auch im Freien. 30 Sekunden Cooldown ab Aktivierung. Nicht bei aktiver Verfolgung. Aufstehen und eigene Angriffe beenden die Wirkung; erlittene Treffer nicht.</p>
+        <p><b>Exekution:</b> Messer ausrüsten, verborgen von hinten annähern und Zombie antippen. † AUSSCHALTEN im Zielfenster auslösen. Graues Fadenkreuz: in Reichweite. Grünes Fadenkreuz: alle Voraussetzungen erfüllt.</p>
+        <p><b>Symbole:</b> Maske = verborgen, Auge = normale Sichtbarkeit. Der Ring am Lautsprecher zeigt deinen Geräuschpegel; ein Ring am Auge die Erkennung beim Deckungswechsel. Verletzungen und Krankheit erscheinen bei Bedarf, Hunger/Durst erst kritisch. Details und Behandlung unter FIGUR.</p>
+        <div id="status-legend" class="status-legend" aria-label="Symbollegende"></div>
       </div>
       <footer><span>Werte aktualisieren sich laufend.</span></footer>
     </section>
@@ -236,6 +235,6 @@
 
     <div id="toast" class="toast"></div>
   </main>
-  <script type="module" src="src/main.js?v=11"></script>
+  <script type="module" src="src/main.js?v=12"></script>
 </body>
 </html>

@@ -1,13 +1,13 @@
-import { gainSkill, skillValue } from "./character.js?v=11";
-import { activeWeapon, itemDefinition } from "./inventory.js?v=11";
-import { behindTarget } from "./perception.js?v=11";
-import { clamp, distance, vibrate } from "./util.js?v=11";
+import { gainSkill } from "./character.js?v=12";
+import { activeWeapon, itemDefinition } from "./inventory.js?v=12";
+import { behindTarget } from "./perception.js?v=12";
+import { clamp, distance, vibrate } from "./util.js?v=12";
 
 export const STEALTH_RULES = Object.freeze({
   minimumCover: 0.42,
-  baseHiddenSteps: 3.4,
-  hiddenStepsPerSkill: 0.065,
-  rehideCooldown: 1.8,
+  transitionRecognition: 1,
+  openfieldDuration: 10,
+  openfieldCooldown: 30,
   executionRange: 1.18,
   executionApproachRange: 6.5,
   executionStamina: 18,
@@ -20,10 +20,18 @@ export function ensureStealthState(player) {
   state.hidden = Boolean(state.hidden);
   state.coverId ??= null;
   state.coverLabel ??= null;
-  state.reserve ??= 0;
-  state.maxReserve ??= 0;
-  state.moved ??= 0;
-  state.cooldown ??= 0;
+  state.source ??= null;
+  state.coverSourceId ??= null;
+  state.openfieldRemaining ??= 0;
+  state.openfieldCooldown ??= 0;
+  state.attackLock ??= 0;
+  state.departureTime ??= 0;
+  state.recentCoverId ??= null;
+  // v11 saves carried a hidden step budget; it has no meaning in v12.
+  delete state.reserve;
+  delete state.maxReserve;
+  delete state.moved;
+  delete state.cooldown;
   state.execution ??= null;
   return state;
 }
@@ -39,116 +47,85 @@ export class StealthSystem {
   }
 
   cover(game) {
-    return game.world.coverAt(game.player);
+    return game.world.coverMap.at(game.player, this.state(game).coverId);
   }
 
   hiddenNoiseMultiplier(player) {
     return ensureStealthState(player).hidden ? 0.5 : 1;
   }
 
-  hideContext(game) {
-    const player = game.player;
-    const state = this.state(game);
-    const cover = this.cover(game);
-    if (state.hidden) {
-      return {
-        kind: "hidden",
-        actionable: false,
-        label: "VERBORGEN",
-        hint: `${state.coverLabel || "DECKUNG"} · ${Math.max(0, Math.ceil(state.reserve))} SCHRITTE`,
-        cover,
-      };
-    }
-    if (player.stance !== "sneak" || cover.score < STEALTH_RULES.minimumCover) return null;
-    if (state.cooldown > 0) {
-      return { kind: "hide", actionable: false, label: "WARTEN", hint: "DECKUNG NEU FINDEN", cover };
-    }
-    const closePursuer = game.zombies.some(zombie => !zombie.removed
-      && zombie.state === "chase"
-      && distance(zombie, player) < 8.5);
-    if (closePursuer) {
-      return { kind: "hide", actionable: false, label: "BEOBACHTET", hint: "SICHTKONTAKT ABBRECHEN", cover };
-    }
-    return { kind: "hide", actionable: true, label: "VERBERGEN", hint: `AKTION DRÜCKEN · ${cover.label}`, cover };
+  hasOpenfield(player) {
+    return Boolean(player.perks?.openfieldStealth || player.background === "burglar");
   }
 
-  action(game) {
+  openfieldContext(game) {
     const state = this.state(game);
-    if (state.execution) {
-      game.ui?.showToast(state.execution.phase === "windup" ? "NICHT BEWEGEN" : "ANSCHLEICHEN LÄUFT");
-      return true;
-    }
-    if (state.hidden) {
-      this.breakHidden(game, "DECKUNG VERLASSEN", true);
-      return true;
-    }
-    const execution = this.executionContext(game);
-    if (execution) {
-      this.executionAction(game);
-      return true;
-    }
-    const hide = this.hideContext(game);
-    if (hide) {
-      this.beginHide(game);
-      return true;
-    }
-    return false;
+    const inCombat = game.zombies.some(z => !z.removed && z.state === "chase");
+    const hint = !this.hasOpenfield(game.player) ? "EINBRECHER-PERK BENÖTIGT"
+      : state.openfieldRemaining > 0 ? "TARNUNG AKTIV"
+      : state.openfieldCooldown > 0 ? `BEREIT IN ${Math.ceil(state.openfieldCooldown)} S`
+      : inCombat ? "IM KAMPF NICHT VERFÜGBAR"
+      : game.player.stance !== "sneak" ? "ZUERST SCHLEICHEN AKTIVIEREN" : "10 S VERBORGEN · 30 S COOLDOWN";
+    return { visible: this.hasOpenfield(game.player), hint,
+      actionable: this.hasOpenfield(game.player) && !inCombat && game.player.stance === "sneak"
+        && state.openfieldCooldown <= 0 && state.openfieldRemaining <= 0 };
   }
 
-  beginHide(game) {
-    const context = this.hideContext(game);
-    if (!context?.actionable) {
-      game.ui?.showToast(context?.hint || "HIER FEHLT DECKUNG");
-      return false;
-    }
-    const player = game.player;
+  activateOpenfield(game) {
+    const context = this.openfieldContext(game);
+    if (!context.actionable) { game.ui?.showToast(context.hint); return false; }
     const state = this.state(game);
-    const skill = skillValue(player, "stealth");
-    state.hidden = true;
-    state.coverId = context.cover.sourceId;
-    state.coverLabel = context.cover.label;
-    state.maxReserve = STEALTH_RULES.baseHiddenSteps + skill * STEALTH_RULES.hiddenStepsPerSkill;
-    state.reserve = state.maxReserve;
-    state.moved = 0;
-    state.cooldown = 0;
-    state.execution = null;
-    player.combat.enabled = false;
-    player.navigation.runRequested = false;
-    gainSkill(player, "stealth", 0.2);
-    game.ui?.showMessage(`VERBORGEN · ${context.cover.label} · ZIEL ANTIPPEN · † AUSSCHALTEN`, 2.1);
-    game.sound?.("hide");
-    vibrate(8);
+    state.openfieldRemaining = STEALTH_RULES.openfieldDuration;
+    state.openfieldCooldown = STEALTH_RULES.openfieldCooldown;
+    state.attackLock = 0;
+    game.player.navigation.runRequested = false;
+    this.refresh(game);
+    game.ui?.showToast("FREIFELDTARNUNG · 10 SEKUNDEN");
     return true;
   }
 
+  // Called before perception, and immediately by the crouch button. There is no
+  // channel or movement allowance. Damage deliberately does not call this API.
+  refresh(game) {
+    const player = game.player, state = this.state(game);
+    const previousCover = state.coverId;
+    const cover = this.cover(game);
+    state.coverId = cover?.id || null;
+    state.coverSourceId = cover?.sourceId || null;
+    state.coverLabel = cover?.label || null;
+    if (player.stance !== "sneak" || player.running) {
+      state.openfieldRemaining = 0;
+      state.departureTime = 0;
+      state.recentCoverId = null;
+    } else if (previousCover && !state.coverId) {
+      state.recentCoverId = previousCover;
+      state.departureTime = 2;
+    }
+    state.source = player.stance !== "sneak" || player.running || state.attackLock > 0 ? null
+      : state.openfieldRemaining > 0 ? "openfield" : cover ? "cover" : null;
+    state.hidden = Boolean(state.source);
+  }
+
   breakHidden(game, reason = "", notify = false) {
-    const state = this.state(game);
-    const wasHidden = state.hidden;
+    const state = this.state(game), wasHidden = state.hidden;
+    state.openfieldRemaining = 0;
     state.hidden = false;
-    state.coverId = null;
-    state.coverLabel = null;
-    state.reserve = 0;
-    state.maxReserve = 0;
-    state.moved = 0;
-    state.cooldown = Math.max(state.cooldown, STEALTH_RULES.rehideCooldown);
+    state.source = null;
     state.execution = null;
     if (game.player.navigation?.source === "execution") game.clearNavigation?.();
     if (wasHidden && notify && reason) game.ui?.showToast(reason);
     return wasHidden;
   }
 
+  onAttack(game) {
+    this.breakHidden(game);
+    // Prevent re-hiding during the attack animation, not while approaching.
+    this.state(game).attackLock = Math.max(0.35, game.player.combat.attackTimer || 0);
+  }
+
   onMove(game, movedDistance, mode) {
-    const state = this.state(game);
-    if (!(movedDistance > 0)) return;
-    if (mode === "run") {
-      this.breakHidden(game, "RENNEN HEBT DECKUNG AUF", true);
-      return;
-    }
-    if (!state.hidden) return;
-    const cost = movedDistance * (mode === "sneak" ? 1 : 2.2);
-    state.moved += movedDistance;
-    state.reserve = Math.max(0, state.reserve - cost);
-    if (state.reserve <= 0) this.breakHidden(game, "ZU WEIT AUS DER DECKUNG", true);
+    if (mode === "run") this.breakHidden(game);
+    this.refresh(game);
   }
 
   executionContext(game) {
@@ -170,7 +147,7 @@ export class StealthSystem {
         kind: "execution",
         actionable: false,
         label: "NICHT MÖGLICH",
-        hint: player.stance === "sneak" ? "DECKUNG SUCHEN · VERBERGEN" : "SCHLEICHEN AKTIVIEREN",
+        hint: player.stance === "sneak" ? "GEDUCKT IN DECKUNG GEHEN" : "SCHLEICHEN AKTIVIEREN",
         ready: false,
       };
     }
@@ -178,8 +155,8 @@ export class StealthSystem {
     if (!executionWeapon(player)) {
       return { kind: "execution", actionable: false, label: "MESSER FEHLT", hint: "KÜCHENMESSER AUSWÄHLEN", ready: false };
     }
-    if (target.state === "chase" || (target.awareness || 0) >= 0.72) {
-      return { kind: "execution", actionable: false, label: "NICHT MÖGLICH", hint: "ZIEL IST AUF DER SUCHE", ready: false };
+    if (target.state === "chase" || target.sightMemory?.visible) {
+      return { kind: "execution", actionable: false, label: "NICHT MÖGLICH", hint: "ZIEL HAT DICH ENTDECKT", ready: false };
     }
     const d = distance(player, target);
     if (player.stamina < STEALTH_RULES.executionStamina) {
@@ -218,7 +195,7 @@ export class StealthSystem {
       && executionWeapon(player)
       && player.stamina >= STEALTH_RULES.executionStamina
       && target.state !== "chase"
-      && (target.awareness || 0) < 0.72
+      && !target.sightMemory?.visible
       && distance(player, target) <= STEALTH_RULES.executionRange
       && behindTarget(player, target)
       && game.world.hasLineOfSight(player, target));
@@ -249,7 +226,7 @@ export class StealthSystem {
     if (!target || target.removed) return false;
     const state = this.state(game);
     const candidate = this.approachCandidates(game, target)[0];
-    if (!candidate || candidate.path.length > state.reserve + 1) {
+    if (!candidate) {
       if (!replanning) game.ui?.showToast("KEIN LEISER WEG HINTER DAS ZIEL");
       state.execution = null;
       return false;
@@ -294,12 +271,15 @@ export class StealthSystem {
   update(game, delta) {
     const player = game.player;
     const state = this.state(game);
-    state.cooldown = Math.max(0, state.cooldown - delta);
-    if (state.hidden && player.stance !== "sneak") this.breakHidden(game, "DECKUNG VERLASSEN", true);
+    state.openfieldRemaining = Math.max(0, state.openfieldRemaining - delta);
+    state.openfieldCooldown = Math.max(0, state.openfieldCooldown - delta);
+    state.attackLock = Math.max(0, state.attackLock - delta);
+    state.departureTime = Math.max(0, state.departureTime - delta);
+    this.refresh(game);
     const execution = state.execution;
     if (!execution) return;
     const target = game.zombies.find(zombie => zombie.id === execution.targetId && !zombie.removed);
-    if (!target || !state.hidden || target.state === "chase" || (target.awareness || 0) >= 0.82) {
+    if (!target || !state.hidden || target.state === "chase" || target.sightMemory?.visible) {
       this.cancelExecution(game, "ZIEL HAT DICH BEMERKT", true);
       return;
     }
@@ -315,40 +295,31 @@ export class StealthSystem {
     }
     this.facePlayer(player, target);
     execution.timer -= delta;
-    if (distance(player, target) > STEALTH_RULES.executionRange + 0.14 || !behindTarget(player, target)) {
+    if (distance(player, target) > STEALTH_RULES.executionRange + 0.14 || !behindTarget(player, target) || !game.world.hasLineOfSight(player, target)) {
       this.cancelExecution(game, "ZIEL HAT SICH GEDREHT", true);
       return;
     }
     if (execution.timer > 0) return;
     state.execution = null;
     game.combat.execute(game, target);
-    this.breakHidden(game);
   }
 
   cancelExecution(game, message, breakCover = false) {
     const state = this.state(game);
     state.execution = null;
     if (game.player.navigation?.source === "execution") game.clearNavigation?.();
-    if (breakCover) this.breakHidden(game);
+
     if (message) game.ui?.showToast(message);
   }
 
   coverStatus(game) {
-    const state = this.state(game);
-    if (state.hidden) {
-      return {
-        label: "VERBORGEN",
-        detail: `${Math.max(0, Math.ceil(state.reserve))} SCHRITTE`,
-        value: state.maxReserve > 0 ? clamp(state.reserve / state.maxReserve, 0, 1) : 0,
-        hidden: true,
-      };
-    }
-    const cover = this.cover(game);
+    const state = this.state(game), cover = this.cover(game);
     return {
-      label: cover.score >= STEALTH_RULES.minimumCover ? cover.label : "KEINE",
-      detail: cover.score >= STEALTH_RULES.minimumCover ? "VERBERGEN MÖGLICH" : "UNGESCHÜTZT",
-      value: clamp(cover.score, 0, 1),
-      hidden: false,
+      label: state.source === "openfield" ? "FREIFELDTARNUNG" : cover?.label || "KEINE",
+      detail: state.source === "openfield" ? `${Math.ceil(state.openfieldRemaining)} S`
+        : state.hidden ? "VERBORGEN" : cover ? "DUCKEN ZUM VERBERGEN" : "NORMALE SICHTBARKEIT",
+      value: state.hidden ? 1 : cover?.score || 0,
+      hidden: state.hidden,
     };
   }
 

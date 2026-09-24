@@ -1,6 +1,6 @@
-import { STANCES } from "./config.js?v=11";
-import { skillValue } from "./character.js?v=11";
-import { clamp, distance } from "./util.js?v=11";
+import { STANCES } from "./config.js?v=12";
+import { skillValue } from "./character.js?v=12";
+import { clamp, distance } from "./util.js?v=12";
 
 export const VISION = Object.freeze({
   range: 8.2,
@@ -15,17 +15,17 @@ export function daylight(minutes) {
   return 0.48 + sun * 0.52;
 }
 
-export function playerVisibility(player, minutes) {
+export function playerVisibility(player, minutes, ignoreHide = false) {
   const stance = STANCES[player.stance] || STANCES.walk;
   const stealth = skillValue(player, "stealth");
   const skillReduction = 1 - stealth * 0.003;
   const movement = player.running ? 1.28 : player.moving ? 1.06 : 0.82;
-  const hidden = player.stealthState?.hidden ? 0.12 : 1;
+  const hidden = !ignoreHide && player.stealthState?.hidden ? 0.12 : 1;
   return stance.visibility * skillReduction * movement * daylight(minutes) * hidden;
 }
 
-export function visionGeometry(observer, player, world, minutes) {
-  const visibility = playerVisibility(player, minutes) * (1 - world.concealmentAt(player));
+export function visionGeometry(observer, player, world, minutes, ignoreHide = false) {
+  const visibility = playerVisibility(player, minutes, ignoreHide) * (1 - world.concealmentAt(player));
   return {
     visibility,
     range: VISION.range * (0.72 + visibility * 0.38),
@@ -34,9 +34,9 @@ export function visionGeometry(observer, player, world, minutes) {
   };
 }
 
-export function visionExposure(observer, player, world, minutes) {
+export function visionExposure(observer, player, world, minutes, ignoreHide = false) {
   const d = distance(observer, player);
-  const geometry = visionGeometry(observer, player, world, minutes);
+  const geometry = visionGeometry(observer, player, world, minutes, ignoreHide);
   if (d > geometry.range || !world.hasLineOfSight(observer, player)) return 0;
 
   const dx = (player.x - observer.x) / Math.max(d, 0.001);
@@ -48,7 +48,7 @@ export function visionExposure(observer, player, world, minutes) {
 
   const distanceFactor = clamp(1 - d / Math.max(geometry.range, 0.01), 0.08, 1);
   const coneFactor = d <= geometry.nearRadius ? 1.25 : clamp((facing - coneEdge) / (1 - coneEdge), 0.16, 1);
-  const minimumExposure = player.stealthState?.hidden ? 0 : 0.04;
+  const minimumExposure = !ignoreHide && player.stealthState?.hidden ? 0 : 0.04;
   return clamp(distanceFactor * coneFactor * geometry.visibility * 1.5, minimumExposure, 1.6);
 }
 

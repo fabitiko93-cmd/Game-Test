@@ -16,8 +16,12 @@ Die aktuelle Version ist unter **[fabitiko93-cmd.github.io/Game-Test](https://fa
 - Dasselbe Objekt erneut oder doppelt antippen: hinlaufen und benutzen.
 - Kampfmodus: Nahkampf läuft im Waffenrhythmus; Schusswaffen werden bewusst über den Aktionsknopf abgefeuert.
 - Haltung wechseln: Schleichen, Gehen und Rennen verändern Tempo, Sichtbarkeit und Geräusch.
+- Geduckt in nutzbare Deckung gehen: sofort verborgen, ohne Knopfdruck oder Schrittlimit.
+- Einbrecher: `◈ TARNEN` gewährt geduckt 10 Sekunden Freifeldtarnung (30 Sekunden Cooldown).
 - Inventargegenstand erneut antippen oder `BENUTZEN` wählen: benutzen, ausrüsten oder nachladen; Schusswaffen lassen sich über `ANPASSEN` modifizieren.
 - Missionsziele sowie Bedürfnis-, Wahrnehmungs- und Deckungsanzeigen stehen im separaten Status-/Missionsmenü; das HUD bleibt auf die unmittelbare Spielsituation konzentriert.
+- Aktuelle Tarnung, Geräuschpegel und kritische Zustände stehen als Icons neben der Figur;
+  Suche und Exekutionsreichweite direkt am Zombie. Die Symbollegende steht unter STATUS.
 - Liegengebliebene Fahrzeuge, Schuppen und Außenlager sind eigene Lootquellen und zugleich Deckungsobjekte.
 - Bei Gegenständen mit Voraussetzungen nennt die Detailbeschreibung das benötigte Werkzeug direkt (z. B. „BENÖTIGT: DOSENÖFFNER“). Eine ausgeblendete Exekution wird im Ziel-Fenster als eigener, erklärter Aktionsknopf eingeblendet.
 
@@ -44,6 +48,8 @@ Das Spiel ist bewusst in austauschbare ES-Module getrennt:
 | `world.js` | Karte, POIs, Gebäude, Türen, Fahrzeuge, Behälter und Loot |
 | `navigation.js` | Wegfindung und Interaktionswege |
 | `perception.js` / `ai.js` | Sicht, Geräusch und Zombie-Zustände |
+| `cover.js` / `cover-awareness.js` | Deckungsgeometrie, stabile Suchbereiche und individuelles Zombie-Wissen |
+| `stealth.js` / `status-icons.js` | Hide-Quellen, Einbrecher-Perk, Exekutionsablauf und gemeinsame Statussymbole |
 | `inventory.js` / `character.js` | Ausrüstung, Magazine, Fortschritt und Wunden |
 | `combat.js` | Zielkampf, Nahkampf und Schusswaffen |
 | `save.js` | versionierter lokaler Spielstand |
@@ -51,3 +57,7 @@ Das Spiel ist bewusst in austauschbare ES-Module getrennt:
 | `game.js` | Orchestrierung der Systeme ohne Datendefinitionen |
 
 Die Werte in `config.js` und `data.js` sind die vorgesehenen Erweiterungspunkte. Der Pages-Build befindet sich in `docs/`; Kernlogik-Tests liegen in `tests/`.
+
+Deckungs- und Perkwerte stehen in `COVER_RULES`, `COVER_SEARCH` und `STEALTH_RULES`.
+Prüfen: `node tests/core.test.mjs` und `node tests/stealth.test.mjs`.
+Änderungen und Grenzen von v12: [CHANGELOG.md](CHANGELOG.md).

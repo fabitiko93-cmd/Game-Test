@@ -1,4 +1,4 @@
-import { vibrate } from "./util.js?v=8";
+import { vibrate } from "./util.js?v=12";
 
 export const TAP_GESTURE = Object.freeze({
   doubleMs: 460,
@@ -63,6 +63,7 @@ export class InputController {
     this.button("action-button", () => this.callbacks.action?.());
     this.button("execute-button", () => this.callbacks.execute?.());
     this.button("stance-button", () => this.callbacks.stance?.());
+    this.button("openfield-button", () => this.callbacks.openfield?.());
     this.button("reload-button", () => this.callbacks.reload?.());
     this.button("mission-button", () => this.callbacks.mission?.());
     this.button("status-button", () => this.callbacks.status?.());
