@@ -1,4 +1,5 @@
-import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=11";
+import { STATUS_ICONS, iconSVG } from "./status-icons.js?v=12";
+import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=12";
 import {
   activeWeapon,
   ammoLabel,
@@ -11,8 +12,8 @@ import {
   itemDefinition,
   roundsInWeapon,
   weaponCapacity,
-} from "./inventory.js?v=11";
-import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js?v=11";
+} from "./inventory.js?v=12";
+import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js?v=12";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -26,8 +27,7 @@ export class GameUI {
     const ids = [
       "loading", "start-button", "hud", "character-creator", "creator-kicker", "creator-number",
       "character-name", "background-options", "background-description", "character-confirm",
-      "hp-fill", "stamina-fill", "hud-tactical-stealth", "hud-stealth-state", "hud-tactical-cover", "hud-cover-state",
-      "hud-tactical-awareness", "hud-awareness-state", "hud-tactical-noise", "hud-noise-state",
+      "hp-fill", "stamina-fill", "openfield-button", "openfield-label", "status-legend",
       "hunger-need", "thirst-need", "wound-need",
       "hunger-state", "thirst-state", "wound-state", "awareness-fill", "noise-fill",
       "awareness-state", "noise-state", "cover-fill", "cover-state", "location", "clock", "message", "target-label",
@@ -46,6 +46,8 @@ export class GameUI {
       "new-survivor-button", "toast",
     ];
     this.el = Object.fromEntries(ids.map(id => [id.replaceAll("-", "_"), document.getElementById(id)]));
+    this.el.status_legend.innerHTML = Object.entries(STATUS_ICONS).map(([id, icon]) =>
+      `<span>${iconSVG(id)}<b>${icon.label}</b></span>`).join("");
     this.callbacks = {};
     this.selectedBackground = "citizen";
     this.selectedItemId = null;
@@ -158,21 +160,15 @@ export class GameUI {
     this.el.cover_fill.style.background = cover.hidden ? "#8c9f78" : "#9a8658";
     this.el.cover_state.textContent = cover.hidden ? `${cover.label} · ${cover.detail}` : cover.label;
 
-    const stealth = game.stealth?.state(game) || {};
-    const awarenessLabel = awareness.pursuing ? "ENTDECKT" : awareness.suspicious
-      ? awareness.source === "sound" ? "GEHÖRT" : "BEMERKT"
-      : awareness.awareness > .08 ? "RISIKO" : "SICHER";
-    const noiseLabel = noiseLevel > .68 ? "LAUT" : noiseLevel > .3 ? "HÖRBAR" : noiseLevel > .05 ? "LEISE" : "STILL";
-    const stealthLabel = stealth.hidden ? "VERBORGEN" : player.stance === "sneak" ? "SCHLEICHEN" : "AUS";
-    const coverLabel = cover.hidden ? cover.label : cover.value >= .42 ? cover.label : "KEINE";
-    this.el.hud_stealth_state.textContent = stealthLabel;
-    this.el.hud_cover_state.textContent = coverLabel;
-    this.el.hud_awareness_state.textContent = awarenessLabel;
-    this.el.hud_noise_state.textContent = noiseLabel;
-    this.el.hud_tactical_stealth.className = `tactical-signal ${stealth.hidden ? "active" : player.stance === "sneak" ? "ready" : ""}`;
-    this.el.hud_tactical_cover.className = `tactical-signal ${cover.hidden ? "active" : cover.value >= .42 ? "ready" : ""}`;
-    this.el.hud_tactical_awareness.className = `tactical-signal ${awareness.pursuing ? "critical" : awareness.suspicious || awareness.awareness > .08 ? "warning" : ""}`;
-    this.el.hud_tactical_noise.className = `tactical-signal ${noiseLevel > .68 ? "critical" : noiseLevel > .3 ? "warning" : ""}`;
+    const stealth = game.stealth.state(game);
+    const perk = game.stealth.openfieldContext(game);
+    this.el.openfield_button.classList.toggle("hidden", !perk.visible);
+    this.el.openfield_button.classList.toggle("active", stealth.openfieldRemaining > 0);
+    this.el.openfield_button.setAttribute("aria-disabled", String(!perk.actionable));
+    this.el.openfield_button.setAttribute("aria-label", `Freifeldtarnung: ${perk.hint}`);
+    this.el.openfield_button.title = perk.hint;
+    this.el.openfield_label.textContent = stealth.openfieldRemaining > 0 ? "AKTIV"
+      : stealth.openfieldCooldown > 0 ? `${Math.ceil(stealth.openfieldCooldown)} S` : "TARNEN";
     this.el.location.textContent = game.locationName();
     this.el.clock.textContent = game.clockText();
     this.el.mission_indicator.textContent = String(game.mission + 1).padStart(2, "0");
@@ -230,17 +226,6 @@ export class GameUI {
       this.el.target_label.classList.remove("show");
       return;
     }
-    const stealthContext = game.stealth?.hideContext(game);
-    if (stealthContext) {
-      this.el.action_button.classList.remove("fire-ready");
-      this.el.action_button.querySelector("span").textContent = "◌";
-      this.el.action_button.classList.toggle("ready", Boolean(stealthContext.actionable || game.stealth?.state(game).hidden));
-      this.el.action_label.textContent = game.stealth?.state(game).hidden && stealthContext.kind === "hidden"
-        ? "AUFDECKEN" : stealthContext.label;
-      this.el.target_label.textContent = stealthContext.hint || "DECKUNG";
-      this.el.target_label.classList.add("show");
-      return;
-    }
     this.el.action_button.classList.remove("fire-ready");
     this.el.action_button.querySelector("span").textContent = "✦";
     const context = game.contextObject();
@@ -286,7 +271,7 @@ export class GameUI {
       const ready = Boolean(execution.ready);
       this.el.execute_button.disabled = !execution.actionable;
       this.el.execute_button.classList.toggle("ready", ready);
-      this.el.execute_button.classList.toggle("attention", Boolean(execution.actionable));
+      this.el.execute_button.classList.remove("attention");
       this.el.execute_label.textContent = execution.label;
       this.el.execute_hint.textContent = execution.hint || "VERBORGEN BLEIBEN";
     }

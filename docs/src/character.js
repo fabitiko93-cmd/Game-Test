@@ -1,6 +1,6 @@
-import { BACKGROUNDS, ITEMS, SKILLS } from "./data.js?v=8";
-import { addItem, damageProtection, equipItem, equipmentProtection, createItem } from "./inventory.js?v=8";
-import { clamp, uid } from "./util.js?v=8";
+import { BACKGROUNDS, ITEMS, SKILLS } from "./data.js?v=12";
+import { addItem, damageProtection, equipItem, equipmentProtection, createItem } from "./inventory.js?v=12";
+import { clamp, uid } from "./util.js?v=12";
 
 const RANKS = [
   [90, "MEISTERHAFT"],
@@ -44,10 +44,10 @@ export function createPlayer({ name, background = "citizen", survivorNumber = 1 
       hidden: false,
       coverId: null,
       coverLabel: null,
-      reserve: 0,
-      maxReserve: 0,
-      moved: 0,
-      cooldown: 0,
+      source: null,
+      openfieldRemaining: 0,
+      openfieldCooldown: 0,
+      attackLock: 0,
       execution: null,
     },
     hitKick: 0,

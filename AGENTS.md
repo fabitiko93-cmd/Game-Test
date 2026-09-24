@@ -14,10 +14,9 @@ von Nutzerentscheidungen führen; keinen Vorschlag stillschweigend zum Beschluss
 Zurückgestellte Ideen nicht bei jeder Zusammenfassung erneut aufzählen. Sie nur am
 jeweils festgehaltenen Entscheidungspunkt oder auf Nachfrage ausdrücklich ansprechen.
 
-Aktueller Auftrag: Patchnotes abstimmen. Der Nutzer möchte vor Abschluss dieser
-Abstimmung noch keine Umsetzung des Spielpatches. Dokumentationsarbeit ist davon
-getrennt. Geräuschmechanik und Ausdauer bleiben nach aktueller Vorgabe unverändert;
+Aktueller Auftrag (24.09.2026): Den abgestimmten Patch umsetzen und prüfen; der Nutzer
+hat nach Abschluss der Abstimmung die Umsetzung angefragt. Geräuschmechanik und
+Ausdauer bleiben nach aktueller Vorgabe unverändert;
 Exekutionen werden jetzt nicht zu einem neuen Fähigkeitensystem ausgebaut.
 
-Die Einschränkung der Planungsphase gilt bis zu einem neuen Umsetzungsauftrag des
-Nutzers. Bereits erteilte Aufträge nicht durch zusätzliche Freigaberunden ersetzen.
+Bereits erteilte Aufträge nicht durch zusätzliche Freigaberunden ersetzen.

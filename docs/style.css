@@ -325,6 +325,13 @@ h1 span { color: var(--red-bright); }
 .round.action.fire-ready { background: rgba(101,72,31,.94); border-color: #dbc981; }
 .round.stance { left: 0; bottom: 0; width: 59px; height: 59px; }
 .round.stance.active { background: rgba(48,77,65,.96); border-color: #a9c7ab; }
+.round.openfield { left: -66px; bottom: 0; width: 59px; height: 59px; border-color: #9275a4; }
+.round.openfield.active { background: #463653; border-color: #d3b4ed; }
+.round.openfield[aria-disabled="true"]:not(.active) { opacity: .65; }
+.status-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.status-legend span { display: flex; align-items: center; gap: 7px; }
+.status-legend svg { width: 20px; height: 20px; flex-shrink: 0; color: #cbbd93; }
+.status-legend b { font: 500 9px "IBM Plex Mono", monospace; }
 .round.ready { animation: ready 1.2s ease-in-out infinite; border-color: var(--yellow); }
 .reload {
   position: absolute;
@@ -625,6 +632,7 @@ h1 span { color: var(--red-bright); }
   .utility { gap: 3px; }
   .utility button { padding: 0 6px; font-size: 8px; }
   .utility button span { display: none; }
+  .round.openfield { left: 0; bottom: 67px; }
 }
 
 @media (pointer: coarse) {

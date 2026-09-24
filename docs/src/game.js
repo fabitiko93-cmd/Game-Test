@@ -1,4 +1,4 @@
-import { ZombieSystem, createInitialZombies } from "./ai.js?v=11";
+import { ZombieSystem, createInitialZombies } from "./ai.js?v=12";
 import {
   backgroundName,
   createPlayer,
@@ -8,10 +8,10 @@ import {
   treatWound as treatWoundWithItem,
   treatWithItem,
   updateCharacter,
-} from "./character.js?v=11";
-import { CombatSystem } from "./combat.js?v=11";
-import { GAME, STANCES } from "./config.js?v=11";
-import { ITEMS } from "./data.js?v=11";
+} from "./character.js?v=12";
+import { CombatSystem } from "./combat.js?v=12";
+import { GAME, STANCES } from "./config.js?v=12";
+import { ITEMS } from "./data.js?v=12";
 import {
   activeWeapon,
   addItem,
@@ -28,13 +28,13 @@ import {
   removeMod,
   roundsInWeapon,
   unequipSlot,
-} from "./inventory.js?v=11";
-import { Navigator } from "./navigation.js?v=11";
-import { missionAt, missionSteps } from "./missions.js?v=11";
-import { awarenessForPlayer } from "./perception.js?v=11";
-import { SaveStore } from "./save.js?v=11";
-import { StealthSystem, ensureStealthState } from "./stealth.js?v=11";
-import { clamp, distance, formatClock, vibrate } from "./util.js?v=11";
+} from "./inventory.js?v=12";
+import { Navigator } from "./navigation.js?v=12";
+import { missionAt, missionSteps } from "./missions.js?v=12";
+import { awarenessForPlayer } from "./perception.js?v=12";
+import { SaveStore } from "./save.js?v=12";
+import { StealthSystem, ensureStealthState } from "./stealth.js?v=12";
+import { clamp, distance, formatClock, vibrate } from "./util.js?v=12";
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
 
@@ -81,6 +81,7 @@ export class Game {
       action: () => this.primaryAction(),
       execute: () => this.executeAction(),
       stance: () => this.toggleStance(),
+      openfield: () => { if (this.canAct()) this.stealth.activateOpenfield(this); },
       reload: () => this.reload(),
       inventory: () => this.toggleInventory(),
       mission: () => this.toggleMission(),
@@ -249,13 +250,13 @@ export class Game {
     this.player.hitKick = Math.max(0, (this.player.hitKick || 0) - delta * 8);
     this.updateMovement(delta);
     this.combat.update(this, delta);
+    this.stealth.update(this, delta);
     this.aiAccumulator += delta;
     if (this.aiAccumulator >= GAME.aiStep) {
       const aiDelta = Math.min(0.1, this.aiAccumulator);
       this.aiAccumulator = 0;
       this.lastAiResult = this.zombieSystem.update(this, aiDelta);
     }
-    this.stealth.update(this, delta);
     if (this.player.stance === "sneak" && this.player.moving && this.lastAiResult.nearbyUndetected) {
       gainSkill(this.player, "stealth", delta * 0.075);
     }
@@ -394,18 +395,16 @@ export class Game {
   }
 
   moveEntity(entity, dx, dy, radius) {
+    const previousX = entity.x, previousY = entity.y;
     const nx = entity.x + dx;
     const ny = entity.y + dy;
-    let moved = false;
     if (this.world.isWalkable(nx, entity.y, radius, entity.id)) {
       entity.x = nx;
-      moved = true;
     }
     if (this.world.isWalkable(entity.x, ny, radius, entity.id)) {
       entity.y = ny;
-      moved = true;
     }
-    return moved;
+    return Math.hypot(entity.x - previousX, entity.y - previousY) > 0.00001;
   }
 
   setDestination(requestedPoint, options = {}) {
@@ -594,9 +593,10 @@ export class Game {
 
   toggleStance() {
     if (!this.canAct()) return;
-    if (this.stealth.state(this).hidden) this.stealth.breakHidden(this, "DECKUNG VERLASSEN", true);
     this.player.stance = this.player.stance === "sneak" ? "walk" : "sneak";
+    this.player.running = false;
     this.player.navigation.runRequested = false;
+    this.stealth.refresh(this);
     this.ui.showToast(this.player.stance === "sneak" ? "SCHLEICHMODUS" : "NORMALES GEHEN");
   }
 
@@ -634,10 +634,6 @@ export class Game {
     if (itemDefinition(weapon)?.weaponKind === "firearm" && this.player.combat.enabled && this.combat.target(this)) {
       const result = this.combat.fire(this);
       if (!result.ok) this.ui.showToast(result.message);
-      this.ui.refreshAll(this.player, this);
-      return;
-    }
-    if (this.stealth.action(this)) {
       this.ui.refreshAll(this.player, this);
       return;
     }
@@ -1151,8 +1147,20 @@ export class Game {
     this.player.equipment ||= { mainHand: null, offHand: null, head: null, torso: null, legs: null, back: null };
     this.player.noiseRadius ??= 0;
     this.player.hitKick ??= 0;
+    // Preserve old saves while moving only entities now intersecting a corrected
+    // vehicle footprint (or an old invalid spawn) to the nearest free cell.
+    for (const entity of [this.player, ...this.zombies]) {
+      if (entity.removed || this.world.isWalkable(entity.x, entity.y, 0.27)) continue;
+      const point = this.navigator.nearestWalkable(this.world, entity, { allowDoors: false });
+      if (point && this.world.isWalkable(point.x, point.y, 0.27)) {
+        entity.x = point.x;
+        entity.y = point.y;
+        if (entity !== this.player) { entity.path = []; entity.repathTimer = 0; }
+      }
+    }
     this.renderer.destination = null;
     this.renderer.destinationRun = false;
+    this.stealth.refresh(this);
     return true;
   }
 

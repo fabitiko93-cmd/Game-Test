@@ -1,7 +1,7 @@
-import { gainSkill, skillValue } from "./character.js?v=7";
-import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponStats } from "./inventory.js?v=7";
-import { behindTarget } from "./perception.js?v=7";
-import { clamp, distance, vibrate } from "./util.js?v=7";
+import { gainSkill, skillValue } from "./character.js?v=12";
+import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponStats } from "./inventory.js?v=12";
+import { behindTarget } from "./perception.js?v=12";
+import { clamp, distance, vibrate } from "./util.js?v=12";
 
 export class CombatSystem {
   target(game) {
@@ -89,6 +89,7 @@ export class CombatSystem {
   }
 
   resolveMelee(game) {
+    game.stealth?.onAttack(game);
     const player = game.player;
     const combat = player.combat;
     const target = game.zombies.find(zombie => zombie.id === combat.pendingTargetId && !zombie.removed);
@@ -127,6 +128,7 @@ export class CombatSystem {
     if (!target || target.removed || !weapon || !definition?.execution || !stats) return { ok: false, message: "KEIN AUSFÜHRUNGSWERKZEUG" };
     if (distance(player, target) > (stats.range || 1) + 0.12) return { ok: false, message: "ZU WEIT FÜR AUSSCHALTUNG" };
     if (player.stamina < 18) return { ok: false, message: "ZU WENIG AUSDAUER" };
+    game.stealth?.onAttack(game);
     player.stamina = Math.max(0, player.stamina - 18);
     const skill = skillValue(player, definition.skill || "blades");
     const damage = Math.max(target.hp + 1, stats.damage * (2.6 + skill * 0.012));
@@ -155,6 +157,7 @@ export class CombatSystem {
     const d = distance(player, target);
     if (d > stats.range || !game.world.hasLineOfSight(player, target)) return { ok: false, message: "KEINE FREIE SCHUSSLINIE" };
     if (!consumeShot(weapon)) return { ok: false, message: "WAFFE LEER · NACHLADEN" };
+    game.stealth?.onAttack(game);
 
     this.facePlayer(player, target);
     const skill = skillValue(player, "firearms");
@@ -225,6 +228,8 @@ export class CombatSystem {
     target.hp -= damage;
     target.hurtFlash = options.silent ? 0 : 0.16;
     if (!options.silent) {
+      target.coverSearch = null;
+      target.sightMemory = { ...target.sightMemory, visible: true, recognition: 0 };
       target.state = "chase";
       target.awareness = 1;
       target.stimulus = "vision";

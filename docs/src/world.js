@@ -1,7 +1,8 @@
-import { COLORS, VIEW } from "./config.js?v=11";
-import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=11";
-import { createItem } from "./inventory.js?v=11";
-import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=11";
+import { COLORS, VIEW } from "./config.js?v=12";
+import { CoverMap, distanceToFootprint, segmentHitsVehicle } from "./cover.js?v=12";
+import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=12";
+import { createItem } from "./inventory.js?v=12";
+import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=12";
 
 export const BUILDINGS = [
   { id: "police", name: "POLIZEIPOSTEN", x: 15, y: 4, w: 10, h: 9, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
@@ -24,6 +25,8 @@ export class World {
     this.tiles = [];
     this.objects = [];
     this.objectGrid = new Map();
+    this.vehicleCollisionCells = new Map();
+    this.vehicles = [];
     this.buildings = [];
     this.openPOIs = [];
     this.noises = [];
@@ -31,6 +34,7 @@ export class World {
     this.objectCounter = 0;
     this.sightRevision = 0;
     this.generate();
+    this.coverMap = new CoverMap(this);
   }
 
   reset(seed = this.seed) {
@@ -39,11 +43,14 @@ export class World {
     this.tiles = [];
     this.objects = [];
     this.objectGrid = new Map();
+    this.vehicleCollisionCells = new Map();
+    this.vehicles = [];
     this.noises = [];
     this.blood = [];
     this.objectCounter = 0;
     this.sightRevision = 0;
     this.generate();
+    this.coverMap = new CoverMap(this);
   }
 
   generate() {
@@ -285,6 +292,17 @@ export class World {
     const cellKey = this.cellKey(x, y);
     if (!this.objectGrid.has(cellKey)) this.objectGrid.set(cellKey, []);
     this.objectGrid.get(cellKey).push(object);
+    if (type === "car") {
+      this.vehicles.push(object);
+      for (let cy = Math.floor(y - 2); cy <= Math.ceil(y + 2); cy++) {
+        for (let cx = Math.floor(x - 2); cx <= Math.ceil(x + 2); cx++) {
+          if (distanceToFootprint({ x: cx, y: cy }, object) >= 0.27) continue;
+          const key = this.cellKey(cx, cy);
+          if (!this.vehicleCollisionCells.has(key)) this.vehicleCollisionCells.set(key, []);
+          this.vehicleCollisionCells.get(key).push(object);
+        }
+      }
+    }
     return object;
   }
 
@@ -372,7 +390,8 @@ export class World {
   isPathCellWalkable(x, y, options = {}) {
     if (x < 1 || y < 1 || x >= VIEW.worldW - 1 || y >= VIEW.worldH - 1 || this.tileAt(x, y) === "water") return false;
     const blocker = this.objectAtCell(x, y, object => object.solid);
-    if (!blocker) return true;
+    if (!blocker) return !this.vehicleCollisionCells.get(this.cellKey(x, y))?.some(object => !object.removed
+      && object.solid && object.id !== options.ignoreId);
     if (blocker.type === "door" && options.allowDoors && !blocker.locked) return true;
     if (options.ignoreId && blocker.id === options.ignoreId) return true;
     return false;
@@ -380,22 +399,26 @@ export class World {
 
   isWalkable(x, y, radius = 0.27, ignoreId = null) {
     if (this.tileAt(x, y) === "water") return false;
-    for (const object of this.objectsNear(x, y, radius + 0.78)) {
+    for (const object of this.objectsNear(x, y, radius + 1)) {
       if (object.removed || !object.solid || object.id === ignoreId) continue;
+      if (object.type === "car") {
+        if (distanceToFootprint({ x, y }, object) < radius) return false;
+        continue;
+      }
       let objectRadius = 0.43;
       if (object.type === "tree" || object.type === "streetlamp") objectRadius = 0.34;
-      if (object.type === "car") objectRadius = 0.72;
       if (distance({ x, y }, object) < radius + objectRadius) return false;
     }
     return true;
   }
 
   hasLineOfSight(a, b) {
+    if (this.vehicles.some(car => !car.removed && car.blocksSight && segmentHitsVehicle(a, b, car))) return false;
     const cells = lineCells(a.x, a.y, b.x, b.y);
     for (let index = 1; index < cells.length - 1; index++) {
       const blocker = this.objectAtCell(cells[index].x, cells[index].y, object => {
         if (object.type === "door") return object.closed;
-        return object.blocksSight;
+        return object.type !== "car" && object.blocksSight;
       });
       if (blocker) return false;
     }
@@ -409,8 +432,8 @@ export class World {
       const x = origin.x + Math.cos(angle) * current;
       const y = origin.y + Math.sin(angle) * current;
       if (x < 1 || y < 1 || x >= VIEW.worldW - 1 || y >= VIEW.worldH - 1) return previous;
-      const blocker = this.objectAtCell(x, y, object => object.type === "door" ? object.closed : object.blocksSight);
-      if (blocker) return Math.max(0, previous);
+      const blocker = this.objectAtCell(x, y, object => object.type === "door" ? object.closed : object.type !== "car" && object.blocksSight);
+      if (blocker || this.vehicles.some(car => !car.removed && car.blocksSight && distanceToFootprint({ x, y }, car) === 0)) return Math.max(0, previous);
       previous = current;
     }
     return maxDistance;

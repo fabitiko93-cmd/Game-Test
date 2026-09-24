@@ -1,9 +1,10 @@
-import { strongestNoise, visionExposure } from "./perception.js?v=11";
-import { VIEW } from "./config.js?v=11";
-import { clamp, distance, uid } from "./util.js?v=11";
+import { strongestNoise } from "./perception.js?v=12";
+import { beginCoverSearch, coverAwareExposure, updateCoverSearch } from "./cover-awareness.js?v=12";
+import { VIEW } from "./config.js?v=12";
+import { clamp, distance, uid } from "./util.js?v=12";
 
 const INITIAL_POSITIONS = [
-  [14, 18], [9, 21], [24, 20], [36, 20], [43, 18], [31, 9],
+  [14, 18], [9, 21], [24, 20], [36, 20], [43, 18], [31, 10],
   [31, 39], [10, 29], [14, 40], [27, 29], [42, 29], [8, 15],
   [20, 16], [40, 15], [26, 42], [46, 42], [5, 26], [22, 27],
 ];
@@ -66,11 +67,10 @@ export class ZombieSystem {
       zombie.repathTimer = Math.max(0, (zombie.repathTimer || 0) - delta);
       this.updateFacing(zombie, delta);
       const playerDistance = distance(zombie, game.player);
-      const exposure = game.player.dead ? 0 : visionExposure(zombie, game.player, game.world, game.minutes);
-
       this.updateHearing(zombie, game);
+      const exposure = coverAwareExposure(zombie, game, delta);
       this.updateAwareness(zombie, game, delta, exposure);
-      this.updateState(zombie, game, exposure);
+      if (!updateCoverSearch(zombie, game, delta)) this.updateState(zombie, game, exposure);
       this.updateMovement(zombie, game, delta);
       this.updateAttack(zombie, game, delta, playerDistance, exposure);
 
@@ -108,6 +108,9 @@ export class ZombieSystem {
     zombie.target = { ...zombie.lastSeen };
     zombie.awareness = Math.max(zombie.awareness || 0, clamp(heard.score * 0.55, 0.16, 0.72));
     this.setState(zombie, "investigate", 5 + heard.score * 4);
+    const cover = game.world.coverMap.at(heard.noise);
+    if (cover) beginCoverSearch(zombie, game, cover.id, zombie.lastSeen, "sound");
+    else zombie.coverSearch = null;
   }
 
   updateState(zombie, game, exposure) {
@@ -177,11 +180,14 @@ export class ZombieSystem {
       zombie.moving = false;
       return;
     }
-    if (zombie.repathTimer <= 0 || !zombie.path?.length) {
+    if (zombie.repathTimer <= 0) {
       zombie.path = this.navigator.findPath(game.world, zombie, target, { allowDoors: false, maxNodes: 1500 });
       zombie.repathTimer = zombie.state === "chase" ? 0.55 : 1.4;
+      if (zombie.coverSearch && !zombie.path.length && distance(zombie, target) > 0.55) zombie.coverSearch.routeFailures++;
     }
-    const node = zombie.path?.[0];
+    // Finish fractional last-known positions in the current grid cell as well.
+    const sameCell = Math.round(zombie.x) === Math.round(target.x) && Math.round(zombie.y) === Math.round(target.y);
+    const node = zombie.path?.[0] || (sameCell && distance(zombie, target) > 0.12 ? target : null);
     if (!node) {
       zombie.moving = false;
       return;
@@ -200,13 +206,14 @@ export class ZombieSystem {
     zombie.desiredFacingY = ny;
     const speed = zombie.state === "chase" ? 1.1 : zombie.state === "investigate" ? 0.82 : zombie.state === "search" ? 0.58 : 0.36;
     zombie.moving = game.moveEntity(zombie, nx * speed * delta, ny * speed * delta, 0.25);
-    if (!zombie.moving) zombie.repathTimer = 0;
+    if (!zombie.moving) zombie.repathTimer = Math.min(zombie.repathTimer, 0.35);
   }
 
   updateAttack(zombie, game, delta, playerDistance, exposure) {
     if (zombie.attackWindup > 0) {
       zombie.attackWindup -= delta;
-      if (zombie.attackWindup <= 0 && !game.player.dead && distance(zombie, game.player) < 1.02) {
+      if (zombie.attackWindup <= 0 && !game.player.dead && distance(zombie, game.player) < 1.02
+          && game.world.hasLineOfSight(zombie, game.player)) {
         game.onZombieAttack(zombie);
       }
       return;

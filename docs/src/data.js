@@ -36,7 +36,7 @@ export const BACKGROUNDS = {
   },
   burglar: {
     name: "Einbrecher",
-    short: "Bewegt sich leise und kommt durch Türen, die geschlossen bleiben sollten.",
+    short: "Leise und schlosskundig. Freifeldtarnung: geduckt 10 Sekunden verborgen, 30 Sekunden Cooldown. Außerhalb aktiver Verfolgung.",
     carryBonus: -0.5,
     skills: { stealth: 33, perception: 17, blades: 9, blunt: 8, firearms: 7, search: 21, firstAid: 5, burglary: 34 },
   },

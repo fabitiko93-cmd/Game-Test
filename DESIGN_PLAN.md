@@ -1,8 +1,9 @@
 # SPERRKREIS 98 – Patchplanung und Ideenregister
 
-Stand: 21.09.2026. Grundlage: Abstimmung mit Fabian im Projektchat.
+Stand: 24.09.2026. Grundlage: Abstimmung mit Fabian im Projektchat.
 Geprüfter Code: `85ed3324ed78123aa5969443b76fefe24f97d1de`.
-Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentlichten Patch.
+Die Regeln unten dokumentieren die Abstimmung. Umsetzung von Patch v12 ist beauftragt;
+die tatsächlich implementierten Änderungen stehen in `CHANGELOG.md`.
 
 ## Arbeitsweise und Status
 
@@ -15,7 +16,9 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
   Ansprache erfolgt am vermerkten Entscheidungspunkt oder auf Nachfrage.
 - Status unterscheiden: beschlossen, Nutzeridee für später, Assistentenvorschlag,
   offen, umgesetzt oder ausdrücklich verworfen/ersetzt. Den Anlass einer Statusänderung festhalten.
-- Aktuelle Phase: Patchnotes abstimmen; noch keine Umsetzung des Spielpatches.
+- Aktuelle Phase: Umsetzung und Prüfung von v12 nach dem Auftrag vom 24.09.2026.
+- Neuere konkrete Präzisierungen ersetzen allgemeinere ältere Vorschläge. Ein "Klingt gut"
+  bestätigt die jeweils besprochenen Punkte, nicht später hinzugefügte Assistentenvorschläge.
 - Bezug ist ausschließlich das bestehende iPhone-Browsergame. Vor dem Neustart verworfene
   Repo-Prototypen und das separate Godot-/Bodycam-Projekt sind keine Anforderungen hierfür.
 
@@ -39,6 +42,9 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
    keine Übernahme fremder Zeitwerte und keine vorsorgliche Neubalance. Erst konkrete
    Auffälligkeiten in seinen Spieltests sind Anlass für Anpassungen. Die vereinbarte
    deckungsbezogene Suche einschließlich Timerbeginn beim Eintritt bleibt Patchumfang.
+7. Normale Stealth-Mechanik erhalten: Gehen und Schleichen ohne wirksames Deckungs-/Perk-Hide
+   verwenden weiterhin die bisherigen Sichtkegel-, Sichtbarkeits- und Geräuschregeln. Die neue
+   Erkennungsfrist ist kein globaler Ersatz der bisherigen Wahrnehmung.
 
 ## Vereinbarte Richtung: Ducken, Hide und Zombie-Wissen
 
@@ -81,9 +87,9 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
 - Zusammenstehende Büsche können solche Übergänge bieten. Sichtbare Lücken zwischen
   auseinanderstehenden Deckungen erlauben die Wahrnehmung des Wechsels.
 - Bei einem kurz sichtbar werdenden geduckten Wechsel ist eine Erkennungsfrist vorgesehen.
-  Nutzerziel: ein aufmerksamer, aber einfacher/dummer Zombie. Aktueller Assistentenvorschlag
-  als Testwert: 1,0 Sekunde tatsächliche Sicht beim geduckten Wechsel; ersetzt den früheren
-  Vorschlag von 0,6 Sekunden, noch keine ausdrücklich bestätigte Nutzerentscheidung.
+  Nutzerziel: ein aufmerksamer, aber einfacher/dummer Zombie. Bestätigter Testwert nach
+  "Klingt angemessen": 1,0 Sekunde tatsächliche Sicht beim geduckten Wechsel; ersetzt
+  den früheren Vorschlag von 0,6 Sekunden.
   Nur tatsächliche Sicht zählt; Zeit hinter wirksamer Deckung zählt nicht weiter.
   Erreicht die Beobachtung die Frist, kann der Zombie den Wechsel erkennen und die neue
   Deckung als Suchbereich übernehmen. Ohne erneute Sicht keine Verfolgung versteckter Koordinaten.
@@ -92,6 +98,9 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
   Sichtverlust bleibt der letzte wahrgenommene Ort beziehungsweise die bekannte Deckung.
 - Genaues Verhalten der Erkennungsfrist bei mehreren sehr kurzen Sichtunterbrechungen ist
   noch zu definieren. Kein pauschaler Erkennungsreset durch jeden kleinen ID-Wechsel.
+  Konkret vorgeschlagen, noch nicht ausdrücklich bestätigt: Aufbau bei Sicht und Abbau
+  ohne Sicht mit jeweils einer Sekunde für den vollen Verlauf. Deckungshide selbst
+  wirkt weiterhin sofort; diese Abbauzeit ist keine Kanalisierung.
 - Die Frist gilt für den beobachtbaren geduckten Deckungswechsel ohne aktives Openfield-Hide.
   Sie verkürzt weder die zugesagte Perk-Dauer noch verändert sie allgemeine Chase-/Suchzeiten.
 
@@ -107,8 +116,8 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
   [AI-Quellcode](https://svn.thedarkmod.com/publicsvn/darkmod_src/trunk/game/ai/AI.cpp) nimmt
   Spieler-Sichterkennung von dieser Grace-Prüfung aus (`m_AlertGraceTime && !AI_VISALERT`).
 - Schluss für unser Design: verzögerte Erkennung ist als Referenzprinzip nachvollziehbar;
-  1,0 Sekunde ist unser vorgeschlagener, transparenter Spieltestwert für kurze geduckte
-  Übergänge auf dem iPhone, kein belegter übernommener Standard anderer Stealth-Spiele.
+  1,0 Sekunde ist unser inzwischen bestätigter Spieltestwert für kurze geduckte Übergänge
+  auf dem iPhone, kein belegter übernommener Standard anderer Stealth-Spiele.
 
 ### Openfield-Stealth: festgelegte erste Perk-Version
 
@@ -123,11 +132,69 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
   den Openfield-Perk, nicht die vereinbarte Sichtunterbrechung durch tatsächliche Deckung.
   Den aktiven Kampfzustand nicht allein aus dem eingeschalteten Kampfmodus-Button ableiten.
 - Normales Deckungshide bleibt vom Perk-Cooldown unabhängig.
-- Assistentenvorschlag zur noch nicht ausdrücklich festgelegten Zeitrechnung: Cooldown
-  ab erfolgreicher Aktivierung, also bei ununterbrochener Nutzung 10 Sekunden Wirkung
-  und danach noch 20 Sekunden bis zur erneuten Verfügbarkeit.
+- Bestätigte Zeitrechnung nach "Klingt angemessen": Cooldown ab erfolgreicher Aktivierung,
+  also bei ununterbrochener Nutzung 10 Sekunden Wirkung und danach noch 20 Sekunden
+  bis zur erneuten Verfügbarkeit.
+- Eigene Angriffe/Exekutionen, Aufstehen oder Sprinten beenden den Perk-Hide;
+  der bereits gestartete Cooldown läuft weiter. Vorschlag zur genauen Angriffsauslösung:
+  erst beim tatsächlichen Angriff aufdecken, nicht bereits beim Auswählen/Annähern.
+- Ausdrückliche Nutzerkorrektur: erlittene Treffer beenden Openfield-Hide nicht.
+  Der Klassenperk ist bewusst stark. Der gegenteilige Assistentenvorschlag ist verworfen.
+  Hide verhindert dadurch keinen bereits wirksamen Schaden; Schaden allein liefert
+  auch keine laufenden Positionsupdates an Zombies.
+- Läuft Openfield-Hide in nutzbarer Deckung aus, übernimmt normales Deckungshide ohne
+  sichtbaren Zwischenzustand, sofern die Figur weiter geduckt ist. Andernfalls übernimmt
+  wieder die normale Wahrnehmung. Gesperrte Aktivierungsversuche verbrauchen keinen Cooldown.
 - Der Perk soll später skillbar sein. Als Nutzeridee mit Wiedervorlage erhalten;
   noch keine Stufen, Fortschrittswerte oder neuen Fähigkeiten in diesem Patch bauen.
+  Nutzerpräzisierung: spätere Perk-Stufen sollen auch Hide im Kampf ermöglichen können.
+
+### Zusammenspiel der Wahrnehmung
+
+- Deckungshide und Openfield-Hide ergänzen das bestehende Schleichen. Pro Zombie und
+  Beobachtung darf nicht gleichzeitig die normale Sicht-Erkennung den zugesagten
+  Hide-Schutz oder die Erkennungsfrist des Deckungswechsels umgehen.
+- Gegenwärtige Sichtbarkeit, Wissen des jeweiligen Zombies und sein Verhalten getrennt
+  halten. "Verborgen" beim Spieler und "Suche" bei einem Zombie können gleichzeitig gelten.
+- Vorhandene Geräusche liefern ihren wahrgenommenen Ort als Hinweis, aber keine dauernde
+  Aktualisierung der anschließend verborgenen Spielerposition. Geräuschwerte bleiben unverändert.
+- Gezielte Nahsuche bei Deckungshide nicht stillschweigend als pauschalen Abbruch des
+  stärkeren Openfield-Perks verwenden. Die beiden Hide-Arten und ihre Voraussetzungen
+  müssen unterscheidbar bleiben.
+
+## Statusdarstellung an Figuren – aktuelle HUD-Vorgabe
+
+- Nutzerentscheidung: weitgehend freies HUD, Darstellung nach dem Buff-/Debuff-Prinzip
+  von MMORPGs. Kleine Icons neben der jeweiligen Figur ersetzen große dauerhafte
+  Textanzeigen für diese Zustände.
+- Eigene Tarnung wird am Spieler angezeigt. Ob ein Zombie sucht, wird am jeweiligen
+  Zombie angezeigt; daraus kein globales "Zombie sucht"-Textfeld am Spieler machen.
+- Spieler-Icons: Tarnung, Geräuschpegel, Verletzung/Blutung, Krankheit. Hunger und Durst
+  erscheinen als Warnsymbole erst beim Unterschreiten ihrer kritischen Schwellen.
+  Damit sind allgemeine Bedürfnisdetails weiter im Statusmenü, kritische Warnungen aber im Spielfeld.
+- Zombie-Icons: Suchzustand sowie Exekutionsreichweite (vom Nutzer als Beispiel ein
+  kleines Fadenkreuz); weitere tatsächlich vorhandene Buffs/Debuffs folgen demselben Prinzip.
+  Daraus keinen Auftrag zum Einbau neuer Buffs oder Debuffs ableiten.
+- Vorschlag zur konkreten Darstellung: Tarnung und Geräusch mit stabilen Positionen an
+  der Spielerfigur; aktive Verletzungs-/Krankheits- und kritische Bedürfniswarnungen ergänzen.
+  Ruhige Darstellung, klar erkennbare Silhouetten und konstante Bildschirmgröße beim Zoomen.
+  Farbe ergänzt die Symbolform. Keine zusätzlichen dauerhaften Beschriftungen oder Blinkketten.
+- Vorschlag für Exekutionen: ein dezentes Fadenkreuz signalisiert reine Reichweite;
+  hervorgehoben bedeutet zusätzlich, dass alle aktuellen Ausführungsbedingungen erfüllt sind.
+  Reichweite allein darf keine ausführbare Exekution versprechen. Dieses Icon verändert
+  keine Exekutionsregel und wird nicht zu einem weiteren kleinen Pflicht-Touchziel.
+- Vorschlag für Erklärungen: Symbollegende und Details im vorhandenen Status-/Zielkontext
+  zugänglich machen, damit die Bedeutung auch ohne permanente Texte verständlich bleibt.
+- Laufzeit eines aktiven Perks kann als kleiner Ring am zugehörigen Icon erscheinen;
+  Cooldown und Sperrgründe bleiben am vorhandenen Perk-Button. Keine doppelte Daueranzeige.
+- Grundsätzlich befürwortete Ergänzungen aus dem vorherigen Gespräch: dezente Anzeige
+  unmittelbar nutzbarer Deckung beim Schleichen; Rückmeldung während der Erkennungsfrist;
+  verständliche Restdauer/Cooldown/Sperrgründe; Deckungswege an Autos und Ecken prüfen.
+  Diese Rückmeldungen in die aktuelle Icon-Vorgabe integrieren, nicht parallel neue
+  große HUD-Panels einführen. Noch keine automatische Wahl der sichersten Schleichroute.
+- Technisch vorgeschlagen: stabile Kennungen für bekannte Deckungen. Kontinuierlicher
+  Sichtschutz beim Übergang und Umfang eines bekannten Suchbereichs bleiben getrennt;
+  eine ganze Buschreihe wird nicht allein wegen einer Verbindung automatisch kontaminiert.
 
 ### Suchende und Naherkennung: bestehende Grundlage im neuen Deckungsbezug
 
@@ -171,8 +238,8 @@ Dieses Dokument beschreibt geplante Änderungen, nicht einen bereits veröffentl
 | Bereich | Stand und Grenze |
 | --- | --- |
 | Openfield-Stealth | Nutzerentscheidung: eigener Button nur mit Perk, zunächst Einbrecher; sofortiger Hide für 10 Sekunden, 30 Sekunden Cooldown, zunächst ausschließlich geduckt und im aktiven Kampf nicht aktivierbar. Normales Deckungshide unabhängig vom Cooldown. |
-| Zeitrechnung des Perks | Dauer und Cooldown sind als vorläufige Nutzerwerte festgelegt. Cooldown ab Aktivierung ist ein Assistentenvorschlag; alte Werte von 8/25 Sekunden sind ersetzt. |
-| HUD | Tarnung/Deckung/Geräusch und akute Verletzungen unmittelbar lesbar; Bedürfnisse und Missionen in Menüs. Aktuelle Verdeckung und bekannte/durchsuchte Deckung müssen unterscheidbar sein. |
+| Zeitrechnung des Perks | Bestätigt: 10 Sekunden Wirkung, 30 Sekunden Cooldown ab Aktivierung. Alte Werte von 8/25 Sekunden sind ersetzt. Erlittene Treffer brechen den Perk nicht. |
+| HUD | Bestätigt: Buff-/Debuff-Icons an Spieler und Zombies. Tarnung/Geräusch, aktive Verletzung/Blutung/Krankheit am Spieler; Hunger/Durst erst kritisch. Suche und Exekutionsreichweite am Zombie. Bedürfnisdetails und Missionen in Menüs. |
 | Fahrzeuge | Klar erkennbare stehende, lootbare Fahrzeuge. Grafik, Kollision und Deckung sollen zusammenpassen. Keine Fahrmechanik im Autofix. |
 | Behälter | Unplausible frei aufgestellte Spinde und andere Außenbehälter prüfen; nur tatsächlich problematische Platzierungen durch passende Lootquellen ersetzen. |
 | Exekution aktuell | Vorhandene Exekution von hinten erhalten und die Verträglichkeit mit neuem Hide prüfen. Vorherige größere Umbauvorschläge sind durch die aktuelle Beschränkung zurückgestellt. |
@@ -194,7 +261,7 @@ Zurückgestellt ist kein vergebener Implementierungsauftrag.
 | I-07 | Organische Karte mit Umwegen/Fluchtmöglichkeiten und lootbaren, nicht fahrbereiten Autos statt Gebäude gleichmäßig zu verkleinern; Nutzer | Teilweise im vorhandenen Stand angelegt, Wirkung weiter zu prüfen | … neue Gebäude, Engstellen, Deckungsketten oder zusätzliche Lootquellen platziert werden. |
 | I-08 | Crafting und Barrikadenbau; früher als spätere Ausbaustufe vom Assistenten genannt | Assistentenvorschlag, keine bestätigte Nutzerentscheidung | … Interaktionen, Itemrezepte oder veränderbare Weltobjekte erweitert werden; dann erst Interesse und Umfang klären. |
 | I-09 | Fahrbare Fahrzeuge; frühere allgemeine spätere Fahrzeugperspektive | Keine belegte Nutzerentscheidung für Fahrbarkeit; aktueller Wunsch sind nicht fahrbereite Lootfahrzeuge | … Fahrzeugdaten irreversibel auf reine Behälter zugeschnitten werden; Option kurz ansprechen, nicht als beschlossenen Ausbau behandeln. |
-| I-10 | Openfield-Stealth-Perk soll skillbar werden; Nutzer, 21.09.2026 | Nutzeridee für später; erste Version bleibt 10 Sekunden Hide / 30 Sekunden Cooldown und nur geduckt | … Perk-/Skillfortschritt, Speicherung von Fähigkeiten oder deren Stufen dauerhaft festgelegt werden. Erst dann konkrete Fortschrittswirkungen besprechen; nicht in jeder Patchnote wiederholen. |
+| I-10 | Openfield-Stealth-Perk soll skillbar werden; spätere Stufen sollen Hide im Kampf ermöglichen; Nutzer, 21.09.2026 | Nutzeridee für später; erste Version bleibt 10 Sekunden Hide / 30 Sekunden Cooldown und nur geduckt. Treffer brechen den Perk auch jetzt nicht. | … Perk-/Skillfortschritt, Speicherung von Fähigkeiten, Stufen oder Aktivierungssperren dauerhaft festgelegt werden. Erst am relevanten Entscheidungspunkt erneut ansprechen. |
 
 ### Wiedervorlage, die schon die anstehende Planung betrifft
 
@@ -238,6 +305,12 @@ Wünsche bei Erweiterungen verloren gehen; Dokumentationsbehauptungen ersetzen k
 - Eine neue allgemeine Verfolgungsobergrenze und die Übernahme von UO-/Fremdspiel-Zeitwerten
   sind nach dem UO-Abgleich ausdrücklich aus dem aktuellen Patch genommen. Bestehende
   Verfolgungs-/Suchzeiten und allgemeine Verfolgungslogik bleiben Grundlage bis zu Spieltestbefunden.
+- Abbruch von Openfield-Hide durch erlittene Treffer: vom Nutzer ausdrücklich verworfen.
+- Allgemeine Umstellung der normalen Stealth-/Sichterkennung auf die neue Deckungsfrist:
+  ausgeschlossen. Die bestehende Wahrnehmung außerhalb wirksamer Hide-Zustände bleibt.
+- Große permanente Textfelder für die taktischen Zustände: durch die aktuelle Vorgabe
+  zu Icons an den betroffenen Figuren ersetzt. Kritischer Hunger/Durst werden trotz
+  ausgelagerter Bedürfnisdetails direkt am Spieler gewarnt.
 
 ## Beispiele für die spätere Prüfung des vereinbarten Verhaltens
 
@@ -256,6 +329,12 @@ Wünsche bei Erweiterungen verloren gehen; Dokumentationsbehauptungen ersetzen k
   bleibt der allgemeine Ablauf bestehen. Kein zusätzlicher globaler Verfolgungs-Countdown.
 - Bestehende Exekution von hinten funktioniert mit der neuen Hide-Grundlage;
   neue Exekutionsvarianten gehören nicht zu dieser Abnahme.
+- Normales Schleichen/Gehen außerhalb von Hide behält seine bisherige Wahrnehmung.
+- Erlittener Treffer beendet den aktiven Openfield-Perk nicht; nach dessen Ablauf in
+  nutzbarer Deckung entsteht kein sichtbarer Zwischenzustand.
+- Spieler kann gleichzeitig Tarnungsicon tragen, während ein Zombie sein Suchicon zeigt.
+- Hunger/Durst erscheinen erst bei kritischem Wert; reine Exekutionsreichweite und
+  tatsächlich verfügbare Exekution bleiben visuell unterscheidbar.
 
 ## Änderungsnotiz 21.09.2026
 
@@ -275,3 +354,11 @@ Cooldown fest, zunächst nur geduckt und im aktiven Kampf nicht aktivierbar. Ski
 als spätere Idee aufgenommen. Zurückgestellte Ideen nur am relevanten Entscheidungspunkt
 wieder ansprechen. Für den geduckten Deckungswechsel nach Referenzprüfung 1,0 Sekunde
 Erkennungszeit als eigenen Assistenten-Testvorschlag dokumentiert; kein Fremdspielstandard.
+
+Weitere Bestätigungen/Präzisierungen: "Klingt angemessen" bestätigt 1 Sekunde Erkennung
+beim geduckten Deckungswechsel und Cooldown ab Aktivierung. Normales Schleichen/Gehen
+bleibt unverändert. Erlittene Treffer brechen Openfield-Hide ausdrücklich nicht;
+späterer Hide im Kampf als Perk-Ausbau erhalten. Aktuelle HUD-Vorgabe: Statusicons an
+der jeweils betroffenen Figur, Suche am Zombie, Tarnung am Spieler, kritische
+Bedürfniswarnungen am Spieler, Exekutionsreichweite am Zombie. Konkrete Icon-Ausführung
+und einige Randfalldetails bleiben als Assistentenvorschläge gekennzeichnet.
