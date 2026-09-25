@@ -1,9 +1,10 @@
 # SPERRKREIS 98 – Patchplanung und Ideenregister
 
-Stand: 24.09.2026. Grundlage: Abstimmung mit Fabian im Projektchat.
-Geprüfter Code: `85ed3324ed78123aa5969443b76fefe24f97d1de`.
-Die Regeln unten dokumentieren die Abstimmung. Umsetzung von Patch v12 ist beauftragt;
-die tatsächlich implementierten Änderungen stehen in `CHANGELOG.md`.
+Stand: 25.09.2026. Grundlage: Abstimmung mit Fabian im Projektchat.
+Codegrundlage der ursprünglichen v12-Planung: `85ed3324ed78123aa5969443b76fefe24f97d1de`.
+Aktuell geprüfter Spielstand v12.1: `eaf36e1a75c3d53fa5eefae4807bae414b0ce478`.
+v12 und v12.1 sind veröffentlicht; die tatsächlich implementierten Änderungen stehen in
+`CHANGELOG.md`. Die Vorschläge für kommende Patches unten sind noch kein Umsetzungsauftrag.
 
 ## Arbeitsweise und Status
 
@@ -16,13 +17,56 @@ die tatsächlich implementierten Änderungen stehen in `CHANGELOG.md`.
   Ansprache erfolgt am vermerkten Entscheidungspunkt oder auf Nachfrage.
 - Status unterscheiden: beschlossen, Nutzeridee für später, Assistentenvorschlag,
   offen, umgesetzt oder ausdrücklich verworfen/ersetzt. Den Anlass einer Statusänderung festhalten.
-- Aktuelle Phase: Umsetzung und Prüfung von v12 nach dem Auftrag vom 24.09.2026.
+- Aktuelle Phase: Spieltestauswertung und Priorisierung nach v12.1 (25.09.2026).
 - Neuere konkrete Präzisierungen ersetzen allgemeinere ältere Vorschläge. Ein "Klingt gut"
   bestätigt die jeweils besprochenen Punkte, nicht später hinzugefügte Assistentenvorschläge.
 - Bezug ist ausschließlich das bestehende iPhone-Browsergame. Vor dem Neustart verworfene
   Repo-Prototypen und das separate Godot-/Bodycam-Projekt sind keine Anforderungen hierfür.
 
-## Feste Grenzen dieses Patches
+## Aktuelle Prioritäten – Nutzerpräzisierungen vom 25.09.2026
+
+- Ziel bleibt die breite Nutzung auf Smartphones. iPhone hat Priorität als vorhandenes
+  Testgerät; Unterstützung weiterer Smartphone-Größen und Geräte mitdenken.
+- Die gemeldeten Desktop-Browserprobleme sind vorerst zweitrangig. Der Befund bleibt
+  erhalten, wird aber nicht zum nächsten großen Optimierungsauftrag: feste Tilegröße
+  vergrößert auf großen Fenstern den sichtbaren Weltbereich und die Zeichenlast. Die
+  Ursache der gemeldeten Grafik-/Auflösungsrücksetzer ist noch nicht abschließend belegt.
+- Deckungsflächen sollen vorerst nur beim Schleichen sichtbar sein. Nutzer bestätigt
+  nach Abwägung des Planungsnachteils, diese Einschränkung beizubehalten.
+- Verlässliche Erkennbarkeit der nutzbaren Deckung ist weiterhin ein Nutzeranliegen.
+  Geprüfter Fehler: Der bisherige Objektring bildet die Hide-Grenze nicht ab; bei 23
+  von 53 Bäumen liegen nur zwei der vier begehbaren direkten Raster-Nachbarpunkte in
+  einer Hide-Zone. Zielrundung kann eine angeklickte Deckung verfehlen.
+- Für spätere Politur ausdrücklich festgehalten: thematische Fahrzeugvarianten mit
+  erkennbarem Charakter, insbesondere Polizei, Feuerwehr, Krankenwagen und Unfallautos.
+  Daraus folgt aktuell weder ein Auftrag für Fahrbarkeit noch für neue Fahrzeugmechaniken.
+- Bei späterer Weltentwicklung sukzessive stärker an tatsächlichen suburbanen/urbanen
+  Gebietsstrukturen orientieren. Zusammenhängende Straßen, Grundstücke und Nutzungen
+  sind ein Planungsziel; jetzt kein automatischer Kartenumbau.
+
+### Vorschläge für kommende Patches – noch nicht beschlossen
+
+1. Deckungsdarstellung und Klickziele gemeinsam korrigieren: sichtbare nutzbare Flächen,
+   erreichbare Endpositionen innerhalb angeklickter Deckung, nachvollziehbare Übergänge
+   und klarer Vorrang manueller Bewegung vor automatischer Kampf-/Exekutionsannäherung.
+2. Versorgung und Erholung als vollständigen Ablauf definieren. Codebefund v12.1:
+   verbundene Wunden bluten mit 8 % der ursprünglichen Rate weiter; Wundalter entfernt
+   oder heilt Wunden nicht. Behandlung, Stillung, Heilung und Erholung verständlich
+   zusammenführen; keine Änderung an der Zombieinfektionsregel daraus ableiten.
+3. Das wiederkehrende Überleben ausarbeiten: Ausrüstung wählen, einen lohnenden Ort
+   aufsuchen, Beute zurückbringen, sich versorgen und die nächste Tour vorbereiten.
+   Ein nutzbares Lager im Unterschlupf und unterscheidbare Lootziele sind Vorschläge.
+   Für Inventar/Versorgung eine klare Regel zu weiterlaufender Spielzeit festlegen;
+   automatisches Pausieren solcher Menüs im Singleplayer ist ein Assistentenvorschlag.
+4. Smartphone-Abnahme bei jedem relevanten Patch: lesbare Icons, verlässliche Touchziele,
+   freie Kamera-/Bewegungsgesten, Appwechsel, Drehung, Speichern/Laden und Updates mit
+   alten Spielständen. Längere Sessions und schwächere Geräte berücksichtigen.
+5. Größere Welt erst mit wiederverwendbaren, persistenten Gebiets-/Objektdaten vorbereiten.
+   Fahrzeuge nach Grundtyp, Einsatzrolle und Zustand unterscheiden; für passende
+   Lootprofile ist noch eine separate Designentscheidung erforderlich. Künftige Klassen-
+   und Fortschrittsarbeit löst die Wiedervorlagen I-01 bis I-03 und I-10 aus.
+
+## Feste Grenzen des vereinbarten v12-Patches
 
 1. Keine neue Geräuschmechanik. Bestehende Geräuschquellen, Auslöser, Stärke, Reichweite
    und Frequenz sowie bestehende Modifikatoren unverändert lassen. Keine neuen Geräusche
@@ -262,6 +306,8 @@ Zurückgestellt ist kein vergebener Implementierungsauftrag.
 | I-08 | Crafting und Barrikadenbau; früher als spätere Ausbaustufe vom Assistenten genannt | Assistentenvorschlag, keine bestätigte Nutzerentscheidung | … Interaktionen, Itemrezepte oder veränderbare Weltobjekte erweitert werden; dann erst Interesse und Umfang klären. |
 | I-09 | Fahrbare Fahrzeuge; frühere allgemeine spätere Fahrzeugperspektive | Keine belegte Nutzerentscheidung für Fahrbarkeit; aktueller Wunsch sind nicht fahrbereite Lootfahrzeuge | … Fahrzeugdaten irreversibel auf reine Behälter zugeschnitten werden; Option kurz ansprechen, nicht als beschlossenen Ausbau behandeln. |
 | I-10 | Openfield-Stealth-Perk soll skillbar werden; spätere Stufen sollen Hide im Kampf ermöglichen; Nutzer, 21.09.2026 | Nutzeridee für später; erste Version bleibt 10 Sekunden Hide / 30 Sekunden Cooldown und nur geduckt. Treffer brechen den Perk auch jetzt nicht. | … Perk-/Skillfortschritt, Speicherung von Fähigkeiten, Stufen oder Aktivierungssperren dauerhaft festgelegt werden. Erst am relevanten Entscheidungspunkt erneut ansprechen. |
+| I-11 | Fahrzeuge mit thematischem Charakter: Polizei, Feuerwehr, Krankenwagen und Unfallautos; Nutzer, 25.09.2026 | Für spätere Politur ausdrücklich erhalten; kein aktueller Grafik-/Fahrmechanikauftrag | … Fahrzeugtypen, Erscheinungsbilder, Zustände oder Fahrzeug-Lootprofile festgelegt beziehungsweise erweitert werden. |
+| I-12 | Sukzessive an echten suburbanen/urbanen Gebietsstrukturen orientieren; Nutzer, 25.09.2026 | Ziel für spätere Weltentwicklung; ergänzt I-06 und I-07 | … neue Gebiete, Straßennetze, Grundstücke, Gebäudegruppen, Zufahrten und Weltformat entworfen werden. Vor einer schwer revidierbaren Kartenstruktur aktiv ansprechen. |
 
 ### Wiedervorlage, die schon die anstehende Planung betrifft
 
