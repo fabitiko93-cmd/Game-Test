@@ -1,7 +1,7 @@
-import { gainSkill } from "./character.js?v=12";
-import { activeWeapon, itemDefinition } from "./inventory.js?v=12";
-import { behindTarget } from "./perception.js?v=12";
-import { clamp, distance, vibrate } from "./util.js?v=12";
+import { gainSkill } from "./character.js";
+import { activeWeapon, itemDefinition } from "./inventory.js";
+import { behindTarget } from "./perception.js";
+import { clamp, distance, vibrate } from "./util.js";
 
 export const STEALTH_RULES = Object.freeze({
   minimumCover: 0.42,

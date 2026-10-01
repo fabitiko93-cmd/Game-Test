@@ -23,6 +23,9 @@ zu einem neuen Fähigkeitensystem ausgebaut.
 
 Bereits erteilte Aufträge nicht durch zusätzliche Freigaberunden ersetzen.
 
+Build und technische Modulauslagerung vom 02.10.2026 sind reine Infrastrukturarbeit.
+Die bestehenden Spielregeln und die Save-v4-Struktur bleiben maßgeblich.
+
 ## Effizient entwickeln
 
 - Modell, Denkstufe und Geschwindigkeit nach der aktuellen Nutzerwahl verwenden.
@@ -41,3 +44,9 @@ Bereits erteilte Aufträge nicht durch zusätzliche Freigaberunden ersetzen.
   Integrations- oder Darstellungsrisiken. Nach ausreichender Prüfung abschließen.
 - Diese Modulkarte bei Änderungen an Zuständigkeiten kurz aktualisieren. Das
   Designarchiv nicht als wiederholte vollständige Zusammenfassung kopieren.
+- Quellen bearbeiten: `docs/src/`, `docs/style.css`, `web/index.html` und
+  `web/service-worker.js`. `docs/index.html`, `docs/sw.js` und `docs/build/` werden
+  durch `npm run build` erzeugt; keine Versionszusätze in Modulimports einführen.
+- Vor Spielreleases `npm run build`, `npm test` und `npm run build:check` ausführen.
+  Nur geänderte Quellen und daraus erzeugte Ausgaben committen. Neue Module oder
+  Assets benötigen keine manuell gepflegte Cacheliste.

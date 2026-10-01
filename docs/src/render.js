@@ -1,9 +1,9 @@
-import { COLORS, VIEW } from "./config.js?v=12";
-import { activeWeapon, itemDefinition } from "./inventory.js?v=12";
-import { VISION, visionGeometry } from "./perception.js?v=12";
-import { clamp, hash2, lerp } from "./util.js?v=12";
-import { STATUS_ICONS, playerStatusIcons, zombieStatusIcons } from "./status-icons.js?v=12";
-import { vehicleFootprint, usableCover } from "./cover.js?v=12";
+import { COLORS, VIEW } from "./config.js";
+import { activeWeapon, itemDefinition } from "./inventory.js";
+import { VISION, visionGeometry } from "./perception.js";
+import { clamp, hash2, lerp } from "./util.js";
+import { STATUS_ICONS, playerStatusIcons, zombieStatusIcons } from "./status-icons.js";
+import { vehicleFootprint, usableCover } from "./cover.js";
 
 export class Renderer {
   constructor(canvas) {

@@ -1,3 +1,19 @@
+# Technischer Patch · 02.10.2026
+
+- Bewegung, Welt-Eingabe, Gegenstandsaktionen, Spielstandtransfer und Audio aus
+  `game.js` ausgelagert. Bestehende Methoden bleiben als Weiterleitungen erhalten.
+- Stabile Modulimports ohne verteilte Versionsnummern. Der automatische Build
+  erzeugt JavaScript-/CSS-Dateien mit Inhaltskennung sowie HTML und Offlinecache.
+- Cacheliste entsteht aus den tatsächlichen Build-Dateien und Assets; neue Module
+  und dynamische Imports werden automatisch berücksichtigt. Bestehender Pages-Pfad
+  `docs/` bleibt nutzbar.
+- Offline-Updates ersetzen keine laufende Sitzung. Unvollständige Installationen
+  werden verworfen; Fremdcaches bleiben erhalten und fehlende Skripte erhalten
+  keinen HTML-Fallback.
+- Lokaler Entwicklungsserver mit automatischem Neubau und CI-Prüfung der
+  erzeugten Veröffentlichung. Ergänzte Integrations- und Offline-/Build-Tests.
+- Spielregeln, Geräusche, Ausdauer, Bedienung und Save-v4 bleiben erhalten.
+
 # Patch v12.1 · 24.09.2026
 
 - Statusmenü lässt sich bei geringer Bildschirmhöhe per Wischen scrollen. Kopfzeile

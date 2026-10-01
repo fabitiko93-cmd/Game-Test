@@ -1,4 +1,4 @@
-import { vibrate } from "./util.js?v=12";
+import { vibrate } from "./util.js";
 
 export const TAP_GESTURE = Object.freeze({
   doubleMs: 460,

@@ -1,5 +1,5 @@
-import { distance } from "./util.js?v=12";
-import { STEALTH_RULES } from "./stealth.js?v=12";
+import { distance } from "./util.js";
+import { STEALTH_RULES } from "./stealth.js";
 
 // One symbol vocabulary for world-space buffs and the accessible menu legend.
 export const STATUS_ICONS = Object.freeze({

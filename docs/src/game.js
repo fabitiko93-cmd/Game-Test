@@ -1,40 +1,20 @@
-import { ZombieSystem, createInitialZombies } from "./ai.js?v=12";
-import {
-  backgroundName,
-  createPlayer,
-  gainSkill,
-  inflictZombieAttack,
-  skillValue,
-  treatWound as treatWoundWithItem,
-  treatWithItem,
-  updateCharacter,
-} from "./character.js?v=12";
-import { CombatSystem } from "./combat.js?v=12";
-import { GAME, STANCES } from "./config.js?v=12";
-import { ITEMS } from "./data.js?v=12";
-import {
-  activeWeapon,
-  addItem,
-  ammoLabel,
-  carryCapacity,
-  compatibleMods,
-  createItem,
-  equipItem,
-  findItem,
-  installMod,
-  inventoryWeight,
-  itemDefinition,
-  removeItem,
-  removeMod,
-  roundsInWeapon,
-  unequipSlot,
-} from "./inventory.js?v=12";
-import { Navigator } from "./navigation.js?v=12";
-import { missionAt, missionSteps } from "./missions.js?v=12";
-import { awarenessForPlayer } from "./perception.js?v=12";
-import { SaveStore } from "./save.js?v=12";
-import { StealthSystem, ensureStealthState } from "./stealth.js?v=12";
-import { clamp, distance, formatClock, vibrate } from "./util.js?v=12";
+import * as Movement from "./movement.js";
+import * as WorldInput from "./world-input.js";
+import * as ItemActions from "./item-actions.js";
+import * as GameState from "./game-state.js";
+import * as GameAudio from "./game-audio.js";
+import { ZombieSystem, createInitialZombies } from "./ai.js";
+import { backgroundName, createPlayer, gainSkill, inflictZombieAttack, skillValue, updateCharacter } from "./character.js";
+import { CombatSystem } from "./combat.js";
+import { GAME } from "./config.js";
+
+import { activeWeapon, ammoLabel, itemDefinition, removeItem, roundsInWeapon } from "./inventory.js";
+import { Navigator } from "./navigation.js";
+import { missionAt, missionSteps } from "./missions.js";
+import { awarenessForPlayer } from "./perception.js";
+import { SaveStore } from "./save.js";
+import { StealthSystem, ensureStealthState } from "./stealth.js";
+import { clamp, distance, formatClock, vibrate } from "./util.js";
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
 
@@ -274,102 +254,7 @@ export class Game {
   }
 
   updateMovement(delta) {
-    const player = this.player;
-    const keyboard = this.input.keyboardMovement();
-    let dx = 0;
-    let dy = 0;
-    let moving = false;
-    let requestedRun = false;
-
-    if (keyboard.magnitude > 0) {
-      player.navigation.path = [];
-      player.navigation.destination = null;
-      player.navigation.interactionId = null;
-      player.navigation.manualUntil = this.elapsed + 0.9;
-      dx = keyboard.y + keyboard.x;
-      dy = keyboard.y - keyboard.x;
-      const length = Math.hypot(dx, dy) || 1;
-      dx /= length;
-      dy /= length;
-      moving = true;
-      requestedRun = keyboard.run;
-    } else {
-      const target = this.combat.target(this);
-      const weapon = activeWeapon(player);
-      const stats = weapon ? itemDefinition(weapon) : null;
-      if (target && stats?.weaponKind === "melee" && distance(player, target) <= (stats.range || 0.9) + 0.08
-        && player.navigation.source === "combat") {
-        this.clearNavigation();
-      }
-
-      const node = player.navigation.path?.[0];
-      if (node) {
-        const door = this.world.doorAtCell(node.x, node.y);
-        if (door?.closed) {
-          if (door.locked) {
-            this.clearNavigation();
-            this.renderer.selectedId = door.id;
-            this.ui.showMessage("Die Tür ist verschlossen.", 1.4);
-          } else if (distance(player, door) <= GAME.interactionRange + 0.2) {
-            this.openDoor(door, true);
-          }
-        }
-      }
-
-      const next = player.navigation.path?.[0];
-      if (next) {
-        const tx = next.x - player.x;
-        const ty = next.y - player.y;
-        const length = Math.hypot(tx, ty);
-        if (length < 0.13) {
-          player.x = next.x;
-          player.y = next.y;
-          player.navigation.path.shift();
-          if (!player.navigation.path.length) this.arriveAtDestination();
-        } else {
-          dx = tx / length;
-          dy = ty / length;
-          moving = true;
-          requestedRun = player.navigation.runRequested;
-        }
-      }
-    }
-
-    const canRun = requestedRun && player.stance !== "sneak" && player.stamina > 4;
-    const mode = player.stance === "sneak" ? "sneak" : canRun ? "run" : "walk";
-    const stance = STANCES[mode];
-    player.moving = moving;
-    player.running = moving && mode === "run";
-    if (moving) {
-      player.facingX = dx;
-      player.facingY = dy;
-      const burden = inventoryWeight(player) / Math.max(1, carryCapacity(player));
-      const burdenFactor = clamp(1.08 - burden * 0.16, 0.72, 1);
-      const stealthFactor = 1 - skillValue(player, "stealth") * 0.003;
-      const hiddenNoise = this.stealth.hiddenNoiseMultiplier(player);
-      player.noiseRadius = stance.noise * stealthFactor * hiddenNoise;
-      const previousX = player.x;
-      const previousY = player.y;
-      const moved = this.moveEntity(player, dx * stance.speed * burdenFactor * delta, dy * stance.speed * burdenFactor * delta, 0.27);
-      this.stealth.onMove(this, Math.hypot(player.x - previousX, player.y - previousY), mode);
-      if (!moved && player.navigation.path.length) {
-        const interaction = this.world.objects.find(object => object.id === player.navigation.interactionId && !object.removed);
-        if (interaction && distance(player, interaction) <= GAME.interactionRange + 0.2) this.arriveAtDestination();
-        else this.clearNavigation();
-      }
-      player.stamina = clamp(player.stamina + stance.stamina * delta * (player.hunger < 20 ? 0.48 : 1), 0, 100);
-      this.stepTimer -= delta;
-      if (this.stepTimer <= 0) {
-        const noise = stance.noise * stealthFactor * hiddenNoise;
-        this.world.emitNoise(player.x, player.y, noise, "step", 1.1, 0.45);
-        player.noisePulse = Math.max(player.noisePulse, clamp(noise / 7, 0, 1));
-        this.stepTimer = mode === "run" ? 0.28 : mode === "sneak" ? 0.68 : 0.46;
-      }
-    } else {
-      player.noiseRadius = Math.max(0, (player.noiseRadius || 0) - delta * 4.5);
-      player.stamina = clamp(player.stamina + 10.5 * delta * (player.hunger < 20 ? 0.48 : 1), 0, 100);
-      this.stepTimer = 0;
-    }
+    return Movement.updateMovement(this, delta);
   }
 
   updateNeeds(delta) {
@@ -395,200 +280,63 @@ export class Game {
   }
 
   moveEntity(entity, dx, dy, radius) {
-    const previousX = entity.x, previousY = entity.y;
-    const nx = entity.x + dx;
-    const ny = entity.y + dy;
-    if (this.world.isWalkable(nx, entity.y, radius, entity.id)) {
-      entity.x = nx;
-    }
-    if (this.world.isWalkable(entity.x, ny, radius, entity.id)) {
-      entity.y = ny;
-    }
-    return Math.hypot(entity.x - previousX, entity.y - previousY) > 0.00001;
+    return Movement.moveEntity(this, entity, dx, dy, radius);
   }
 
   setDestination(requestedPoint, options = {}) {
-    if (!this.canAct()) return false;
-    const point = this.world.clampPoint(requestedPoint);
-    const navigation = this.player.navigation;
-    const path = this.navigator.findPath(this.world, this.player, point, { allowDoors: true });
-    const sameCell = Math.round(this.player.x) === Math.round(point.x) && Math.round(this.player.y) === Math.round(point.y);
-    if (!path.length && !sameCell) {
-      this.renderer.rejectDestination(point);
-      this.ui.showMessage("Kein begehbarer Weg.", 1.1);
-      return false;
-    }
-    navigation.path = path;
-    navigation.destination = { x: Math.round(point.x), y: Math.round(point.y) };
-    navigation.interactionId = options.interactionId || null;
-    navigation.runRequested = Boolean(options.run);
-    navigation.guided = Boolean(options.guided);
-    navigation.source = options.source || "manual";
-    if (navigation.source === "manual") navigation.manualUntil = this.elapsed + 1.25;
-    this.renderer.destination = navigation.destination;
-    this.renderer.destinationRun = navigation.runRequested;
-    if (sameCell) this.arriveAtDestination();
-    return true;
+    return Movement.setDestination(this, requestedPoint, options);
   }
 
   clearNavigation() {
-    const navigation = this.player.navigation;
-    navigation.path = [];
-    navigation.destination = null;
-    navigation.interactionId = null;
-    navigation.runRequested = false;
-    navigation.guided = false;
-    navigation.source = null;
-    this.renderer.destination = null;
-    this.renderer.destinationRun = false;
+    return Movement.clearNavigation(this);
   }
 
   arriveAtDestination() {
-    const interactionId = this.player.navigation.interactionId;
-    const wasGuided = this.player.navigation.guided;
-    this.player.navigation.path = [];
-    this.player.navigation.destination = null;
-    this.player.navigation.interactionId = null;
-    this.player.navigation.runRequested = false;
-    this.renderer.destination = null;
-    this.renderer.destinationRun = false;
-    if (interactionId) {
-      const object = this.world.objects.find(entry => entry.id === interactionId && !entry.removed);
-      if (object) this.interact(object);
-    } else if (!wasGuided) {
-      this.player.navigation.source = null;
-    }
+    return Movement.arriveAtDestination(this);
   }
 
   queueInteraction(object) {
-    if (!object?.interactable) return;
-    this.renderer.selectedId = object.id;
-    if (distance(this.player, object) <= GAME.interactionRange) {
-      this.interact(object);
-      return;
-    }
-    const path = this.navigator.pathToInteraction(this.world, this.player, object, {
-      allowDoors: true,
-      interactionRange: GAME.interactionRange,
-    });
-    if (!path.length) {
-      this.renderer.rejectDestination(this.world.clampPoint(object));
-      this.ui.showMessage("Kein Weg in Reichweite.", 1.2);
-      return;
-    }
-    const destination = path[path.length - 1];
-    this.player.navigation.path = path;
-    this.player.navigation.destination = { ...destination };
-    this.player.navigation.interactionId = object.id;
-    this.player.navigation.runRequested = false;
-    this.player.navigation.guided = false;
-    this.player.navigation.source = "manual";
-    this.player.navigation.manualUntil = this.elapsed + 1.25;
-    this.renderer.destination = { ...destination };
-    this.renderer.destinationRun = false;
-    this.ui.showMessage(`GEHE ZU: ${object.name || "OBJEKT"}`, 1.1);
+    return Movement.queueInteraction(this, object);
   }
 
   approachCombatTarget(target, range) {
-    if (this.player.navigation.manualUntil > this.elapsed || this.player.navigation.guided) return;
-    if (this.player.navigation.source === "combat" && this.player.navigation.path.length && this.elapsed < this.combatPathTick) return;
-    if (distance(this.player, target) <= range + 0.04) return;
-    const path = this.navigator.findPath(this.world, this.player, target, { allowDoors: true, maxNodes: 1800 });
-    if (!path.length) return;
-    this.player.navigation.path = path;
-    this.player.navigation.destination = path[path.length - 1];
-    this.player.navigation.interactionId = null;
-    this.player.navigation.runRequested = false;
-    this.player.navigation.guided = false;
-    this.player.navigation.source = "combat";
-    this.renderer.destination = null;
-    this.combatPathTick = this.elapsed + 0.35;
+    return Movement.approachCombatTarget(this, target, range);
   }
 
   tapWorld(x, y) {
-    if (!this.canAct()) return;
-    const hit = this.renderer.pick(x, y);
-    if (hit?.kind === "zombie") {
-      this.combat.selectTarget(this, hit.ref);
-      this.ui.showMessage(this.player.combat.enabled ? "Ziel erfasst" : "Ziel gewählt · Kampfmodus aktivieren", 1.4);
-      return;
-    }
-    if (hit?.kind === "object") {
-      if (this.renderer.selectedId === hit.id) {
-        this.queueInteraction(hit.ref);
-        return;
-      }
-      this.renderer.selectedId = hit.id;
-      this.player.combat.targetId = null;
-      this.ui.showMessage(hit.ref.name || "Objekt gewählt", 1.1);
-      return;
-    }
-    this.renderer.selectedId = null;
-    if (!this.player.combat.enabled) this.player.combat.targetId = null;
-    this.setDestination(this.renderer.screenToWorld(x, y), { source: "manual" });
+    return WorldInput.tapWorld(this, x, y);
   }
 
   doubleTapWorld(x, y) {
-    if (!this.canAct()) return;
-    const hit = this.renderer.pick(x, y);
-    if (hit?.kind === "object") {
-      this.queueInteraction(hit.ref);
-      return;
-    }
-    if (hit?.kind === "zombie") {
-      this.combat.selectTarget(this, hit.ref);
-      if (!this.player.combat.enabled) this.combat.toggle(this);
-      return;
-    }
-    this.renderer.selectedId = null;
-    this.setDestination(this.renderer.screenToWorld(x, y), { source: "manual", run: true });
+    return WorldInput.doubleTapWorld(this, x, y);
   }
 
   startGuidedMovement(x, y, options = {}) {
-    if (!this.canAct()) return;
-    const hit = this.renderer.pick(x, y);
-    this.holdBlocked = Boolean(hit);
-    if (hit) {
-      if (hit.kind === "zombie") this.combat.selectTarget(this, hit.ref);
-      else this.renderer.selectedId = hit.id;
-      return;
-    }
-    this.updateGuidedMovement(x, y, options);
+    return WorldInput.startGuidedMovement(this, x, y, options);
   }
 
   updateGuidedMovement(x, y, options = {}) {
-    if (this.holdBlocked || !this.canAct()) return;
-    this.setDestination(this.renderer.screenToWorld(x, y), {
-      source: "manual",
-      guided: true,
-      run: Boolean(options.run) && this.player.stance !== "sneak",
-    });
+    return WorldInput.updateGuidedMovement(this, x, y, options);
   }
 
   endGuidedMovement() {
-    if (!this.holdBlocked && this.player.navigation.guided) this.clearNavigation();
-    this.holdBlocked = false;
+    return WorldInput.endGuidedMovement(this);
   }
 
   startCameraPan() {
-    if (!this.canAct()) return;
-    if (this.player.navigation.guided) this.clearNavigation();
-    this.renderer.beginPan();
+    return WorldInput.startCameraPan(this);
   }
 
   panCamera(dx, dy) {
-    if (!this.canAct()) return;
-    this.renderer.panBy(dx, dy);
+    return WorldInput.panCamera(this, dx, dy);
   }
 
   endCameraPan() {
-    this.renderer.endPan();
+    return WorldInput.endCameraPan(this);
   }
 
   recenterCamera() {
-    if (!this.started) return;
-    this.renderer.recenter(this.player);
-    this.ui.showToast("KAMERA ZENTRIERT", 1.1);
+    return WorldInput.recenterCamera(this);
   }
 
   toggleStance() {
@@ -756,170 +504,43 @@ export class Game {
   }
 
   takeItem(container, itemId) {
-    const item = container.items?.find(entry => entry.id === itemId);
-    if (!item) return;
-    if (!addItem(this.player, item)) {
-      this.ui.showToast("ZU SCHWER · RUCKSACK PRÜFEN");
-      return;
-    }
-    container.items = container.items.filter(entry => entry.id !== itemId);
-    if (item.type === "sealed_antibiotics" && this.mission < 2) {
-      this.advanceMission(2, "Medikament gesichert. Zurück zum Unterschlupf.");
-    }
-    gainSkill(this.player, "search", 0.05);
-    this.ui.renderContainer(container, this.player);
-    this.ui.refreshAll(this.player, this);
-    this.ui.showToast(`${ITEMS[item.type].name.toUpperCase()} EINGEPACKT`);
-    this.sound("pickup");
-    this.save();
+    return ItemActions.takeItem(this, container, itemId);
   }
 
   takeAll(container) {
-    for (const item of [...(container.items || [])]) this.takeItem(container, item.id);
+    return ItemActions.takeAll(this, container);
   }
 
   treatWound(woundId, itemType) {
-    if (!this.canAct(true)) return;
-    const item = this.player.inventory.find(entry => entry.type === itemType && (entry.count || 1) > 0);
-    if (!item) {
-      this.ui.showToast("DAS BENÖTIGTE MEDIZINMATERIAL FEHLT");
-      return;
-    }
-    const result = treatWoundWithItem(this.player, itemType, woundId);
-    if (!result.used) {
-      this.ui.showToast(result.message);
-      return;
-    }
-    removeItem(this.player, item.id, 1);
-    this.ui.showToast(result.message);
-    this.ui.refreshAll(this.player, this);
-    this.sound("consume");
-    this.save();
+    return ItemActions.treatWound(this, woundId, itemType);
   }
 
   useItem(id) {
-    if (!this.canAct(true)) return;
-    const item = findItem(this.player, id);
-    const definition = itemDefinition(item);
-    if (!item || !definition) return;
-    let consume = false;
-    let message = "";
-
-    if (definition.type === "weapon" || definition.equipSlot) {
-      const result = equipItem(this.player, id);
-      message = result.message;
-      if (result.ok) this.sound("equip");
-    } else if (definition.effect) {
-      if (definition.needs && !this.player.inventory.some(entry => entry.type === definition.needs)) {
-        this.ui.showToast(`DU BRAUCHST: ${ITEMS[definition.needs].name.toUpperCase()}`);
-        return;
-      }
-      for (const [stat, value] of Object.entries(definition.effect)) {
-        this.player[stat] = clamp((this.player[stat] || 0) + value, 0, 100);
-      }
-      consume = true;
-      message = `${definition.name.toUpperCase()} BENUTZT`;
-      this.sound("consume");
-    } else if (definition.type === "medical" || item.type === "cloth") {
-      const result = treatWithItem(this.player, item.type);
-      if (!result.used) {
-        this.ui.showToast(result.message);
-        return;
-      }
-      consume = true;
-      message = result.message;
-      this.sound("consume");
-    } else if (definition.type === "ammo" || definition.type === "magazine") {
-      const result = this.combat.reload(this);
-      message = result.message;
-      if (!result.ok) {
-        this.ui.showToast(message);
-        return;
-      }
-    } else if (definition.type === "mod") {
-      const weapon = activeWeapon(this.player);
-      if (!weapon || !compatibleMods(this.player, weapon).some(mod => mod.id === item.id)) {
-        this.ui.showToast("KEINE PASSENDE WAFFE AUSGERÜSTET");
-        return;
-      }
-      const result = installMod(this.player, weapon.id, item.id);
-      message = result.message;
-      if (!result.ok) {
-        this.ui.showToast(message);
-        return;
-      }
-      this.sound("equip");
-    } else if (definition.quest) {
-      this.ui.showToast("DIESE PACKUNG GEHÖRT ZUM FUNKSPRUCH");
-      return;
-    } else {
-      this.ui.showToast("DAS KANNST DU JETZT NICHT BENUTZEN");
-      return;
-    }
-
-    if (consume) removeItem(this.player, item.id, 1);
-    this.ui.selectedItemId = null;
-    this.ui.refreshAll(this.player, this);
-    this.ui.showToast(message);
-    this.save();
+    return ItemActions.useItem(this, id);
   }
 
   dropItem(id) {
-    const item = findItem(this.player, id);
-    if (!item) return;
-    const dropped = removeItem(this.player, id);
-    const bag = this.world.addObject("groundloot", this.player.x + 0.3, this.player.y + 0.18, {
-      static: false,
-      interactable: true,
-      solid: false,
-      name: "ABGELEGTE SACHEN",
-      items: [dropped],
-    });
-    this.renderer.selectedId = bag.id;
-    this.ui.selectedItemId = null;
-    this.ui.refreshAll(this.player, this);
-    this.ui.showToast("GEGENSTAND ABGELEGT");
-    this.save();
+    return ItemActions.dropItem(this, id);
   }
 
   unequip(slot) {
-    const item = unequipSlot(this.player, slot);
-    if (!item) return;
-    this.ui.refreshAll(this.player, this);
-    this.ui.showToast(`${itemDefinition(item).name.toUpperCase()} ABGELEGT`);
+    return ItemActions.unequip(this, slot);
   }
 
   openWeaponPanel(id) {
-    const weapon = findItem(this.player, id);
-    if (itemDefinition(weapon)?.weaponKind !== "firearm") return;
-    this.ui.openWeaponPanel(weapon, this.player);
+    return ItemActions.openWeaponPanel(this, id);
   }
 
   mountMod(weaponId, modId) {
-    const result = installMod(this.player, weaponId, modId);
-    this.ui.showToast(result.message);
-    if (result.ok) this.sound("equip");
-    const weapon = findItem(this.player, weaponId);
-    this.ui.openWeaponPanel(weapon, this.player);
-    this.ui.refreshAll(this.player, this);
-    this.save();
+    return ItemActions.mountMod(this, weaponId, modId);
   }
 
   unmountMod(weaponId, slot) {
-    const result = removeMod(this.player, weaponId, slot);
-    this.ui.showToast(result.message);
-    const weapon = findItem(this.player, weaponId);
-    this.ui.openWeaponPanel(weapon, this.player);
-    this.ui.refreshAll(this.player, this);
-    this.save();
+    return ItemActions.unmountMod(this, weaponId, slot);
   }
 
   reload() {
-    if (!this.canAct(true)) return;
-    const result = this.combat.reload(this);
-    this.ui.showToast(result.message);
-    this.ui.refreshAll(this.player, this);
-    this.save();
+    return ItemActions.reload(this);
   }
 
   onZombieAttack(zombie) {
@@ -1092,130 +713,23 @@ export class Game {
   }
 
   serialize() {
-    const player = deepCopy(this.player);
-    player.navigation = {
-      path: [],
-      destination: null,
-      interactionId: null,
-      runRequested: false,
-      guided: false,
-      manualUntil: 0,
-      source: null,
-    };
-    const zombies = deepCopy(this.zombies).map(zombie => ({ ...zombie, path: [] }));
-    return {
-      seed: this.world.seed,
-      minutes: this.minutes,
-      mission: this.mission,
-      survivorCount: this.survivorCount,
-      migrationTimer: this.migrationTimer,
-      player,
-      zombies,
-      world: this.world.serialize(),
-    };
+    return GameState.serialize(this);
   }
 
   save() {
-    if (!this.started) return false;
-    const ok = this.saveStore.write(this.serialize());
-    if (!ok) this.ui.showToast("AUTOSAVE FEHLGESCHLAGEN");
-    return ok;
+    return GameState.save(this);
   }
 
   load() {
-    const saved = this.saveStore.read();
-    if (!saved?.player) return false;
-    this.world.reset(saved.seed || GAME.seed);
-    this.world.restore(saved.world || []);
-    this.minutes = saved.minutes ?? GAME.startMinutes;
-    this.mission = saved.mission ?? 0;
-    this.survivorCount = saved.survivorCount ?? saved.player.survivorNumber ?? 1;
-    this.migrationTimer = saved.migrationTimer ?? GAME.migrationSeconds;
-    this.player = saved.player;
-    ensureStealthState(this.player);
-    this.player.stealthState.hidden = false;
-    this.player.stealthState.execution = null;
-    this.zombies = Array.isArray(saved.zombies) ? saved.zombies : createInitialZombies();
-    for (const zombie of this.zombies) {
-      zombie.desiredFacingX ??= zombie.facingX ?? 0;
-      zombie.desiredFacingY ??= zombie.facingY ?? 1;
-      zombie.stimulus ??= null;
-      zombie.hitKick ??= 0;
-    }
-    this.player.navigation ||= { path: [], destination: null, interactionId: null, runRequested: false, guided: false, manualUntil: 0 };
-    this.player.combat ||= { enabled: false, targetId: null, attackCooldown: 0, attackTimer: 0, pendingAttack: 0, pendingTargetId: null, aim: 0, recoil: 0 };
-    this.player.equipment ||= { mainHand: null, offHand: null, head: null, torso: null, legs: null, back: null };
-    this.player.noiseRadius ??= 0;
-    this.player.hitKick ??= 0;
-    // Preserve old saves while moving only entities now intersecting a corrected
-    // vehicle footprint (or an old invalid spawn) to the nearest free cell.
-    for (const entity of [this.player, ...this.zombies]) {
-      if (entity.removed || this.world.isWalkable(entity.x, entity.y, 0.27)) continue;
-      const point = this.navigator.nearestWalkable(this.world, entity, { allowDoors: false });
-      if (point && this.world.isWalkable(point.x, point.y, 0.27)) {
-        entity.x = point.x;
-        entity.y = point.y;
-        if (entity !== this.player) { entity.path = []; entity.repathTimer = 0; }
-      }
-    }
-    this.renderer.destination = null;
-    this.renderer.destinationRun = false;
-    this.stealth.refresh(this);
-    return true;
+    return GameState.load(this);
   }
 
   initAudio() {
-    if (this.audio) return;
-    try {
-      this.audio = new AudioContext();
-    } catch (_) {
-      try {
-        this.audio = new webkitAudioContext();
-      } catch (_) {
-        this.audio = null;
-      }
-    }
+    return GameAudio.initAudio(this);
   }
 
   sound(kind) {
-    if (!this.audio) return;
-    const presets = {
-      pickup: [660, 0.06, "sine"],
-      equip: [240, 0.05, "square"],
-      hide: [180, 0.08, "triangle"],
-      consume: [420, 0.08, "sine"],
-      door: [105, 0.12, "triangle"],
-      unlock: [510, 0.05, "square"],
-      lock: [180, 0.08, "square"],
-      breach: [68, 0.2, "sawtooth"],
-      swing: [180, 0.05, "sawtooth"],
-      gunshot: [52, 0.2, "square"],
-      reload: [320, 0.07, "square"],
-      hit: [72, 0.1, "square"],
-      execution: [110, 0.16, "triangle"],
-      hurt: [55, 0.16, "sawtooth"],
-      alert: [145, 0.13, "triangle"],
-      objective: [520, 0.16, "sine"],
-      success: [720, 0.25, "sine"],
-      radio: [90, 0.3, "sawtooth"],
-      death: [46, 0.6, "sawtooth"],
-    };
-    const preset = presets[kind];
-    if (!preset) return;
-    try {
-      const oscillator = this.audio.createOscillator();
-      const gain = this.audio.createGain();
-      oscillator.type = preset[2];
-      oscillator.frequency.setValueAtTime(preset[0], this.audio.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(Math.max(30, preset[0] * 0.55), this.audio.currentTime + preset[1]);
-      gain.gain.setValueAtTime(kind === "gunshot" ? 0.07 : 0.035, this.audio.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.audio.currentTime + preset[1]);
-      oscillator.connect(gain).connect(this.audio.destination);
-      oscillator.start();
-      oscillator.stop(this.audio.currentTime + preset[1]);
-    } catch (_) {
-      // Audio is non-critical and can be disabled by iOS.
-    }
+    return GameAudio.sound(this, kind);
   }
 
   debugSummary() {

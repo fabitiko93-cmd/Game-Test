@@ -4,7 +4,29 @@ Ein mobile-first Isometrie-Survivalspiel im fiktiven Brandenburg des Jahres 1998
 
 ## Spielen
 
-Die aktuelle Version ist unter **[fabitiko93-cmd.github.io/Game-Test](https://fabitiko93-cmd.github.io/Game-Test/)** spielbar. Sie liegt in `docs/`, ist für Safari auf dem iPhone im Querformat ausgelegt, benötigt weder Build-Schritt noch externe Abhängigkeiten und funktioniert nach dem ersten Laden auch offline.
+Die aktuelle Version ist unter **[fabitiko93-cmd.github.io/Game-Test](https://fabitiko93-cmd.github.io/Game-Test/)** spielbar. Die fertige Veröffentlichung liegt in `docs/`, ist für Safari auf dem iPhone im Querformat ausgelegt und funktioniert nach der ersten erfolgreichen Offline-Installation auch ohne Netz. Zum Spielen werden weder Node noch externe Dienste benötigt.
+
+## Entwickeln und patchen
+
+Node 22 oder neuer verwenden. Einmal `npm ci`, dann `npm run dev`: Der lokale Server
+unter `http://127.0.0.1:4173/` baut Änderungen an Modulen, Oberfläche und Assets
+automatisch neu. Nach einer Änderung die Spielseite neu laden. Ein anderer Port
+lässt sich mit `SPERRKREIS_PORT` setzen.
+
+- Spielcode: `docs/src/`; zuständiges Modul über [ARCHITECTURE.md](ARCHITECTURE.md) finden.
+- Oberfläche: `web/index.html` und `docs/style.css`.
+- Offlineverhalten: `web/service-worker.js`.
+- Veröffentlichung: `npm run build`, `npm test`, `npm run build:check`.
+
+`docs/index.html`, `docs/sw.js` und `docs/build/` werden automatisch erzeugt und
+gemeinsam mit den geänderten Quellen committed. GitHub Pages kann deshalb weiterhin
+direkt aus `docs/` veröffentlichen. Diese Ausgabedateien nicht von Hand bearbeiten.
+Versionsnummern in Imports oder Cachelisten müssen nicht mehr gepflegt werden.
+CI prüft, dass die veröffentlichte Ausgabe zu den Quellen passt.
+
+Dateinamen folgen dem Inhalt; unverändertes CSS behält beispielsweise seine URL.
+Neue importierte Module und spätere dynamische Imports werden automatisch gebaut;
+die Cacheliste wird aus den erzeugten Dateien und öffentlichen Assets abgeleitet.
 
 ## Steuerung
 
@@ -53,11 +75,17 @@ Das Spiel ist bewusst in austauschbare ES-Module getrennt:
 | `inventory.js` / `character.js` | Ausrüstung, Magazine, Fortschritt und Wunden |
 | `combat.js` | Zielkampf, Nahkampf und Schusswaffen |
 | `save.js` | versionierter lokaler Spielstand |
+| `movement.js` / `world-input.js` | Bewegungsablauf, Laufziele, Tap-/Halteaktionen und Kamerabedienung |
+| `item-actions.js` | Benutzen, Behandeln, Looten, Ausrüsten und Waffenaktionen |
+| `game-state.js` / `game-audio.js` | Spielstand übertragen und laden; bestehende Audioeffekte |
 | `input.js` / `ui.js` / `render.js` | Eingabe, Oberfläche und Darstellung |
 | `game.js` | Orchestrierung der Systeme ohne Datendefinitionen |
 
-Die Werte in `config.js` und `data.js` sind die vorgesehenen Erweiterungspunkte. Der Pages-Build befindet sich in `docs/`; Kernlogik-Tests liegen in `tests/`.
+Die Werte in `config.js` und `data.js` sind die vorgesehenen Erweiterungspunkte. Der
+automatische Build liegt in `scripts/build.mjs`, die Pages-Ausgabe in `docs/` und
+Tests in `tests/`. Die bestehenden `Game`-Methoden delegieren an die Aktionsmodule,
+sodass Aufrufer aus KI, Kampf, UI und Spielstandtests erhalten bleiben.
 
 Deckungs- und Perkwerte stehen in `COVER_RULES`, `COVER_SEARCH` und `STEALTH_RULES`.
-Prüfen: `node tests/core.test.mjs` und `node tests/stealth.test.mjs`.
-Änderungen und Grenzen von v12: [CHANGELOG.md](CHANGELOG.md).
+Prüfen: `npm test` findet alle Testdateien automatisch.
+Änderungen: [CHANGELOG.md](CHANGELOG.md).

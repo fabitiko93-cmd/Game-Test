@@ -1,7 +1,7 @@
-import { gainSkill, skillValue } from "./character.js?v=12";
-import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponStats } from "./inventory.js?v=12";
-import { behindTarget } from "./perception.js?v=12";
-import { clamp, distance, vibrate } from "./util.js?v=12";
+import { gainSkill, skillValue } from "./character.js";
+import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponStats } from "./inventory.js";
+import { behindTarget } from "./perception.js";
+import { clamp, distance, vibrate } from "./util.js";
 
 export class CombatSystem {
   target(game) {
