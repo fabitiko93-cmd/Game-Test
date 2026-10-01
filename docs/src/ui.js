@@ -1,5 +1,5 @@
-import { STATUS_ICONS, iconSVG } from "./status-icons.js?v=12";
-import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js?v=12";
+import { STATUS_ICONS, iconSVG } from "./status-icons.js";
+import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js";
 import {
   activeWeapon,
   ammoLabel,
@@ -12,8 +12,8 @@ import {
   itemDefinition,
   roundsInWeapon,
   weaponCapacity,
-} from "./inventory.js?v=12";
-import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js?v=12";
+} from "./inventory.js";
+import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",

@@ -9,21 +9,24 @@ permissions:
   contents: read
 
 jobs:
-  syntax:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+      - name: Install pinned build dependencies
+        run: npm ci --no-audit --no-fund
       - name: Check JavaScript syntax
         run: |
-          for file in docs/src/*.js docs/sw.js; do
+          for file in docs/src/*.js docs/sw.js web/service-worker.js scripts/*.mjs; do
             node --check "$file"
           done
-      - name: Run core system tests
-        run: |
-          node tests/core.test.mjs
-          node tests/stealth.test.mjs
+      - name: Run game and release tests
+        run: npm test
+      - name: Verify generated release matches source
+        run: npm run build:check
       - name: Verify required game files
         run: test -f docs/index.html && test -f docs/manifest.webmanifest && test -f docs/style.css

@@ -1,6 +1,6 @@
-import { VISION, visionExposure } from "./perception.js?v=12";
-import { distance } from "./util.js?v=12";
-import { STEALTH_RULES } from "./stealth.js?v=12";
+import { VISION, visionExposure } from "./perception.js";
+import { distance } from "./util.js";
+import { STEALTH_RULES } from "./stealth.js";
 
 export const COVER_SEARCH = Object.freeze({ visualSeconds: 6.5, soundSeconds: 5.5, stalledSeconds: 6.5 });
 

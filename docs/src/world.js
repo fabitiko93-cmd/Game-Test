@@ -1,8 +1,8 @@
-import { COLORS, VIEW } from "./config.js?v=12";
-import { CoverMap, distanceToFootprint, segmentHitsVehicle } from "./cover.js?v=12";
-import { LOOT_TABLES, OBJECT_LABELS } from "./data.js?v=12";
-import { createItem } from "./inventory.js?v=12";
-import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js?v=12";
+import { COLORS, VIEW } from "./config.js";
+import { CoverMap, distanceToFootprint, segmentHitsVehicle } from "./cover.js";
+import { LOOT_TABLES, OBJECT_LABELS } from "./data.js";
+import { createItem } from "./inventory.js";
+import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js";
 
 export const BUILDINGS = [
   { id: "police", name: "POLIZEIPOSTEN", x: 15, y: 4, w: 10, h: 9, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },

@@ -1,6 +1,6 @@
-import { STANCES } from "./config.js?v=12";
-import { skillValue } from "./character.js?v=12";
-import { clamp, distance } from "./util.js?v=12";
+import { STANCES } from "./config.js";
+import { skillValue } from "./character.js";
+import { clamp, distance } from "./util.js";
 
 export const VISION = Object.freeze({
   range: 8.2,

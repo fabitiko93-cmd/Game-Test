@@ -131,7 +131,6 @@ assert.ok(clubLocker.items.some(item => item.type === "hunting_rifle"));
 
 const html = readFileSync(new URL("../docs/index.html", import.meta.url), "utf8");
 const uiSource = readFileSync(new URL("../docs/src/ui.js", import.meta.url), "utf8");
-const serviceWorker = readFileSync(new URL("../docs/sw.js", import.meta.url), "utf8");
 for (const id of [
   "hunger-state", "thirst-state", "wound-state", "awareness-state", "noise-state", "cover-state", "cover-fill",
   "execute-button", "execute-label", "execute-hint", "status-button", "status-panel",
@@ -141,12 +140,7 @@ for (const id of [
 ]) {
   assert.match(html, new RegExp(`id=["']${id}["']`), `missing UI contract: ${id}`);
 }
-assert.match(html, /style\.css\?v=12/);
-assert.match(html, /src\/main\.js\?v=12/);
 assert.match(uiSource, /BENÖTIGT:/);
-assert.match(serviceWorker, /src\/missions\.js/);
-assert.match(serviceWorker, /ignoreSearch:\s*true/);
-
-assert.match(serviceWorker, /sperrkreis98-v12/);
+// Release/cache behavior is exercised by build.test.mjs instead of version-string checks.
 
 console.log("SPERRKREIS 98 core tests passed");

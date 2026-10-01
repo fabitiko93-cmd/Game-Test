@@ -1,8 +1,8 @@
-import { Game } from "./game.js?v=12";
-import { InputController } from "./input.js?v=12";
-import { Renderer } from "./render.js?v=12";
-import { GameUI } from "./ui.js?v=12";
-import { World } from "./world.js?v=12";
+import { Game } from "./game.js";
+import { InputController } from "./input.js";
+import { Renderer } from "./render.js";
+import { GameUI } from "./ui.js";
+import { World } from "./world.js";
 
 const canvas = document.getElementById("game");
 const world = new World();

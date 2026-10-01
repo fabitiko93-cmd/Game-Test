@@ -1,12 +1,6 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "38562f3a09b55074531f";
-const FILES = [
-  "./assets/icon.svg",
-  "./build/main-SEBOKCEW.js",
-  "./build/style-S6G7BV56.css",
-  "./index.html",
-  "./manifest.webmanifest"
-];
+const BUILD_ID = "{{BUILD_ID}}";
+const FILES = /* PRECACHE_FILES */ [];
 const SCOPE = self.registration.scope;
 const CACHE_PREFIX = `sperrkreis98-${encodeURIComponent(new URL(SCOPE).pathname)}-`;
 const CACHE = `${CACHE_PREFIX}${BUILD_ID}`;

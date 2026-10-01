@@ -1,7 +1,7 @@
-import { strongestNoise } from "./perception.js?v=12";
-import { beginCoverSearch, coverAwareExposure, updateCoverSearch } from "./cover-awareness.js?v=12";
-import { VIEW } from "./config.js?v=12";
-import { clamp, distance, uid } from "./util.js?v=12";
+import { strongestNoise } from "./perception.js";
+import { beginCoverSearch, coverAwareExposure, updateCoverSearch } from "./cover-awareness.js";
+import { VIEW } from "./config.js";
+import { clamp, distance, uid } from "./util.js";
 
 const INITIAL_POSITIONS = [
   [14, 18], [9, 21], [24, 20], [36, 20], [43, 18], [31, 10],
