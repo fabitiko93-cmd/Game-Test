@@ -1,10 +1,10 @@
 {
-  "id": "38562f3a09b55074531f",
-  "script": "build/main-SEBOKCEW.js",
+  "id": "4a2c09ae8cccbeb34fcd",
+  "script": "build/main-YWDY5XEH.js",
   "style": "build/style-S6G7BV56.css",
   "precache": [
     "assets/icon.svg",
-    "build/main-SEBOKCEW.js",
+    "build/main-YWDY5XEH.js",
     "build/style-S6G7BV56.css",
     "index.html",
     "manifest.webmanifest"

@@ -12,7 +12,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 |---|---|---|
 | Tap, Doppeltap, Halten, Kamera | `input.js`, `world-input.js` | Eingabeereignis → Ziel/Interaktion/Kamera; Bildschirmkoordinaten in `render.js` |
 | Laufziel, Weg und Ankunft | `navigation.js`, `movement.js` | `setDestination`, `updateMovement`, `arriveAtDestination`; Kollision in `world.js` |
-| Deckungszone und Hide | `cover.js`, `stealth.js` | `CoverMap.at` und `StealthSystem.refresh`; Darstellung in `render.js` |
+| Deckungszone und Hide | `cover.js`, `stealth.js`, `cover-display.js` | `CoverMap.at` und `StealthSystem.refresh`; gecachte Bodenflächen aus derselben Geometrie, Darstellung in `render.js` |
 | Sicht, Verdacht, Verfolgung, Deckungssuche | `perception.js`, `cover-awareness.js`, `ai.js` | Basiswahrnehmung, Gedächtnis pro Zombie, Zustandswechsel; Sichtlinie in `world.js` |
 | Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
 | Wunden, Behandlung, Bedürfnisse, Fähigkeiten | `character.js`, `item-actions.js` | Bedürfnisablauf in `game.js`; Status-/Medizinanzeige in `ui.js` |

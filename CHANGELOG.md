@@ -1,3 +1,17 @@
+# Deckungsanzeige · 04.10.2026
+
+- Im Schleichen zeigen zusammenhängende Bodenflächen den nutzbaren Hide-Bereich
+  statt kleiner pauschaler Ovale am Deckungsobjekt. Gold markiert verfügbare
+  Flächen, Grün die aktuelle Deckung; Bezugspunkt sind die Füße der Figur.
+- Anzeige verwendet die bestehende Deckungsgeometrie für Bäume, Büsche, Mauern
+  und Fahrzeuge. Blockierte Standorte und Wasser bleiben frei; Überlappungen
+  werden verbunden, echte Lücken bleiben sichtbar. Mauer-Hervorhebung respektiert
+  Gebäudeseite und Innen-/Außenseite.
+- Konturen werden mit einem Achteltile-Raster dargestellt und samt Canvas-Pfaden
+  gecacht; keine neue Flächenberechnung bei jedem Bild. Türen und Weltwechsel
+  aktualisieren die Anzeige. Kurze Erklärung im Statusmenü.
+- Hide-, Such-, Geräusch-, Ausdauer- und Klassenregeln sowie Save-v4 unverändert.
+
 # Technischer Patch · 02.10.2026
 
 - Bewegung, Welt-Eingabe, Gegenstandsaktionen, Spielstandtransfer und Audio aus

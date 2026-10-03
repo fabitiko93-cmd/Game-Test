@@ -3,7 +3,8 @@ import { activeWeapon, itemDefinition } from "./inventory.js";
 import { VISION, visionGeometry } from "./perception.js";
 import { clamp, hash2, lerp } from "./util.js";
 import { STATUS_ICONS, playerStatusIcons, zombieStatusIcons } from "./status-icons.js";
-import { vehicleFootprint, usableCover } from "./cover.js";
+import { vehicleFootprint } from "./cover.js";
+import { buildCoverDisplay, coverDisplayKey, coverDisplayPaths } from "./cover-display.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -27,7 +28,7 @@ export class Renderer {
     this.frame = 0;
     this.visionCache = new Map();
     this.statusPaths = new Map(Object.entries(STATUS_ICONS).map(([id, icon]) => [id, new Path2D(icon.path)]));
-    this.coverHintCache = { key: "", objects: [] };
+    this.coverHintCache = { key: "", map: null, paths: null };
     this.diagnostics = false;
     this.metrics = { fps: 0, frames: 0, time: 0, visibleTiles: 0, visibleObjects: 0 };
     this.backgroundGradient = null;
@@ -653,33 +654,29 @@ export class Renderer {
 
   drawCoverHints(game) {
     const player = game.player;
-    const inSneak = player.stance === "sneak";
+    if (player.stance !== "sneak") return;
     const stealthState = game.stealth?.state(game) || {};
-    const hidden = stealthState.hidden;
-    if (!inSneak && !hidden) return;
-    const ctx = this.ctx;
-    const cacheKey = `${Math.round(player.x)},${Math.round(player.y)}:${inSneak ? 1 : 0}:${hidden ? 1 : 0}:${stealthState.coverSourceId || ""}`;
-    if (this.coverHintCache.key !== cacheKey) {
-      this.coverHintCache = {
-        key: cacheKey,
-        objects: game.world.objectsNear(player.x, player.y, 5.2)
-          .filter(object => !object.removed && (object.cover || 0) >= 0.42),
-      };
+    const cacheKey = coverDisplayKey(game.world, player, stealthState);
+    if (this.coverHintCache.key !== cacheKey || this.coverHintCache.map !== game.world.coverMap) {
+      const surface = buildCoverDisplay(game.world, player,
+        stealthState.source === "cover" ? stealthState.coverId : null);
+      this.coverHintCache = { key: cacheKey, map: game.world.coverMap,
+        paths: coverDisplayPaths(surface, (x, y) => this.rawIso(x, y)) };
     }
-    for (const object of this.coverHintCache.objects) {
-      if (!usableCover(object)) continue;
-      const point = this.iso(object.x, object.y, 2);
-      const distanceFactor = clamp(1 - Math.hypot(object.x - player.x, object.y - player.y) / 5.2, 0.18, 1);
-      ctx.save();
-      ctx.globalAlpha = (hidden && object.id === stealthState.coverSourceId ? 0.7 : 0.2) * distanceFactor;
-      ctx.strokeStyle = hidden && object.id === stealthState.coverSourceId ? "#a4bb83" : "#c4a75e";
-      ctx.lineWidth = object.id === stealthState.coverSourceId ? 2 : 1;
-      ctx.setLineDash([4, 3]);
-      ctx.beginPath();
-      ctx.ellipse(point.x, point.y, 22, 9, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
+    const ctx = this.ctx, paths = this.coverHintCache.paths;
+    ctx.save();
+    ctx.translate(this.width * .5 - this.camera.x, this.height * .5 - this.camera.y);
+    ctx.fillStyle = "rgba(205,180,111,.13)";
+    ctx.fill(paths.fill);
+    ctx.strokeStyle = "rgba(223,198,131,.65)";
+    ctx.lineWidth = 1;
+    ctx.stroke(paths.outline);
+    ctx.fillStyle = "rgba(151,192,127,.2)";
+    ctx.fill(paths.activeFill);
+    ctx.strokeStyle = "rgba(172,215,145,.9)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke(paths.activeOutline);
+    ctx.restore();
   }
 
   withImpact(point, entity, amount) {
