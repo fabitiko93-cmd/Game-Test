@@ -1,9 +1,16 @@
 # Zusammenarbeit an SPERRKREIS 98
 
-Für Codearbeiten mit der kurzen Modulkarte in `ARCHITECTURE.md` beginnen. Vor
-Entscheidungen über Spielregeln die betroffenen Abschnitte in `DESIGN_PLAN.md`
-gezielt lesen; dort stehen Beschlüsse, offene Fragen und zurückgestellte Ideen.
+Für Codearbeiten mit der kurzen Modulkarte in `ARCHITECTURE.md` beginnen.
+`DESIGN_PLAN.md` nicht routinemäßig vor jeder Aufgabe oder jedem Patch lesen.
+Die Datei dokumentiert bestehende Beschlüsse, offene Fragen und spätere Ideen;
+sie ist kein Pflichtdurchlauf für technische Arbeiten. Nur bei einer konkreten,
+für die aktuelle Änderung relevanten offenen Designfrage den passenden Abschnitt
+gezielt heranziehen, sofern Gesprächskontext und kurze Projektregeln nicht genügen.
 Eine ausdrückliche Nutzeranweisung, eine Datei nicht zu lesen, hat Vorrang.
+
+Vorgemerkt am 04.10.2026: Später eine sechste Charakterklasse ergänzen. Name,
+Rolle und Fähigkeiten sind noch offen; aktuell kein Auftrag zur Implementierung.
+Beim nächsten Ausbau der Klassendefinitionen bzw. Klassenschnittstellen aufgreifen.
 
 Vom Nutzer eingebrachte oder aktiv erwogene Ideen bleiben erhalten, bis sie
 ausdrücklich gemeinsam verworfen oder nachweislich umgesetzt wurden. Zurückgestellt
