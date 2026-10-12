@@ -1,3 +1,4 @@
+import { canInteract, interactionDistance } from "./interaction.js";
 import * as Movement from "./movement.js";
 import * as WorldInput from "./world-input.js";
 import * as ItemActions from "./item-actions.js";
@@ -354,13 +355,13 @@ export class Game {
 
   contextObject() {
     const selected = this.selectedObject();
-    if (selected && distance(this.player, selected) <= GAME.interactionRange) return this.decorateAction(selected);
+    if (selected && canInteract(this.world, this.player, selected)) return this.decorateAction(selected);
     let best = null;
     let bestDistance = GAME.interactionRange;
-    for (const object of this.world.objectsNear(this.player.x, this.player.y, GAME.interactionRange)) {
+    for (const object of this.world.objectsNear(this.player.x, this.player.y, GAME.interactionRange + 1)) {
       if (object.removed || !object.interactable) continue;
-      const d = distance(this.player, object);
-      if (d < bestDistance) {
+      const d = interactionDistance(this.player, object);
+      if (d < bestDistance && canInteract(this.world, this.player, object)) {
         best = object;
         bestDistance = d;
       }
@@ -403,7 +404,7 @@ export class Game {
 
   interact(object) {
     if (!this.canAct() || !object || object.removed) return;
-    if (distance(this.player, object) > GAME.interactionRange + 0.08) {
+    if (!canInteract(this.world, this.player, object, GAME.interactionRange + .08)) {
       this.queueInteraction(object);
       return;
     }
@@ -564,9 +565,7 @@ export class Game {
     zombie.removed = true;
     this.player.kills += 1;
     if (this.player.combat.targetId === zombie.id) {
-      this.player.combat.targetId = null;
-      this.player.combat.pendingTargetId = null;
-      this.renderer.selectedId = null;
+      this.combat.end(this);
     }
     const corpse = this.world.addObject("corpse", zombie.x, zombie.y, {
       static: false,

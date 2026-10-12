@@ -49,11 +49,24 @@ export function coverAreaId(object, point) {
 }
 
 export class CoverMap {
-  constructor(world) { this.world = world; this.areaCache = new Map(); }
+  constructor(world) {
+    this.world = world; this.areaCache = new Map(); this.neighborCache = new Map();
+    this.neighborRevision = world.sightRevision;
+  }
+
+  neighbors(point) {
+    if (this.neighborRevision !== this.world.sightRevision) {
+      this.neighborCache.clear(); this.neighborRevision = this.world.sightRevision;
+    }
+    const x = Math.round(point.x), y = Math.round(point.y), key = `${x},${y}`;
+    if (!this.neighborCache.has(key)) this.neighborCache.set(key, this.world.objectsInBounds(x - 2, y - 2, x + 2, y + 2));
+    return this.neighborCache.get(key);
+  }
 
   at(point, preferredId = null) {
     let best = null, bestDistance = Infinity;
-    for (const object of this.world.objectsNear(point.x, point.y, 2)) {
+    for (const object of this.neighbors(point)) {
+      if (Math.hypot(point.x - object.x, point.y - object.y) > 2) continue;
       if (!usableCover(object)) continue;
       const d = distanceToFootprint(point, object);
       if (d > COVER_RULES.margin) continue;

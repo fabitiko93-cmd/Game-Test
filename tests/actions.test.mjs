@@ -69,6 +69,9 @@ function fixture() {
   assert.deepEqual(g.player.navigation.path, manualPath, "manual movement takes priority over combat following");
   g.elapsed = 2;
   g.approachCombatTarget({ x: 18, y: 36 }, 1);
+  assert.deepEqual(g.player.navigation.path, manualPath, "manual routes are never overridden by a timer");
+  g.clearNavigation();
+  g.approachCombatTarget({ x: 18, y: 36 }, 1);
   assert.equal(g.player.navigation.source, "combat");
   g.input.keyboardMovement = () => ({ magnitude: 1, x: 1, y: 0, run: false });
   const { x, y } = g.player;
