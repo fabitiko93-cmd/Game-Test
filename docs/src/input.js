@@ -61,7 +61,9 @@ export class InputController {
 
     this.button("attack-button", () => this.callbacks.combat?.());
     this.button("action-button", () => this.callbacks.action?.());
-    this.button("execute-button", () => this.callbacks.execute?.());
+    this.button("execute-button", element => this.callbacks.execute?.({
+      mode: element.dataset.executionAction, targetId: element.dataset.executionTarget,
+    }));
     this.button("stance-button", () => this.callbacks.stance?.());
     this.button("openfield-button", () => this.callbacks.openfield?.());
     this.button("reload-button", () => this.callbacks.reload?.());
@@ -79,8 +81,12 @@ export class InputController {
     element.addEventListener("pointerdown", event => {
       event.preventDefault();
       event.stopPropagation();
-      if (!this.enabled) return;
-      callback();
+      if (!this.enabled || element.disabled) return;
+      // A HUD command replaces any still-held world gesture. The old finger's
+      // move/up must never overwrite the command or become a ground double tap.
+      this.cancelPointer();
+      this.lastTap.time = 0;
+      callback(element);
       vibrate(7);
     });
   }

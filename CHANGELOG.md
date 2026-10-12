@@ -1,3 +1,20 @@
+# HUD-Touch und Zielfenster · 13.10.2026
+
+- Ursache des Weglaufens beim Tippen auf AUSSCHALTEN behoben: Der Button
+  erbte eine durchlässige Touchfläche vom HUD, wodurch stattdessen der Boden
+  ein Laufziel erhielt. HUD-Buttons nehmen ihre eigenen Taps entgegen.
+- HUD-Befehle beenden alte Haltegesten; deren Bewegung und Loslassen können
+  keine neue Route oder einen Doppeltap auslösen. Deaktivierte Buttons handeln nicht.
+- Der angezeigte Exekutionsbefehl gehört zu seinem konkreten Ziel. Wird ein
+  bereites Ziel zwischen Anzeige und Tap ungültig, folgt eine Erklärung statt
+  eines stillschweigenden Wechsels von AUSSCHALTEN zu ANSCHLEICHEN.
+- Gegnerkarte und Objektinfo wählen freie Randpositionen mit Abstand zu Figur,
+  Ziel, Statusicons, Lootobjekt und Steuerung. Freie Positionen bleiben stabil;
+  bei Platzmangel wird die Gegnerkarte kompakter. Der Exekutionsbutton bleibt
+  mindestens 44 Pixel hoch und verschiebt sich während des Drückens nicht.
+- Eigene kleine Layout-Zuständigkeit in `target-layout.js`, wiederverwendete
+  HUD-Geometrie und gezielte Regressionen für Touchhandler und Querformate.
+
 # Exekutionsansatz · 13.10.2026
 
 - Automatisches Anschleichen verwendet durchgehend nutzbare Deckung. Fehlt ein

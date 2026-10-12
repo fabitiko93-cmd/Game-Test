@@ -192,13 +192,23 @@ export class StealthSystem {
     };
   }
 
-  executionAction(game) {
-    const context = this.executionContext(game);
-    if (!context?.actionable) {
-      if (context?.hint) game.ui?.showToast(context.hint);
+  executionAction(game, command) {
+    const target = game.combat.target(game);
+    // A displayed AUSSCHALTEN command must never silently turn into a walk
+    // because the zombie moved/turned since the last HUD update.
+    if ((command?.targetId && command.targetId !== target?.id)
+      || (command?.mode === "execute" && !this.isExecutionReady(game, target))) {
+      game.combat.end(game, { keepTarget: true }); game.clearNavigation?.();
+      this.cancelExecution(game);
+      game.ui?.showToast(command.targetId && command.targetId !== target?.id ? "ZIEL GEWECHSELT · ERNEUT AUSWÄHLEN"
+        : executionBlockReason(game, target));
       return false;
     }
-    const target = game.combat.target(game);
+    const context = this.executionContext(game);
+    if (!context?.actionable) {
+      game.ui?.showToast(context?.hint || "SCHLEICHEN · MESSER AUSWÄHLEN · ZIEL ANTIPPEN");
+      return false;
+    }
     return context.ready ? this.beginExecution(game, target) : this.queueExecution(game, target);
   }
 

@@ -13,6 +13,7 @@ import { canInteract } from "../docs/src/interaction.js";
 import { findPlayerPath, pathToPlayerInteraction, playerSegmentClear, playerPathLength, PLAYER_PATH_RULES } from "../docs/src/player-navigation.js";
 import { pointSegmentDistance } from "../docs/src/collision.js";
 import { behindTarget } from "../docs/src/perception.js";
+import { InputController } from "../docs/src/input.js";
 
 function fixture(realWorld = false) {
   const world = new World();
@@ -268,6 +269,65 @@ test("execution rear checks preserve a horizontal facing vector's zero component
   const target = { x: 10, y: 10, facingX: 1, facingY: 0 };
   assert.equal(behindTarget({ x: 10, y: 9 }, target), false, "a side position is not behind");
   assert.equal(behindTarget({ x: 9, y: 10.7 }, target), true);
+});
+
+function withExecutionButton(game, target, run) {
+  const oldWindow = globalThis.window, oldDocument = globalThis.document;
+  const listeners = {}, element = { disabled: false, dataset: { executionAction: "execute", executionTarget: target.id },
+    addEventListener: (name, callback) => { listeners[name] = callback; } };
+  const canvas = { addEventListener() {}, setPointerCapture() {}, getBoundingClientRect: () => ({ left: 0, top: 0 }) };
+  let cancelled = 0;
+  globalThis.window = { addEventListener() {}, setTimeout: () => 1, clearTimeout: () => cancelled++ };
+  globalThis.document = { getElementById: id => id === "execute-button" ? element : null };
+  try {
+    const input = new InputController(canvas); input.enabled = true;
+    let prevented = 0, stopped = 0, executed = 0;
+    input.callbacks.execute = command => { executed++; game.executeAction(command); };
+    const press = () => listeners.pointerdown({ preventDefault: () => prevented++, stopPropagation: () => stopped++ });
+    run({ input, element, press, counts: () => ({ prevented, stopped, executed, cancelled }) });
+  } finally {
+    if (oldWindow === undefined) delete globalThis.window; else globalThis.window = oldWindow;
+    if (oldDocument === undefined) delete globalThis.document; else globalThis.document = oldDocument;
+  }
+}
+
+test("the real HUD pointer handler executes once and cancels an older held movement", () => {
+  const { game, target } = executionFixture();
+  withExecutionButton(game, target, ({ input, press, counts }) => {
+    let worldMoves = 0, worldTaps = 0;
+    input.callbacks.holdStart = () => game.setDestination({ x: 9, y: 10 }, { guided: true });
+    input.callbacks.holdMove = () => { worldMoves++; game.setDestination({ x: 7, y: 10 }); };
+    input.callbacks.holdEnd = () => game.endGuidedMovement();
+    input.callbacks.tap = () => worldTaps++;
+    const finger = { pointerId: 1, pointerType: "touch", button: 0, clientX: 300, clientY: 200, preventDefault() {} };
+    input.pointerDown(finger); input.beginHold(1); input.lastTap.time = performance.now();
+    press(); input.pointerMove({ ...finger, clientX: 440 }); input.pointerUp(finger);
+    assert.equal(counts().executed, 1); assert.equal(counts().prevented, 1); assert.equal(counts().stopped, 1);
+    assert.equal(target.removed, true); assert.equal(game.player.navigation.path.length, 0);
+    assert.equal(worldMoves, 0); assert.equal(worldTaps, 0); assert.equal(input.lastTap.time, 0);
+  });
+});
+
+test("a displayed AUSSCHALTEN command never downgrades into walking after a target turns", () => {
+  const { game, target, messages } = executionFixture();
+  withExecutionButton(game, target, ({ press }) => {
+    game.setDestination({ x: 9, y: 10 }); target.facingY = -1;
+    press();
+    assert.equal(target.removed, false); assert.equal(game.player.navigation.path.length, 0);
+    assert.equal(game.player.stealthState.execution, null); assert.equal(game.player.combat.enabled, false);
+    assert.ok(messages.at(-1).includes("HINTER DAS ZIEL"));
+  });
+});
+
+test("disabled HUD controls and a stale target never issue a movement or attack", () => {
+  const { game, target } = executionFixture();
+  withExecutionButton(game, target, ({ element, press, counts }) => {
+    element.disabled = true; press(); assert.equal(counts().executed, 0);
+    element.disabled = false;
+    const next = createZombie(10, 11); game.zombies.push(next); game.combat.selectTarget(game, next);
+    press(); assert.equal(target.removed, false); assert.equal(next.removed, false);
+    assert.equal(game.player.navigation.path.length, 0); assert.equal(game.player.combat.enabled, false);
+  });
 });
 
 test("combat ends on a kill or lost pursuit and does not attack a later selected zombie", () => {
