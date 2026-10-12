@@ -14,7 +14,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Laufziel, Weg und Ankunft | `player-navigation.js`, `movement.js` | Vierteltile-Spielerwege, präzise Ziele, begrenzte Deckungspräferenz; `navigation.js` bleibt die gröbere Zombie-Wegsuche |
 | Deckungszone und Hide | `cover.js`, `stealth.js`, `cover-display.js` | `CoverMap.at` und `StealthSystem.refresh`; gecachte Bodenflächen aus derselben Geometrie, Darstellung in `render.js` |
 | Sicht, Verdacht, Verfolgung, Deckungssuche | `perception.js`, `cover-awareness.js`, `ai.js` | Basiswahrnehmung, Gedächtnis pro Zombie, Zustandswechsel; Sichtlinie in `world.js` |
-| Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
+| Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Ansatz prüft Ziel vor Bewegung in `movement.js`, verdeckte Wege und Zielumfahrung über `player-navigation.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
 | Wunden, Behandlung, Bedürfnisse, Fähigkeiten | `character.js`, `item-actions.js` | Bedürfnisablauf in `game.js`; Status-/Medizinanzeige in `ui.js` |
 | Gegenstände, Ausrüstung, Munition, Waffenmods | `inventory.js`, `data.js`, `item-actions.js` | Rucksack-/Waffenmenüs in `ui.js` |
 | Weltobjekte, Gebäude, Fahrzeuge, Loot | `world.js`, `data.js`, `interaction.js` | Gemeinsame Zugangsprüfung für Anzeige, Annäherung und Benutzung; Punkt-/Streckenkollision in `collision.js`, Fußabdrücke in `cover.js` |

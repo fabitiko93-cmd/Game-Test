@@ -11,6 +11,8 @@ import { Navigator } from "../docs/src/navigation.js";
 import { addItem, createItem, equipItem } from "../docs/src/inventory.js";
 import { canInteract } from "../docs/src/interaction.js";
 import { findPlayerPath, pathToPlayerInteraction, playerSegmentClear, playerPathLength, PLAYER_PATH_RULES } from "../docs/src/player-navigation.js";
+import { pointSegmentDistance } from "../docs/src/collision.js";
+import { behindTarget } from "../docs/src/perception.js";
 
 function fixture(realWorld = false) {
   const world = new World();
@@ -136,14 +138,14 @@ test("loot cannot be reached through a wall or a closed intervening door", () =>
 });
 
 function executionFixture() {
-  const { game, world } = fixture();
+  const { game, world, messages } = fixture();
   Object.assign(game.player, { x: 10, y: 10, stance: "sneak" });
   world.addObject("bush", 10, 10, { cover: .74 });
   const knife = createItem("kitchen_knife"); addItem(game.player, knife); equipItem(game.player, knife.id);
   const target = createZombie(10, 11.15);
   Object.assign(target, { facingX: 0, facingY: 1, state: "search", sightMemory: { visible: false } });
   game.zombies.push(target); game.combat.selectTarget(game, target); game.stealth.refresh(game);
-  return { game, world, target };
+  return { game, world, target, messages };
 }
 
 test("the ready execution kills immediately at the advertised range and cancels a pending normal swing", () => {
@@ -170,6 +172,102 @@ test("execution approach can be cancelled by a new manual destination", () => {
   assert.equal(game.player.stealthState.execution, null);
   runMovement(game);
   assert.equal(target.removed, false);
+});
+
+function executionTick(game, ai = false) {
+  game.elapsed += .05; game.world.update(.05);
+  game.updateMovement(.05); game.combat.update(game, .05); game.stealth.update(game, .05);
+  if (ai) game.zombieSystem.update(game, .05);
+}
+
+test("automatic execution completes its covered approach before the zombie can attack", () => {
+  const { game, world, target } = executionFixture(), hp = game.player.hp;
+  world.addObject("bush", 10, 8.5, { cover: .74 }); game.player.y = 8.5;
+  target.stateTimer = 100; target.stateTime = 0; game.stealth.refresh(game);
+  assert.equal(game.stealth.executionAction(game), true);
+  for (let i = 0; i < 100 && !target.removed; i++) executionTick(game, true);
+  assert.equal(target.removed, true);
+  assert.equal(game.player.hp, hp); assert.equal(game.player.combat.enabled, false);
+  assert.equal(game.player.navigation.path.length, 0); assert.equal(game.player.stealthState.execution, null);
+});
+
+test("automatic approach stays put when reaching the target's back would lose hide", () => {
+  const { game, target, messages } = executionFixture(), start = { x: game.player.x, y: game.player.y };
+  target.y = 10.8; target.facingY = -1;
+  game.setDestination({ x: 9, y: 10 });
+  Object.assign(game.player.combat, { enabled: true, pendingAttack: .001, pendingTargetId: target.id });
+  assert.equal(game.stealth.executionAction(game), false);
+  assert.equal(game.player.navigation.path.length, 0); assert.equal(game.player.stealthState.execution, null);
+  assert.equal(game.player.combat.enabled, false); assert.equal(game.player.combat.pendingAttack, 0);
+  assert.deepEqual({ x: game.player.x, y: game.player.y }, start);
+  assert.ok(messages.some(message => message.includes("WEG")));
+});
+
+test("a covered approach circles a nearby target and completes instead of crossing its body", () => {
+  const { game, world, target } = executionFixture();
+  target.y = 10.3; target.facingY = -1;
+  assert.equal(game.stealth.executionAction(game), true);
+  const path = game.player.navigation.path, start = { x: game.player.x, y: game.player.y };
+  assert.equal(allCovered(world, start, path), true);
+  let previous = start;
+  for (const point of path) {
+    assert.ok(pointSegmentDistance(target, previous, point) >= .3 - .00001);
+    previous = point;
+  }
+  for (let i = 0; i < 100 && !target.removed; i++) executionTick(game);
+  assert.equal(target.removed, true);
+});
+
+test("turning the target stops an obsolete approach before walking to its old rear position", () => {
+  const { game, world, target, messages } = executionFixture();
+  world.addObject("bush", 10, 8.5, { cover: .74 }); game.player.y = 8.5; game.stealth.refresh(game);
+  assert.equal(game.stealth.executionAction(game), true);
+  for (let i = 0; i < 5; i++) executionTick(game);
+  target.facingY = -1;
+  for (let i = 0; i < 30; i++) executionTick(game);
+  assert.equal(target.removed, false); assert.equal(game.player.stealthState.hidden, true);
+  assert.ok(game.player.y < 9.2, "do not finish the stale route before replanning");
+  assert.equal(game.player.stealthState.execution, null); assert.equal(game.player.navigation.path.length, 0);
+  assert.ok(messages.some(message => message.includes("WEG")));
+});
+
+test("the active openfield perk permits a complete execution approach outside cover", () => {
+  const { game, target } = executionFixture();
+  target.y = 10.8; target.facingY = -1;
+  game.player.perks = { openfieldStealth: true };
+  assert.equal(game.stealth.activateOpenfield(game), true);
+  assert.equal(game.stealth.executionAction(game), true);
+  for (let i = 0; i < 100 && !target.removed; i++) executionTick(game);
+  assert.equal(target.removed, true);
+  assert.equal(game.player.stealthState.openfieldRemaining, 0);
+});
+
+test("an expiring openfield perk does not start a route it cannot conceal", () => {
+  const { game, target } = executionFixture();
+  target.y = 10.8; target.facingY = -1;
+  game.player.perks = { openfieldStealth: true }; game.stealth.activateOpenfield(game);
+  game.player.stealthState.openfieldRemaining = .15;
+  assert.equal(game.stealth.executionAction(game), false);
+  assert.equal(game.player.navigation.path.length, 0);
+});
+
+test("an approach follows a walking zombie to its current rear and finishes", () => {
+  const { game, world, target } = executionFixture();
+  for (const y of [8.5, 10, 11.5, 13, 14.5]) world.addObject("bush", 10, y, { cover: .74 });
+  game.player.y = 8.5; game.stealth.refresh(game);
+  assert.equal(game.stealth.executionAction(game), true);
+  for (let i = 0; i < 200 && !target.removed; i++) {
+    target.y += .025;
+    executionTick(game);
+  }
+  assert.equal(target.removed, true);
+  assert.equal(game.player.stealthState.execution, null); assert.equal(game.player.navigation.path.length, 0);
+});
+
+test("execution rear checks preserve a horizontal facing vector's zero component", () => {
+  const target = { x: 10, y: 10, facingX: 1, facingY: 0 };
+  assert.equal(behindTarget({ x: 10, y: 9 }, target), false, "a side position is not behind");
+  assert.equal(behindTarget({ x: 9, y: 10.7 }, target), true);
 });
 
 test("combat ends on a kill or lost pursuit and does not attack a later selected zombie", () => {

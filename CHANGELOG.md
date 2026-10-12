@@ -1,3 +1,17 @@
+# Exekutionsansatz · 13.10.2026
+
+- Automatisches Anschleichen verwendet durchgehend nutzbare Deckung. Fehlt ein
+  verdeckter Weg hinter das Ziel, bleibt die Figur stehen und nennt den Grund.
+  Freifeldtarnung erlaubt offene Wege, wenn ihre Restdauer dafür ausreicht.
+- Drehungen und Bewegung des Ziels werden vor dem nächsten Bewegungsschritt
+  berücksichtigt; veraltete Wege werden gestoppt und zeitlich begrenzt neu geplant.
+  Der Ansatz läuft um den Zombie herum statt durch dessen Position.
+- Ein Exekutionsversuch ersetzt alte Lauf- und normale Angriffsaufträge, auch
+  wenn kein geeigneter Ansatz möglich ist. Bereites AUSSCHALTEN tötet weiterhin sofort.
+- Hinter-dem-Ziel-Prüfung korrigiert für exakt waagerechte Blickrichtungen.
+  Regressionen prüfen erfolgreiche Ansätze, bewegte Ziele, Abbrüche, Freifeldtarnung
+  und den Ablauf mit Wahrnehmung und Kampf.
+
 # Gameplay-Korrekturen · 12.10.2026
 
 - Eigene Spieler-Wegsuche in Viertel-Tiles, präzise getippte Ziele, geprüfte
