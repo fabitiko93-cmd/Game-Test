@@ -1,3 +1,28 @@
+# Gameplay-Korrekturen · 12.10.2026
+
+- Eigene Spieler-Wegsuche in Viertel-Tiles, präzise getippte Ziele, geprüfte
+  Strecken statt bloßer freier Wegpunkte. Kleine Zwischenräume werden nutzbar;
+  Fahrzeuge lassen sich auch an Ecken ohne Kollisionssprünge umlaufen.
+- Schleichen bevorzugt gedeckte Verbindungen. Umwege bleiben auf 25 Prozent
+  plus ein halbes Tile gegenüber dem normalen Weg begrenzt. Kollisions- und
+  Deckungsabfragen werden wiederverwendet; Zombie-Wegsuche bleibt separat.
+- Lootzugänge werden aus erreichbaren Standorten bestimmt, große Objekte vom
+  Rand aus bedient. Die gemeinsame Zugangsprüfung verhindert Loot durch Wände.
+  Automatische Türen funktionieren auch entlang geglätteter Wege.
+- Manuelle Laufaufträge bleiben bis zur Ankunft vorrangig; automatische
+  Kampfannäherung überschreibt sie nicht nach einem Timer.
+- Eine gemeinsame Bereitschaftsprüfung für Exekutionsanzeige und Aktion.
+  Bereites AUSSCHALTEN tötet sofort; die anschließende Animation ist rein optisch.
+  Normale ausstehende Angriffe werden beim Ansatz und Zugriff verworfen.
+- Kampfmodus und Angriffsaufträge enden nach dem Tod des ausgewählten Ziels
+  oder verlorener aktiver Verfolgung. Geladene Saves starten ohne alte
+  Angriffsaufträge; ein ausgewähltes Ziel darf bestehen bleiben.
+- Saubere Verbände stoppen die Blutung ihrer Wunde vollständig, auch in alten
+  Saves. Versorgung bleibt im Menü pro Wunde. Notverbände können ersetzt werden;
+  blutende Wunden stehen oben und ihr Zustand wird ausdrücklich erklärt.
+- Gesundheit, Schmerzen, Infektionsregeln, Geräuschwerte, Ausdauerwerte,
+  Klassen und Save-v4 bleiben erhalten. Ergänzte Regressionen für die Abläufe.
+
 # Deckungsanzeige · 04.10.2026
 
 - Im Schleichen zeigen zusammenhängende Bodenflächen den nutzbaren Hide-Bereich

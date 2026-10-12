@@ -3,6 +3,7 @@ import { CoverMap, distanceToFootprint, segmentHitsVehicle } from "./cover.js";
 import { LOOT_TABLES, OBJECT_LABELS } from "./data.js";
 import { createItem } from "./inventory.js";
 import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js";
+import { obstacleRadius, segmentBlocked } from "./collision.js";
 
 export const BUILDINGS = [
   { id: "police", name: "POLIZEIPOSTEN", x: 15, y: 4, w: 10, h: 9, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
@@ -289,6 +290,7 @@ export class World {
     };
     if (options.container && !options.items) object.items = this.rollLoot(options.container);
     this.objects.push(object);
+    if (object.solid || object.cover > 0) this.touchSight();
     const cellKey = this.cellKey(x, y);
     if (!this.objectGrid.has(cellKey)) this.objectGrid.set(cellKey, []);
     this.objectGrid.get(cellKey).push(object);
@@ -397,17 +399,39 @@ export class World {
     return false;
   }
 
-  isWalkable(x, y, radius = 0.27, ignoreId = null) {
+  isWalkable(x, y, radius = 0.27, ignoreId = null, options = {}) {
     if (this.tileAt(x, y) === "water") return false;
-    for (const object of this.objectsNear(x, y, radius + 1)) {
-      if (object.removed || !object.solid || object.id === ignoreId) continue;
-      if (object.type === "car") {
-        if (distanceToFootprint({ x, y }, object) < radius) return false;
-        continue;
+    // A car's footprint can extend beyond the ordinary point-neighbor radius.
+    for (const car of this.vehicles) {
+      if (!car.removed && car.solid && car.id !== ignoreId
+        && distanceToFootprint({ x, y }, car) < radius) return false;
+    }
+    const reach = Math.ceil(radius + .43), cx = Math.round(x), cy = Math.round(y);
+    for (let oy = cy - reach; oy <= cy + reach; oy++) for (let ox = cx - reach; ox <= cx + reach; ox++) {
+      for (const object of this.objectGrid.get(`${ox},${oy}`) || []) {
+        if (object.removed || !object.solid || object.id === ignoreId || object.type === "car") continue;
+        if (options.allowDoors && object.type === "door" && !object.locked) continue;
+        if (Math.hypot(x - object.x, y - object.y) < radius + obstacleRadius(object)) return false;
       }
-      let objectRadius = 0.43;
-      if (object.type === "tree" || object.type === "streetlamp") objectRadius = 0.34;
-      if (distance({ x, y }, object) < radius + objectRadius) return false;
+    }
+    return true;
+  }
+
+  canWalkSegment(a, b, radius = .27, options = {}) {
+    const count = Math.max(1, Math.ceil(distance(a, b) / .2));
+    for (let i = 0; i <= count; i++) {
+      const amount = i / count;
+      if (this.tileAt(a.x + (b.x - a.x) * amount, a.y + (b.y - a.y) * amount) === "water") return false;
+    }
+    for (const car of this.vehicles) {
+      if (!car.removed && car.solid && car.id !== options.ignoreId && segmentBlocked(a, b, car, radius)) return false;
+    }
+    const padding = radius + .43;
+    for (const object of this.objectsInBounds(Math.min(a.x, b.x) - padding, Math.min(a.y, b.y) - padding,
+      Math.max(a.x, b.x) + padding, Math.max(a.y, b.y) + padding)) {
+      if (!object.solid || object.type === "car" || object.id === options.ignoreId) continue;
+      if (options.allowDoors && object.type === "door" && !object.locked) continue;
+      if (segmentBlocked(a, b, object, radius)) return false;
     }
     return true;
   }

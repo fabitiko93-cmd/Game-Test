@@ -1,4 +1,4 @@
-import { gainSkill, treatWound as treatWoundWithItem, treatWithItem } from "./character.js";
+import { gainSkill, totalBleeding, treatWound as treatWoundWithItem, treatWithItem } from "./character.js";
 import { ITEMS } from "./data.js";
 import { activeWeapon, addItem, compatibleMods, equipItem, findItem, installMod, itemDefinition, removeItem, removeMod, unequipSlot } from "./inventory.js";
 import { clamp } from "./util.js";
@@ -39,6 +39,7 @@ export function treatWound(game, woundId, itemType) {
     return;
   }
   removeItem(game.player, item.id, 1);
+  game.player.bleeding = totalBleeding(game.player);
   game.ui.showToast(result.message);
   game.ui.refreshAll(game.player, game);
   game.sound("consume");
@@ -76,6 +77,7 @@ export function useItem(game, id) {
     }
     consume = true;
     message = result.message;
+    game.player.bleeding = totalBleeding(game.player);
     game.sound("consume");
   } else if (definition.type === "ammo" || definition.type === "magazine") {
     const result = game.combat.reload(game);

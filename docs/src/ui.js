@@ -13,7 +13,7 @@ import {
   roundsInWeapon,
   weaponCapacity,
 } from "./inventory.js";
-import { backgroundName, skillRank, visibleInfectionState, woundDisplay, woundTreatmentOptions } from "./character.js";
+import { backgroundName, skillRank, visibleInfectionState, woundBleeding, woundDisplay, woundTreatmentOptions } from "./character.js";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -545,7 +545,7 @@ export class GameUI {
       empty.textContent = "KEINE DOKUMENTIERTEN VERLETZUNGEN";
       this.el.wound_list.append(empty);
     } else {
-      for (const wound of player.wounds) {
+      for (const wound of [...player.wounds].sort((a, b) => woundBleeding(b) - woundBleeding(a))) {
         const entry = document.createElement("article");
         entry.className = "wound-entry";
         const copy = document.createElement("div");
@@ -553,8 +553,8 @@ export class GameUI {
         title.textContent = woundDisplay(wound, player);
         const detail = document.createElement("small");
         detail.textContent = wound.bandaged
-          ? wound.bandageType === "cloth" ? "Notverband hält die Blutung nur gedämpft." : "Blutung gedämpft · bei Bedarf später neu verbinden."
-          : "Offen · zuerst Blutung stillen.";
+          ? wound.bandageType === "cloth" ? "Notverband · Restblutung. Mit sauberem Verband ersetzen." : "Blutung gestoppt · Wunde weiterhin vorhanden."
+          : woundBleeding(wound) > 0 ? "Offen und blutend · zuerst verbinden." : "Offene Wunde · keine aktive Blutung.";
         copy.append(title, detail);
         entry.append(copy);
         const actions = document.createElement("div");

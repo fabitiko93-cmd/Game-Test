@@ -2,6 +2,7 @@ import { gainSkill } from "./character.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { behindTarget } from "./perception.js";
 import { clamp, distance, vibrate } from "./util.js";
+import { pathToPlayerRegion, playerPathLength } from "./player-navigation.js";
 
 export const STEALTH_RULES = Object.freeze({
   minimumCover: 0.42,
@@ -39,6 +40,20 @@ export function ensureStealthState(player) {
 export function executionWeapon(player) {
   const weapon = activeWeapon(player);
   return itemDefinition(weapon)?.execution ? weapon : null;
+}
+
+// One contract for the ready indicator and the actual committed execution.
+export function executionBlockReason(game, target) {
+  const player = game.player;
+  if (!target || target.removed) return "KEIN GÜLTIGES ZIEL";
+  if (!ensureStealthState(player).hidden || player.stance !== "sneak") return "VERBORGEN ANSCHLEICHEN";
+  if (!executionWeapon(player)) return "MESSER FEHLT";
+  if (player.stamina < STEALTH_RULES.executionStamina) return "ZU WENIG AUSDAUER";
+  if (target.state === "chase" || target.sightMemory?.visible) return "ZIEL HAT DICH ENTDECKT";
+  if (distance(player, target) > STEALTH_RULES.executionRange) return "NÄHER AN DAS ZIEL";
+  if (!behindTarget(player, target)) return "HINTER DAS ZIEL GEHEN";
+  if (!game.world.hasLineOfSight(player, target)) return "KEIN FREIER ZUGRIFF";
+  return null;
 }
 
 export class StealthSystem {
@@ -138,7 +153,7 @@ export class StealthSystem {
         actionable: false,
         label: state.execution.phase === "windup" ? "AUSSCHALTEN" : "ANSCHLEICHEN",
         hint: state.execution.phase === "windup" ? "NICHT BEWEGEN" : "VERBORGENER ANSATZ",
-        ready: true,
+        ready: false,
       };
     }
     if (!target || target.removed) return null;
@@ -186,40 +201,14 @@ export class StealthSystem {
   }
 
   isExecutionReady(game, target) {
-    const player = game.player;
-    const state = this.state(game);
-    return Boolean(target
-      && !target.removed
-      && state.hidden
-      && player.stance === "sneak"
-      && executionWeapon(player)
-      && player.stamina >= STEALTH_RULES.executionStamina
-      && target.state !== "chase"
-      && !target.sightMemory?.visible
-      && distance(player, target) <= STEALTH_RULES.executionRange
-      && behindTarget(player, target)
-      && game.world.hasLineOfSight(player, target));
+    return executionBlockReason(game, target) === null;
   }
 
   approachCandidates(game, target) {
-    const player = game.player;
-    const candidates = [];
-    const centerX = Math.round(target.x);
-    const centerY = Math.round(target.y);
-    for (let y = centerY - 2; y <= centerY + 2; y++) {
-      for (let x = centerX - 2; x <= centerX + 2; x++) {
-        const point = { x, y };
-        const targetDistance = distance(point, target);
-        if (targetDistance < 0.55 || targetDistance > STEALTH_RULES.executionRange) continue;
-        if (!behindTarget(point, target) || !game.world.isPathCellWalkable(x, y, { allowDoors: false })) continue;
-        if (!game.world.hasLineOfSight(point, target)) continue;
-        const path = game.navigator.findPath(game.world, player, point, { allowDoors: false, maxNodes: 1800 });
-        const sameCell = Math.round(player.x) === x && Math.round(player.y) === y;
-        if (!path.length && !sameCell) continue;
-        candidates.push({ point, path, score: path.length + targetDistance * 0.15 });
-      }
-    }
-    return candidates.sort((a, b) => a.score - b.score);
+    const path = pathToPlayerRegion(game.world, game.player, target, STEALTH_RULES.executionRange,
+      point => distance(point, target) >= .55 && behindTarget(point, target)
+        && game.world.hasLineOfSight(point, target), { allowDoors: false, preferCover: true });
+    return path.length ? [{ point: path.at(-1), path, score: playerPathLength(game.player, path) }] : [];
   }
 
   queueExecution(game, target, replanning = false) {
@@ -238,7 +227,7 @@ export class StealthSystem {
     game.player.navigation.runRequested = false;
     game.player.navigation.guided = false;
     game.player.navigation.source = "execution";
-    game.player.combat.enabled = false;
+    game.combat.end(game, { keepTarget: true });
     game.renderer.destination = { ...candidate.point };
     game.renderer.destinationRun = false;
     state.execution = {
@@ -255,16 +244,12 @@ export class StealthSystem {
     if (!this.isExecutionReady(game, target)) return false;
     const state = this.state(game);
     game.clearNavigation?.();
-    state.execution = {
-      targetId: target.id,
-      phase: "windup",
-      timer: STEALTH_RULES.executionWindup,
-      repathAt: 0,
-    };
-    game.player.combat.enabled = false;
+    state.execution = null;
+    const result = game.combat.execute(game, target);
+    if (!result.ok) { game.ui?.showToast(result.message); return false; }
+    // The target is already dead; this timer is presentation, never a vulnerable windup.
     game.player.combat.attackTimer = STEALTH_RULES.executionWindup;
-    this.facePlayer(game.player, target);
-    game.ui?.showMessage("LAUTLOSER ZUGRIFF", 0.7);
+    state.attackLock = Math.max(state.attackLock, STEALTH_RULES.executionWindup);
     return true;
   }
 
@@ -293,15 +278,8 @@ export class StealthSystem {
       }
       return;
     }
-    this.facePlayer(player, target);
-    execution.timer -= delta;
-    if (distance(player, target) > STEALTH_RULES.executionRange + 0.14 || !behindTarget(player, target) || !game.world.hasLineOfSight(player, target)) {
-      this.cancelExecution(game, "ZIEL HAT SICH GEDREHT", true);
-      return;
-    }
-    if (execution.timer > 0) return;
-    state.execution = null;
-    game.combat.execute(game, target);
+    // Complete an old saved windup using the same current readiness contract.
+    if (!this.beginExecution(game, target)) this.cancelExecution(game, "ZUGRIFF NICHT MEHR MÖGLICH");
   }
 
   cancelExecution(game, message, breakCover = false) {

@@ -2,6 +2,7 @@ import { gainSkill, skillValue } from "./character.js";
 import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponStats } from "./inventory.js";
 import { behindTarget } from "./perception.js";
 import { clamp, distance, vibrate } from "./util.js";
+import { executionBlockReason, STEALTH_RULES } from "./stealth.js";
 
 export class CombatSystem {
   target(game) {
@@ -10,6 +11,7 @@ export class CombatSystem {
 
   selectTarget(game, zombie) {
     game.player.combat.targetId = zombie?.id || null;
+    game.player.combat.waitingForTarget = false;
     game.renderer.selectedId = zombie?.id || null;
     game.player.combat.aim = 0;
   }
@@ -21,15 +23,26 @@ export class CombatSystem {
       const nearby = game.nearestZombie(7);
       if (nearby && game.world.hasLineOfSight(game.player, nearby)) this.selectTarget(game, nearby);
     }
-    if (!combat.enabled) {
-      combat.targetId = null;
-      combat.pendingTargetId = null;
-      combat.pendingAttack = 0;
-      combat.aim = 0;
-      if (game.renderer.selectedId?.startsWith("zombie")) game.renderer.selectedId = null;
+    if (!combat.enabled) this.end(game);
+    else {
+      combat.hadPursuit = false; combat.waitingForTarget = !this.target(game);
+      if (game.player.navigation?.source === "manual") game.clearNavigation?.();
     }
     game.ui.showMessage(combat.enabled ? (this.target(game) ? "Kampfmodus · Ziel erfasst" : "Kampfmodus · Ziel antippen") : "Kampfmodus beendet", 1.5);
     game.sound("equip");
+  }
+
+  end(game, { keepTarget = false } = {}) {
+    const combat = game.player.combat, targetId = combat.targetId;
+    combat.enabled = false;
+    combat.pendingTargetId = null; combat.pendingAttack = 0;
+    combat.attackTimer = 0; combat.aim = 0;
+    combat.hadPursuit = false; combat.waitingForTarget = false;
+    if (!keepTarget) {
+      combat.targetId = null;
+      if (game.renderer.selectedId === targetId) game.renderer.selectedId = null;
+    }
+    if (game.player.navigation?.source === "combat") game.clearNavigation?.();
   }
 
   update(game, delta) {
@@ -39,13 +52,20 @@ export class CombatSystem {
     combat.attackTimer = Math.max(0, combat.attackTimer - delta);
     combat.recoil = Math.max(0, combat.recoil - delta * 1.5);
 
+    const manualMovement = game.player.navigation?.source === "manual"
+      && (game.player.navigation.path.length || player.moving || game.player.navigation.manualUntil > game.elapsed);
+    const pursuit = game.zombies.some(z => !z.removed && (z.state === "chase" || z.sightMemory?.visible));
+    if (combat.enabled && pursuit) combat.hadPursuit = true;
+    if (combat.enabled && ((!this.target(game) && !combat.waitingForTarget) || (combat.hadPursuit && !pursuit))) this.end(game);
+    if (manualMovement) { combat.pendingAttack = 0; combat.pendingTargetId = null; }
+
     if (combat.pendingAttack > 0) {
       combat.pendingAttack -= delta;
       if (combat.pendingAttack <= 0) this.resolveMelee(game);
     }
 
     const target = this.target(game);
-    if (!combat.enabled || !target) {
+    if (!combat.enabled || !target || manualMovement || player.stealthState?.execution) {
       combat.aim = Math.max(0, combat.aim - delta * 1.7);
       return;
     }
@@ -89,7 +109,6 @@ export class CombatSystem {
   }
 
   resolveMelee(game) {
-    game.stealth?.onAttack(game);
     const player = game.player;
     const combat = player.combat;
     const target = game.zombies.find(zombie => zombie.id === combat.pendingTargetId && !zombie.removed);
@@ -99,7 +118,8 @@ export class CombatSystem {
     const definition = itemDefinition(weapon);
     const stats = weaponStats(weapon);
     const range = stats?.range || 0.88;
-    if (distance(player, target) > range + 0.28) return;
+    if (distance(player, target) > range + 0.28 || !game.world.hasLineOfSight(player, target)) return;
+    game.stealth?.onAttack(game);
 
     this.facePlayer(player, target);
     const skill = skillValue(player, definition?.skill || "blunt");
@@ -126,10 +146,11 @@ export class CombatSystem {
     const definition = itemDefinition(weapon);
     const stats = weaponStats(weapon);
     if (!target || target.removed || !weapon || !definition?.execution || !stats) return { ok: false, message: "KEIN AUSFÜHRUNGSWERKZEUG" };
-    if (distance(player, target) > (stats.range || 1) + 0.12) return { ok: false, message: "ZU WEIT FÜR AUSSCHALTUNG" };
-    if (player.stamina < 18) return { ok: false, message: "ZU WENIG AUSDAUER" };
+    const blocked = executionBlockReason(game, target);
+    if (blocked) return { ok: false, message: blocked };
+    this.end(game, { keepTarget: true });
     game.stealth?.onAttack(game);
-    player.stamina = Math.max(0, player.stamina - 18);
+    player.stamina = Math.max(0, player.stamina - STEALTH_RULES.executionStamina);
     const skill = skillValue(player, definition.skill || "blades");
     const damage = Math.max(target.hp + 1, stats.damage * (2.6 + skill * 0.012));
     this.facePlayer(player, target);

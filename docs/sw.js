@@ -1,8 +1,8 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "4a2c09ae8cccbeb34fcd";
+const BUILD_ID = "7bbb94fc0fb48ac0abaf";
 const FILES = [
   "./assets/icon.svg",
-  "./build/main-YWDY5XEH.js",
+  "./build/main-PHTHLFIE.js",
   "./build/style-S6G7BV56.css",
   "./index.html",
   "./manifest.webmanifest"

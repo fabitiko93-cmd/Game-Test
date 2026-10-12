@@ -194,7 +194,8 @@ scenario("searching zombie remains executable from behind; attack, not approach,
   duck(g); g.stealth.activateOpenfield(g); g.combat.selectTarget(g, z);
   assert.equal(g.stealth.isExecutionReady(g, z), true);
   assert.equal(g.stealth.beginExecution(g, z), true);
-  assert.equal(g.player.stealthState.openfieldRemaining, 10);
+  assert.equal(z.removed, true, "the ready action executes immediately");
+  assert.equal(g.player.stealthState.openfieldRemaining, 0);
   g.stealth.update(g, .6);
   assert.equal(z.removed, true); assert.equal(g.player.stealthState.hidden, false);
   assert.ok(g.player.stealthState.openfieldCooldown > 29);

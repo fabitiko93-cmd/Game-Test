@@ -11,13 +11,13 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Aufgabe | Zuständige Module | Relevante Verbindung |
 |---|---|---|
 | Tap, Doppeltap, Halten, Kamera | `input.js`, `world-input.js` | Eingabeereignis → Ziel/Interaktion/Kamera; Bildschirmkoordinaten in `render.js` |
-| Laufziel, Weg und Ankunft | `navigation.js`, `movement.js` | `setDestination`, `updateMovement`, `arriveAtDestination`; Kollision in `world.js` |
+| Laufziel, Weg und Ankunft | `player-navigation.js`, `movement.js` | Vierteltile-Spielerwege, präzise Ziele, begrenzte Deckungspräferenz; `navigation.js` bleibt die gröbere Zombie-Wegsuche |
 | Deckungszone und Hide | `cover.js`, `stealth.js`, `cover-display.js` | `CoverMap.at` und `StealthSystem.refresh`; gecachte Bodenflächen aus derselben Geometrie, Darstellung in `render.js` |
 | Sicht, Verdacht, Verfolgung, Deckungssuche | `perception.js`, `cover-awareness.js`, `ai.js` | Basiswahrnehmung, Gedächtnis pro Zombie, Zustandswechsel; Sichtlinie in `world.js` |
 | Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
 | Wunden, Behandlung, Bedürfnisse, Fähigkeiten | `character.js`, `item-actions.js` | Bedürfnisablauf in `game.js`; Status-/Medizinanzeige in `ui.js` |
 | Gegenstände, Ausrüstung, Munition, Waffenmods | `inventory.js`, `data.js`, `item-actions.js` | Rucksack-/Waffenmenüs in `ui.js` |
-| Weltobjekte, Gebäude, Fahrzeuge, Loot | `world.js`, `data.js` | Kollisions-/Sichtgeometrie in `cover.js`; Optik in `render.js` |
+| Weltobjekte, Gebäude, Fahrzeuge, Loot | `world.js`, `data.js`, `interaction.js` | Gemeinsame Zugangsprüfung für Anzeige, Annäherung und Benutzung; Punkt-/Streckenkollision in `collision.js`, Fußabdrücke in `cover.js` |
 | HUD, Statusicons, Menüs | `ui.js`, `status-icons.js`, `docs/style.css` | Canvas-Icons in `render.js`; DOM-Quelle in `web/index.html` |
 | Missionsfortschritt | `missions.js`, `game.js` | `updateMission`; Missionsmenü in `ui.js` |
 | Speichern und Laden | `save.js`, `game-state.js`, `world.js` | `serialize`/`load`, Weltobjekte und Zustand; Save-Version in `config.js` |
@@ -58,6 +58,8 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
 - `actions.test.mjs`: bestehende Game-Aufrufe für Bewegung, Touch, Items und Save-Roundtrip.
 - `build.test.mjs`: reproduzierbare Hashes, automatische Erweiterung, Offlinebetrieb
   und sicherer Wechsel zwischen vollständigen Releases.
+- `gameplay-regression.test.mjs`: präzise Deckungswege, Lootzugänge, Exekution,
+  automatisches Kampfende sowie wirksame Verbände und bestehende Spielstände.
 - `.github/workflows/verify.yml`: alle Tests, JavaScript-Syntax und erforderliche
   Spieldateien. Bei reinen Dokumentationsänderungen genügt eine Diff-Prüfung.
 - Browserprüfung auf die veränderte Bedienung oder Darstellung begrenzen.

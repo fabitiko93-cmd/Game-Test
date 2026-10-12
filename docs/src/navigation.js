@@ -11,7 +11,7 @@ const heuristic = (a, b) => {
   return Math.max(dx, dy) + (Math.SQRT2 - 1) * Math.min(dx, dy);
 };
 
-class MinHeap {
+export class MinHeap {
   constructor() {
     this.items = [];
   }

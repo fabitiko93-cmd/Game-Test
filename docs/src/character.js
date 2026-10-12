@@ -186,13 +186,22 @@ export function inflictZombieAttack(player, gameMinutes, random = Math.random, d
   };
 }
 
+export function woundBleeding(wound) {
+  if (wound.bandaged && wound.bandageType !== "cloth") return 0;
+  return (wound.bleed || 0) * (wound.bandaged ? .08 : 1);
+}
+
+export function totalBleeding(player) {
+  return player.wounds.reduce((total, wound) => total + woundBleeding(wound), 0);
+}
+
 export function updateCharacter(player, realDelta, gameDeltaMinutes, gameMinutes) {
   let bleeding = 0;
   let infectionStage = 0;
   let normalInfection = false;
   for (const wound of player.wounds) {
     wound.ageMinutes += gameDeltaMinutes;
-    const bleed = wound.bleed * (wound.bandaged ? 0.08 : 1);
+    const bleed = woundBleeding(wound);
     bleeding += bleed;
     if (wound.normalInfected && !wound.disinfected) normalInfection = true;
     if (wound.zombieInfected && gameMinutes >= wound.symptomAt) {
@@ -231,9 +240,9 @@ function itemCount(player, type) {
 export function woundTreatmentOptions(player, wound) {
   if (!wound) return [];
   const options = [];
-  if (!wound.bandaged) {
-    if (itemCount(player, "bandage") > 0) options.push({ type: "bandage", label: "VERBINDEN", tone: "good" });
-    if (itemCount(player, "cloth") > 0) options.push({ type: "cloth", label: "NOTVERBAND", tone: "warn" });
+  if (!wound.bandaged || wound.bandageType === "cloth") {
+    if (itemCount(player, "bandage") > 0) options.push({ type: "bandage", label: wound.bandaged ? "VERBAND ERSETZEN" : "VERBINDEN", tone: "good" });
+    if (!wound.bandaged && itemCount(player, "cloth") > 0) options.push({ type: "cloth", label: "NOTVERBAND", tone: "warn" });
   }
   if (!wound.disinfected && itemCount(player, "disinfectant") > 0) {
     options.push({ type: "disinfectant", label: "DESINFIZIEREN", tone: "good" });
@@ -245,12 +254,13 @@ export function woundTreatmentOptions(player, wound) {
 }
 
 export function treatWound(player, itemType, woundId = null) {
+  if (woundId && !player.wounds.some(wound => wound.id === woundId)) return { used: false, message: "DIE WUNDE IST NICHT MEHR VORHANDEN" };
   if (itemType === "bandage" || itemType === "cloth") {
     const wound = (woundId ? player.wounds.find(entry => entry.id === woundId) : null)
-      || [...player.wounds].filter(entry => !entry.bandaged && entry.bleed > 0)
-        .sort((a, b) => b.bleed - a.bleed)[0];
+      || [...player.wounds].filter(entry => (!entry.bandaged || (itemType === "bandage" && entry.bandageType === "cloth")) && entry.bleed > 0)
+        .sort((a, b) => woundBleeding(b) - woundBleeding(a))[0];
     if (!wound) return { used: false, message: "KEINE OFFENE BLUTUNG" };
-    if (wound.bandaged) return { used: false, message: "DIE WUNDE IST BEREITS VERBUNDEN" };
+    if (wound.bandaged && !(itemType === "bandage" && wound.bandageType === "cloth")) return { used: false, message: "DIE WUNDE IST BEREITS VERBUNDEN" };
     wound.bandaged = true;
     wound.bandageType = itemType;
     wound.bandagedAt = wound.ageMinutes;
@@ -306,7 +316,7 @@ export function woundDisplay(wound, player) {
   const definition = WOUND_DATA[wound.type];
   const details = [definition.label, wound.zoneLabel];
   details.push(wound.bandaged ? wound.bandageType === "cloth" ? "NOTVERBAND" : "VERBUNDEN" : "OFFEN");
-  if (!wound.bandaged && wound.bleed > 0.03) details.push("BLUTUNG");
+  if (woundBleeding(wound) > 0) details.push(wound.bandaged ? "RESTBLUTUNG" : "BLUTUNG");
   if (wound.disinfected) details.push("DESINFIZIERT");
   if (wound.normalInfected && (wound.ageMinutes > 120 || skillValue(player, "firstAid") >= 30)) details.push("ENTZÜNDET");
   else if (wound.type === "bite") details.push("INFEKTIONSRISIKO");
