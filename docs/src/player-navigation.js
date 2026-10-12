@@ -22,6 +22,11 @@ function covered(world, start, end) {
   return true;
 }
 
+function allowedSegment(world, start, end, options) {
+  return (!options.requireCover || covered(world, start, end))
+    && (!options.segmentAllowed || options.segmentAllowed(start, end));
+}
+
 function gridFor(world, options) {
   let cache = caches.get(world);
   if (!cache || cache.map !== world.coverMap || cache.revision !== world.sightRevision || cache.objects !== world.objectGrid) {
@@ -81,7 +86,8 @@ function nearby(grid, point, radius) {
 
 function search(world, start, target, goals, options, preferCover = false, lengthLimit = Infinity) {
   const grid = gridFor(world, options), starts = nearby(grid, start, .45)
-    .filter(entry => playerSegmentClear(world, start, entry.point, options));
+    .filter(entry => playerSegmentClear(world, start, entry.point, options)
+      && allowedSegment(world, start, entry.point, options));
   if (!starts.length || !goals.size) return [];
   const goalRadius = Math.max(...[...goals.values()].map(goal => distance(goal.point, target)));
   const estimate = point => Math.max(0, distance(point, target) - goalRadius);
@@ -98,7 +104,8 @@ function search(world, start, target, goals, options, preferCover = false, lengt
     if (closed[id]) continue;
     examined++; closed[id] = 1;
     const point = grid.point(id), goal = goals.get(id);
-    if (goal && lengths[id] + distance(point, goal.point) <= lengthLimit + .00001) {
+    if (goal && lengths[id] + distance(point, goal.point) <= lengthLimit + .00001
+      && allowedSegment(world, point, goal.point, options)) {
       const path = [];
       for (let cursor = id; cursor !== -1; cursor = parent[cursor]) path.push(grid.point(cursor));
       path.reverse();
@@ -116,7 +123,7 @@ function search(world, start, target, goals, options, preferCover = false, lengt
       const length = lengths[id] + segment;
       if (length + estimate(nextPoint) > lengthLimit) continue;
       const edge = grid.edge(id, nextId, preferCover);
-      if (!edge.clear) continue;
+      if (!edge.clear || !allowedSegment(world, point, nextPoint, options)) continue;
       const cost = costs[id] + segment * (preferCover && !edge.cover ? 1.5 : 1);
       if (cost >= costs[nextId]) continue;
       costs[nextId] = cost; lengths[nextId] = length; parent[nextId] = id;
@@ -135,7 +142,8 @@ function simplify(world, start, path, options, preferCover) {
       const end = path[candidate];
       const collinear = path.slice(index, candidate + 1).every(point => Math.abs((point.x - from.x) * (end.y - from.y)
         - (point.y - from.y) * (end.x - from.x)) < .000001);
-      if (playerSegmentClear(world, from, end, options) && (!preferCover || collinear || covered(world, from, end))) {
+      if (playerSegmentClear(world, from, end, options) && allowedSegment(world, from, end, options)
+        && (!preferCover || collinear || covered(world, from, end))) {
         next = candidate; break;
       }
     }
@@ -151,21 +159,28 @@ export function playerPathLength(start, path) {
 }
 
 function route(world, start, target, goals, options, shortest = null) {
-  const base = shortest || search(world, start, target, goals, options);
+  const lengthLimit = options.maxLength ?? Infinity;
+  const base = shortest || search(world, start, target, goals, { ...options, requireCover: false }, false, lengthLimit);
+  if (options.requireCover && base.length) {
+    const limit = Math.min(lengthLimit, playerPathLength(start, base) * PLAYER_PATH_RULES.coverDetour + PLAYER_PATH_RULES.coverAllowance);
+    return search(world, start, target, goals, options, true, limit);
+  }
   if (!base.length || !options.preferCover) return base;
-  const limit = playerPathLength(start, base) * PLAYER_PATH_RULES.coverDetour + PLAYER_PATH_RULES.coverAllowance;
+  const limit = Math.min(lengthLimit, playerPathLength(start, base) * PLAYER_PATH_RULES.coverDetour + PLAYER_PATH_RULES.coverAllowance);
   const alternative = search(world, start, target, goals, options, true, limit);
   return alternative.length && playerPathLength(start, alternative) <= limit + .00001 ? alternative : base;
 }
 
 export function findPlayerPath(world, start, requested, options = {}) {
   const end = world.clampPoint(requested), grid = gridFor(world, options);
-  const direct = playerSegmentClear(world, start, end, options);
+  const direct = playerSegmentClear(world, start, end, options) && allowedSegment(world, start, end, options)
+    && distance(start, end) <= (options.maxLength ?? Infinity);
   if (direct && (!options.preferCover || covered(world, start, end))) return [{ ...end }];
   const exact = world.isWalkable(end.x, end.y, PLAYER_PATH_RULES.radius, null, options);
   const goals = new Map();
   for (const entry of nearby(grid, end, exact ? .45 : .9)) {
-    if (exact && !playerSegmentClear(world, entry.point, end, options)) continue;
+    if (exact && (!playerSegmentClear(world, entry.point, end, options)
+      || !allowedSegment(world, entry.point, end, options))) continue;
     goals.set(entry.id, { point: exact ? end : entry.point });
   }
   return route(world, start, end, goals, options, direct ? [{ ...end }] : null);

@@ -1,6 +1,8 @@
 import { gainSkill } from "./character.js";
-import { activeWeapon, itemDefinition } from "./inventory.js";
+import { activeWeapon, itemDefinition, inventoryWeight, carryCapacity } from "./inventory.js";
 import { behindTarget } from "./perception.js";
+import { STANCES } from "./config.js";
+import { pointSegmentDistance } from "./collision.js";
 import { clamp, distance, vibrate } from "./util.js";
 import { pathToPlayerRegion, playerPathLength } from "./player-navigation.js";
 
@@ -205,36 +207,53 @@ export class StealthSystem {
   }
 
   approachCandidates(game, target) {
-    const path = pathToPlayerRegion(game.world, game.player, target, STEALTH_RULES.executionRange,
-      point => distance(point, target) >= .55 && behindTarget(point, target)
-        && game.world.hasLineOfSight(point, target), { allowDoors: false, preferCover: true });
+    const player = game.player, state = this.state(game);
+    const clearance = Math.min(.55, distance(player, target));
+    const options = { allowDoors: false, preferCover: true,
+      segmentAllowed: (a, b) => pointSegmentDistance(target, a, b) >= clearance - .00001 };
+    const accepts = point => distance(point, target) >= .55 && behindTarget(point, target)
+      && game.world.hasLineOfSight(point, target);
+    let path = [];
+    if (state.openfieldRemaining > 0) {
+      const burden = inventoryWeight(player) / Math.max(1, carryCapacity(player));
+      const speed = STANCES.sneak.speed * clamp(1.08 - burden * .16, .72, 1);
+      path = pathToPlayerRegion(game.world, player, target, STEALTH_RULES.executionRange, accepts,
+        { ...options, maxLength: Math.max(0, state.openfieldRemaining - .1) * speed });
+    }
+    // Cover preference alone may choose an exposed shortcut. An execution needs
+    // usable hide along the whole route, unless the active class perk covers it.
+    if (!path.length) path = pathToPlayerRegion(game.world, player, target, STEALTH_RULES.executionRange,
+      point => accepts(point) && Boolean(game.world.coverMap.at(point)), { ...options, requireCover: true });
     return path.length ? [{ point: path.at(-1), path, score: playerPathLength(game.player, path) }] : [];
   }
 
   queueExecution(game, target, replanning = false) {
     if (!target || target.removed) return false;
     const state = this.state(game);
+    // Choosing a quiet approach replaces earlier walk/combat orders even when
+    // no concealed route is available; never resume an unrelated old order.
+    game.combat.end(game, { keepTarget: true });
+    game.clearNavigation?.();
     const candidate = this.approachCandidates(game, target)[0];
     if (!candidate) {
-      if (!replanning) game.ui?.showToast("KEIN LEISER WEG HINTER DAS ZIEL");
-      state.execution = null;
+      this.cancelExecution(game, "KEIN VERBORGENER WEG HINTER DAS ZIEL");
       return false;
     }
-    game.clearNavigation?.();
     game.player.navigation.path = candidate.path;
     game.player.navigation.destination = { ...candidate.point };
     game.player.navigation.interactionId = null;
     game.player.navigation.runRequested = false;
     game.player.navigation.guided = false;
     game.player.navigation.source = "execution";
-    game.combat.end(game, { keepTarget: true });
     game.renderer.destination = { ...candidate.point };
     game.renderer.destinationRun = false;
     state.execution = {
       targetId: target.id,
       phase: "approach",
       timer: 0,
-      repathAt: (game.elapsed || 0) + 0.65,
+      startedAt: replanning ? state.execution?.startedAt ?? (game.elapsed || 0) : (game.elapsed || 0),
+      targetPosition: { x: target.x, y: target.y },
+      repathAt: (game.elapsed || 0) + .25,
     };
     if (!replanning) game.ui?.showMessage("LAUTLOSER ANSATZ · BLEIB VERBORGEN", 1.6);
     return true;
@@ -261,20 +280,37 @@ export class StealthSystem {
     state.attackLock = Math.max(0, state.attackLock - delta);
     state.departureTime = Math.max(0, state.departureTime - delta);
     this.refresh(game);
+    this.updateExecution(game);
+  }
+
+  // Also called before automatic movement so a turned/moved target never leaves
+  // the player following an obsolete rear position for another whole route.
+  updateExecution(game) {
+    const player = game.player, state = this.state(game);
     const execution = state.execution;
     if (!execution) return;
     const target = game.zombies.find(zombie => zombie.id === execution.targetId && !zombie.removed);
-    if (!target || !state.hidden || target.state === "chase" || target.sightMemory?.visible) {
-      this.cancelExecution(game, "ZIEL HAT DICH BEMERKT", true);
-      return;
-    }
+    if (!target) return this.cancelExecution(game, "ZIEL NICHT MEHR VERFÜGBAR");
+    if (game.combat.target(game)?.id !== target.id) return this.cancelExecution(game, "ZIEL GEWECHSELT");
+    if (!state.hidden) return this.cancelExecution(game, "TARNUNG VERLOREN · ANSATZ ABGEBROCHEN");
+    if (target.state === "chase" || target.sightMemory?.visible) return this.cancelExecution(game, "ZIEL HAT DICH BEMERKT");
     if (execution.phase === "approach") {
       if (this.isExecutionReady(game, target)) {
         this.beginExecution(game, target);
         return;
       }
-      if (!player.navigation.path.length && (game.elapsed || 0) >= execution.repathAt) {
-        if (!this.queueExecution(game, target, true)) this.cancelExecution(game, "POSITION VERLOREN", false);
+      if ((game.elapsed || 0) - (execution.startedAt ?? game.elapsed) > 12) {
+        return this.cancelExecution(game, "KEIN SICHERER ZUGRIFF · ANSATZ ABGEBROCHEN");
+      }
+      const navigation = player.navigation, destination = navigation.destination, next = navigation.path[0];
+      const stale = !destination || !behindTarget(destination, target)
+        || distance(destination, target) > STEALTH_RULES.executionRange
+        || !game.world.hasLineOfSight(destination, target)
+        || (execution.targetPosition && distance(execution.targetPosition, target) > .3)
+        || (next && pointSegmentDistance(target, player, next) < Math.min(.55, distance(player, target)) - .00001);
+      if (stale || !navigation.path.length) {
+        game.clearNavigation?.();
+        if ((game.elapsed || 0) >= execution.repathAt) this.queueExecution(game, target, true);
       }
       return;
     }

@@ -88,6 +88,7 @@ export function behindTarget(attacker, target) {
   const d = distance(attacker, target) || 1;
   const towardAttackerX = (attacker.x - target.x) / d;
   const towardAttackerY = (attacker.y - target.y) / d;
-  const dot = towardAttackerX * (target.facingX || 0) + towardAttackerY * (target.facingY || 1);
+  const facingX = target.facingX ?? 0, facingY = target.facingY ?? 1;
+  const dot = (towardAttackerX * facingX + towardAttackerY * facingY) / (Math.hypot(facingX, facingY) || 1);
   return dot < -0.38;
 }
