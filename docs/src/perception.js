@@ -41,7 +41,7 @@ export function visionExposure(observer, player, world, minutes, ignoreHide = fa
 
   const dx = (player.x - observer.x) / Math.max(d, 0.001);
   const dy = (player.y - observer.y) / Math.max(d, 0.001);
-  const facing = dx * (observer.facingX || 0) + dy * (observer.facingY || 1);
+  const facing = dx * (observer.facingX ?? 0) + dy * (observer.facingY ?? 1);
   const coneEdge = Math.cos(geometry.halfAngle);
   const inCone = facing >= coneEdge;
   if (!inCone && d > geometry.nearRadius) return 0;

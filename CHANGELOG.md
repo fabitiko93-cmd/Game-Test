@@ -1,3 +1,23 @@
+# Ruhige Zombies · 13.10.2026
+
+- Nicht alarmierte Zombies wechseln zwischen individuellen Ruhephasen von
+  6–14 Sekunden und kurzen Schlurfwegen von 0,5–1,5 Tiles. Das Ziel bleibt bis
+  zur Ankunft bestehen; erst danach wird erneut pausiert und ein Weg gewählt.
+- Schlurftempo 0,2 Tiles pro Sekunde und träge Drehungen. Vor dem Losgehen
+  richten sie sich aus; während einer Pause gibt es höchstens einen kleinen
+  Blickwechsel statt ständiger Rundumblicke.
+- Lokale Wege müssen von Anfang an erreichbar sein. Blockierte Wege führen
+  zurück in eine Ruhephase. Das Ruheverhalten benötigt keine laufende Wegsuche
+  und bleibt in der Umgebung des bisherigen Ausgangspunkts.
+- Geräusche und Sichtungen unterbrechen die Ruhe weiterhin sofort. Gegneranzahl,
+  Spawnpunkte, Migration, Sichtwerte, Such-/Verfolgungszeiten, aktive Geschwindigkeiten,
+  Kampf, Ausdauer und Geräuschquellen bleiben erhalten.
+- Waagerechte Blickrichtungen werden bei Drehung, Sichtprüfung und Sichtkegel
+  einheitlich ausgewertet; eine Nullkomponente wird nicht als fehlender Wert ersetzt.
+- Eigene Zuständigkeit in `zombie-idle.js`. Bestehende Save-v4-Spielstände
+  übernehmen das Verhalten ohne Weltreset; neue Ruhe-/Schlurfphasen werden gespeichert.
+  Tests für vollständige Zyklen, Blockaden, Alarmübergänge und Save-Roundtrip.
+
 # HUD-Touch und Zielfenster · 13.10.2026
 
 - Ursache des Weglaufens beim Tippen auf AUSSCHALTEN behoben: Der Button

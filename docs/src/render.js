@@ -693,7 +693,7 @@ export class Renderer {
       if (zombie.removed || (!tacticalVision && !visibleByState)) continue;
       const center = this.iso(zombie.x, zombie.y);
       if (center.x < -250 || center.x > this.width + 250 || center.y < -180 || center.y > this.height + 180) continue;
-      const angle = Math.atan2(zombie.facingY || 1, zombie.facingX || 0);
+      const angle = Math.atan2(zombie.facingY ?? 1, zombie.facingX ?? 0);
       const geometry = visionGeometry(zombie, game.player, game.world, game.minutes, true);
       const cacheKey = `${Math.round(zombie.x * 4)},${Math.round(zombie.y * 4)},${Math.round(angle * 20)},${Math.round(geometry.range * 4)},${game.world.sightRevision}`;
       let cached = this.visionCache.get(zombie.id);
