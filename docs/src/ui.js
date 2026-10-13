@@ -14,6 +14,7 @@ import {
   weaponCapacity,
 } from "./inventory.js";
 import { backgroundName, skillRank, visibleInfectionState, woundBleeding, woundDisplay, woundTreatmentOptions } from "./character.js";
+import { TargetLayout } from "./target-layout.js";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -46,6 +47,7 @@ export class GameUI {
       "new-survivor-button", "toast",
     ];
     this.el = Object.fromEntries(ids.map(id => [id.replaceAll("-", "_"), document.getElementById(id)]));
+    this.targetLayout = new TargetLayout(this.el);
     this.el.status_legend.innerHTML = Object.entries(STATUS_ICONS).map(([id, icon]) =>
       `<span>${iconSVG(id)}<b>${icon.label}</b></span>`).join("");
     this.callbacks = {};
@@ -183,6 +185,7 @@ export class GameUI {
     const weapon = activeWeapon(player);
     const firearm = itemDefinition(weapon)?.weaponKind === "firearm";
     this.el.reload_button.classList.toggle("hidden", !firearm);
+    this.targetLayout.update(game, this.contextInfo);
     if (!this.el.debug_stats.classList.contains("hidden")) this.el.debug_stats.textContent = game.renderer.diagnosticsText();
   }
 
@@ -216,6 +219,7 @@ export class GameUI {
   }
 
   updateAction(player, game) {
+    this.contextInfo = null;
     const weapon = activeWeapon(player);
     const firearmTarget = itemDefinition(weapon)?.weaponKind === "firearm" && player.combat.enabled && game.combat.target(game);
     if (firearmTarget) {
@@ -229,6 +233,7 @@ export class GameUI {
     this.el.action_button.classList.remove("fire-ready");
     this.el.action_button.querySelector("span").textContent = "✦";
     const context = game.contextObject();
+    this.contextInfo = context;
     const selected = game.selectedObject();
     this.el.action_button.classList.toggle("ready", Boolean(context || selected));
     this.el.action_label.textContent = context?.actionLabel || (selected ? "HINGEHEN" : "AKTION");
@@ -246,6 +251,8 @@ export class GameUI {
     if (!enemy) {
       this.el.execute_button.classList.add("hidden");
       this.el.execute_button.disabled = true;
+      delete this.el.execute_button.dataset.executionAction;
+      delete this.el.execute_button.dataset.executionTarget;
       return;
     }
     const stateNames = {
@@ -269,6 +276,8 @@ export class GameUI {
     this.el.execute_button.classList.toggle("hidden", !showExecution);
     if (showExecution) {
       const ready = Boolean(execution.ready);
+      this.el.execute_button.dataset.executionAction = ready ? "execute" : "approach";
+      this.el.execute_button.dataset.executionTarget = enemy.id;
       this.el.execute_button.disabled = !execution.actionable;
       this.el.execute_button.classList.toggle("ready", ready);
       this.el.execute_button.classList.remove("attention");

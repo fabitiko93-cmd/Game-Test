@@ -18,7 +18,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Wunden, Behandlung, Bedürfnisse, Fähigkeiten | `character.js`, `item-actions.js` | Bedürfnisablauf in `game.js`; Status-/Medizinanzeige in `ui.js` |
 | Gegenstände, Ausrüstung, Munition, Waffenmods | `inventory.js`, `data.js`, `item-actions.js` | Rucksack-/Waffenmenüs in `ui.js` |
 | Weltobjekte, Gebäude, Fahrzeuge, Loot | `world.js`, `data.js`, `interaction.js` | Gemeinsame Zugangsprüfung für Anzeige, Annäherung und Benutzung; Punkt-/Streckenkollision in `collision.js`, Fußabdrücke in `cover.js` |
-| HUD, Statusicons, Menüs | `ui.js`, `status-icons.js`, `docs/style.css` | Canvas-Icons in `render.js`; DOM-Quelle in `web/index.html` |
+| HUD, Statusicons, Menüs | `ui.js`, `target-layout.js`, `status-icons.js`, `docs/style.css` | Zielfenster sparen Figuren und Bedienelemente aus; HUD-Buttons besitzen ihre Touchfläche und ihren angezeigten Zielbefehl; Canvas-Icons in `render.js`; DOM-Quelle in `web/index.html` |
 | Missionsfortschritt | `missions.js`, `game.js` | `updateMission`; Missionsmenü in `ui.js` |
 | Speichern und Laden | `save.js`, `game-state.js`, `world.js` | `serialize`/`load`, Weltobjekte und Zustand; Save-Version in `config.js` |
 | Nachfolgefigur und Weltbeginn | `game.js` | Überlebender, Startzustand und bestehende Welt |
@@ -59,7 +59,9 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
 - `build.test.mjs`: reproduzierbare Hashes, automatische Erweiterung, Offlinebetrieb
   und sicherer Wechsel zwischen vollständigen Releases.
 - `gameplay-regression.test.mjs`: präzise Deckungswege, Lootzugänge, Exekution,
-  automatisches Kampfende sowie wirksame Verbände und bestehende Spielstände.
+  automatisches Kampfende, echte HUD-Touchhandler sowie wirksame Verbände und bestehende Spielstände.
+- `target-layout.test.mjs`: freie, stabile Zielfenster, Randpositionen und
+  Ausweichpositionen in Smartphone-Querformaten inklusive Safe-Areas.
 - `.github/workflows/verify.yml`: alle Tests, JavaScript-Syntax und erforderliche
   Spieldateien. Bei reinen Dokumentationsänderungen genügt eine Diff-Prüfung.
 - Browserprüfung auf die veränderte Bedienung oder Darstellung begrenzen.

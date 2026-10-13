@@ -1,11 +1,11 @@
 {
-  "id": "94da9517f8b0028dd24b",
-  "script": "build/main-QPDEIX3W.js",
-  "style": "build/style-S6G7BV56.css",
+  "id": "23e28207913aa8608628",
+  "script": "build/main-H72D2BLL.js",
+  "style": "build/style-7LLKPWUD.css",
   "precache": [
     "assets/icon.svg",
-    "build/main-QPDEIX3W.js",
-    "build/style-S6G7BV56.css",
+    "build/main-H72D2BLL.js",
+    "build/style-7LLKPWUD.css",
     "index.html",
     "manifest.webmanifest"
   ]

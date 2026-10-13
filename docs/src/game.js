@@ -60,7 +60,7 @@ export class Game {
     this.input.callbacks = {
       combat: () => this.combat.toggle(this),
       action: () => this.primaryAction(),
-      execute: () => this.executeAction(),
+      execute: command => this.executeAction(command),
       stance: () => this.toggleStance(),
       openfield: () => { if (this.canAct()) this.stealth.activateOpenfield(this); },
       reload: () => this.reload(),
@@ -391,15 +391,10 @@ export class Game {
     else this.ui.showMessage("Hier ist nichts ausgewählt.", 1.1);
   }
 
-  executeAction() {
+  executeAction(command) {
     if (!this.canAct()) return;
-    const context = this.stealth.executionContext(this);
-    if (context?.actionable) {
-      this.stealth.executionAction(this);
-      this.ui.refreshAll(this.player, this);
-      return;
-    }
-    this.ui.showToast(context?.hint || "SCHLEICHEN · MESSER AUSWÄHLEN · ZIEL ANTIPPEN");
+    this.stealth.executionAction(this, command);
+    this.ui.refreshAll(this.player, this);
   }
 
   interact(object) {
