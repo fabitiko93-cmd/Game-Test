@@ -14,6 +14,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Laufziel, Weg und Ankunft | `player-navigation.js`, `movement.js` | Vierteltile-Spielerwege, präzise Ziele, begrenzte Deckungspräferenz; `navigation.js` bleibt die gröbere Zombie-Wegsuche |
 | Deckungszone und Hide | `cover.js`, `stealth.js`, `cover-display.js` | `CoverMap.at` und `StealthSystem.refresh`; gecachte Bodenflächen aus derselben Geometrie, Darstellung in `render.js` |
 | Sicht, Verdacht, Verfolgung, Deckungssuche | `perception.js`, `cover-awareness.js`, `ai.js` | Basiswahrnehmung, Gedächtnis pro Zombie, Zustandswechsel; Sichtlinie in `world.js` |
+| Ruhephasen und Schlurfen | `zombie-idle.js` | Nur `idle`: Pausen, kurze erreichbare Wege und träge Drehung; `ai.js` behält Wahrnehmung und aktive Zustände |
 | Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Ansatz prüft Ziel vor Bewegung in `movement.js`, verdeckte Wege und Zielumfahrung über `player-navigation.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
 | Wunden, Behandlung, Bedürfnisse, Fähigkeiten | `character.js`, `item-actions.js` | Bedürfnisablauf in `game.js`; Status-/Medizinanzeige in `ui.js` |
 | Gegenstände, Ausrüstung, Munition, Waffenmods | `inventory.js`, `data.js`, `item-actions.js` | Rucksack-/Waffenmenüs in `ui.js` |
@@ -62,6 +63,8 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
   automatisches Kampfende, echte HUD-Touchhandler sowie wirksame Verbände und bestehende Spielstände.
 - `target-layout.test.mjs`: freie, stabile Zielfenster, Randpositionen und
   Ausweichpositionen in Smartphone-Querformaten inklusive Safe-Areas.
+- `zombie-idle.test.mjs`: vollständige Ruhe-/Schlurfzyklen, kurze stabile Wege,
+  Blockaden, unmittelbare Alarmreaktion, aktive Geschwindigkeiten und Save-Roundtrip.
 - `.github/workflows/verify.yml`: alle Tests, JavaScript-Syntax und erforderliche
   Spieldateien. Bei reinen Dokumentationsänderungen genügt eine Diff-Prüfung.
 - Browserprüfung auf die veränderte Bedienung oder Darstellung begrenzen.

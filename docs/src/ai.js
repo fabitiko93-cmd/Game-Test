@@ -2,6 +2,7 @@ import { strongestNoise } from "./perception.js";
 import { beginCoverSearch, coverAwareExposure, updateCoverSearch } from "./cover-awareness.js";
 import { VIEW } from "./config.js";
 import { clamp, distance, uid } from "./util.js";
+import { updateIdleZombie, ZOMBIE_IDLE } from "./zombie-idle.js";
 
 const INITIAL_POSITIONS = [
   [14, 18], [9, 21], [24, 20], [36, 20], [43, 18], [31, 10],
@@ -28,6 +29,7 @@ export function createZombie(x, y, index = 0, id = null) {
     lastNoiseId: null,
     target: null,
     wanderTarget: null,
+    idleBehavior: null,
     path: [],
     repathTimer: 0,
     facingX: 0,
@@ -160,17 +162,11 @@ export class ZombieSystem {
       return;
     }
 
-    if (zombie.state === "idle" && zombie.stateTime > 2.8 + zombie.variant * 0.35) {
-      zombie.stateTime = 0;
-      zombie.wanderTarget = {
-        x: clamp(zombie.spawnX + (game.random() - 0.5) * 7, 1, VIEW.worldW - 2),
-        y: clamp(zombie.spawnY + (game.random() - 0.5) * 7, 1, VIEW.worldH - 2),
-      };
-      zombie.target = zombie.wanderTarget;
-    }
   }
 
   updateMovement(zombie, game, delta) {
+    if (zombie.state === "idle") { updateIdleZombie(zombie, game, delta); return; }
+    zombie.idleBehavior = null;
     if (zombie.state === "suspicious") {
       zombie.moving = false;
       return;
@@ -234,10 +230,10 @@ export class ZombieSystem {
   }
 
   updateFacing(zombie, delta) {
-    const current = Math.atan2(zombie.facingY || 1, zombie.facingX || 0);
+    const current = Math.atan2(zombie.facingY ?? 1, zombie.facingX ?? 0);
     const desired = Math.atan2(zombie.desiredFacingY ?? zombie.facingY ?? 1, zombie.desiredFacingX ?? zombie.facingX ?? 0);
     const difference = Math.atan2(Math.sin(desired - current), Math.cos(desired - current));
-    const turnRate = zombie.state === "chase" ? 5.2 : 3.6;
+    const turnRate = zombie.state === "idle" ? ZOMBIE_IDLE.turnRate : zombie.state === "chase" ? 5.2 : 3.6;
     const next = current + clamp(difference, -turnRate * delta, turnRate * delta);
     zombie.facingX = Math.cos(next);
     zombie.facingY = Math.sin(next);

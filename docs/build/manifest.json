@@ -1,10 +1,10 @@
 {
-  "id": "23e28207913aa8608628",
-  "script": "build/main-H72D2BLL.js",
+  "id": "5b8dcb330dd998bd8df6",
+  "script": "build/main-MHOTHOO7.js",
   "style": "build/style-7LLKPWUD.css",
   "precache": [
     "assets/icon.svg",
-    "build/main-H72D2BLL.js",
+    "build/main-MHOTHOO7.js",
     "build/style-7LLKPWUD.css",
     "index.html",
     "manifest.webmanifest"
