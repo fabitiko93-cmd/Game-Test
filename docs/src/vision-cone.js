@@ -16,6 +16,7 @@ export function visionConeStyle(zombie, tacticalVision) {
       || (zombie.stimulus === "vision" && (zombie.awareness || 0) >= .12)
       || (memory?.recognition || 0) >= .12,
     color: `rgb(${channels.join(",")})`,
-    alpha: zombie.state === "chase" ? .11 : (tacticalVision ? .065 : .04) + progress * .075,
+    alpha: lerp(tacticalVision ? .10 : .08, .18, progress),
+    outlineAlpha: lerp(.35, .50, progress),
   };
 }

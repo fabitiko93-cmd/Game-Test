@@ -1,10 +1,10 @@
 {
-  "id": "7523d29bfc92a3706b0f",
-  "script": "build/main-6UUICRNP.js",
+  "id": "f3dbada66a7bf7697a98",
+  "script": "build/main-T7YLK7NI.js",
   "style": "build/style-KUDVED4H.css",
   "precache": [
     "assets/icon.svg",
-    "build/main-6UUICRNP.js",
+    "build/main-T7YLK7NI.js",
     "build/style-KUDVED4H.css",
     "index.html",
     "manifest.webmanifest"
