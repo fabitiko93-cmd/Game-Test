@@ -743,6 +743,11 @@ export class Renderer {
       }
       ctx.closePath();
       ctx.fill();
+      ctx.globalAlpha = style.outlineAlpha;
+      ctx.strokeStyle = style.color;
+      ctx.lineWidth = 1.25;
+      ctx.lineJoin = "round";
+      ctx.stroke();
       if (tacticalVision) {
         ctx.globalAlpha = .18;
         ctx.strokeStyle = "#cfbd77";
