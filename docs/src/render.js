@@ -7,6 +7,7 @@ import { vehicleFootprint } from "./cover.js";
 import { buildCoverDisplay, coverDisplayKey, coverDisplayPaths } from "./cover-display.js";
 import { PLAYER_VIEW, playerCanSee, rememberedScenery } from "./player-visibility.js";
 import { drawCameraOverlay } from "./camera-overlay.js";
+import { visionConeStyle } from "./vision-cone.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -710,8 +711,8 @@ export class Renderer {
     const ctx = this.ctx;
     const tacticalVision = game.player.stance === "sneak" || (game.player.skills?.perception || 0) >= 25;
     for (const zombie of game.zombies) {
-      const visibleByState = zombie.state === "chase" || (zombie.stimulus === "vision" && (zombie.awareness || 0) >= .12);
-      if (zombie.removed || !playerCanSee(game, zombie) || (!tacticalVision && !visibleByState)) continue;
+      const style = visionConeStyle(zombie, tacticalVision);
+      if (zombie.removed || !playerCanSee(game, zombie) || (!tacticalVision && !style.visibleByState)) continue;
       const center = this.iso(zombie.x, zombie.y);
       if (center.x < -250 || center.x > this.width + 250 || center.y < -180 || center.y > this.height + 180) continue;
       const angle = Math.atan2(zombie.facingY ?? 1, zombie.facingX ?? 0);
@@ -732,8 +733,8 @@ export class Renderer {
         this.visionCache.set(zombie.id, cached);
       }
       ctx.save();
-      ctx.globalAlpha = zombie.state === "chase" ? .11 : (tacticalVision ? .065 : .04) + (zombie.awareness || 0) * .075;
-      ctx.fillStyle = zombie.state === "chase" ? "#bc493e" : "#c8ac61";
+      ctx.globalAlpha = style.alpha;
+      ctx.fillStyle = style.color;
       ctx.beginPath();
       ctx.moveTo(center.x, center.y);
       for (const point of cached.points) {
