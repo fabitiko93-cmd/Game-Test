@@ -1,6 +1,8 @@
 // Cover identity is local: adjoining shrubs shelter a crossing without sharing
 // enemy knowledge. Building sides are separate areas, not an entire building.
-export const COVER_RULES = Object.freeze({ margin: 0.72, minimumScore: 0.42 });
+export const COVER_RULES = Object.freeze({ margin: 0.72, minimumScore: 0.42, playerRadius: .27 });
+
+export const coverKind = object => ["tree", "bush"].includes(object.type) ? "concealment" : "occlusion";
 
 export function vehicleFootprint(object) {
   return object.orientation === "x" ? { x: 0.86, y: 0.47 } : { x: 0.47, y: 0.86 };
@@ -21,7 +23,10 @@ export function distanceToFootprint(point, object) {
 }
 
 export function segmentHitsVehicle(a, b, object) {
-  const shape = vehicleFootprint(object);
+  return segmentHitsBox(a, b, object, vehicleFootprint(object));
+}
+
+export function segmentHitsBox(a, b, object, shape) {
   let enter = 0, leave = 1;
   for (const axis of ["x", "y"]) {
     const direction = b[axis] - a[axis], start = a[axis] - object[axis];
@@ -39,6 +44,23 @@ export function segmentHitsVehicle(a, b, object) {
 export function usableCover(object) {
   return !object.removed && (object.cover || 0) >= COVER_RULES.minimumScore
     && (object.type !== "door" || object.closed);
+}
+
+export function coverClearance(point, object, neighbors = [], margin = COVER_RULES.margin) {
+  let value = margin - distanceToFootprint(point, object);
+  if (object.type !== "wall") return value;
+  const horizontal = object.side === "north" || object.side === "south";
+  const along = horizontal ? "x" : "y", across = horizontal ? "y" : "x";
+  for (const door of neighbors) {
+    if (door.type !== "door" || door.closed || door.removed
+      || (door.orientation && door.orientation !== (horizontal ? "x" : "y"))
+      || (door.building && object.building && door.building !== object.building)
+      || Math.abs(door[across] - object[across]) > .51
+      || Math.abs(point[across] - door[across]) > .5 + margin) continue;
+    // An open doorway interrupts the wall band; vegetation can still conceal it.
+    value = Math.min(value, Math.abs(point[along] - door[along]) - .5);
+  }
+  return value;
 }
 
 export function coverAreaId(object, point) {
@@ -63,19 +85,30 @@ export class CoverMap {
     return this.neighborCache.get(key);
   }
 
-  at(point, preferredId = null) {
-    let best = null, bestDistance = Infinity;
-    for (const object of this.neighbors(point)) {
+  at(point, preferredId = null, observer = null, allowOccupied = false) {
+    if (!allowOccupied && !this.world.isWalkable(point.x, point.y, COVER_RULES.playerRadius)) return null;
+    let best = null, bestDistance = Infinity, blocked = null;
+    const neighbors = this.neighbors(point);
+    for (const object of neighbors) {
       if (Math.hypot(point.x - object.x, point.y - object.y) > 2) continue;
       if (!usableCover(object)) continue;
       const d = distanceToFootprint(point, object);
-      if (d > COVER_RULES.margin) continue;
+      if (coverClearance(point, object, neighbors) < 0) continue;
       const id = coverAreaId(object, point);
+      const kind = coverKind(object);
+      if (observer && kind === "occlusion") {
+        blocked ??= !this.world.hasLineOfSight(observer, point);
+        if (!blocked) continue;
+        const blockers = object.type === "wall" ? this.area(id)?.objects || [object] : [object];
+        if (!blockers.some(blocker => usableCover(blocker) && blocker.blocksSight
+          && segmentHitsBox(observer, point, blocker, blocker.type === "car" ? vehicleFootprint(blocker) : { x: .5, y: .5 }))) continue;
+      }
       // A slight hysteresis stops overlapping cover from flickering between IDs.
-      const score = d - (id === preferredId ? 0.12 : 0);
+      // Vegetation always keeps its concealment even beside a nearer wall/car.
+      const score = d - (id === preferredId ? 0.12 : 0) - (kind === "concealment" ? 2 : 0);
       if (score >= bestDistance) continue;
       bestDistance = score;
-      best = { id, sourceId: object.id, label: object.coverLabel || "DECKUNG", score: object.cover, object };
+      best = { id, sourceId: object.id, label: object.coverLabel || "DECKUNG", score: object.cover, kind, object };
     }
     if (best && !this.areaCache.has(best.id)) {
       const objects = best.object.type === "wall"
@@ -99,8 +132,9 @@ export class CoverMap {
   }
 
   contains(id, point, margin = COVER_RULES.margin) {
+    if (!this.world.isWalkable(point.x, point.y, COVER_RULES.playerRadius)) return false;
     return Boolean(this.area(id)?.objects.some(object => usableCover(object)
-      && coverAreaId(object, point) === id && distanceToFootprint(point, object) <= margin));
+      && coverAreaId(object, point) === id && coverClearance(point, object, this.neighbors(point), margin) >= 0));
   }
 
   searchPoints(id) {

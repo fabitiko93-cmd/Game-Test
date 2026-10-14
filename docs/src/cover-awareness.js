@@ -41,29 +41,42 @@ export function coverAwareExposure(zombie, game, delta) {
     return 0;
   }
 
-  if (state.source === "cover") {
+  const protection = state.source === "cover" ? game.world.coverMap.at(player, state.coverId, zombie) : null;
+  if (protection) {
     if (previouslyVisible && zombie.lastSeen) {
-      beginCoverSearch(zombie, game, state.coverId, zombie.lastSeen);
+      beginCoverSearch(zombie, game, protection.id, zombie.lastSeen);
     }
     const search = zombie.coverSearch;
-    const targetedCloseSearch = search?.entered && search.coverId === state.coverId
+    const targetedCloseSearch = search?.entered && search.coverId === protection.id
       && distance(zombie, player) <= VISION.nearRadius;
-    const alreadyFound = memory.revealedCoverId === state.coverId;
+    const alreadyFound = memory.revealedCoverId === protection.id;
     if ((targetedCloseSearch || alreadyFound) && raw > 0 && game.world.hasLineOfSight(zombie, player)) {
       memory.visible = true;
-      memory.revealedCoverId = state.coverId;
+      memory.revealedCoverId = protection.id;
       zombie.awareness = 1;
       zombie.coverSearch = null;
       return Math.max(1, raw);
     }
     memory.revealedCoverId = null;
     memory.transition = true;
+    memory.occlusionGrace = protection.kind === "occlusion" ? 2 : 0;
     memory.recognition = Math.max(0, memory.recognition - delta);
     return 0;
   }
 
+  const closeSearch = zombie.coverSearch;
+  if (state.source === "cover" && closeSearch?.entered && closeSearch.coverId === state.coverId
+    && distance(zombie, player) <= VISION.nearRadius && raw > 0) {
+    memory.visible = true;
+    memory.revealedCoverId = state.coverId;
+    zombie.awareness = 1;
+    zombie.coverSearch = null;
+    return Math.max(1, raw);
+  }
+
   memory.revealedCoverId = null;
-  const crossing = memory.transition && state.departureTime > 0 && player.stance === "sneak";
+  memory.occlusionGrace = Math.max(0, (memory.occlusionGrace || 0) - delta);
+  const crossing = memory.transition && (state.departureTime > 0 || memory.occlusionGrace > 0) && player.stance === "sneak";
   if (crossing) {
     memory.recognition = raw > 0 ? Math.min(1, memory.recognition + delta / STEALTH_RULES.transitionRecognition)
       : Math.max(0, memory.recognition - delta);

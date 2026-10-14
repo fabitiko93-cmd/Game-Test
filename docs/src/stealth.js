@@ -5,6 +5,7 @@ import { STANCES } from "./config.js";
 import { pointSegmentDistance } from "./collision.js";
 import { clamp, distance, vibrate } from "./util.js";
 import { pathToPlayerRegion, playerPathLength } from "./player-navigation.js";
+import { concealedAt, coverSegmentSafe, hiddenFrom } from "./cover-protection.js";
 
 export const STEALTH_RULES = Object.freeze({
   minimumCover: 0.42,
@@ -25,6 +26,7 @@ export function ensureStealthState(player) {
   state.coverLabel ??= null;
   state.source ??= null;
   state.coverSourceId ??= null;
+  state.coverKind ??= null;
   state.openfieldRemaining ??= 0;
   state.openfieldCooldown ??= 0;
   state.attackLock ??= 0;
@@ -49,6 +51,7 @@ export function executionBlockReason(game, target) {
   const player = game.player;
   if (!target || target.removed) return "KEIN GÜLTIGES ZIEL";
   if (!ensureStealthState(player).hidden || player.stance !== "sneak") return "VERBORGEN ANSCHLEICHEN";
+  if (!hiddenFrom(game, target)) return "DECKUNG SCHÜTZT NICHT VOR DEM ZIEL";
   if (!executionWeapon(player)) return "MESSER FEHLT";
   if (player.stamina < STEALTH_RULES.executionStamina) return "ZU WENIG AUSDAUER";
   if (target.state === "chase" || target.sightMemory?.visible) return "ZIEL HAT DICH ENTDECKT";
@@ -110,6 +113,7 @@ export class StealthSystem {
     state.coverId = cover?.id || null;
     state.coverSourceId = cover?.sourceId || null;
     state.coverLabel = cover?.label || null;
+    state.coverKind = cover?.kind || null;
     if (player.stance !== "sneak" || player.running) {
       state.openfieldRemaining = 0;
       state.departureTime = 0;
@@ -159,12 +163,12 @@ export class StealthSystem {
       };
     }
     if (!target || target.removed) return null;
-    if (!state.hidden) {
+    if (!state.hidden || !hiddenFrom(game, target)) {
       return {
         kind: "execution",
         actionable: false,
         label: "NICHT MÖGLICH",
-        hint: player.stance === "sneak" ? "GEDUCKT IN DECKUNG GEHEN" : "SCHLEICHEN AKTIVIEREN",
+        hint: player.stance === "sneak" ? state.coverKind === "occlusion" ? "AUF DIE GESCHÜTZTE SEITE GEHEN" : "GEDUCKT IN DECKUNG GEHEN" : "SCHLEICHEN AKTIVIEREN",
         ready: false,
       };
     }
@@ -233,7 +237,8 @@ export class StealthSystem {
     // Cover preference alone may choose an exposed shortcut. An execution needs
     // usable hide along the whole route, unless the active class perk covers it.
     if (!path.length) path = pathToPlayerRegion(game.world, player, target, STEALTH_RULES.executionRange,
-      point => accepts(point) && Boolean(game.world.coverMap.at(point)), { ...options, requireCover: true });
+      point => accepts(point) && concealedAt(game, point, target), { ...options, requireCover: true,
+        segmentAllowed: (a, b) => options.segmentAllowed(a, b) && coverSegmentSafe(game, target, a, b) });
     return path.length ? [{ point: path.at(-1), path, score: playerPathLength(game.player, path) }] : [];
   }
 
@@ -302,7 +307,7 @@ export class StealthSystem {
     const target = game.zombies.find(zombie => zombie.id === execution.targetId && !zombie.removed);
     if (!target) return this.cancelExecution(game, "ZIEL NICHT MEHR VERFÜGBAR");
     if (game.combat.target(game)?.id !== target.id) return this.cancelExecution(game, "ZIEL GEWECHSELT");
-    if (!state.hidden) return this.cancelExecution(game, "TARNUNG VERLOREN · ANSATZ ABGEBROCHEN");
+    if (!state.hidden || !hiddenFrom(game, target)) return this.cancelExecution(game, "TARNUNG VERLOREN · ANSATZ ABGEBROCHEN");
     if (target.state === "chase" || target.sightMemory?.visible) return this.cancelExecution(game, "ZIEL HAT DICH BEMERKT");
     if (execution.phase === "approach") {
       if (this.isExecutionReady(game, target)) {
@@ -338,12 +343,14 @@ export class StealthSystem {
 
   coverStatus(game) {
     const state = this.state(game), cover = this.cover(game);
+    const directional = state.source === "cover" && cover?.kind === "occlusion";
     return {
       label: state.source === "openfield" ? "FREIFELDTARNUNG" : cover?.label || "KEINE",
       detail: state.source === "openfield" ? `${Math.ceil(state.openfieldRemaining)} S`
-        : state.hidden ? "VERBORGEN" : cover ? "DUCKEN ZUM VERBERGEN" : "NORMALE SICHTBARKEIT",
-      value: state.hidden ? 1 : cover?.score || 0,
+        : directional ? "RICHTUNGSABHÄNGIGER SICHTSCHUTZ" : state.hidden ? "VERBORGEN" : cover ? "DUCKEN ZUM VERBERGEN" : "NORMALE SICHTBARKEIT",
+      value: directional ? cover?.score || 0 : state.hidden ? 1 : cover?.score || 0,
       hidden: state.hidden,
+      directional,
     };
   }
 

@@ -1,10 +1,10 @@
 {
-  "id": "8cb7e036f765c4fd9822",
-  "script": "build/main-4NSKRTHT.js",
+  "id": "553114e06adf759b8500",
+  "script": "build/main-BSAUUZDB.js",
   "style": "build/style-KUDVED4H.css",
   "precache": [
     "assets/icon.svg",
-    "build/main-4NSKRTHT.js",
+    "build/main-BSAUUZDB.js",
     "build/style-KUDVED4H.css",
     "index.html",
     "manifest.webmanifest"
