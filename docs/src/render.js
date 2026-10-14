@@ -691,9 +691,10 @@ export class Renderer {
     ctx.strokeStyle = "rgba(223,198,131,.65)";
     ctx.lineWidth = 1;
     ctx.stroke(paths.outline);
-    ctx.fillStyle = "rgba(151,192,127,.2)";
+    const directional = stealthState.coverKind === "occlusion";
+    ctx.fillStyle = directional ? "rgba(125,166,192,.18)" : "rgba(151,192,127,.2)";
     ctx.fill(paths.activeFill);
-    ctx.strokeStyle = "rgba(172,215,145,.9)";
+    ctx.strokeStyle = directional ? "rgba(156,199,221,.9)" : "rgba(172,215,145,.9)";
     ctx.lineWidth = 1.5;
     ctx.stroke(paths.activeOutline);
     ctx.restore();

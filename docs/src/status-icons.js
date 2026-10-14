@@ -4,6 +4,7 @@ import { STEALTH_RULES } from "./stealth.js";
 // One symbol vocabulary for world-space buffs and the accessible menu legend.
 export const STATUS_ICONS = Object.freeze({
   hide: { label: "Verborgen", path: "M3 10L7 4H17L21 10V18L12 22L3 18Z M7 11L10 13 M17 11L14 13" },
+  shield: { label: "Richtungsabhängiger Sichtschutz", path: "M4 4L12 2L20 4V12Q20 19 12 23Q4 19 4 12Z M12 6V18" },
   eye: { label: "Sichtbar / Schleichen", path: "M2 12Q12 1 22 12Q12 23 2 12Z M15 12A3 3 0 1 1 9 12A3 3 0 1 1 15 12" },
   sound: { label: "Geräuschpegel", path: "M3 10H7L12 5V19L7 14H3Z M16 8Q21 12 16 16 M19 4Q27 12 19 20" },
   wound: { label: "Verletzung", path: "M4 9L9 4L20 15L15 20Z M9 10L10 9 M12 13L13 12 M15 16L16 15" },
@@ -22,9 +23,10 @@ export function playerStatusIcons(game) {
   const spotted = game.zombies.some(z => !z.removed && z.state === "chase" && z.sightMemory?.visible);
   const recognition = Math.max(0, ...game.zombies.filter(z => !z.removed).map(z => z.sightMemory?.recognition || 0));
   const hidden = state.hidden && !spotted;
+  const directional = state.source === "cover" && state.coverKind === "occlusion";
   const noise = Math.max(p.noisePulse || 0, Math.min(1, (p.noiseRadius || 0) / 7));
   const icons = [
-    { slot: 0, id: hidden ? "hide" : "eye", color: spotted ? "#ee8472" : hidden ? "#b3d29b" : p.stance === "sneak" ? "#d7bc79" : "#a9b1a6",
+    { slot: 0, id: directional ? "shield" : hidden ? "hide" : "eye", color: spotted ? "#ee8472" : directional ? "#91b7c8" : hidden ? "#b3d29b" : p.stance === "sneak" ? "#d7bc79" : "#a9b1a6",
       progress: state.source === "openfield" ? state.openfieldRemaining / STEALTH_RULES.openfieldDuration : recognition || null },
     { slot: 1, id: "sound", color: noise > .68 ? "#ee8472" : noise > .3 ? "#d7bc79" : "#8bafb7", progress: noise },
   ];

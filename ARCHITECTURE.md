@@ -1,6 +1,6 @@
 # Modulkarte für SPERRKREIS 98
 
-Stand: Spielregeln v12.1, technische Modularisierung vom 02.10.2026.
+Fortlaufende Modulkarte auf Basis der technischen Modularisierung vom 02.10.2026.
 Zweck: den Einstieg und den Umfang eines Patches begrenzen.
 Spielregeln und Ideen stehen in `DESIGN_PLAN.md`; diese Karte enthält Zuständigkeiten.
 
@@ -13,7 +13,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Tap, Doppeltap, Halten, Kamera | `input.js`, `world-input.js` | Eingabeereignis → Ziel/Interaktion/Kamera; Bildschirmkoordinaten in `render.js` |
 | Spielersicht, Erkundung, Kameranebel | `player-visibility.js`, `camera-overlay.js` | 16-Tile-Rundumsicht unabhängig von Deckung/KI; Erkundung in Save v4, gemeinsame Sichtgrenze für Darstellung und Auswahl; Kamera bewegt nur den Bildausschnitt |
 | Laufziel, Weg und Ankunft | `player-navigation.js`, `movement.js` | Vierteltile-Spielerwege, präzise Ziele, begrenzte Deckungspräferenz; `navigation.js` bleibt die gröbere Zombie-Wegsuche |
-| Deckungszone und Hide | `cover.js`, `stealth.js`, `cover-display.js` | `CoverMap.at` und `StealthSystem.refresh`; gecachte Bodenflächen aus derselben Geometrie, Darstellung in `render.js` |
+| Deckungszone und Hide | `cover.js`, `cover-protection.js`, `stealth.js`, `cover-display.js`, `cover-surface.js` | Vegetation tarnt rundum, feste Deckung schützt pro Beobachter; gleiche Flächen/Kollision für Hide, Execution-Wege und interpolierte Bodenanzeigen; Darstellung in `render.js` |
 | Sicht, Verdacht, Verfolgung, Deckungssuche | `perception.js`, `cover-awareness.js`, `ai.js` | Basiswahrnehmung, Gedächtnis pro Zombie, Zustandswechsel; Sichtlinie in `world.js` |
 | Ruhephasen und Schlurfen | `zombie-idle.js` | Nur `idle`: Pausen, kurze erreichbare Wege und träge Drehung; `ai.js` behält Wahrnehmung und aktive Zustände |
 | Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Ansatz prüft Ziel vor Bewegung in `movement.js`, verdeckte Wege und Zielumfahrung über `player-navigation.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
@@ -66,6 +66,8 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
   Ausweichpositionen in Smartphone-Querformaten inklusive Safe-Areas.
 - `zombie-idle.test.mjs`: vollständige Ruhe-/Schlurfzyklen, kurze stabile Wege,
   Blockaden, unmittelbare Alarmreaktion, aktive Geschwindigkeiten und Save-Roundtrip.
+- `directional-cover.test.mjs`: Schutz pro Beobachter, Vegetationsvorrang, glatte
+  Zonenkanten/Wandkollision, Türöffnungen, sichere Execution-Wege und bestehende Geräuschregeln.
 - `.github/workflows/verify.yml`: alle Tests, JavaScript-Syntax und erforderliche
   Spieldateien. Bei reinen Dokumentationsänderungen genügt eine Diff-Prüfung.
 - Browserprüfung auf die veränderte Bedienung oder Darstellung begrenzen.

@@ -110,7 +110,8 @@ export class ZombieSystem {
     zombie.target = { ...zombie.lastSeen };
     zombie.awareness = Math.max(zombie.awareness || 0, clamp(heard.score * 0.55, 0.16, 0.72));
     this.setState(zombie, "investigate", 5 + heard.score * 4);
-    const cover = game.world.coverMap.at(heard.noise);
+    // Door/impact sounds may originate inside a solid object's footprint.
+    const cover = game.world.coverMap.at(heard.noise, null, null, true);
     if (cover) beginCoverSearch(zombie, game, cover.id, zombie.lastSeen, "sound");
     else zombie.coverSearch = null;
   }

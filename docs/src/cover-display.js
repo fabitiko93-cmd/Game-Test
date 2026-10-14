@@ -1,4 +1,5 @@
-import { COVER_RULES, coverAreaId, coverFootprint, distanceToFootprint, usableCover } from "./cover.js";
+import { COVER_RULES, coverAreaId, coverClearance, coverFootprint, usableCover } from "./cover.js";
+import { coverSurfaceContours } from "./cover-surface.js";
 
 // Display resolution only: detection remains continuous, using cover.js geometry.
 // One eighth of a tile projects to at most four CSS pixels on either ground axis.
@@ -12,6 +13,7 @@ export function coverDisplayKey(world, player, state) {
 export function buildCoverDisplay(world, player, activeCoverId = null) {
   const step = COVER_DISPLAY_STEP;
   const cells = new Map();
+  const candidates = new Map();
   const objects = world.objectsNear(Math.round(player.x), Math.round(player.y), COVER_DISPLAY_RADIUS)
     .filter(usableCover);
   for (const object of objects) {
@@ -20,8 +22,9 @@ export function buildCoverDisplay(world, player, activeCoverId = null) {
     const extentY = (shape.radius ?? shape.y) + COVER_RULES.margin;
     for (let y = Math.floor((object.y - extentY) / step); y <= Math.ceil((object.y + extentY) / step); y++) {
       for (let x = Math.floor((object.x - extentX) / step); x <= Math.ceil((object.x + extentX) / step); x++) {
+        candidates.set(`${x},${y}`, { x, y });
         const point = { x: (x + .5) * step, y: (y + .5) * step };
-        if (distanceToFootprint(point, object) > COVER_RULES.margin) continue;
+        if (coverClearance(point, object, world.coverMap.neighbors(point)) < 0) continue;
         const key = `${x},${y}`;
         let cell = cells.get(key);
         if (!cell) {
@@ -34,7 +37,8 @@ export function buildCoverDisplay(world, player, activeCoverId = null) {
       }
     }
   }
-  return { cells: [...cells.values()], borders: borders(cells, false), activeBorders: borders(cells, true) };
+  return { cells: [...cells.values()], borders: borders(cells, false), activeBorders: borders(cells, true),
+    ...coverSurfaceContours(world, candidates.values(), step, activeCoverId, objects) };
 }
 
 function borders(cells, activeOnly) {
@@ -81,9 +85,18 @@ function loops(edges) {
 
 export function coverDisplayPaths(surface, project, Path = Path2D) {
   const fill = new Path(), activeFill = new Path();
-  for (const [edges, path] of [[surface.borders, fill], [surface.activeBorders, activeFill]]) {
+  for (const [edges, path] of [[surface.contours || surface.borders, fill], [surface.activeContours || surface.activeBorders, activeFill]]) {
     for (const loop of loops(edges)) {
       const points = loop.map(([x, y]) => project(x * COVER_DISPLAY_STEP, y * COVER_DISPLAY_STEP));
+      if (surface.contours) {
+        path.moveTo(points[0].x, points[0].y);
+        for (const point of points.slice(1)) {
+          if (path.lineTo) path.lineTo(point.x, point.y);
+          else path.quadraticCurveTo(point.x, point.y, point.x, point.y);
+        }
+        path.closePath();
+        continue;
+      }
       const first = points[0], last = points.at(-1);
       path.moveTo((last.x + first.x) / 2, (last.y + first.y) / 2);
       for (let i = 0; i < points.length; i++) {

@@ -164,7 +164,7 @@ export class GameUI {
     this.el.noise_state.textContent = noiseLevel > .68 ? "LAUT" : noiseLevel > .3 ? "HÖRBAR" : noiseLevel > .05 ? "LEISE" : "STILL";
     const cover = game.stealth?.coverStatus(game) || { value: 0, label: "KEINE", detail: "UNGESCHÜTZT", hidden: false };
     this.el.cover_fill.style.width = `${cover.value * 100}%`;
-    this.el.cover_fill.style.background = cover.hidden ? "#8c9f78" : "#9a8658";
+    this.el.cover_fill.style.background = cover.directional ? "#7ca7bc" : cover.hidden ? "#8c9f78" : "#9a8658";
     this.el.cover_state.textContent = cover.hidden ? `${cover.label} · ${cover.detail}` : cover.label;
 
     const stealth = game.stealth.state(game);

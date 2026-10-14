@@ -20,12 +20,13 @@ export function playerVisibility(player, minutes, ignoreHide = false) {
   const stealth = skillValue(player, "stealth");
   const skillReduction = 1 - stealth * 0.003;
   const movement = player.running ? 1.28 : player.moving ? 1.06 : 0.82;
-  const hidden = !ignoreHide && player.stealthState?.hidden ? 0.12 : 1;
+  const state = player.stealthState;
+  const hidden = !ignoreHide && state?.hidden && (state.source === "openfield" || state.coverKind !== "occlusion") ? 0.12 : 1;
   return stance.visibility * skillReduction * movement * daylight(minutes) * hidden;
 }
 
 export function visionGeometry(observer, player, world, minutes, ignoreHide = false) {
-  const visibility = playerVisibility(player, minutes, ignoreHide) * (1 - world.concealmentAt(player));
+  const visibility = playerVisibility(player, minutes, ignoreHide) * (1 - world.concealmentAt(player, observer));
   return {
     visibility,
     range: VISION.range * (0.72 + visibility * 0.38),
