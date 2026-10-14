@@ -184,6 +184,10 @@ export class ZombieSystem {
     }
     // Finish fractional last-known positions in the current grid cell as well.
     const sameCell = Math.round(zombie.x) === Math.round(target.x) && Math.round(zombie.y) === Math.round(target.y);
+    // Chase must not lose one whole AI tick at every already-reached waypoint.
+    if (zombie.state === "chase") {
+      while (zombie.path?.length && distance(zombie, zombie.path[0]) < .16) zombie.path.shift();
+    }
     const node = zombie.path?.[0] || (sameCell && distance(zombie, target) > 0.12 ? target : null);
     if (!node) {
       zombie.moving = false;
@@ -201,7 +205,7 @@ export class ZombieSystem {
     const ny = dy / length;
     zombie.desiredFacingX = nx;
     zombie.desiredFacingY = ny;
-    const speed = zombie.state === "chase" ? 1.1 : zombie.state === "investigate" ? 0.82 : zombie.state === "search" ? 0.58 : 0.36;
+    const speed = zombie.state === "chase" ? 2 : zombie.state === "investigate" ? 0.82 : zombie.state === "search" ? 0.58 : 0.36;
     zombie.moving = game.moveEntity(zombie, nx * speed * delta, ny * speed * delta, 0.25);
     if (!zombie.moving) zombie.repathTimer = Math.min(zombie.repathTimer, 0.35);
   }

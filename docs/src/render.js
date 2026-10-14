@@ -1,13 +1,12 @@
 import { COLORS, VIEW } from "./config.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
-import { VISION, visionGeometry } from "./perception.js";
 import { clamp, hash2, lerp } from "./util.js";
 import { STATUS_ICONS, playerStatusIcons, zombieStatusIcons } from "./status-icons.js";
 import { vehicleFootprint } from "./cover.js";
 import { buildCoverDisplay, coverDisplayKey, coverDisplayPaths } from "./cover-display.js";
 import { PLAYER_VIEW, playerCanSee, rememberedScenery } from "./player-visibility.js";
 import { drawCameraOverlay } from "./camera-overlay.js";
-import { visionConeStyle } from "./vision-cone.js";
+import { VisionConeDisplay } from "./vision-display.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -29,7 +28,7 @@ export class Renderer {
     this.invalidDestination = null;
     this.contextId = null;
     this.frame = 0;
-    this.visionCache = new Map();
+    this.visionCones = new VisionConeDisplay();
     this.statusPaths = new Map(Object.entries(STATUS_ICONS).map(([id, icon]) => [id, new Path2D(icon.path)]));
     this.coverHintCache = { key: "", map: null, paths: null };
     this.diagnostics = false;
@@ -708,61 +707,7 @@ export class Renderer {
   }
 
   drawVisionCones(game) {
-    const ctx = this.ctx;
-    const tacticalVision = game.player.stance === "sneak" || (game.player.skills?.perception || 0) >= 25;
-    for (const zombie of game.zombies) {
-      const style = visionConeStyle(zombie, tacticalVision);
-      if (zombie.removed || !playerCanSee(game, zombie) || (!tacticalVision && !style.visibleByState)) continue;
-      const center = this.iso(zombie.x, zombie.y);
-      if (center.x < -250 || center.x > this.width + 250 || center.y < -180 || center.y > this.height + 180) continue;
-      const angle = Math.atan2(zombie.facingY ?? 1, zombie.facingX ?? 0);
-      const geometry = visionGeometry(zombie, game.player, game.world, game.minutes, true);
-      const cacheKey = `${Math.round(zombie.x * 4)},${Math.round(zombie.y * 4)},${Math.round(angle * 20)},${Math.round(geometry.range * 4)},${game.world.sightRevision}`;
-      let cached = this.visionCache.get(zombie.id);
-      if (!cached || cached.key !== cacheKey || this.frame - cached.frame > 10) {
-        const points = [];
-        for (let sample = 0; sample <= VISION.renderSamples; sample++) {
-          const rayAngle = angle - geometry.halfAngle + geometry.halfAngle * 2 * sample / VISION.renderSamples;
-          const rayDistance = game.world.sightDistance(zombie, rayAngle, geometry.range);
-          points.push({
-            x: zombie.x + Math.cos(rayAngle) * rayDistance,
-            y: zombie.y + Math.sin(rayAngle) * rayDistance,
-          });
-        }
-        cached = { key: cacheKey, frame: this.frame, points };
-        this.visionCache.set(zombie.id, cached);
-      }
-      ctx.save();
-      ctx.globalAlpha = style.alpha;
-      ctx.fillStyle = style.color;
-      ctx.beginPath();
-      ctx.moveTo(center.x, center.y);
-      for (const point of cached.points) {
-        const projected = this.iso(point.x, point.y);
-        ctx.lineTo(projected.x, projected.y);
-      }
-      ctx.closePath();
-      ctx.fill();
-      // A narrow dark underlay keeps the existing cone readable on bright terrain.
-      ctx.globalAlpha = style.outlineUnderlayAlpha;
-      ctx.strokeStyle = "#161b18";
-      ctx.lineWidth = 3;
-      ctx.lineJoin = "round";
-      ctx.stroke();
-      ctx.globalAlpha = style.outlineAlpha;
-      ctx.strokeStyle = style.color;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      if (tacticalVision) {
-        ctx.globalAlpha = .18;
-        ctx.strokeStyle = "#cfbd77";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.ellipse(center.x, center.y, geometry.nearRadius * 32, geometry.nearRadius * 15, 0, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
+    this.visionCones.draw(this, game);
   }
 
   drawPlayerNoise(game) {

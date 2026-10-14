@@ -107,8 +107,8 @@ test("noise and visible danger interrupt rest immediately without a grace period
   assert.deepEqual(watcher.target, { x: 20, y: 22 });
 });
 
-test("active search, investigation and chase keep their movement and turn rates", () => {
-  for (const [state, speed, turnRate] of [["investigate", .82, 3.6], ["search", .58, 3.6], ["chase", 1.1, 5.2]]) {
+test("search and investigation retain their rates; chase has the agreed faster movement", () => {
+  for (const [state, speed, turnRate] of [["investigate", .82, 3.6], ["search", .58, 3.6], ["chase", 2, 5.2]]) {
     const game = fixture(), z = game.zombies[0];
     Object.assign(z, { state, target: { x: 20, y: 22 }, path: [{ x: 20, y: 22 }], repathTimer: 1,
       facingX: 1, facingY: 0, desiredFacingX: 0, desiredFacingY: 1 });
@@ -129,6 +129,29 @@ test("idle turns and vision agree on a horizontal heading without jitter", () =>
   assert.ok(visionExposure(z, game.player, game.world, 700) > 0);
   game.player.x = 20; game.player.y = 22;
   assert.equal(visionExposure(z, game.player, game.world, 700), 0);
+});
+
+test("real pursuit closes on walking and sneaking while a sprint opens distance across AI waypoints", () => {
+  for (const fps of [30, 60]) for (const stance of ["walk", "sneak", "run"]) {
+    const game = fixture(), z = game.zombies[0], p = game.player;
+    Object.assign(z, { x: 10, y: 20, state: "chase", desiredFacingX: 1, desiredFacingY: 0 });
+    Object.assign(p, { x: 13, y: 20, dead: false, stance: stance === "run" ? "walk" : stance, inventory: [] });
+    game.input = { keyboardMovement: () => ({ x: 1, y: 1, magnitude: 1, run: stance === "run" }) };
+    game.stepTimer = 0;
+    const initial = d(z, p), delta = 1 / fps;
+    let aiTime = 0;
+    for (let i = 0; i < fps * 2; i++) {
+      game.updateMovement(delta);
+      aiTime += delta;
+      if (aiTime >= 1 / 30) {
+        z.target = { x: p.x, y: p.y }; z.repathTimer -= aiTime;
+        game.zombieSystem.updateMovement(z, game, aiTime); aiTime = 0;
+      }
+    }
+    const gap = d(z, p);
+    if (stance === "run") assert.ok(gap > initial + 2, `sprint escapes at ${fps} FPS: ${gap}`);
+    else assert.ok(gap < initial - .1, `${stance} cannot outpace chase at ${fps} FPS: ${gap}`);
+  }
 });
 
 test("legacy idle routes convert in place and modern rest/shuffle phases survive save/load", () => {

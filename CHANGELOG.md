@@ -1,3 +1,26 @@
+# Weiche Sichtkegel und Verfolgungstempo · 14.10.2026
+
+- Sichtkegel als transparenter Lichtschein ohne farbige oder dunkle Kontur.
+  Entsättigtes Warmgelb, weich auslaufende Seiten und Reichweitenenden; Orange
+  bis Rot folgt weiterhin dem bestehenden Erkennungsfortschritt. Ausgewählte
+  Zombies erhalten eine moderate Hervorhebung, keine zusätzliche Bedienung.
+- Eine gemeinsame Zeichenebene begrenzt die Gesamtdichte überlappender Kegel
+  auf 25 Prozent. Gefahr wird zuletzt gezeichnet, damit ruhige gelbe Kegel
+  die rote Warnung nicht überdecken. Kleine Nahbereichsringe entfallen.
+- Exakte Strahlenschnittpunkte an zusammengefassten Sichtzellen und tatsächlichen
+  Fahrzeugflächen ersetzen die grobe Abstandssuche. Zusätzliche Strahlen an
+  Hindernisecken erhalten saubere Schatten und freie Türöffnungen. Die weiche
+  Textur bleibt auf die sichtbare Fläche beschränkt und scheint nicht durch Wände.
+- Position, Richtung und Reichweite aktualisieren die Kegel ohne Rasterstufen
+  oder zeitlich verzögerte Weltpunkte. Statische Hinderniskanten, unveränderte
+  Kegel und begrenzt viele Farbtexturen werden wiederverwendet.
+- Verfolgungstempo 2,0 statt 1,1 Tiles pro Sekunde. Bereits erreichte Wegpunkte
+  kosten in der Verfolgung keinen zusätzlichen KI-Takt: Gehen und Schleichen
+  verlieren Abstand, Sprint gewinnt Abstand. Ruhe-/Schlurfverhalten, Such- und
+  Untersuchungstempo sowie Spielerbewegung bleiben erhalten.
+- Bestehende Sicht-/Hide-Regeln, Geräusche, Ausdauer und Save v4 bleiben erhalten.
+  Neue Regressionen prüfen Abschattung, Bewegung und tatsächliche Verfolgung.
+
 # Ruhige Zombies · 13.10.2026
 
 - Nicht alarmierte Zombies wechseln zwischen individuellen Ruhephasen von
