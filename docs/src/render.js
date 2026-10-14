@@ -743,10 +743,15 @@ export class Renderer {
       }
       ctx.closePath();
       ctx.fill();
+      // A narrow dark underlay keeps the existing cone readable on bright terrain.
+      ctx.globalAlpha = style.outlineUnderlayAlpha;
+      ctx.strokeStyle = "#161b18";
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.stroke();
       ctx.globalAlpha = style.outlineAlpha;
       ctx.strokeStyle = style.color;
-      ctx.lineWidth = 1.25;
-      ctx.lineJoin = "round";
+      ctx.lineWidth = 1.5;
       ctx.stroke();
       if (tacticalVision) {
         ctx.globalAlpha = .18;
