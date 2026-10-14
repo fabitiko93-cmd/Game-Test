@@ -1,5 +1,5 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "553114e06adf759b8500";
+const BUILD_ID = "621ae157659bb0a71e40";
 const FILES = [
   "./assets/icon.svg",
   "./build/main-BSAUUZDB.js",
