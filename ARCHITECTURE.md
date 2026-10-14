@@ -24,7 +24,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Missionsfortschritt | `missions.js`, `game.js` | `updateMission`; Missionsmenü in `ui.js` |
 | Speichern und Laden | `save.js`, `game-state.js`, `world.js` | `serialize`/`load`, Weltobjekte und Zustand; Save-Version in `config.js` |
 | Nachfolgefigur und Weltbeginn | `game.js` | Überlebender, Startzustand und bestehende Welt |
-| Grafik, Auflösung, Renderleistung | `render.js`, `config.js` | Kamera, Projektion, sichtbare Objekte, Canvas; Spieltakt in `game.js` |
+| Grafik, Auflösung, Renderleistung | `render.js`, `vision-cone.js`, `config.js` | Kamera, Projektion, sichtbare Objekte, Canvas; Kegelfarbe folgt bestehender Sicht-Erkennung; Spieltakt in `game.js` |
 | Start, Laufzeitparameter, Hilfsfunktionen | `main.js`, `config.js`, `util.js` | `main.js` verbindet Welt, Renderer, Eingabe, UI und Game |
 | Audio | `game-audio.js` | Bestehende Web-Audio-Presets; `Game.sound` bleibt als Aufruf erhalten |
 | Veröffentlichung und Offlinecache | `scripts/build.mjs`, `web/index.html`, `web/service-worker.js` | Generiert Einstieg, Hashdateien, Cache-ID und vollständige Cacheliste |
