@@ -7,6 +7,7 @@ import { canInteract } from "./interaction.js";
 
 export function updateMovement(game, delta) {
   const player = game.player, navigation = player.navigation;
+  if (navigation.source === "combat" && !game.combat.target(game)) game.clearNavigation();
   const keyboard = game.input.keyboardMovement();
   if (keyboard.magnitude <= 0 && navigation.source === "execution") game.stealth.updateExecution?.(game);
   if (!navigation.path.length && keyboard.magnitude <= 0 && navigation.source === "manual"

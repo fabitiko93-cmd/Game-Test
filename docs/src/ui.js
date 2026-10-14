@@ -139,6 +139,11 @@ export class GameUI {
   }
 
   update(player, game) {
+    const cameraFree = Boolean(game.input.cameraFree);
+    this.el.recenter_button.classList.toggle("active", cameraFree);
+    this.el.recenter_button.setAttribute("aria-pressed", String(cameraFree));
+    this.el.recenter_button.setAttribute("aria-label", cameraFree ? "Freie Kamera beenden und zur Figur zurückkehren" : "Freie Kamera aktivieren");
+    this.el.recenter_button.title = cameraFree ? "Zur Figur zurückkehren" : "Freie Kamera";
     this.el.hp_fill.style.width = `${Math.max(0, player.hp)}%`;
     this.el.stamina_fill.style.width = `${Math.max(0, player.stamina)}%`;
     const hungerSeverity = 100 - player.hunger;

@@ -1,6 +1,6 @@
 
 export function tapWorld(game, x, y) {
-  if (!game.canAct()) return;
+  if (!game.canAct() || game.input.cameraFree) return;
   const hit = game.renderer.pick(x, y);
   if (hit?.kind === "zombie") {
     game.combat.selectTarget(game, hit.ref);
@@ -23,7 +23,7 @@ export function tapWorld(game, x, y) {
 }
 
 export function doubleTapWorld(game, x, y) {
-  if (!game.canAct()) return;
+  if (!game.canAct() || game.input.cameraFree) return;
   const hit = game.renderer.pick(x, y);
   if (hit?.kind === "object") {
     game.queueInteraction(hit.ref);
@@ -39,7 +39,7 @@ export function doubleTapWorld(game, x, y) {
 }
 
 export function startGuidedMovement(game, x, y, options = {}) {
-  if (!game.canAct()) return;
+  if (!game.canAct() || game.input.cameraFree) return;
   const hit = game.renderer.pick(x, y);
   game.holdBlocked = Boolean(hit);
   if (hit) {
@@ -51,7 +51,7 @@ export function startGuidedMovement(game, x, y, options = {}) {
 }
 
 export function updateGuidedMovement(game, x, y, options = {}) {
-  if (game.holdBlocked || !game.canAct()) return;
+  if (game.holdBlocked || !game.canAct() || game.input.cameraFree) return;
   game.setDestination(game.renderer.screenToWorld(x, y), {
     source: "manual",
     guided: true,
@@ -80,7 +80,10 @@ export function endCameraPan(game) {
 }
 
 export function recenterCamera(game) {
-  if (!game.started) return;
-  game.renderer.recenter(game.player);
-  game.ui.showToast("KAMERA ZENTRIERT", 1.1);
+  if (!game.canAct()) return;
+  const free = !game.input.cameraFree;
+  game.input.setCameraFree(free);
+  if (free) { game.renderer.beginPan(); game.renderer.endPan(); }
+  else game.renderer.recenter(game.player);
+  game.ui.showToast(free ? "FREIE KAMERA · ZIEHEN ZUM VERSCHIEBEN" : "KAMERA FOLGT DER FIGUR", 1.5);
 }

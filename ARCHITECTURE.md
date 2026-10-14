@@ -11,6 +11,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Aufgabe | Zuständige Module | Relevante Verbindung |
 |---|---|---|
 | Tap, Doppeltap, Halten, Kamera | `input.js`, `world-input.js` | Eingabeereignis → Ziel/Interaktion/Kamera; Bildschirmkoordinaten in `render.js` |
+| Spielersicht, Erkundung, Kameranebel | `player-visibility.js`, `camera-overlay.js` | 16-Tile-Rundumsicht unabhängig von Deckung/KI; Erkundung in Save v4, gemeinsame Sichtgrenze für Darstellung und Auswahl; Kamera bewegt nur den Bildausschnitt |
 | Laufziel, Weg und Ankunft | `player-navigation.js`, `movement.js` | Vierteltile-Spielerwege, präzise Ziele, begrenzte Deckungspräferenz; `navigation.js` bleibt die gröbere Zombie-Wegsuche |
 | Deckungszone und Hide | `cover.js`, `stealth.js`, `cover-display.js` | `CoverMap.at` und `StealthSystem.refresh`; gecachte Bodenflächen aus derselben Geometrie, Darstellung in `render.js` |
 | Sicht, Verdacht, Verfolgung, Deckungssuche | `perception.js`, `cover-awareness.js`, `ai.js` | Basiswahrnehmung, Gedächtnis pro Zombie, Zustandswechsel; Sichtlinie in `world.js` |
