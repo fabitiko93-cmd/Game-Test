@@ -24,7 +24,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Missionsfortschritt | `missions.js`, `game.js` | `updateMission`; Missionsmenü in `ui.js` |
 | Speichern und Laden | `save.js`, `game-state.js`, `world.js` | `serialize`/`load`, Weltobjekte und Zustand; Save-Version in `config.js` |
 | Nachfolgefigur und Weltbeginn | `game.js` | Überlebender, Startzustand und bestehende Welt |
-| Grafik, Auflösung, Renderleistung | `render.js`, `vision-cone.js`, `config.js` | Kamera, Projektion, sichtbare Objekte, Canvas; Kegelfarbe folgt bestehender Sicht-Erkennung; Spieltakt in `game.js` |
+| Grafik, Auflösung, Renderleistung | `render.js`, `vision-cone.js`, `vision-display.js`, `vision-geometry.js`, `config.js` | Kamera, Projektion, sichtbare Objekte, Canvas; weiche Kegel auf gemeinsamer Ebene mit genauer Hindernisabschattung, Farbe nach bestehender Sicht-Erkennung; Spieltakt in `game.js` |
 | Start, Laufzeitparameter, Hilfsfunktionen | `main.js`, `config.js`, `util.js` | `main.js` verbindet Welt, Renderer, Eingabe, UI und Game |
 | Audio | `game-audio.js` | Bestehende Web-Audio-Presets; `Game.sound` bleibt als Aufruf erhalten |
 | Veröffentlichung und Offlinecache | `scripts/build.mjs`, `web/index.html`, `web/service-worker.js` | Generiert Einstieg, Hashdateien, Cache-ID und vollständige Cacheliste |
@@ -65,7 +65,11 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
 - `target-layout.test.mjs`: freie, stabile Zielfenster, Randpositionen und
   Ausweichpositionen in Smartphone-Querformaten inklusive Safe-Areas.
 - `zombie-idle.test.mjs`: vollständige Ruhe-/Schlurfzyklen, kurze stabile Wege,
-  Blockaden, unmittelbare Alarmreaktion, aktive Geschwindigkeiten und Save-Roundtrip.
+  Blockaden, unmittelbare Alarmreaktion, aktive Geschwindigkeiten, echte Verfolgung
+  gegenüber Gehen/Schleichen/Sprint bei 30 und 60 FPS sowie Save-Roundtrip.
+- `vision-cone.test.mjs`: genaue Schatten an Wänden und Fahrzeugen, Türöffnungen,
+  kleine Bewegungen/Drehungen, Geometrie-Cache bei Weltwechseln, weiche Grenzen und
+  bestehender Erkennungsfarbverlauf ohne Änderungen an Wahrnehmungsdaten.
 - `directional-cover.test.mjs`: Schutz pro Beobachter, Vegetationsvorrang, glatte
   Zonenkanten/Wandkollision, Türöffnungen, sichere Execution-Wege und bestehende Geräuschregeln.
 - `.github/workflows/verify.yml`: alle Tests, JavaScript-Syntax und erforderliche

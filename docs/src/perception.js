@@ -6,7 +6,6 @@ export const VISION = Object.freeze({
   range: 8.2,
   halfAngle: Math.PI / 3,
   nearRadius: 0.68,
-  renderSamples: 10,
 });
 
 export function daylight(minutes) {

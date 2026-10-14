@@ -1,10 +1,10 @@
 {
-  "id": "7d31cb51ddf34447866c",
-  "script": "build/main-7AHFSO75.js",
+  "id": "889a162881b0005eb964",
+  "script": "build/main-F5LPKSUQ.js",
   "style": "build/style-KUDVED4H.css",
   "precache": [
     "assets/icon.svg",
-    "build/main-7AHFSO75.js",
+    "build/main-F5LPKSUQ.js",
     "build/style-KUDVED4H.css",
     "index.html",
     "manifest.webmanifest"
