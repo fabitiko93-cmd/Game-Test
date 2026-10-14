@@ -1,7 +1,7 @@
 import { clamp, lerp } from "./util.js";
 
-const QUIET_COLOR = [200, 172, 97];
-const SPOTTED_COLOR = [188, 73, 62];
+const QUIET_COLOR = [238, 201, 81];
+const SPOTTED_COLOR = [227, 79, 60];
 
 // Read existing perception only: sound suspicion must not look like visual detection.
 // Recognition covers the brief crossing window before awareness starts increasing.
@@ -16,7 +16,8 @@ export function visionConeStyle(zombie, tacticalVision) {
       || (zombie.stimulus === "vision" && (zombie.awareness || 0) >= .12)
       || (memory?.recognition || 0) >= .12,
     color: `rgb(${channels.join(",")})`,
-    alpha: lerp(tacticalVision ? .10 : .08, .18, progress),
-    outlineAlpha: lerp(.35, .50, progress),
+    alpha: lerp(tacticalVision ? .14 : .12, .22, progress),
+    outlineAlpha: lerp(.70, .90, progress),
+    outlineUnderlayAlpha: lerp(.45, .60, progress),
   };
 }
