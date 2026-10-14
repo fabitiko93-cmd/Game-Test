@@ -29,6 +29,7 @@ export class InputController {
     this.holdTimer = null;
     this.lastTap = { time: 0, x: 0, y: 0 };
     this.panning = false;
+    this.cameraFree = false;
     this.panCentroid = null;
     this.suppressUntilClear = false;
     this.bind();
@@ -116,16 +117,23 @@ export class InputController {
       // Some embedded iOS browsers reject capture while changing gesture state.
     }
 
+    if (this.cameraFree) {
+      if (this.primaryId !== null || this.suppressUntilClear) return;
+      this.primaryId = event.pointerId;
+      this.panning = true;
+      this.panCentroid = point;
+      this.callbacks.panStart?.();
+      return;
+    }
+
     if (this.pointers.size >= 2) {
+      this.lastTap.time = 0;
       window.clearTimeout(this.holdTimer);
       if (this.holding) this.callbacks.holdEnd?.();
       this.holding = false;
       this.holdTimer = null;
       this.primaryId = null;
-      this.panning = true;
       this.suppressUntilClear = true;
-      this.panCentroid = this.centroid();
-      this.callbacks.panStart?.();
       return;
     }
 
@@ -153,9 +161,9 @@ export class InputController {
     this.pointers.set(event.pointerId, next);
 
     if (this.panning) {
-      const centroid = this.centroid();
-      if (centroid && this.panCentroid) this.callbacks.panMove?.(centroid.x - this.panCentroid.x, centroid.y - this.panCentroid.y);
-      this.panCentroid = centroid;
+      if (event.pointerId !== this.primaryId) return;
+      if (this.panCentroid) this.callbacks.panMove?.(next.x - this.panCentroid.x, next.y - this.panCentroid.y);
+      this.panCentroid = next;
       return;
     }
 
@@ -177,9 +185,11 @@ export class InputController {
     this.pointers.delete(event.pointerId);
 
     if (this.panning) {
-      if (this.pointers.size < 2) {
+      if (event.pointerId === this.primaryId) {
         this.panning = false;
+        this.primaryId = null;
         this.panCentroid = null;
+        this.suppressUntilClear = Boolean(this.pointers.size);
         this.callbacks.panEnd?.();
       }
       if (!this.pointers.size) this.resetPointerState();
@@ -235,6 +245,12 @@ export class InputController {
     this.panning = false;
     this.panCentroid = null;
     this.resetPointerState();
+  }
+
+  setCameraFree(active) {
+    this.cancelPointer();
+    this.lastTap.time = 0;
+    this.cameraFree = Boolean(active);
   }
 
   keyboardMovement() {

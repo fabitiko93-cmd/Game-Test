@@ -1,11 +1,11 @@
 {
-  "id": "5b8dcb330dd998bd8df6",
-  "script": "build/main-MHOTHOO7.js",
-  "style": "build/style-7LLKPWUD.css",
+  "id": "8cb7e036f765c4fd9822",
+  "script": "build/main-4NSKRTHT.js",
+  "style": "build/style-KUDVED4H.css",
   "precache": [
     "assets/icon.svg",
-    "build/main-MHOTHOO7.js",
-    "build/style-7LLKPWUD.css",
+    "build/main-4NSKRTHT.js",
+    "build/style-KUDVED4H.css",
     "index.html",
     "manifest.webmanifest"
   ]

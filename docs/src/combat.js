@@ -3,13 +3,15 @@ import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, wea
 import { behindTarget } from "./perception.js";
 import { clamp, distance, vibrate } from "./util.js";
 import { executionBlockReason, STEALTH_RULES } from "./stealth.js";
+import { playerCanSee } from "./player-visibility.js";
 
 export class CombatSystem {
   target(game) {
-    return game.zombies.find(zombie => zombie.id === game.player.combat.targetId && !zombie.removed) || null;
+    return game.zombies.find(zombie => zombie.id === game.player.combat.targetId && !zombie.removed && playerCanSee(game, zombie)) || null;
   }
 
   selectTarget(game, zombie) {
+    if (zombie && !playerCanSee(game, zombie)) return;
     game.player.combat.targetId = zombie?.id || null;
     game.player.combat.waitingForTarget = false;
     game.renderer.selectedId = zombie?.id || null;

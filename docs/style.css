@@ -369,6 +369,8 @@ h1 span { color: var(--red-bright); }
   box-shadow: 0 3px 9px #0008;
 }
 .utility button span { margin-right: 3px; font-size: 12px; }
+#recenter-button { min-width: 44px; min-height: 44px; }
+#recenter-button.active { color: #eed49a; border-color: #c6a45d; background: #3b3522; }
 .utility b { color: #9da08f; font-weight: 500; }
 #recenter-button, #pause-button { width: 32px; padding: 0; font-size: 15px; }
 #mission-button { border-color: rgba(198,164,93,.3); }

@@ -8,6 +8,7 @@ import { ZombieSystem, createInitialZombies } from "./ai.js";
 import { backgroundName, createPlayer, gainSkill, inflictZombieAttack, skillValue, updateCharacter } from "./character.js";
 import { CombatSystem } from "./combat.js";
 import { GAME } from "./config.js";
+import { PlayerVisibility, playerCanSee } from "./player-visibility.js";
 
 import { activeWeapon, ammoLabel, itemDefinition, removeItem, roundsInWeapon } from "./inventory.js";
 import { Navigator } from "./navigation.js";
@@ -31,6 +32,7 @@ export class Game {
     this.stealth = new StealthSystem();
     this.saveStore = new SaveStore();
     this.player = createPlayer({ name: "Alex", background: "citizen" });
+    this.playerVisibility = new PlayerVisibility();
     ensureStealthState(this.player);
     this.zombies = createInitialZombies();
     this.minutes = GAME.startMinutes;
@@ -122,6 +124,7 @@ export class Game {
     if (this.started && !window.confirm("DIE GESAMTE WELT UND ALLE ÜBERLEBENDEN LÖSCHEN?")) return;
     this.saveStore.clear();
     this.world.reset(GAME.seed);
+    this.playerVisibility = new PlayerVisibility();
     this.zombies = createInitialZombies();
     this.minutes = GAME.startMinutes;
     this.mission = 0;
@@ -153,6 +156,8 @@ export class Game {
       player.y = safest.y;
     }
     this.player = player;
+    this.playerVisibility?.update(player);
+    this.input.setCameraFree?.(false);
     this.survivorCount = nextNumber;
     this.dead = false;
     this.player.dead = false;
@@ -191,6 +196,8 @@ export class Game {
   }
 
   beginLoop() {
+    this.playerVisibility.update(this.player);
+    this.input.setCameraFree?.(false);
     this.initAudio();
     this.renderer.follow(this.player, true);
     this.ui.enterGame();
@@ -230,6 +237,7 @@ export class Game {
     this.player.hurtFlash = Math.max(0, (this.player.hurtFlash || 0) - delta);
     this.player.hitKick = Math.max(0, (this.player.hitKick || 0) - delta * 8);
     this.updateMovement(delta);
+    this.playerVisibility.update(this.player);
     this.combat.update(this, delta);
     this.stealth.update(this, delta);
     this.aiAccumulator += delta;
@@ -350,7 +358,7 @@ export class Game {
   }
 
   selectedObject() {
-    return this.world.objects.find(object => object.id === this.renderer.selectedId && object.interactable && !object.removed) || null;
+    return this.world.objects.find(object => object.id === this.renderer.selectedId && object.interactable && !object.removed && playerCanSee(this, object)) || null;
   }
 
   contextObject() {
@@ -599,7 +607,7 @@ export class Game {
     let result = null;
     let best = range;
     for (const zombie of this.zombies) {
-      if (zombie.removed) continue;
+      if (zombie.removed || !playerCanSee(this, zombie)) continue;
       const d = distance(this.player, zombie);
       if (d < best) {
         best = d;

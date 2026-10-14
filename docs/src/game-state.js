@@ -2,10 +2,12 @@ import { GAME } from "./config.js";
 import { createInitialZombies } from "./ai.js";
 import { ensureStealthState } from "./stealth.js";
 import { totalBleeding } from "./character.js";
+import { PlayerVisibility } from "./player-visibility.js";
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
 
 export function serialize(game) {
+  game.playerVisibility?.update(game.player);
   const player = deepCopy(game.player);
   player.navigation = {
     path: [],
@@ -26,6 +28,7 @@ export function serialize(game) {
     player,
     zombies,
     world: game.world.serialize(),
+    exploration: game.playerVisibility?.serialize(),
   };
 }
 
@@ -46,6 +49,9 @@ export function load(game) {
   game.survivorCount = saved.survivorCount ?? saved.player.survivorNumber ?? 1;
   game.migrationTimer = saved.migrationTimer ?? GAME.migrationSeconds;
   game.player = saved.player;
+  game.playerVisibility = new PlayerVisibility();
+  game.playerVisibility.restore(saved.exploration);
+  game.playerVisibility.update(game.player);
   ensureStealthState(game.player);
   game.player.stealthState.hidden = false;
   game.player.stealthState.execution = null;

@@ -5,6 +5,8 @@ import { clamp, hash2, lerp } from "./util.js";
 import { STATUS_ICONS, playerStatusIcons, zombieStatusIcons } from "./status-icons.js";
 import { vehicleFootprint } from "./cover.js";
 import { buildCoverDisplay, coverDisplayKey, coverDisplayPaths } from "./cover-display.js";
+import { PLAYER_VIEW, playerCanSee, rememberedScenery } from "./player-visibility.js";
+import { drawCameraOverlay } from "./camera-overlay.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -152,6 +154,9 @@ export class Renderer {
     this.updateParticles(delta);
     this.updateTracers(delta);
     this.follow(game.player);
+    game.playerVisibility?.update(game.player);
+    this.playerVisibility = game.playerVisibility;
+    this.viewPlayer = game.player;
     const ctx = this.ctx;
     ctx.setTransform(this.scale, 0, 0, this.scale, 0, 0);
     ctx.fillStyle = this.backgroundGradient || "#101a15";
@@ -169,13 +174,14 @@ export class Renderer {
     const drawables = [];
     const bounds = this.visibleWorldBounds(4);
     for (const object of game.world.objectsInBounds(bounds.minX, bounds.minY, bounds.maxX, bounds.maxY)) {
+      if (!playerCanSee(game, object) && (!rememberedScenery(object) || !game.playerVisibility?.hasExplored(object))) continue;
       const p = this.iso(object.x, object.y);
       if (p.x >= -130 && p.x <= this.width + 130 && p.y >= -160 && p.y <= this.height + 100) {
         drawables.push({ kind: "object", ref: object, depth: object.x + object.y });
       }
     }
     for (const zombie of game.zombies) {
-      if (zombie.removed) continue;
+      if (zombie.removed || !playerCanSee(game, zombie)) continue;
       const p = this.iso(zombie.x, zombie.y);
       if (p.x >= -130 && p.x <= this.width + 130 && p.y >= -160 && p.y <= this.height + 100) {
         drawables.push({ kind: "zombie", ref: zombie, depth: zombie.x + zombie.y + .06 });
@@ -197,6 +203,7 @@ export class Renderer {
     this.drawNoiseHints(game.world);
     this.drawLighting(game);
     this.drawVignette();
+    drawCameraOverlay(this, game);
     // Draw after scenery/lighting: cover never hides the player's status icons.
     this.drawEntityStatuses(game, drawables);
   }
@@ -279,6 +286,11 @@ export class Renderer {
         const p = this.iso(x, y);
         if (p.x < -VIEW.tileW || p.x > this.width + VIEW.tileW || p.y < -VIEW.tileH || p.y > this.height + VIEW.tileH) continue;
         visibleTiles += 1;
+        if (this.playerVisibility && !this.playerVisibility.hasExplored({ x, y })
+          && !this.playerVisibility.canSee({ x, y }, this.viewPlayer)) {
+          this.diamond(p.x, p.y, VIEW.tileW + .8, VIEW.tileH + .8, "#0a100d");
+          continue;
+        }
         const type = world.tiles[y][x];
         const palette = COLORS[type] || COLORS.grass;
         const variant = Math.floor(hash2(x, y, world.seed) * palette.length) % palette.length;
@@ -332,7 +344,8 @@ export class Renderer {
   }
 
   drawObject(o, game) {
-    const selected = this.selectedId === o.id;
+    const visible = playerCanSee(game, o);
+    const selected = visible && this.selectedId === o.id;
     if (selected) this.drawSelection(o.x, o.y, o.solid ? .58 : .42);
     switch (o.type) {
       case "wall": this.drawBlock(o.x, o.y, .96, .96, 42, o.color || "#70695c"); break;
@@ -359,7 +372,7 @@ export class Renderer {
       case "sign": this.drawSign(o); break;
       default: break;
     }
-    if (o.interactable) {
+    if (o.interactable && visible) {
       const hitZ = o.type === "corpse" || o.type === "groundloot" ? 7 : o.type === "radio" ? 12 : 19;
       const p = this.iso(o.x, o.y, hitZ);
       const radius = o.type === "door" ? 38 : o.type === "corpse" ? 36 : 34;
@@ -665,6 +678,13 @@ export class Renderer {
     }
     const ctx = this.ctx, paths = this.coverHintCache.paths;
     ctx.save();
+    if (game.playerVisibility) {
+      const center = this.iso(player.x, player.y);
+      ctx.beginPath();
+      ctx.ellipse(center.x, center.y, PLAYER_VIEW.radius * VIEW.tileW / Math.SQRT2,
+        PLAYER_VIEW.radius * VIEW.tileH / Math.SQRT2, 0, 0, Math.PI * 2);
+      ctx.clip();
+    }
     ctx.translate(this.width * .5 - this.camera.x, this.height * .5 - this.camera.y);
     ctx.fillStyle = "rgba(205,180,111,.13)";
     ctx.fill(paths.fill);
@@ -690,7 +710,7 @@ export class Renderer {
     const tacticalVision = game.player.stance === "sneak" || (game.player.skills?.perception || 0) >= 25;
     for (const zombie of game.zombies) {
       const visibleByState = zombie.state === "chase" || (zombie.stimulus === "vision" && (zombie.awareness || 0) >= .12);
-      if (zombie.removed || (!tacticalVision && !visibleByState)) continue;
+      if (zombie.removed || !playerCanSee(game, zombie) || (!tacticalVision && !visibleByState)) continue;
       const center = this.iso(zombie.x, zombie.y);
       if (center.x < -250 || center.x > this.width + 250 || center.y < -180 || center.y > this.height + 180) continue;
       const angle = Math.atan2(zombie.facingY ?? 1, zombie.facingX ?? 0);
@@ -801,6 +821,8 @@ export class Renderer {
   drawTracers() {
     const ctx = this.ctx;
     for (const tracer of this.tracers) {
+      if (this.playerVisibility && (!this.playerVisibility.canSee({ x: tracer.x1, y: tracer.y1 }, this.viewPlayer)
+        || !this.playerVisibility.canSee({ x: tracer.x2, y: tracer.y2 }, this.viewPlayer))) continue;
       const from = this.iso(tracer.x1, tracer.y1, 23);
       const to = this.iso(tracer.x2, tracer.y2, 20);
       ctx.save();
@@ -818,6 +840,8 @@ export class Renderer {
   drawRoofs(game) {
     const ctx=this.ctx;
     for(const b of game.world.buildings){
+      const center = { x: b.x + b.w / 2, y: b.y + b.h / 2 };
+      if (game.playerVisibility && !playerCanSee(game, center) && !game.playerVisibility.hasExplored(center)) continue;
       const inside=game.world.insideBuilding(game.player,b.id);
       const a=this.iso(b.x-.15,b.y-.15,48),c=this.iso(b.x+b.w-.85,b.y+b.h-.85,48),right=this.iso(b.x+b.w-.85,b.y-.15,48),left=this.iso(b.x-.15,b.y+b.h-.85,48);
       ctx.save();ctx.globalAlpha=inside?.id === b.id ? .07 : .94;
@@ -828,16 +852,16 @@ export class Renderer {
     }
   }
 
-  drawBlood(world){const ctx=this.ctx;for(const b of world.blood){const p=this.iso(b.x,b.y);ctx.globalAlpha=clamp(b.life,0,1)*.55;ctx.fillStyle="#5d1918";ctx.beginPath();ctx.ellipse(p.x,p.y,b.size*11,b.size*4,b.rotation,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;}
+  drawBlood(world){const ctx=this.ctx;for(const b of world.blood){if(this.playerVisibility&&!this.playerVisibility.canSee(b,this.viewPlayer))continue;const p=this.iso(b.x,b.y);ctx.globalAlpha=clamp(b.life,0,1)*.55;ctx.fillStyle="#5d1918";ctx.beginPath();ctx.ellipse(p.x,p.y,b.size*11,b.size*4,b.rotation,0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;}
 
-  drawNoiseHints(world){const ctx=this.ctx;for(const n of world.noises){if(n.kind==="step")continue;const p=this.iso(n.x,n.y);const progress=1-n.life/n.maxLife;ctx.globalAlpha=(1-progress)*.18;ctx.strokeStyle="#e5dcc0";ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(p.x,p.y,n.radius*32*progress,n.radius*14*progress,0,0,Math.PI*2);ctx.stroke();}ctx.globalAlpha=1;}
+  drawNoiseHints(world){const ctx=this.ctx;for(const n of world.noises){if(n.kind==="step"||(this.playerVisibility&&!this.playerVisibility.canSee(n,this.viewPlayer)))continue;const p=this.iso(n.x,n.y);const progress=1-n.life/n.maxLife;ctx.globalAlpha=(1-progress)*.18;ctx.strokeStyle="#e5dcc0";ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(p.x,p.y,n.radius*32*progress,n.radius*14*progress,0,0,Math.PI*2);ctx.stroke();}ctx.globalAlpha=1;}
 
   drawLighting(game){
     const ctx=this.ctx;const angle=(game.minutes/1440)*Math.PI*2-Math.PI/2;const sun=clamp((Math.sin(angle)+.25)/1.25,0,1);const dark=.5*(1-sun);
     if(dark>.02){ctx.fillStyle=`rgba(13,24,31,${dark})`;ctx.fillRect(0,0,this.width,this.height);}
     ctx.globalCompositeOperation="screen";
     const bounds=this.visibleWorldBounds(3);
-    for(const o of game.world.objectsInBounds(bounds.minX,bounds.minY,bounds.maxX,bounds.maxY)){if(o.removed||!o.light)continue;const p=this.iso(o.x,o.y,42);ctx.drawImage(this.streetlightGlow,p.x-70,p.y-70);}
+    for(const o of game.world.objectsInBounds(bounds.minX,bounds.minY,bounds.maxX,bounds.maxY)){if(o.removed||!o.light||(game.playerVisibility&&!playerCanSee(game,o)&&!game.playerVisibility.hasExplored(o)))continue;const p=this.iso(o.x,o.y,42);ctx.drawImage(this.streetlightGlow,p.x-70,p.y-70);}
     ctx.globalCompositeOperation="source-over";
     if(sun<.35){const p=this.iso(game.player.x,game.player.y,12);ctx.globalCompositeOperation="screen";ctx.drawImage(this.playerGlow,p.x-130,p.y-130);ctx.globalCompositeOperation="source-over";}
   }
@@ -846,9 +870,9 @@ export class Renderer {
 
   burst(x,y,color="#b94138",count=8){for(let i=0;i<count;i++)this.particles.push({x,y,z:18+Math.random()*8,vx:(Math.random()-.5)*1.5,vy:(Math.random()-.5)*1.5,vz:18+Math.random()*15,life:.45+Math.random()*.25,maxLife:.7,size:1+Math.random()*2,color});}
   updateParticles(delta){for(const p of this.particles){p.x+=p.vx*delta;p.y+=p.vy*delta;p.z+=p.vz*delta;p.vz-=65*delta;p.life-=delta;}this.particles=this.particles.filter(p=>p.life>0);}
-  drawParticles(){const ctx=this.ctx;for(const part of this.particles){const p=this.iso(part.x,part.y,Math.max(0,part.z));ctx.globalAlpha=clamp(part.life/part.maxLife,0,1);ctx.fillStyle=part.color;ctx.fillRect(p.x,p.y,part.size,part.size);}ctx.globalAlpha=1;}
+  drawParticles(){const ctx=this.ctx;for(const part of this.particles){if(this.playerVisibility&&!this.playerVisibility.canSee(part,this.viewPlayer))continue;const p=this.iso(part.x,part.y,Math.max(0,part.z));ctx.globalAlpha=clamp(part.life/part.maxLife,0,1);ctx.fillStyle=part.color;ctx.fillRect(p.x,p.y,part.size,part.size);}ctx.globalAlpha=1;}
 
-  pick(screenX,screenY){let best=null,bestDist=Infinity;for(const h of this.hotspots){const d=Math.hypot(screenX-h.x,screenY-h.y);if(d<h.radius&&d<bestDist){best=h;bestDist=d;}}return best;}
+  pick(screenX,screenY){let best=null,bestDist=Infinity;for(const h of this.hotspots){if(this.playerVisibility&&!this.playerVisibility.canSee(h.ref,this.viewPlayer))continue;const d=Math.hypot(screenX-h.x,screenY-h.y);if(d<h.radius&&d<bestDist){best=h;bestDist=d;}}return best;}
 
   shiftColor(hex,amount){
     const clean=hex.replace("#","");if(clean.length!==6)return hex;
