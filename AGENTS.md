@@ -43,7 +43,15 @@ bleibt zurückgestellt. Späteres Setting umfasst Deutschland, mehrere Städte u
 Bundesländer; detaillierte Räume und Etagen bleiben als Ausbauziel erhalten.
 
 Build und technische Modulauslagerung vom 02.10.2026 sind reine Infrastrukturarbeit.
-Die bestehenden Spielregeln und die Save-v4-Struktur bleiben maßgeblich.
+Die bestehenden Spielregeln bleiben maßgeblich. Nutzerklarstellung vom 15.10.2026:
+Tests beginnen mit neuen Spielständen. Abwärtskompatibilität, Übernahme und
+Migration alter Spielstände sind keine Anforderung für Folgepatches.
+
+Beauftragte Patches bis zum überprüften Abschluss führen. Fortschrittsmeldungen
+beenden die Arbeit nicht. Bei beauftragter Veröffentlichung gehören Commit,
+Zusammenführung, erfolgreiches Deployment und Prüfung des normalen Spieleinstiegs
+zum Abschluss. Abschließend Änderungen, Prüfergebnis und Live-Link nennen;
+bei einem tatsächlichen Hindernis den konkreten Blocker und offenen Schritt nennen.
 
 ## Effizient entwickeln
 

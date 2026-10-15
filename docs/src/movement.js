@@ -4,6 +4,7 @@ import { activeWeapon, itemDefinition, inventoryWeight, carryCapacity } from "./
 import { clamp, distance } from "./util.js";
 import { findPlayerPath, pathToPlayerInteraction } from "./player-navigation.js";
 import { canInteract } from "./interaction.js";
+import { zombieStep } from "./zombie-collision.js";
 
 export function updateMovement(game, delta) {
   const player = game.player, navigation = player.navigation;
@@ -103,17 +104,23 @@ export function moveEntity(game, entity, dx, dy, radius) {
   const previousX = entity.x, previousY = entity.y;
   const nx = entity.x + dx;
   const ny = entity.y + dy;
+  let point;
   if (game.world.isWalkable(nx, ny, radius, entity.id)) {
-    entity.x = nx; entity.y = ny;
-    return Math.hypot(entity.x - previousX, entity.y - previousY) > .00001;
+    point = { x: nx, y: ny };
+  } else {
+    point = { x: entity.x, y: entity.y };
+    if (game.world.isWalkable(nx, point.y, radius, entity.id)) point.x = nx;
+    if (game.world.isWalkable(point.x, ny, radius, entity.id)) point.y = ny;
   }
-  if (game.world.isWalkable(nx, entity.y, radius, entity.id)) {
-    entity.x = nx;
+  const zombie = entity !== game.player && game.zombies?.includes(entity);
+  if (zombie) point = zombieStep(game, entity, point, radius);
+  Object.assign(entity, point);
+  const moved = Math.hypot(entity.x-previousX, entity.y-previousY);
+  if (zombie && moved > .00001) {
+    entity.desiredFacingX = (entity.x-previousX)/moved;
+    entity.desiredFacingY = (entity.y-previousY)/moved;
   }
-  if (game.world.isWalkable(entity.x, ny, radius, entity.id)) {
-    entity.y = ny;
-  }
-  return Math.hypot(entity.x - previousX, entity.y - previousY) > 0.00001;
+  return moved > .00001;
 }
 
 export function setDestination(game, requestedPoint, options = {}) {
