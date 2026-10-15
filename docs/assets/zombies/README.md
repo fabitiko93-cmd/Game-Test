@@ -19,27 +19,40 @@ metadata is retained in `atlas.json`; the original license metadata says
 | Idle, stationary | rest | idle / idle3, alternating appearances |
 | Suspicious; active but stationary | alert | idle2_alert |
 | Ambient shuffle; searching on foot | shuffle | slowWalk / Walk2_limp |
-| Investigating on foot | walk | Walk / Walk_Agressive |
-| Chasing on foot | run | running |
+| Investigating or chasing on foot | walk | Walk |
 | Attack with recovery | attack_left / attack_right | attack_left / attack_right |
 
-All ten source actions are used. Alternating strikes reach the source's forward
-extension around 0.28 seconds of the 0.73-second visual cycle, matching the
-existing attack windup. Damage, cooldown, movement and perception remain in the
-existing simulation. No death animation is present in the source; existing
-death/removal behavior is retained.
+Running is not an implemented zombie behavior; its source clip is intentionally
+unused and no running sheets are shipped. The aggressive walk is also unused
+in favor of the ordinary gait. Alternating strikes use a 1.4-second visual
+cycle. The inactive source lead-in is skipped: source 0.62–0.9 s plays at 1x
+speed over the existing 0.28-second windup, followed by a calmer recovery.
+Damage, cooldown, movement and perception remain in the existing simulation.
+No death animation is present in the source; existing death/removal behavior
+is retained.
 
-Gaits advance with actual world distance. Ambient motion uses simulation time,
-so pause freezes animation. Initial zombie IDs provide ten appearances for old
-Save-v4 worlds as well. Facing uses eight octants with a small overlap to avoid
-flapping at boundaries. Feet share a fixed anchor across frames/actions.
+Gaits advance with simulation time at 0.5x (ambient), 0.65x (search), 0.75x
+(investigation) or 0.8x (chase) of the authored clip. Movement speed cannot
+fast-forward the animation. Pause freezes it. Initial zombie IDs provide ten
+appearances for old Save-v4 worlds as well. Facing uses eight octants with a
+small overlap to avoid flapping at boundaries. Feet share a fixed anchor.
+
+`directionRows` maps world-heading octants to camera rows. `viewForwards`
+records the actual projected anatomical +Z direction of each camera view,
+checked against the same 2:1 projection as sight cones. Gait source directions
+are calibrated from both foot-to-toe axes over the full cycle; their differing
+base headings are removed before rendering. Poses retained during loading
+still follow the current heading.
 
 Each PNG contains frames in columns and directions in rows. A cell is 80×88 px,
-drawn at 1/1.5 size in the game. The atlas contains 9,600 rendered poses, about
-6.2 MB encoded. Only required state sheets are decoded. An LRU retains up to
+drawn at 1/1.5 size in the game. The atlas contains 8,960 rendered poses in 60
+sheets. Only required state sheets are decoded. An LRU retains up to
 14 sheets plus any extra sheets needed by currently visible figures; loaded
 poses remain visible while a new state sheet decodes. The service worker caches
-every PNG automatically as part of a complete offline release.
+every PNG automatically as part of a complete offline release. Filenames
+include the PNG SHA-256 prefix; atlas metadata is imported into the hashed JS
+bundle. A still-active older worker therefore cannot mix old heading/timing
+metadata or revised image content into a new release.
 
 Regenerate using Python 3, numpy and Pillow:
 

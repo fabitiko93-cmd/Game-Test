@@ -17,6 +17,10 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 WIDTH, HEIGHT, ANCHOR, SCALE = 80, 88, (40, 72), 34
+# Baked camera rows are not world-heading octants. In particular, the old
+# direct row lookup mirrored headings across a diagonal (backwards pursuit).
+DIRECTION_ROWS = [6, 5, 4, 3, 2, 1, 0, 7]
+ATTACK_DURATION, ATTACK_HIT, ATTACK_SOURCE_HIT = 1.4, .28, .9
 # The single Take contains ten independent actions on ten different rigs.
 SOURCES = ["attack_left", "attack_right", "idle", "idle2_alert", "idle3",
            "running", "slowWalk", "Walk", "Walk_Agressive", "Walk2_limp"]
@@ -101,6 +105,10 @@ class Pack:
                 colors = tex[np.clip((uv[:, 1]*tex.shape[0]).astype(int), 0, tex.shape[0]-1),
                              np.clip((uv[:, 0]*tex.shape[1]).astype(int), 0, tex.shape[1]-1)]
                 self.meshes.append(dict(skin=node["skin"], attrs=attrs, indices=idx, colors=colors))
+        # The walk/limp takes themselves also have a different anatomical
+        # forward axis. Calibrate against both feet over the whole authored
+        # gait; a biped-root quaternion alone is not the character's facing.
+        self.motion_yaws = {source: self.motion_yaw(source) for source in (6, 7, 9)}
 
     def accessor(self, i):
         a = self.g["accessors"][i]
@@ -128,6 +136,26 @@ class Pack:
                 return (a*math.sin((1-f)*angle)+b*math.sin(f*angle))/math.sin(angle)
         out = a*(1-f)+b*f
         return out / np.linalg.norm(out) if path == "rotation" else out
+
+    def motion_yaw(self, source):
+        skin = self.skins[source]
+        feet = [node for node in skin["joints"] if re.search(r"bip [LR] Foot", self.nodes[node]["name"])]
+        samples = []
+        for time in np.linspace(0, PERIODS[source], 32, endpoint=False):
+            matrices = {}
+            def world(i):
+                if i not in matrices:
+                    n = self.nodes[i]
+                    local = np.array(n["matrix"]).reshape(4, 4).T if "matrix" in n else trs(
+                        self.sample(i, "translation", time), self.sample(i, "rotation", time), self.sample(i, "scale", time))
+                    matrices[i] = world(self.parents[i]) @ local if i in self.parents else local
+                return matrices[i]
+            for foot in feet:
+                toe = next(i for i in self.nodes[foot]["children"] if "Toe" in self.nodes[i]["name"])
+                forward = (world(toe)[:3, 3]-world(foot)[:3, 3])[[0, 2]]
+                samples.append(forward / max(np.linalg.norm(forward), 1e-9))
+        forward = np.mean(samples, axis=0)
+        return math.atan2(forward[0], forward[1])
 
     def pose(self, target, source, time):
         dst, src = self.skins[target], self.skins[source]
@@ -182,19 +210,28 @@ class Pack:
             indices.append(mesh["indices"] + count)
             colors.append(mesh["colors"])
             count += len(v)
-        return np.concatenate(vertices), np.concatenate(indices), np.concatenate(colors)
+        vertices = np.concatenate(vertices)
+        if source in self.motion_yaws:
+            angle = -self.motion_yaws[source]
+            c, s = math.cos(angle), math.sin(angle)
+            vertices = vertices @ np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]]).T
+        return vertices, np.concatenate(indices), np.concatenate(colors)
 
 
-def raster(pose, direction, supersample=2):
-    vertices, indices, colors = pose
-    # The model faces +Z; world +X projects down-right, +Y down-left.
-    angle = direction*math.pi/4
+def view_basis(row):
+    angle = row*math.pi/4
     c, s = math.cos(angle), math.sin(angle)
     rotation = np.array([[-c, 0, -s], [0, 1, 0], [s, 0, -c]])
-    v = vertices @ rotation.T
     right = np.array([1, 0, -1]) / math.sqrt(2)
     camera = np.array([math.sqrt(.4), math.sqrt(.2), math.sqrt(.4)])
     up = np.cross(camera, right)
+    return rotation, right, camera, up
+
+
+def raster(pose, row, supersample=2):
+    vertices, indices, colors = pose
+    rotation, right, camera, up = view_basis(row)
+    v = vertices @ rotation.T
     points = np.column_stack((v @ right*SCALE + ANCHOR[0], -v @ up*SCALE + ANCHOR[1])) * supersample
     triangles = v[indices]
     normal = np.cross(triangles[:, 1]-triangles[:, 0], triangles[:, 2]-triangles[:, 0])
@@ -214,8 +251,19 @@ def raster(pose, direction, supersample=2):
 def assignments(variant):
     return {"rest": 2 if variant % 2 == 0 else 4, "alert": 3,
             "shuffle": 9 if variant % 3 == 0 else 6,
-            "walk": 8 if variant % 3 == 1 else 7, "run": 5,
+            "walk": 7,
             "attack_left": 0, "attack_right": 1}
+
+
+def source_time(name, source, progress):
+    if not name.startswith("attack"):
+        return PERIODS[source]*progress
+    # Skip the long inactive lead-in instead of fast-forwarding the whole
+    # gesture 3.2x. Authored-speed windup, then a much calmer recovery.
+    playback = progress*ATTACK_DURATION
+    if playback <= ATTACK_HIT:
+        return ATTACK_SOURCE_HIT-ATTACK_HIT+playback
+    return ATTACK_SOURCE_HIT + (playback-ATTACK_HIT)/(ATTACK_DURATION-ATTACK_HIT)*(PERIODS[source]-ATTACK_SOURCE_HIT)
 
 
 def main():
@@ -223,43 +271,71 @@ def main():
     parser.add_argument("glb")
     parser.add_argument("--output", default=str(Path(__file__).resolve().parents[1]/"docs/assets/zombies"))
     parser.add_argument("--preview", action="store_true")
+    parser.add_argument("--clips", nargs="+", help="Rebake only these clips, retaining the others from the existing atlas")
     args = parser.parse_args()
     pack = Pack(args.glb)
     output = Path(args.output); output.mkdir(parents=True, exist_ok=True)
+    previous = json.loads((output/"atlas.json").read_text()) if (output/"atlas.json").exists() else None
     if args.preview:
         sheet = Image.new("RGB", (10*WIDTH, 8*HEIGHT), "#27362d")
         for variant in range(10):
             for row, (name, source) in enumerate(assignments(variant).items()):
-                image = raster(pack.pose(variant, source, .5), 1)
+                image = raster(pack.pose(variant, source, source_time(name, source, .3)), DIRECTION_ROWS[1])
                 sheet.paste(image, (variant*WIDTH, row*HEIGHT), image)
                 ImageDraw.Draw(sheet).text((variant*WIDTH+2, row*HEIGHT+1), name, fill="white")
         sheet.save(output/"preview.png")
         return
-    meta = {"version": 1, "sourceSha256": pack.sha, "author": "Denys Almaral",
+    forwards = []
+    for row in range(8):
+        rotation, right, _, up = view_basis(row)
+        forward = rotation @ np.array([0, 0, 1])
+        forwards.append([round(float(forward @ right), 6), round(float(-forward @ up), 6)])
+    meta = {"version": 2, "sourceSha256": pack.sha, "author": "Denys Almaral",
             "source": "https://sketchfab.com/3d-models/polyart-zombies-with-animations-free-pack-d9bcfdd88f5348549bc947226af7c314",
             "width": WIDTH, "height": HEIGHT,
-            "anchor": list(ANCHOR), "scale": 1.5, "directions": 8, "variants": []}
+            "anchor": list(ANCHOR), "scale": 1.5, "directions": 8,
+            "directionRows": DIRECTION_ROWS, "viewForwards": forwards, "variants": []}
     for variant in range(10):
         clips = {}
         for name, source in assignments(variant).items():
-            frames = 16 if name.startswith("attack") else 20 if name in ("rest", "alert") else 16
+            if args.clips and name not in args.clips:
+                clips[name] = previous["variants"][variant][name].copy()
+                old_file = output/clips[name]["file"]
+                content = old_file.read_bytes()
+                filename = f"{variant}-{name}-{hashlib.sha256(content).hexdigest()[:10]}.png"
+                (output/filename).write_bytes(content)
+                clips[name]["file"] = filename
+                continue
+            frames = 20 if name.startswith("attack") or name in ("rest", "alert") else 16
             period = PERIODS[source]
             sheet = Image.new("RGBA", (WIDTH*frames, HEIGHT*8))
             for frame in range(frames):
-                pose = pack.pose(variant, source, period*frame/frames)
+                pose = pack.pose(variant, source, source_time(name, source, frame/frames))
                 for direction in range(8):
                     image = raster(pose, direction)
                     # Nonzero alpha at the border indicates an incorrectly anchored/cropped model.
                     alpha = np.asarray(image)[:, :, 3]
                     assert max(alpha[0].max(), alpha[-1].max(), alpha[:, 0].max(), alpha[:, -1].max()) < 12, (variant, name, frame, direction)
                     sheet.paste(image, (frame*WIDTH, direction*HEIGHT))
-            filename = f"{variant}-{name}.png"
             # Palette compression keeps all sheets small; fully transparent pixels share index 0.
-            sheet.quantize(colors=192, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(output/filename, optimize=True)
+            encoded = io.BytesIO()
+            sheet.quantize(colors=192, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).save(encoded, format="PNG", optimize=True)
+            content = encoded.getvalue()
+            filename = f"{variant}-{name}-{hashlib.sha256(content).hexdigest()[:10]}.png"
+            (output/filename).write_bytes(content)
             clips[name] = {"file": filename, "frames": frames, "source": SOURCES[source], "sourceDuration": round(period, 6)}
+            if source in pack.motion_yaws:
+                clips[name]["sourceYawCorrection"] = round(-math.degrees(pack.motion_yaws[source]), 6)
+            if name.startswith("attack"):
+                clips[name].update(playbackDuration=ATTACK_DURATION, hitTime=ATTACK_HIT, hitFrame=4,
+                                   sourceStart=ATTACK_SOURCE_HIT-ATTACK_HIT, sourceHit=ATTACK_SOURCE_HIT)
             print(variant, name, (output/filename).stat().st_size, flush=True)
         meta["variants"].append(clips)
     (output/"atlas.json").write_text(json.dumps(meta, separators=(",", ":"))+"\n")
+    retained = {clip["file"] for variant in meta["variants"] for clip in variant.values()}
+    for file in output.glob("*.png"):
+        if file.name not in retained and re.fullmatch(r"\d+-(rest|alert|shuffle|walk|run|attack_left|attack_right)(-[0-9a-f]{10})?\.png", file.name):
+            file.unlink()
 
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
 import { ZOMBIE_ATTACK } from "./ai.js";
 
 export const ZOMBIE_ANIMATION = Object.freeze({
-  variants: 10, directions: 8, attackDuration: .73,
-  // Distance in world tiles per complete gait, independent of render/AI FPS.
-  stride: Object.freeze({ shuffle: .36, walk: .7, run: 1.2 }),
+  variants: 10, directions: 8, attackDuration: 1.4,
+  // Fractions of the authored clip speed, never multiplied by travel speed.
+  gaitRate: Object.freeze({ idle: .5, search: .65, investigate: .75, chase: .8 }),
 });
 const TAU = Math.PI * 2;
 const wrap = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
@@ -21,8 +21,7 @@ export function zombieAnimationState(zombie) {
   const attackAge = ZOMBIE_ATTACK.cooldown - (zombie.attackCooldown || 0);
   if (zombie.attackWindup > 0 || (attackAge >= 0 && attackAge < ZOMBIE_ANIMATION.attackDuration)) return "attack";
   if (zombie.moving) {
-    if (zombie.state === "chase") return "run";
-    if (zombie.state === "investigate") return "walk";
+    if (zombie.state === "chase" || zombie.state === "investigate") return "walk";
     return "shuffle";
   }
   return zombie.state === "idle" ? "rest" : "alert";
@@ -36,13 +35,13 @@ export function zombieDirection(zombie, previous = null) {
 }
 
 export class ZombieAnimator {
-  constructor() { this.entities = new WeakMap(); }
+  constructor(metadata) { this.entities = new WeakMap(); this.metadata = metadata; }
 
   sample(zombie, time) {
     let record = this.entities.get(zombie);
     const variant = zombieVariant(zombie);
     if (!record || time < record.time) {
-      record = { time, x: zombie.x, y: zombie.y, start: time,
+      record = { time, start: time,
         key: null, state: zombie.state, progress: (zombie.phase || 0)/6,
         lastMoving: -Infinity, cooldown: zombie.attackCooldown || 0, side: variant % 2 };
       this.entities.set(zombie, record);
@@ -50,15 +49,16 @@ export class ZombieAnimator {
     let key = zombieAnimationState(zombie);
     if (zombie.moving) record.lastMoving = time;
     if ((key === "rest" || key === "alert") && zombie.state === record.state
-        && ZOMBIE_ANIMATION.stride[record.key] && time-record.lastMoving < .12) key = record.key;
+        && (record.key === "walk" || record.key === "shuffle") && time-record.lastMoving < .12) key = record.key;
     if (key !== record.key) {
       record.start = time;
       record.progress = (zombie.phase || 0)/6;
     }
-    if (key === "attack" && record.key !== "attack" && zombie.attackCooldown > record.cooldown) record.side = 1-record.side;
-    const distance = Math.hypot(zombie.x-record.x, zombie.y-record.y);
-    if (ZOMBIE_ANIMATION.stride[key]) {
-      if (distance < 2) record.progress += distance/ZOMBIE_ANIMATION.stride[key];
+    if (key === "attack" && zombie.attackCooldown > record.cooldown+.05) record.side = 1-record.side;
+    if (key === "walk" || key === "shuffle") {
+      const duration = this.metadata?.variants[variant][key].sourceDuration || (key === "walk" ? 64/30 : 85/30);
+      const delta = Math.max(0, Math.min(.1, time-record.time));
+      if (zombie.moving) record.progress += delta*(ZOMBIE_ANIMATION.gaitRate[zombie.state] ?? .65)/duration;
     } else if (key === "attack") {
       const age = zombie.attackCooldown > 0 ? ZOMBIE_ATTACK.cooldown-zombie.attackCooldown
         : ZOMBIE_ATTACK.windup-zombie.attackWindup;
@@ -67,7 +67,7 @@ export class ZombieAnimator {
       record.progress = (time-record.start)/(221/30) + (zombie.phase || 0)/6;
     }
     record.direction = zombieDirection(zombie, record.direction ?? null);
-    Object.assign(record, { time, x: zombie.x, y: zombie.y, key, state: zombie.state,
+    Object.assign(record, { time, key, state: zombie.state,
       cooldown: zombie.attackCooldown || 0 });
     return { variant, clip: key === "attack" ? (record.side ? "attack_right" : "attack_left") : key,
       progress: modulo(record.progress, 1), direction: record.direction };

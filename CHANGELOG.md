@@ -1,3 +1,27 @@
+# Ruhige Zombie-Animationen und Blickrichtung · 15.10.2026
+
+- Verfolgung verwendet jetzt normales Gehen. Rennclips sind aus Zuordnung und
+  Veröffentlichung entfernt; Untersuchung verwendet ebenfalls den normalen
+  Gehzyklus. Schlurfen und Hinken bleiben für Ruhewege und Suche erhalten.
+- Die zurückgelegte Strecke beschleunigt Animationen nicht mehr. Gehzyklen
+  folgen der Spielzeit mit 50–80 Prozent des jeweiligen Quelltempos, passend
+  zum Zustand. Die bestehenden Bewegungsgeschwindigkeiten bleiben erhalten.
+- Angriffsbewegung von 0,73 auf 1,4 Sekunden beruhigt. Die lange inaktive
+  Vorphase wird übersprungen; Anlauf in Originalgeschwindigkeit und längere
+  Erholung ersetzen die starke Beschleunigung des ganzen Clips. Der Treffer
+  bleibt bei 0,28 Sekunden, ebenso die bestehende Abklingzeit von 1,42 Sekunden.
+- Zuordnung der gebackenen Kamerazeilen zur isometrischen Weltprojektion
+  korrigiert. Die abweichenden Grundrichtungen der Geh-/Hinkquellen werden
+  zusätzlich anhand beider Füße über einen vollständigen Gang ausgerichtet.
+  Beim Nachladen einer anderen Pose folgt auch das überbrückende Bild sofort
+  der aktuellen Sichtrichtung statt eine ältere Drehung beizubehalten.
+- Atlaskonfiguration gehört zum Spielbundle, Bilder tragen ihren Inhaltshash
+  im Namen. Dadurch kann ein älterer aktiver Offlinecache keine alte
+  Richtungszuordnung oder überarbeitete Animation unter gleichem Namen liefern.
+- Regressionen für ruhige Kadenz bei unterschiedlichen Geschwindigkeiten,
+  Verfolgung ohne Rennclip, Trefferpose und längere Erholung, echte projizierte
+  Sprite-Richtungen, Hashbilder und Ausrichtung während eines Bildwechsels.
+
 # Animierte Polyart-Zombies · 15.10.2026
 
 - Zehn Zombie-Modelle von Denys Almaral (fünf weiblich, fünf männlich) ersetzen
