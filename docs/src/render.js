@@ -8,6 +8,8 @@ import { PLAYER_VIEW, playerCanSee, rememberedScenery } from "./player-visibilit
 import { drawCameraOverlay } from "./camera-overlay.js";
 import { VisionConeDisplay } from "./vision-display.js";
 import { ZombieSprites } from "./zombie-sprites.js";
+import { WORLD_SCALE, metersToTiles, heightPixels, pixelsPerMeter, playerDisplayScale } from "./world-scale.js";
+import { zombieBodyProfile } from "./zombie-appearance.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -358,7 +360,8 @@ export class Renderer {
       case "tree": this.drawTree(o); break;
       case "bush": this.drawBush(o); break;
       case "cabinet": this.drawFurniture(o, "#70553d", 19, .7, .48); break;
-      case "fridge": this.drawFurniture(o, "#c0c1ad", 31, .58, .6); break;
+      case "fridge": this.drawFurniture(o, "#c0c1ad", heightPixels(WORLD_SCALE.fridge.height),
+        metersToTiles(WORLD_SCALE.fridge.width), metersToTiles(WORLD_SCALE.fridge.depth)); break;
       case "shelf": this.drawShelf(o); break;
       case "toolbox": this.drawFurniture(o, "#6f2d28", 11, .62, .46); break;
       case "desk": this.drawFurniture(o, "#51483b", 18, .86, .58); break;
@@ -397,14 +400,20 @@ export class Renderer {
   }
 
   drawDoor(o) {
+    const width = metersToTiles(WORLD_SCALE.door.width);
+    const depth = metersToTiles(WORLD_SCALE.door.depth);
+    const height = heightPixels(WORLD_SCALE.door.height);
     if (!o.closed) {
       const p = this.iso(o.x, o.y);
-      this.ctx.strokeStyle = "rgba(105,75,48,.9)"; this.ctx.lineWidth = 5;
-      this.ctx.beginPath(); this.ctx.moveTo(p.x, p.y); this.ctx.lineTo(p.x + (o.orientation === "x" ? 21 : -21), p.y - 11); this.ctx.stroke();
+      const tip = this.iso(o.x + (o.orientation === "x" ? 0 : width),
+        o.y + (o.orientation === "x" ? width : 0));
+      this.ctx.strokeStyle = "rgba(105,75,48,.9)"; this.ctx.lineWidth = 3;
+      this.ctx.beginPath(); this.ctx.moveTo(p.x, p.y); this.ctx.lineTo(tip.x, tip.y); this.ctx.stroke();
       return;
     }
-    this.drawBlock(o.x, o.y, o.orientation === "x" ? .78 : .14, o.orientation === "x" ? .14 : .78, 35, "#694b35");
-    const p = this.iso(o.x, o.y, 20); this.ctx.fillStyle = o.locked ? "#b44a3d" : "#c3a55b"; this.ctx.fillRect(p.x + 4, p.y, 3, 3);
+    this.drawBlock(o.x, o.y, o.orientation === "x" ? width : depth,
+      o.orientation === "x" ? depth : width, height, "#694b35");
+    const p = this.iso(o.x, o.y, height * .55); this.ctx.fillStyle = o.locked ? "#b44a3d" : "#c3a55b"; this.ctx.fillRect(p.x + 3, p.y, 2, 2);
     if (o.locked) {
       this.ctx.fillStyle = "#271713";
       this.ctx.fillRect(p.x + 3, p.y - 1, 5, 5);
@@ -548,11 +557,14 @@ export class Renderer {
     const crouched = player.stance === "sneak";
     const weapon = activeWeapon(player);
     const weaponDefinition = itemDefinition(weapon);
-    const bodyOffset = crouched ? 7 : 0;
+    const bodyOffset = 0;
     const bob = player.moving ? Math.sin(this.frame * (player.running ? .44 : .3)) * (crouched ? .7 : 1.4) : 0;
-    this.shadow(p, crouched ? 15 : 13, crouched ? 6 : 5, .38);
+    const bodyScale = playerDisplayScale();
+    this.shadow(p, (crouched ? 15 : 13) * bodyScale.x, (crouched ? 6 : 5) * bodyScale.x, .38);
     ctx.save();
     ctx.translate(Math.round(p.x), Math.round(p.y + bob + bodyOffset));
+    ctx.scale(bodyScale.x, bodyScale.y);
+    ctx.translate(0, -3);
     if (player.dead) ctx.globalAlpha = .42;
     const dirX = Math.sign(player.facingX);
     const dirY = Math.sign(player.facingY);
@@ -565,6 +577,8 @@ export class Renderer {
     ctx.moveTo(4, legTop);
     ctx.lineTo(7 + dirX * 2, crouched ? 0 : 1);
     ctx.stroke();
+    ctx.fillRect(-9 + dirX * 2, 0, 7, 3);
+    ctx.fillRect(2 + dirX * 2, 0, 7, 3);
     ctx.fillStyle = player.hurtFlash > 0 ? "#856255" : "#46564a";
     ctx.fillRect(-9, crouched ? -23 : -27, 18, crouched ? 18 : 20);
     ctx.fillStyle = "#26302a";
@@ -629,7 +643,7 @@ export class Renderer {
     const p = this.withImpact(this.iso(zombie.x, zombie.y), zombie, .11);
     const bob = zombie.moving ? Math.sin(this.frame * .22 + zombie.phase) * 1.2 : 0;
     if (this.selectedId === zombie.id) this.drawSelection(zombie.x, zombie.y, .5);
-    this.shadow(p, 13, 5, .4);
+    this.shadow(p, pixelsPerMeter * .27, pixelsPerMeter * .10, .4);
     if (!this.zombieSprites.draw(ctx, zombie, game.elapsed, p)) this.drawZombieFallback(zombie, p, bob);
     if (zombie.hp < zombie.maxHp) {
       ctx.fillStyle = "#160b0a";
@@ -644,6 +658,8 @@ export class Renderer {
     const ctx = this.ctx;
     ctx.save();
     ctx.translate(Math.round(p.x), Math.round(p.y + bob));
+    const body = zombieBodyProfile(zombie);
+    ctx.scale(pixelsPerMeter * .48 / 36, heightPixels(body.height) / 36);
     if (zombie.hurtFlash > 0) ctx.globalAlpha = .55;
     ctx.strokeStyle = "#2f302b";
     ctx.lineWidth = 5;

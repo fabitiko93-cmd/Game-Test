@@ -1,5 +1,7 @@
 import { ZombieAnimator } from "./zombie-animation.js";
 import ATLAS from "../assets/zombies/atlas.json" with { type: "json" };
+import { zombieBodyProfile } from "./zombie-appearance.js";
+import { pixelsPerMeter, cameraElevationCosine } from "./world-scale.js";
 
 // This relative path works both in docs/src and in the bundled docs/build entry.
 const ASSETS = new URL("../assets/zombies/", import.meta.url);
@@ -60,13 +62,19 @@ export class ZombieSprites {
     this.cache.get(sprite.key).used = this.tick;
     this.previous.set(zombie, sprite);
     const { width, height, anchor, scale } = this.metadata;
+    const body = zombieBodyProfile(zombie);
+    const factorX = pixelsPerMeter / (34 / scale) * body.scale;
+    // Match the target 2:1 world projection; the legacy bake used a slightly
+    // lower camera. This is a projection correction, not a change of body build.
+    const factorY = factorX * cameraElevationCosine / Math.sqrt(.8);
     ctx.save();
     if (zombie.hurtFlash > 0) ctx.globalAlpha *= .55;
     ctx.imageSmoothingEnabled = true;
     // A loading state change may reuse the old frame, but never its old facing.
     const row = this.metadata.directionRows[pose.direction];
     ctx.drawImage(this.cache.get(sprite.key).image, sprite.frame*width, row*height, width, height,
-      p.x-anchor[0]/scale, p.y-anchor[1]/scale, width/scale, height/scale);
+      p.x-anchor[0]/scale*factorX, p.y-anchor[1]/scale*factorY,
+      width/scale*factorX, height/scale*factorY);
     ctx.restore();
     return true;
   }

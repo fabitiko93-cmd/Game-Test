@@ -1,3 +1,20 @@
+# Gemeinsamer Größenmaßstab · 15.10.2026
+
+- Player-Platzhalter auf 1,80 m und schmalere Körperproportionen kalibriert;
+  1,68 m für spätere weibliche Spielerfiguren ausdrücklich vorgemerkt.
+- Fünf weibliche und fünf männliche Zombie-Modelle mit überlappenden Größenbereichen
+  1,58–1,78 bzw. 1,70–1,90 m. ID-stabile individuelle Variation ohne Save-Migration;
+  gleiche Skalierung über alle Aktionen und Erhaltung der vorhandenen Körperformen.
+- Gemeinsame Meterreferenz für Figuren, DIN-Türblatt 860 × 1985 mm und Kühlgerät
+  1860 × 600 × 665 mm. Kühlgerät als konkretes Serienmaß, kein belegter nationaler
+  Bestseller. Quellen und Front-/Spielansicht unter `docs/assets/scale-reference/`.
+- Player, Türblatt und Kühlschrank entsprechend gezeichnet. Bestehende Touchziele,
+  Kollisionsräume, Deckung, Geräusche, Ausdauer und Bewegungsgeschwindigkeiten bleiben
+  erhalten. Echtzeit-3D-Zombies und Tempo-/Schritt-Abgleich folgen separat; vollständiger
+  Weltport bleibt zurückgestellt.
+- Referenzbilder aus dem Original-GLB reproduzierbar; Prüfungen für Projektion,
+  vereinbarte Referenzmaße und konsistente Zombiegrößen vor/nach Speichern und Laden.
+
 # Ruhige Zombie-Animationen und Blickrichtung · 15.10.2026
 
 - Verfolgung verwendet jetzt normales Gehen. Rennclips sind aus Zuordnung und

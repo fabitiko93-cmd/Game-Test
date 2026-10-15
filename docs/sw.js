@@ -1,7 +1,12 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "c85a799c74a4d73253a7";
+const BUILD_ID = "a7e3a39d44562c437fe3";
 const FILES = [
   "./assets/icon.svg",
+  "./assets/reference-scale.json",
+  "./assets/scale-reference/README.md",
+  "./assets/scale-reference/front.png",
+  "./assets/scale-reference/index.html",
+  "./assets/scale-reference/isometric.png",
   "./assets/zombies/0-alert-c1618ea0ce.png",
   "./assets/zombies/0-attack_left-559502c9f8.png",
   "./assets/zombies/0-attack_right-ebfcb6b458.png",
@@ -64,7 +69,7 @@ const FILES = [
   "./assets/zombies/9-walk-7fc76aa3ac.png",
   "./assets/zombies/README.md",
   "./assets/zombies/atlas.json",
-  "./build/main-KTDVJM4S.js",
+  "./build/main-MH3HCIBP.js",
   "./build/style-KUDVED4H.css",
   "./index.html",
   "./manifest.webmanifest"
