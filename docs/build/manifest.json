@@ -1,6 +1,6 @@
 {
-  "id": "26c1b421350edafb922f",
-  "script": "build/main-O42ABP3S.js",
+  "id": "6e32a92b6af3dd025b6d",
+  "script": "build/main-M2WTPCUE.js",
   "style": "build/style-KUDVED4H.css",
   "precache": [
     "assets/icon.svg",
@@ -84,7 +84,7 @@
     "assets/zombies3d/README.md",
     "assets/zombies3d/THREE-LICENSE.txt",
     "assets/zombies3d/models.json",
-    "build/main-O42ABP3S.js",
+    "build/main-M2WTPCUE.js",
     "build/style-KUDVED4H.css",
     "index.html",
     "manifest.webmanifest"

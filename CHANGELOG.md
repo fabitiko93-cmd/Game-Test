@@ -1,5 +1,6 @@
 # Echtzeit-3D und maßstäbliche Bewegung · 15.10.2026
 
+- Echtzeit-3D ist beim normalen Spielstart aktiv; kein Vorschau-Link erforderlich.
 - Zehn Polyart-Zombies als echte texturierte Skelettmodelle, Originalgeometrie und
   fortlaufend interpolierte Animationsschlüssel. Weiche Pose-Übergänge zwischen
   Ruhe, Gehen und Angriff; Running-Take bleibt ungenutzt.
