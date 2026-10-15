@@ -6,12 +6,12 @@ import { gunzipSync } from "node:zlib";
 import { Box3, Vector3 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { ModelPass } from "../docs/src/model-pass.js";
-import { PlayerModels, crouchSkeleton } from "../docs/src/player-models.js";
+import { PlayerModels } from "../docs/src/player-models.js";
 import { PlayerMotion } from "../docs/src/player-motion.js";
 import { QuaterniusAssets } from "../docs/src/quaternius-assets.js";
 import { WorldModels } from "../docs/src/world-models.js";
 import { QUATERNIUS_MODELS as metadata, createPlayerAppearance, playerHeight,
-  playerModelAppearance, FURNITURE_MODELS, furnishingDimensions } from "../docs/src/quaternius-catalog.js";
+  playerModelAppearance, FURNITURE_MODELS, furnishingDimensions, furnishingFootprint } from "../docs/src/quaternius-catalog.js";
 import { World } from "../docs/src/world.js";
 import { createPlayer } from "../docs/src/character.js";
 import { createItem, equipItem, addItem } from "../docs/src/inventory.js";
@@ -86,15 +86,23 @@ test("walking and sprinting animation phases follow real metres at 30/60/120 Hz 
   }
 });
 
-test("crouching lowers the actual pelvis while keeping both animated feet fixed on the floor",async()=>{
+test("authored crouch clips retarget to both modular rigs with grounded shoes and connected legs",async()=>{
   const library=new QuaterniusAssets({loadAsset:load}),pass=new ModelPass({createRenderer:fakeRenderer});pass.beginFrame(2);
   const models=new PlayerModels(pass,library);await models.ready;
-  const player=createPlayer();models.draw(context(),player,0,{x:0,y:0});const entity=models.entities.get(player);
-  const feet=['FootL','FootR'].map(n=>entity.model.getObjectByName(n).getWorldPosition(new Vector3()));
-  const head=entity.model.getObjectByName('Head').getWorldPosition(new Vector3()).y;
-  crouchSkeleton(entity,1);entity.root.updateMatrixWorld(true);
-  for(let i=0;i<2;i++)assert.ok(entity.model.getObjectByName(['FootL','FootR'][i]).getWorldPosition(new Vector3()).distanceTo(feet[i])<1e-5);
-  assert.ok(entity.model.getObjectByName('Head').getWorldPosition(new Vector3()).y<head-.2);
+  for(const sex of ['male','female'])for(const moving of [false,true]){
+    const player=createPlayer({appearance:{sex}});Object.assign(player,{stance:'sneak',moving});
+    for(let i=0;i<32;i++){
+      player.x+=moving?.01:0;models.draw(context(),player,i/16,{x:0,y:0});
+      const entity=models.entities.get(player),bounds=visibleBounds(entity.root);
+      assert.equal(entity.clip,moving?'Crouch_Walk':'Crouch_Idle');
+      assert.ok(bounds.max.y<1.48&&bounds.max.y>.85,'natural crouched height: '+bounds.max.y);
+      assert.ok(bounds.min.y>-.04&&bounds.min.y<.04,'sole contact: '+bounds.min.y);
+      for(const side of ['L','R']){
+        const foot=entity.model.getObjectByName('Foot'+side).getWorldPosition(new Vector3()),knee=entity.model.getObjectByName('LowerLeg'+side).getWorldPosition(new Vector3());
+        assert.ok(foot.distanceTo(knee)>.25&&foot.distanceTo(knee)<.6,'the separate foot bone follows its shin');
+      }
+    }
+  }
 });
 
 test("the original door panel and fridge have the reference dimensions; all 123 furniture assets are grounded",async()=>{
@@ -112,10 +120,8 @@ test("the original door panel and fridge have the reference dimensions; all 123 
 test("world collision uses the imported furniture footprint and all changed containers stay usable",()=>{
   const world=new World(),player=createPlayer();
   for(const door of world.objects.filter(o=>o.type==='door')){door.closed=false;door.solid=false;door.blocksSight=false;door.locked=false;}world.touchSight();
-  for(const object of world.objects.filter(o=>FURNITURE_MODELS[o.type])) {
-    const size=furnishingDimensions(object.type);
-    assert.ok(Math.abs(tilesToMeters(object.footprint.x*2)-size.width)<1e-8);
-    assert.ok(Math.abs(tilesToMeters(object.footprint.y*2)-size.depth)<1e-8);
+  for(const object of world.objects.filter(o=>furnishingDimensions(o))) {
+    assert.deepEqual(object.footprint,furnishingFootprint(object));
     if(!object.interactable)continue;
     const path=pathToPlayerInteraction(world,player,object,{allowDoors:true});assert.ok(path.length,object.name);
     let previous=player;for(const point of path){assert.ok(playerSegmentClear(world,previous,point,{allowDoors:true}));previous=point;}

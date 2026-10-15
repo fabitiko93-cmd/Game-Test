@@ -120,6 +120,8 @@ def main():
     license_text=(source/'male/License.txt').read_text()
     (output/'LICENSE.txt').write_text('\n'.join(line.rstrip() for line in license_text.splitlines()).rstrip()+'\n')
     retained={m['file'] for m in [*manifest['characters'].values(),*manifest['interiors'].values()]}
+    motions=output/'player-animations.json'
+    if motions.exists():retained.add(json.loads(motions.read_text())['file'])
     for path in output.glob('*.glb.gz'):
         if path.name not in retained:path.unlink()
     print(json.dumps({'characters':len(manifest['characters']),'interiors':len(manifest['interiors']),'bytes':sum((output/f).stat().st_size for f in retained)}))

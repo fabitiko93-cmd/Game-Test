@@ -6,6 +6,8 @@ export const VIEW = {
   worldW: 48,
   worldH: 48,
   pixelRatioMax: 3,
+  zoomDefault: 1.75,
+  zoomLevels: [1, 1.25, 1.5, 1.75, 2, 2.5],
 };
 
 export const GAME = {

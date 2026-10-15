@@ -73,6 +73,8 @@ export class InputController {
     this.button("inventory-button", () => this.callbacks.inventory?.());
     this.button("character-button", () => this.callbacks.character?.());
     this.button("recenter-button", () => this.callbacks.recenter?.());
+    this.button("zoom-in-button", () => this.callbacks.zoom?.(1));
+    this.button("zoom-out-button", () => this.callbacks.zoom?.(-1));
     this.button("pause-button", () => this.callbacks.pause?.());
   }
 

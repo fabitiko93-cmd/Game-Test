@@ -73,6 +73,7 @@ export class Game {
       status: () => this.toggleStatus(),
       character: () => this.toggleCharacter(),
       recenter: () => this.recenterCamera(),
+      zoom: direction => {if(this.canAct())this.renderer.stepZoom(direction,this.player);},
       pause: () => this.togglePause(),
       tap: (x, y) => this.tapWorld(x, y),
       doubleTap: (x, y) => this.doubleTapWorld(x, y),
@@ -409,7 +410,7 @@ export class Game {
 
   interact(object) {
     if (!this.canAct() || !object || object.removed) return;
-    if (!canInteract(this.world, this.player, object, GAME.interactionRange + .08)) {
+    if (!canInteract(this.world, this.player, object)) {
       this.queueInteraction(object);
       return;
     }

@@ -52,6 +52,14 @@ Ultimate House Interior einbauen. Spieler behalten getrennte Kopf-, Oberkörper-
 Bein- und Fußteile für spätere Kleidungsanpassungen. Türen und Kühlschränke an die
 bestehenden Metermaße anpassen; Darstellung und Kollision teilen die Assetmaße.
 
+Freigabe vom 16.10.2026: Kamera näher, Zoom zunächst nur per +/−; keine neuen
+Zwei-Finger-Gesten. Echte Schleichanimationen statt berechneter Duckpose. Gebäude
+mit dem vorhandenen Möbelpack vollständiger einrichten. Container erst unmittelbar
+am tatsächlichen Rand öffnen; Auswahl, Herangehen und Benutzung teilen die Prüfung.
+Nutzerziel für später: Zomboid-artig nahezu alles lootbar machen. Passende Icons
+und einzelne Ingame-Gegenstandsmodelle werden zeitnah separat organisiert; die
+Einrichtung bleibt dafür in einzeln adressierbare Objekte aufgeteilt.
+
 Build und technische Modulauslagerung vom 02.10.2026 sind reine Infrastrukturarbeit.
 Die bestehenden Spielregeln bleiben maßgeblich. Nutzerklarstellung vom 15.10.2026:
 Tests beginnen mit neuen Spielständen. Abwärtskompatibilität, Übernahme und

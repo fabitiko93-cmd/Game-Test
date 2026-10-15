@@ -16,6 +16,7 @@ import {
 import { backgroundName, skillRank, visibleInfectionState, woundBleeding, woundDisplay, woundTreatmentOptions } from "./character.js";
 import { TargetLayout } from "./target-layout.js";
 import { CHARACTER_STYLES, defaultStyle } from "./quaternius-catalog.js";
+import { VIEW } from "./config.js";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -39,6 +40,7 @@ export class GameUI {
       "action-button", "action-label", "attack-button", "stance-button", "stance-label", "reload-button",
       "mission-button", "mission-indicator", "status-button", "inventory-button", "inventory-count", "character-button",
       "recenter-button", "pause-button", "quickbar", "debug-stats",
+      "zoom-in-button", "zoom-out-button", "zoom-label",
       "mission-panel", "mission-title", "mission-objective", "mission-description", "mission-steps", "status-panel",
       "inventory-panel", "equipment-grid", "inventory-grid", "item-description", "carry-weight",
       "customize-button", "drop-button", "use-button",
@@ -154,6 +156,12 @@ export class GameUI {
   }
 
   update(player, game) {
+    if(this.el.zoom_label){
+      const zoom=game.renderer.zoom||1;
+      this.el.zoom_label.textContent=`${Math.round(zoom*100)} %`;
+      this.el.zoom_out_button.disabled=zoom<=VIEW.zoomLevels[0];
+      this.el.zoom_in_button.disabled=zoom>=VIEW.zoomLevels.at(-1);
+    }
     const cameraFree = Boolean(game.input.cameraFree);
     this.el.recenter_button.classList.toggle("active", cameraFree);
     this.el.recenter_button.setAttribute("aria-pressed", String(cameraFree));

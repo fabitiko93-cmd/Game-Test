@@ -1,5 +1,5 @@
 import { MinHeap } from "./navigation.js";
-import { canInteract } from "./interaction.js";
+import { canInteract, interactionReach, interactionFootprint } from "./interaction.js";
 import { PLAYER_BODY_RADIUS } from "./world-scale.js";
 
 export const PLAYER_PATH_RULES = Object.freeze({ step: .25, radius: PLAYER_BODY_RADIUS, coverDetour: 1.25, coverAllowance: .5 });
@@ -197,7 +197,22 @@ export function pathToPlayerRegion(world, start, target, radius, accept, options
 }
 
 export function pathToPlayerInteraction(world, start, object, options = {}) {
-  const radius = (options.interactionRange || 1.38) + (object.type === "car" ? 1 : object.type === "shed" ? .3 : 0);
-  return pathToPlayerRegion(world, start, object, radius,
-    point => canInteract(world, point, object, options.interactionRange), options);
+  if(canInteract(world,start,object,options.interactionRange))return [{x:start.x,y:start.y}];
+  const reach=interactionReach(object,options.interactionRange),shape=interactionFootprint(object);
+  const radius=reach+Math.hypot(shape.x,shape.y),grid=gridFor(world,options),goals=new Map();
+  const accept=point=>world.isWalkable(point.x,point.y,PLAYER_PATH_RULES.radius)&&canInteract(world,point,object,options.interactionRange);
+  for(const entry of nearby(grid,object,radius))if(accept(entry.point))goals.set(entry.id,{point:entry.point});
+  // Close interaction can fall between the 50-cm path cells. Supply exact
+  // approach points outside the real footprint, connected to nearby grid nodes.
+  const candidates=[],gap=reach*.8;
+  if(shape.x||shape.y){
+    for(const side of [-1,1])for(const axis of ['x','y']){
+      const other=axis==='x'?'y':'x',steps=Math.max(1,Math.ceil(shape[other]*2/.2));
+      for(let i=0;i<=steps;i++)candidates.push({[axis]:object[axis]+side*(shape[axis]+gap),[other]:object[other]-shape[other]+shape[other]*2*i/steps});
+    }
+  }else for(let i=0;i<16;i++)candidates.push({x:object.x+Math.cos(i*Math.PI/8)*gap,y:object.y+Math.sin(i*Math.PI/8)*gap});
+  for(const point of candidates)if(accept(point))for(const entry of nearby(grid,point,.45)){
+    if(playerSegmentClear(world,entry.point,point,options)&&allowedSegment(world,entry.point,point,options))goals.set(entry.id,{point});
+  }
+  return route(world,start,object,goals,options);
 }
