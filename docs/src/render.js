@@ -7,6 +7,7 @@ import { buildCoverDisplay, coverDisplayKey, coverDisplayPaths } from "./cover-d
 import { PLAYER_VIEW, playerCanSee, rememberedScenery } from "./player-visibility.js";
 import { drawCameraOverlay } from "./camera-overlay.js";
 import { VisionConeDisplay } from "./vision-display.js";
+import { ZombieSprites } from "./zombie-sprites.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -29,6 +30,7 @@ export class Renderer {
     this.contextId = null;
     this.frame = 0;
     this.visionCones = new VisionConeDisplay();
+    this.zombieSprites = new ZombieSprites();
     this.statusPaths = new Map(Object.entries(STATUS_ICONS).map(([id, icon]) => [id, new Path2D(icon.path)]));
     this.coverHintCache = { key: "", map: null, paths: null };
     this.diagnostics = false;
@@ -191,11 +193,14 @@ export class Renderer {
     drawables.sort((a, b) => a.depth - b.depth);
     this.metrics.visibleObjects = drawables.length;
 
+    this.zombieSprites.beginFrame();
+
     for (const drawable of drawables) {
       if (drawable.kind === "object") this.drawObject(drawable.ref, game);
       else if (drawable.kind === "zombie") this.drawZombie(drawable.ref, game);
       else this.drawPlayer(drawable.ref, game);
     }
+    this.zombieSprites.endFrame();
 
     this.drawRoofs(game);
     this.drawParticles();
@@ -619,12 +624,24 @@ export class Renderer {
     ctx.restore();
   }
 
-  drawZombie(zombie) {
+  drawZombie(zombie, game) {
     const ctx = this.ctx;
     const p = this.withImpact(this.iso(zombie.x, zombie.y), zombie, .11);
     const bob = zombie.moving ? Math.sin(this.frame * .22 + zombie.phase) * 1.2 : 0;
     if (this.selectedId === zombie.id) this.drawSelection(zombie.x, zombie.y, .5);
     this.shadow(p, 13, 5, .4);
+    if (!this.zombieSprites.draw(ctx, zombie, game.elapsed, p)) this.drawZombieFallback(zombie, p, bob);
+    if (zombie.hp < zombie.maxHp) {
+      ctx.fillStyle = "#160b0a";
+      ctx.fillRect(p.x - 13, p.y - 46, 26, 3);
+      ctx.fillStyle = "#a63b32";
+      ctx.fillRect(p.x - 13, p.y - 46, 26 * zombie.hp / zombie.maxHp, 3);
+    }
+    this.hotspots.push({ id: zombie.id, kind: "zombie", ref: zombie, x: p.x, y: p.y - 20, radius: 25 });
+  }
+
+  drawZombieFallback(zombie, p, bob) {
+    const ctx = this.ctx;
     ctx.save();
     ctx.translate(Math.round(p.x), Math.round(p.y + bob));
     if (zombie.hurtFlash > 0) ctx.globalAlpha = .55;
@@ -656,13 +673,6 @@ export class Renderer {
       ctx.fillRect(3, -33, 2, 2);
     }
     ctx.restore();
-    if (zombie.hp < zombie.maxHp) {
-      ctx.fillStyle = "#160b0a";
-      ctx.fillRect(p.x - 13, p.y - 46, 26, 3);
-      ctx.fillStyle = "#a63b32";
-      ctx.fillRect(p.x - 13, p.y - 46, 26 * zombie.hp / zombie.maxHp, 3);
-    }
-    this.hotspots.push({ id: zombie.id, kind: "zombie", ref: zombie, x: p.x, y: p.y - 20, radius: 25 });
   }
 
   drawCoverHints(game) {

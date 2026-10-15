@@ -10,6 +10,8 @@ const INITIAL_POSITIONS = [
   [20, 16], [40, 15], [26, 42], [46, 42], [5, 26], [22, 27],
 ];
 
+export const ZOMBIE_ATTACK = Object.freeze({ cooldown: 1.42, windup: .28 });
+
 export function createZombie(x, y, index = 0, id = null) {
   const maxHp = 62 + (index % 4) * 6;
   return {
@@ -43,7 +45,7 @@ export function createZombie(x, y, index = 0, id = null) {
     hurtFlash: 0,
     hitKick: 0,
     phase: Math.random() * 6,
-    variant: index % 5,
+    variant: index % 10,
     removed: false,
   };
 }
@@ -221,8 +223,8 @@ export class ZombieSystem {
     }
     if (zombie.state !== "chase" || playerDistance >= 0.82 || exposure <= 0 || zombie.attackCooldown > 0) return;
     zombie.moving = false;
-    zombie.attackCooldown = 1.42;
-    zombie.attackWindup = 0.28;
+    zombie.attackCooldown = ZOMBIE_ATTACK.cooldown;
+    zombie.attackWindup = ZOMBIE_ATTACK.windup;
     this.face(zombie, game.player);
   }
 
