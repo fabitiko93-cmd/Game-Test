@@ -1,6 +1,6 @@
 {
-  "id": "2acc014f7f75c8429150",
-  "script": "build/main-EBLYF6MV.js",
+  "id": "109cccad6329397af271",
+  "script": "build/main-QQ6UTFEZ.js",
   "style": "build/style-KUDVED4H.css",
   "precache": [
     "assets/icon.svg",
@@ -84,7 +84,7 @@
     "assets/zombies3d/README.md",
     "assets/zombies3d/THREE-LICENSE.txt",
     "assets/zombies3d/models.json",
-    "build/main-EBLYF6MV.js",
+    "build/main-QQ6UTFEZ.js",
     "build/style-KUDVED4H.css",
     "index.html",
     "manifest.webmanifest"

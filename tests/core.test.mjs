@@ -35,7 +35,7 @@ assert.equal(SAVE.version, 4);
 assert.equal(SAVE.key, "sperrkreis98-save-v4");
 assert.ok(initialZombies.every(zombie => world.isPathCellWalkable(zombie.x, zombie.y, { allowDoors: false })));
 assert.deepEqual(world.clampPoint({ x: -40, y: 90 }), { x: 1, y: 46 });
-assert.ok(world.objectsInBounds(4, 36, 6, 40).some(object => object.name === "KÜCHENSCHRANK"));
+assert.ok(world.objectsInBounds(6, 35, 10, 40).some(object => object.name === "KÜCHENSCHRANK"));
 
 const start = { x: 8, y: 36 };
 assert.ok(navigator.findPath(world, start, { x: 40, y: 12 }, { allowDoors: true }).length > 0);

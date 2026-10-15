@@ -194,15 +194,24 @@ export class ZombieSystem {
       return;
     }
     if (zombie.repathTimer <= 0) {
-      zombie.path = this.navigator.findPath(game.world, zombie, target, { allowDoors: false, maxNodes: 1500 });
+      const nearStructure = game.world.objectsNear(zombie.x, zombie.y, 1.5)
+        .some(object => object.footprint && ["wall", "door"].includes(object.type));
+      const rules = { allowDoors: false, maxNodes: nearStructure ? 4000 : 1500, radius: zombieBodyRadius(zombie) };
+      zombie.path = this.navigator.findPath(game.world, zombie, target, { ...rules, step: nearStructure ? .25 : 1 });
+      zombie.pathPrecision = nearStructure ? .03 : .16;
+      if (nearStructure && !zombie.path.length) {
+        zombie.path = this.navigator.findPath(game.world, zombie, target, rules);
+        zombie.pathPrecision = .16;
+      }
       zombie.repathTimer = zombie.state === "chase" ? 0.55 : 1.4;
       if (zombie.coverSearch && !zombie.path.length && distance(zombie, target) > 0.55) zombie.coverSearch.routeFailures++;
     }
     // Finish fractional last-known positions in the current grid cell as well.
     const sameCell = Math.round(zombie.x) === Math.round(target.x) && Math.round(zombie.y) === Math.round(target.y);
     // Chase must not lose one whole AI tick at every already-reached waypoint.
-    if (zombie.state === "chase") {
-      while (zombie.path?.length && distance(zombie, zombie.path[0]) < .16) zombie.path.shift();
+    const precision = zombie.pathPrecision ?? .16;
+    if (zombie.state === "chase" || precision < .16) {
+      while (zombie.path?.length && distance(zombie, zombie.path[0]) < precision) zombie.path.shift();
     }
     const node = zombie.path?.[0] || (sameCell && distance(zombie, target) > 0.12 ? target : null);
     if (!node) {
@@ -212,7 +221,7 @@ export class ZombieSystem {
     const dx = node.x - zombie.x;
     const dy = node.y - zombie.y;
     const length = Math.hypot(dx, dy);
-    if (length < 0.16) {
+    if (length < precision) {
       zombie.path.shift();
       zombie.moving = false;
       return;
@@ -222,7 +231,7 @@ export class ZombieSystem {
     zombie.desiredFacingX = nx;
     zombie.desiredFacingY = ny;
     const speed = speedInTiles(LOCOMOTION.zombie[zombie.state] ?? LOCOMOTION.zombie.search);
-    zombie.moving = game.moveEntity(zombie, nx * speed * delta, ny * speed * delta, 0.25);
+    zombie.moving = game.moveEntity(zombie, nx * speed * delta, ny * speed * delta, zombieBodyRadius(zombie));
     if (!zombie.moving) zombie.repathTimer = Math.min(zombie.repathTimer, 0.35);
   }
 
@@ -281,10 +290,10 @@ export class ZombieSystem {
       // Tactical visibility is independent of obstacles and camera panning.
       // Keep an additional body-sized margin outside its visible boundary.
       if (distance({ x, y }, game.player) <= PLAYER_VIEW.radius + 2
-        || !game.world.isPathCellWalkable(x, y, { allowDoors: false })
-        || !game.world.isWalkable(x, y, .25)) continue;
+        || !game.world.isPathCellWalkable(x, y, { allowDoors: false })) continue;
       const zombie = createZombie(x, y, game.zombies.length + 1);
-      if (!zombieSpaceFree(game, zombie, zombieBodyRadius(zombie))) continue;
+      if (!game.world.isWalkable(x, y, zombieBodyRadius(zombie))
+        || !zombieSpaceFree(game, zombie, zombieBodyRadius(zombie))) continue;
       const inward = { north: [0, 1], east: [-1, 0], south: [0, -1], west: [1, 0] }[edge];
       const travel = 8 + game.random()*8, drift = (game.random()-.5)*4;
       const goal = { x: clamp(x+inward[0]*travel-inward[1]*drift, 4, VIEW.worldW-5),

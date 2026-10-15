@@ -1,15 +1,17 @@
 import { COLORS, VIEW } from "./config.js";
-import { CoverMap, distanceToFootprint, segmentHitsVehicle } from "./cover.js";
+import { CoverMap, distanceToFootprint, segmentHitsVehicle, segmentHitsBox } from "./cover.js";
 import { LOOT_TABLES, OBJECT_LABELS } from "./data.js";
 import { createItem } from "./inventory.js";
 import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js";
 import { obstacleClearance, segmentBlocked } from "./collision.js";
+import { buildingWalls, doorSide, doorGeometry } from "./building-geometry.js";
+import { PLAYER_BODY_RADIUS, ZOMBIE_WORLD_RADIUS, metersToTiles, WORLD_SCALE } from "./world-scale.js";
 
 export const BUILDINGS = [
-  { id: "police", name: "POLIZEIPOSTEN", x: 15, y: 4, w: 10, h: 9, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
-  { id: "market", name: "NAHKAUF", x: 36, y: 4, w: 9, h: 10, floor: "floor", door: { x: 40, y: 13 }, wall: "#777565", roof: "#4c5148" },
-  { id: "safehouse", name: "UNTERSCHLUPF", x: 4, y: 35, w: 9, h: 9, floor: "floor", door: { x: 8, y: 35 }, wall: "#6e6658", roof: "#354237" },
-  { id: "pharmacy", name: "APOTHEKE", x: 36, y: 35, w: 9, h: 10, floor: "pharmacyFloor", door: { x: 40, y: 35 }, wall: "#6f786d", roof: "#314239", locked: true, keyId: "pharmacy", lockDifficulty: 24 },
+  { id: "police", name: "POLIZEIPOSTEN", x: 17, y: 6, w: 7, h: 7, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
+  { id: "market", name: "NAHKAUF", x: 37, y: 6, w: 7, h: 8, floor: "floor", door: { x: 40, y: 13 }, wall: "#777565", roof: "#4c5148" },
+  { id: "safehouse", name: "UNTERSCHLUPF", x: 6, y: 35, w: 5, h: 6, floor: "floor", door: { x: 8, y: 35 }, wall: "#6e6658", roof: "#354237" },
+  { id: "pharmacy", name: "APOTHEKE", x: 37, y: 35, w: 7, h: 8, floor: "pharmacyFloor", door: { x: 40, y: 35 }, wall: "#6f786d", roof: "#314239", locked: true, keyId: "pharmacy", lockDifficulty: 24 },
 ];
 
 export const OPEN_POIS = [
@@ -90,14 +92,11 @@ export class World {
     for (let y = building.y; y < building.y + building.h; y++) {
       for (let x = building.x; x < building.x + building.w; x++) this.tiles[y][x] = building.floor;
     }
-    for (let x = building.x; x < building.x + building.w; x++) {
-      this.addWallUnlessDoor(x, building.y, building, "north");
-      this.addWallUnlessDoor(x, building.y + building.h - 1, building, "south");
-    }
-    for (let y = building.y + 1; y < building.y + building.h - 1; y++) {
-      this.addWallUnlessDoor(building.x, y, building, "west");
-      this.addWallUnlessDoor(building.x + building.w - 1, y, building, "east");
-    }
+    for (const wall of buildingWalls(building)) this.addObject("wall", wall.x, wall.y, {
+      solid: true, blocksSight: true, cover: .58, coverLabel: "MAUER",
+      building: building.id, color: building.wall, ...wall,
+    });
+    const side = doorSide(building), orientation = ["north", "south"].includes(side) ? "x" : "y";
     const door = this.addObject("door", building.door.x, building.door.y, {
       solid: true,
       blocksSight: true,
@@ -109,36 +108,25 @@ export class World {
       keyId: building.keyId || null,
       lockDifficulty: building.lockDifficulty || 0,
       building: building.id,
-      orientation: building.door.y === building.y || building.door.y === building.y + building.h - 1 ? "x" : "y",
+      orientation, side, wallColor: building.wall,
+      footprint: doorGeometry({ orientation }).footprint,
       name: `${building.name}: Eingang`,
     });
     building.doorId = door.id;
   }
 
-  addWallUnlessDoor(x, y, building, side) {
-    if (x === building.door.x && y === building.door.y) return;
-    this.addObject("wall", x, y, {
-      solid: true,
-      blocksSight: true,
-      cover: 0.58,
-      coverLabel: "MAUER",
-      side,
-      building: building.id,
-      color: building.wall,
-    });
-  }
-
   addContainers() {
-    const starter = this.addObject("cabinet", 5.2, 37.0, { interactable: true, solid: true, container: "kitchen", name: "KÜCHENSCHRANK", tutorial: true });
+    const starter = this.addObject("cabinet", 6.65, 36.6, { interactable: true, solid: true, container: "kitchen", name: "KÜCHENSCHRANK", tutorial: true });
     this.ensureItem(starter, createItem("kitchen_knife"));
     this.ensureItem(starter, createItem("bandage"));
     this.ensureItem(starter, createItem("water"));
-    this.addObject("fridge", 5.2, 39.2, { interactable: true, solid: true, container: "fridge", name: "KÜHLSCHRANK" });
-    this.addObject("radio", 10.7, 42.0, { interactable: true, solid: true, name: "KOFFERRADIO", used: false });
-    this.addObject("bed", 10.3, 36.5, { solid: true, name: "MATRATZE" });
+    this.addObject("fridge", 6.35, 38.5, { interactable: true, solid: true, container: "fridge", name: "KÜHLSCHRANK",
+      footprint: { x: metersToTiles(WORLD_SCALE.fridge.width / 2), y: metersToTiles(WORLD_SCALE.fridge.depth / 2) } });
+    this.addObject("radio", 9.25, 39.2, { interactable: true, solid: true, name: "KOFFERRADIO", used: false });
+    this.addObject("bed", 9.1, 36.4, { solid: true, name: "MATRATZE" });
 
-    this.addObject("desk", 18.2, 5.2, { interactable: true, solid: true, container: "police", name: "DIENSTSCHREIBTISCH" });
-    const policeLocker = this.addObject("gunlocker", 23.5, 5.2, {
+    this.addObject("desk", 18.2, 7, { interactable: true, solid: true, container: "police", name: "DIENSTSCHREIBTISCH" });
+    const policeLocker = this.addObject("gunlocker", 22, 7, {
       interactable: true, solid: true, container: "police", name: "GESICHERTER WAFFENSCHRANK",
       locked: true, keyId: "police", lockDifficulty: 30,
     });
@@ -153,17 +141,17 @@ export class World {
     const policeCorpse = this.addObject("corpse", 21.2, 9.2, { interactable: true, solid: false, container: "corpse", name: "POLIZIST" });
     this.ensureItem(policeCorpse, createItem("police_key"));
 
-    for (const [x, y] of [[37,5],[40,5],[42.5,5],[37,8],[40,8],[42.5,8],[37,11],[42.5,11]]) {
+    for (const [x, y] of [[37.8,6.8],[40,6.8],[42.2,6.8],[37.8,9.1],[40,9.1],[42.2,9.1],[37.8,11.4],[42.2,11.4]]) {
       this.addObject("shelf", x, y, { interactable: true, solid: true, container: "grocery", name: "VERKAUFSREGAL" });
     }
     this.addObject("counter", 42, 12.2, { solid: true, name: "KASSE" });
-    this.addObject("locker", 36.5, 12, { interactable: true, solid: true, container: "clothing", name: "PERSONALSPIND" });
+    this.addObject("locker", 37.7, 12, { interactable: true, solid: true, container: "clothing", name: "PERSONALSPIND" });
 
-    const medicine = this.addObject("shelf", 37.2, 36.2, { interactable: true, solid: true, container: "pharmacy", name: "MEDIKAMENTENSCHRANK" });
+    const medicine = this.addObject("shelf", 38, 36.2, { interactable: true, solid: true, container: "pharmacy", name: "MEDIKAMENTENSCHRANK" });
     medicine.items.push(createItem("sealed_antibiotics"));
-    this.addObject("shelf", 37.2, 39.2, { interactable: true, solid: true, container: "pharmacy", name: "VERBANDSSCHRANK" });
-    this.addObject("shelf", 42.5, 36.2, { interactable: true, solid: true, container: "pharmacy", name: "APOTHEKENREGAL" });
-    this.addObject("counter", 40, 42.1, { solid: true, name: "TRESEN" });
+    this.addObject("shelf", 38, 38.8, { interactable: true, solid: true, container: "pharmacy", name: "VERBANDSSCHRANK" });
+    this.addObject("shelf", 42, 36.2, { interactable: true, solid: true, container: "pharmacy", name: "APOTHEKENREGAL" });
+    this.addObject("counter", 40, 40.6, { solid: true, name: "TRESEN" });
     this.addObject("corpse", 41.6, 39.3, { interactable: true, solid: false, container: "corpse", name: "APOTHEKERIN" });
   }
 
@@ -391,15 +379,10 @@ export class World {
 
   isPathCellWalkable(x, y, options = {}) {
     if (x < 1 || y < 1 || x >= VIEW.worldW - 1 || y >= VIEW.worldH - 1 || this.tileAt(x, y) === "water") return false;
-    const blocker = this.objectAtCell(x, y, object => object.solid);
-    if (!blocker) return !this.vehicleCollisionCells.get(this.cellKey(x, y))?.some(object => !object.removed
-      && object.solid && object.id !== options.ignoreId);
-    if (blocker.type === "door" && options.allowDoors && !blocker.locked) return true;
-    if (options.ignoreId && blocker.id === options.ignoreId) return true;
-    return false;
+    return this.isWalkable(x, y, options.radius ?? ZOMBIE_WORLD_RADIUS, options.ignoreId, options);
   }
 
-  isWalkable(x, y, radius = 0.27, ignoreId = null, options = {}) {
+  isWalkable(x, y, radius = PLAYER_BODY_RADIUS, ignoreId = null, options = {}) {
     if (this.tileAt(x, y) === "water") return false;
     // A car's footprint can extend beyond the ordinary point-neighbor radius.
     for (const car of this.vehicles) {
@@ -417,7 +400,7 @@ export class World {
     return true;
   }
 
-  canWalkSegment(a, b, radius = .27, options = {}) {
+  canWalkSegment(a, b, radius = PLAYER_BODY_RADIUS, options = {}) {
     const count = Math.max(1, Math.ceil(distance(a, b) / .2));
     for (let i = 0; i <= count; i++) {
       const amount = i / count;
@@ -438,9 +421,15 @@ export class World {
 
   hasLineOfSight(a, b) {
     if (this.vehicles.some(car => !car.removed && car.blocksSight && segmentHitsVehicle(a, b, car))) return false;
+    for (const object of this.objectsInBounds(Math.min(a.x, b.x) - .6, Math.min(a.y, b.y) - .6,
+      Math.max(a.x, b.x) + .6, Math.max(a.y, b.y) + .6)) {
+      if (object.footprint && (object.type === "door" ? object.closed : object.blocksSight)
+        && segmentHitsBox(a, b, object, object.footprint)) return false;
+    }
     const cells = lineCells(a.x, a.y, b.x, b.y);
     for (let index = 1; index < cells.length - 1; index++) {
       const blocker = this.objectAtCell(cells[index].x, cells[index].y, object => {
+        if (object.footprint) return false;
         if (object.type === "door") return object.closed;
         return object.type !== "car" && object.blocksSight;
       });
@@ -456,8 +445,7 @@ export class World {
       const x = origin.x + Math.cos(angle) * current;
       const y = origin.y + Math.sin(angle) * current;
       if (x < 1 || y < 1 || x >= VIEW.worldW - 1 || y >= VIEW.worldH - 1) return previous;
-      const blocker = this.objectAtCell(x, y, object => object.type === "door" ? object.closed : object.type !== "car" && object.blocksSight);
-      if (blocker || this.vehicles.some(car => !car.removed && car.blocksSight && distanceToFootprint({ x, y }, car) === 0)) return Math.max(0, previous);
+      if (!this.hasLineOfSight(origin, { x, y })) return Math.max(0, previous);
       previous = current;
     }
     return maxDistance;

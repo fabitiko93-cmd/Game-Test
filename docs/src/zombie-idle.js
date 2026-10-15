@@ -1,5 +1,6 @@
 import { distance } from "./util.js";
 import { LOCOMOTION, speedInTiles } from "./locomotion.js";
+import { zombieBodyRadius } from "./zombie-collision.js";
 
 // Ambient behavior only. Awareness, investigation and chase stay in ai.js.
 export const ZOMBIE_IDLE = Object.freeze({
@@ -40,8 +41,8 @@ function chooseStep(zombie, game) {
     const step = distance(zombie, goal), toHome = distance(home, goal);
     if (step < ZOMBIE_IDLE.stepMin - .00001 || step > ZOMBIE_IDLE.stepMax + .00001
       || (toHome > ZOMBIE_IDLE.roamRadius && toHome >= fromHome)) continue;
-    if (!game.world.isWalkable(goal.x, goal.y, .25)
-      || !game.world.canWalkSegment(zombie, goal, .25)) continue;
+    if (!game.world.isWalkable(goal.x, goal.y, zombieBodyRadius(zombie))
+      || !game.world.canWalkSegment(zombie, goal, zombieBodyRadius(zombie))) continue;
     zombie.idleBehavior = { version: 1, phase: "turn", goal, revision: game.world.sightRevision };
     zombie.target = goal; zombie.wanderTarget = goal; zombie.path = [];
     return true;
@@ -70,7 +71,7 @@ export function updateIdleZombie(zombie, game, delta) {
   const goal = state.goal, d = distance(zombie, goal);
   if (d < .003) { pause(zombie, game); return; }
   if (state.revision !== game.world.sightRevision) {
-    if (!game.world.canWalkSegment(zombie, goal, .25)) { pause(zombie, game); return; }
+    if (!game.world.canWalkSegment(zombie, goal, zombieBodyRadius(zombie))) { pause(zombie, game); return; }
     state.revision = game.world.sightRevision;
   }
   zombie.target = goal;
@@ -82,6 +83,6 @@ export function updateIdleZombie(zombie, game, delta) {
   if (state.phase === "turn" && alignment < Math.cos(.3)) { zombie.moving = false; return; }
   state.phase = "walk";
   const travel = Math.min(d, ZOMBIE_IDLE.speed * delta), previous = { x: zombie.x, y: zombie.y };
-  zombie.moving = game.moveEntity(zombie, zombie.desiredFacingX * travel, zombie.desiredFacingY * travel, .25);
+  zombie.moving = game.moveEntity(zombie, zombie.desiredFacingX * travel, zombie.desiredFacingY * travel, zombieBodyRadius(zombie));
   if (!zombie.moving || distance(previous, zombie) < travel * .5 || distance(zombie, goal) < .003) pause(zombie, game);
 }

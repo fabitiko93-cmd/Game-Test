@@ -2,7 +2,7 @@ import { coverFootprint, distanceToFootprint, segmentHitsBox } from "./cover.js"
 
 export const obstacleRadius = object => object.type === "tree" || object.type === "streetlamp" ? .34 : .43;
 
-export const boxObstacle = object => ["car", "wall", "door"].includes(object.type);
+export const boxObstacle = object => Boolean(object.footprint) || ["car", "wall", "door"].includes(object.type);
 
 export function obstacleClearance(point, object, radius = .27) {
   return (boxObstacle(object) ? distanceToFootprint(point, object)

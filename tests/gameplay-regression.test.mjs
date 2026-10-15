@@ -108,8 +108,9 @@ test("vehicle corner shortcuts are rejected even when both endpoints are free", 
     const { world } = fixture();
     world.addObject("car", 10, 10, { orientation, solid: true });
     const flip = point => orientation === "x" ? point : { x: point.y, y: point.x };
-    const a = flip({ x: 10.88, y: 10.85 }), b = flip({ x: 11.15, y: 10.48 });
-    assert.ok(world.isWalkable(a.x, a.y, .27)); assert.ok(world.isWalkable(b.x, b.y, .27));
+    const radius = PLAYER_PATH_RULES.radius;
+    const a = flip({ x: 10.87, y: 10.47 + radius + .03 }), b = flip({ x: 10.86 + radius + .03, y: 10.48 });
+    assert.ok(world.isWalkable(a.x, a.y, radius)); assert.ok(world.isWalkable(b.x, b.y, radius));
     assert.equal(playerSegmentClear(world, a, b), false);
     assertRoute(world, a, findPlayerPath(world, a, b));
   }

@@ -1,6 +1,8 @@
+import { PLAYER_BODY_RADIUS } from "./world-scale.js";
+
 // Cover identity is local: adjoining shrubs shelter a crossing without sharing
 // enemy knowledge. Building sides are separate areas, not an entire building.
-export const COVER_RULES = Object.freeze({ margin: 0.72, minimumScore: 0.42, playerRadius: .27 });
+export const COVER_RULES = Object.freeze({ margin: 0.72, minimumScore: 0.42, playerRadius: PLAYER_BODY_RADIUS });
 
 export const coverKind = object => ["tree", "bush"].includes(object.type) ? "concealment" : "occlusion";
 
@@ -9,6 +11,7 @@ export function vehicleFootprint(object) {
 }
 
 export function coverFootprint(object) {
+  if (object.footprint) return object.footprint;
   if (object.type === "car") return vehicleFootprint(object);
   if (object.type === "wall" || object.type === "door") return { x: 0.5, y: 0.5 };
   if (object.type === "shed") return { x: 0.65, y: 0.65 };
@@ -56,9 +59,9 @@ export function coverClearance(point, object, neighbors = [], margin = COVER_RUL
       || (door.orientation && door.orientation !== (horizontal ? "x" : "y"))
       || (door.building && object.building && door.building !== object.building)
       || Math.abs(door[across] - object[across]) > .51
-      || Math.abs(point[across] - door[across]) > .5 + margin) continue;
+      || Math.abs(point[across] - door[across]) > coverFootprint(object)[across] + margin) continue;
     // An open doorway interrupts the wall band; vegetation can still conceal it.
-    value = Math.min(value, Math.abs(point[along] - door[along]) - .5);
+    value = Math.min(value, Math.abs(point[along] - door[along]) - coverFootprint(door)[along]);
   }
   return value;
 }

@@ -54,7 +54,14 @@ export function zombieStep(game, zombie, requested, worldRadius) {
   // Both members of a head-on pair choose the same hand relative to their
   // respective direction, so they pass on opposite sides instead of oscillating.
   const side = pairHash(zombie, blockers[0]) & 1 ? 1 : -1;
-  for (const angle of [.25, .5, .8, 1.1, Math.PI/2]) for (const hand of [side, -side]) {
+  // At a person-wide opening two front bodies can form an arch against the
+  // jambs. A stable lower-priority body may step back, letting the other pass.
+  const yielding = String(zombie.id).localeCompare(String(blockers[0].id)) > 0;
+  const doorway = yielding && game.world.objectsNear(zombie.x, zombie.y, 1.5)
+    .some(object => object.type === "door" && object.footprint && !object.closed);
+  const angles = doorway ? [2.4, 1.9, Math.PI, Math.PI/2, 1.1, .8, .5, .25]
+    : yielding ? [.25, .5, .8, 1.1, Math.PI/2, 1.9, 2.4, Math.PI] : [.25, .5, .8, 1.1, Math.PI/2];
+  for (const angle of angles) for (const hand of [side, -side]) {
     const cos = Math.cos(angle), sin = Math.sin(angle)*hand;
     const point = { x: zombie.x + dx*cos-dy*sin, y: zombie.y + dx*sin+dy*cos };
     if (free(point)) return point;
@@ -89,7 +96,7 @@ export function separateZombieBodies(game, delta) {
       for (const [body, sign] of [[a, 1], [b, -1]]) {
         const amount = Math.min(body.remaining, overlap/2);
         const point = { x: body.zombie.x+nx*amount*sign, y: body.zombie.y+ny*amount*sign };
-        if (amount > EPSILON && worldFree(game, body.zombie, point, .25)) {
+        if (amount > EPSILON && worldFree(game, body.zombie, point, body.radius)) {
           Object.assign(body.zombie, point); body.remaining -= amount; resolved += amount;
         }
       }
@@ -97,7 +104,7 @@ export function separateZombieBodies(game, delta) {
       if (resolved < overlap/2) for (const [body, sign] of [[a, 1], [b, -1]]) {
         const amount = Math.min(body.remaining, overlap-resolved);
         const point = { x: body.zombie.x+nx*amount*sign, y: body.zombie.y+ny*amount*sign };
-        if (amount > EPSILON && worldFree(game, body.zombie, point, .25)) {
+        if (amount > EPSILON && worldFree(game, body.zombie, point, body.radius)) {
           Object.assign(body.zombie, point); body.remaining -= amount; resolved += amount;
         }
       }

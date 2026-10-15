@@ -42,6 +42,11 @@ Rennen-Animation bleibt ungenutzt. Vollständiger 3D-Weltport
 bleibt zurückgestellt. Späteres Setting umfasst Deutschland, mehrere Städte und
 Bundesländer; detaillierte Räume und Etagen bleiben als Ausbauziel erhalten.
 
+Gebäudemaßstab vom 15.10.2026: Baugeometrie ist vom 2-m-Terrainraster getrennt.
+Wände, Türrahmen/-stürze und Gebäudegrundrisse folgen dem Figurenmaßstab;
+Darstellung, Körperkollision, Wegsuche und Sicht verwenden dieselben Fußabdrücke.
+Innenböden haben ein 50-cm-Fugenraster. Realistische Bodentexturen bleiben vorgemerkt.
+
 Build und technische Modulauslagerung vom 02.10.2026 sind reine Infrastrukturarbeit.
 Die bestehenden Spielregeln bleiben maßgeblich. Nutzerklarstellung vom 15.10.2026:
 Tests beginnen mit neuen Spielständen. Abwärtskompatibilität, Übernahme und

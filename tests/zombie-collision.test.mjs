@@ -30,7 +30,7 @@ function add(game, x, y, target) {
 function assertBodies(game, tolerance = .000003) {
   const active = game.zombies.filter(zombie => !zombie.removed);
   for (let i = 0; i < active.length; i++) {
-    assert.ok(game.world.isWalkable(active[i].x, active[i].y, .25), "body must remain outside solid scenery");
+    assert.ok(game.world.isWalkable(active[i].x, active[i].y, zombieBodyRadius(active[i])), "body must remain outside solid scenery");
     for (let j = i+1; j < active.length; j++) {
       assert.ok(distance(active[i], active[j]) >= zombieBodyRadius(active[i])+zombieBodyRadius(active[j])-tolerance,
         `${active[i].id}/${active[j].id} must have separate physical bodies`);
@@ -105,7 +105,7 @@ test("old stacked bodies separate gently without being pushed through walls or v
       separateZombieBodies(game, delta);
       for (let i = 0; i < previous.length; i++) {
         assert.ok(distance(previous[i], game.zombies[i]) <= limit+.000001, "legacy corrections must not pop or accelerate bodies");
-        assert.ok(game.world.isWalkable(game.zombies[i].x, game.zombies[i].y, .25));
+        assert.ok(game.world.isWalkable(game.zombies[i].x, game.zombies[i].y, zombieBodyRadius(game.zombies[i])));
       }
     }
     assertBodies(game, .001);

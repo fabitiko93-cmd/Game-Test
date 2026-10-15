@@ -22,7 +22,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Ansatz prüft Ziel vor Bewegung in `movement.js`, verdeckte Wege und Zielumfahrung über `player-navigation.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
 | Wunden, Behandlung, Bedürfnisse, Fähigkeiten | `character.js`, `item-actions.js` | Bedürfnisablauf in `game.js`; Status-/Medizinanzeige in `ui.js` |
 | Gegenstände, Ausrüstung, Munition, Waffenmods | `inventory.js`, `data.js`, `item-actions.js` | Rucksack-/Waffenmenüs in `ui.js` |
-| Weltobjekte, Gebäude, Fahrzeuge, Loot | `world.js`, `data.js`, `interaction.js` | Gemeinsame Zugangsprüfung für Anzeige, Annäherung und Benutzung; Punkt-/Streckenkollision in `collision.js`, Fußabdrücke in `cover.js` |
+| Weltobjekte, Gebäude, Fahrzeuge, Loot | `world.js`, `building-geometry.js`, `data.js`, `interaction.js` | Metrische Wanddicke/-höhe, Rahmen und Türsturz, kompakte Grundrisse und 50-cm-Innenboden unabhängig vom 2-m-Terrainraster. Gemeinsame Rechtecke für Darstellung, Sicht und Kollision; Körperradien in `world-scale.js`. Gemeinsame Zugangsprüfung für Anzeige, Annäherung und Benutzung; Punkt-/Streckenkollision in `collision.js`, Fußabdrücke in `cover.js`. |
 | HUD, Statusicons, Menüs | `ui.js`, `target-layout.js`, `status-icons.js`, `docs/style.css` | Zielfenster sparen Figuren und Bedienelemente aus; HUD-Buttons besitzen ihre Touchfläche und ihren angezeigten Zielbefehl; Canvas-Icons in `render.js`; DOM-Quelle in `web/index.html` |
 | Missionsfortschritt | `missions.js`, `game.js` | `updateMission`; Missionsmenü in `ui.js` |
 | Speichern und Laden | `save.js`, `game-state.js`, `world.js` | `serialize`/`load`, Weltobjekte und Zustand; Save-Version in `config.js` |
@@ -78,6 +78,11 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
   Pause, ruhiger Angriff zur bestehenden Trefferzeit, tatsächliche Sprite-
   Projektion in allen Oktanten, Bildraster/-Hashes und Bildcache mit Drehung
   während des Nachladens.
+- `building-geometry.test.mjs`: passende Türöffnungen in allen Orientierungen,
+  geschlossene Türen und feste Rahmen, gemeinsame Sicht-/Kollisionsgeometrie,
+  Spieler- und Zombie-Durchgänge, Gruppenfluss durch 86-cm-Türen bei 30/60 Hz,
+  erreichbare Missionsobjekte und metrische Renderhöhen. Zombie-Wege nutzen nahe
+  Baugeometrie das feinere 50-cm-Raster mit genauerem Erreichen der Wegpunkte.
 - `zombie-models.test.mjs`: echte GLB-Geometrie und Skelettauswertung mit Three.js,
   metrische Höhe/Bodenkontakt, Original-Schlüssel und Trefferzeit, Weg-/Schrittkopplung
   bei 30/60/120 Hz, 32 kontinuierliche Richtungen zur echten Renderkamera,

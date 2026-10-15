@@ -139,9 +139,9 @@ scenario("visible standing transfer contaminates new cover when ducking; visible
 
 scenario("same wall side has a stable ID; corners and adjacent bushes keep separate knowledge", () => {
   const w = new World();
-  const a = w.coverMap.at({ x: 14, y: 7 }), b = w.coverMap.at({ x: 14, y: 9 });
+  const a = w.coverMap.at({ x: 16.5, y: 8 }), b = w.coverMap.at({ x: 16.5, y: 10 });
   assert.equal(a.id, b.id);
-  assert.notEqual(a.id, w.coverMap.at({ x: 17, y: 3 }).id);
+  assert.notEqual(a.id, w.coverMap.at({ x: 20, y: 5.5 }).id);
   const g = fixture(); bush(g); bush(g, 11, 10); duck(g);
   const first = g.world.coverMap.at({ x: 9.5, y: 10 });
   const second = g.world.coverMap.at({ x: 11.5, y: 10 });

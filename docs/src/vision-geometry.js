@@ -1,5 +1,5 @@
 import { VIEW } from "./config.js";
-import { vehicleFootprint } from "./cover.js";
+import { coverFootprint } from "./cover.js";
 
 const CORNER_OFFSET = .00001;
 
@@ -17,8 +17,8 @@ function mergeEdges(groups, axis) {
   return segments;
 }
 
-// Display geometry only. Ordinary sight blockers occupy their existing sight
-// cells; cars use their precise rectangular footprint, as in World sight checks.
+// Ordinary vegetation uses sight cells; metric walls, frames, doors and cars use
+// the same precise rectangles as World sight checks.
 // Merge adjoining cell edges so a straight wall has no artificial tile seams.
 export class VisionGeometry {
   constructor() {
@@ -38,7 +38,7 @@ export class VisionGeometry {
     this.cells = new Set(); this.cars = [];
     for (const object of world.objects) {
       if (object.removed || !(object.type === "door" ? object.closed : object.blocksSight)) continue;
-      if (object.type === "car") this.cars.push({ x: object.x, y: object.y, ...vehicleFootprintBounds(object) });
+      if (object.type === "car" || object.footprint) this.cars.push({ x: object.x, y: object.y, ...vehicleFootprintBounds(object) });
       else this.cells.add(`${Math.round(object.x)},${Math.round(object.y)}`);
     }
     const horizontal = new Map(), vertical = new Map();
@@ -108,6 +108,6 @@ export class VisionGeometry {
 }
 
 function vehicleFootprintBounds(object) {
-  const shape = vehicleFootprint(object);
+  const shape = coverFootprint(object);
   return { halfX: shape.x, halfY: shape.y };
 }

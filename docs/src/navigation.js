@@ -1,3 +1,5 @@
+import { ZOMBIE_WORLD_RADIUS } from "./world-scale.js";
+
 const DIRECTIONS = [
   [1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1],
   [1, 1, Math.SQRT2], [1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [-1, -1, Math.SQRT2],
@@ -67,13 +69,47 @@ function reconstruct(nodes, endKey) {
 
 export class Navigator {
   findPath(world, startPoint, endPoint, options = {}) {
-    const start = cell(startPoint);
+    const step = options.step ?? 1;
+    if (step < 1) {
+      const up = point => ({ x: point.x / step, y: point.y / step });
+      const down = point => ({ x: point.x * step, y: point.y * step });
+      const fineWorld = {
+        clampPoint: point => up(world.clampPoint(down(point))),
+        isPathCellWalkable: (x, y, rules) => world.isPathCellWalkable(x * step, y * step, rules),
+        canWalkSegment: (a, b, radius, rules) => world.canWalkSegment(down(a), down(b), radius, rules),
+      };
+      const path = this.findPath(fineWorld, up(startPoint), up(endPoint), { ...options, step: 1 }).map(down);
+      // A sidestepping body need not retreat to a rounded grid center behind
+      // the queue. Join the forward corridor at the same physical depth.
+      for (let i = Math.min(2, path.length - 2); i >= 0; i--) {
+        const a = path[i], b = path[i + 1], dx = b.x - a.x, dy = b.y - a.y;
+        const t = Math.max(0, Math.min(1, ((startPoint.x-a.x)*dx+(startPoint.y-a.y)*dy)/(dx*dx+dy*dy)));
+        const join = { x: a.x+dx*t, y: a.y+dy*t };
+        if (t > 0 && world.canWalkSegment(startPoint, join, options.radius ?? ZOMBIE_WORLD_RADIUS, options))
+          return [join, ...path.slice(i+1)];
+      }
+      return path;
+    }
+    let start = cell(startPoint);
+    let approach = [];
+    const clear = (a, b) => !world.canWalkSegment || world.canWalkSegment(a, b, options.radius ?? ZOMBIE_WORLD_RADIUS, options);
+    if (!world.isPathCellWalkable(start.x, start.y, options) || !clear(startPoint, start)) {
+      const candidates = [];
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const point = { x: start.x + dx, y: start.y + dy };
+        if (world.isPathCellWalkable(point.x, point.y, options) && clear(startPoint, point)) candidates.push(point);
+      }
+      candidates.sort((a, b) => Math.hypot(a.x - startPoint.x, a.y - startPoint.y) - Math.hypot(b.x - startPoint.x, b.y - startPoint.y));
+      if (!candidates.length) return [];
+      start = candidates[0];
+      approach = [{ ...start }];
+    }
     const desired = cell(world.clampPoint ? world.clampPoint(endPoint) : endPoint);
     const end = world.isPathCellWalkable(desired.x, desired.y, options)
       ? desired
       : this.nearestWalkable(world, desired, options);
     if (!end) return [];
-    if (start.x === end.x && start.y === end.y) return [];
+    if (start.x === end.x && start.y === end.y) return approach;
 
     const open = new MinHeap();
     const first = { ...start, g: 0, f: heuristic(start, end), parent: null };
@@ -87,7 +123,7 @@ export class Navigator {
       const currentKey = key(current.x, current.y);
       if (closed.has(currentKey)) continue;
       examined += 1;
-      if (current.x === end.x && current.y === end.y) return reconstruct(nodes, currentKey);
+      if (current.x === end.x && current.y === end.y) return [...approach, ...reconstruct(nodes, currentKey)];
       closed.add(currentKey);
 
       for (const [dx, dy, cost] of DIRECTIONS) {
@@ -95,6 +131,7 @@ export class Navigator {
         const ny = current.y + dy;
         const nextKey = key(nx, ny);
         if (closed.has(nextKey) || !world.isPathCellWalkable(nx, ny, options)) continue;
+        if (!clear(current, { x: nx, y: ny })) continue;
         if (dx && dy) {
           if (!world.isPathCellWalkable(current.x + dx, current.y, options)
             || !world.isPathCellWalkable(current.x, current.y + dy, options)) continue;

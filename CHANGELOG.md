@@ -1,3 +1,16 @@
+# Maßstäbliche Gebäude und passende Türöffnungen · 15.10.2026
+
+- Baugeometrie vom groben Terrainraster getrennt: 24 cm dicke, 2,70 m hohe Wände
+  mit passenden Rahmen und Stürzen für die vorhandenen 86-cm-Türblätter. Offene
+  Türen schwenken am Rahmen; die seitlichen Rahmen bleiben feste Hindernisse.
+- Alle vier Gebäude haben kompaktere Grundrisse und entsprechend platzierte
+  Einrichtung. Innenböden erhalten ein dezentes 50-cm-Fugenraster und folgen der
+  Innenkante der Wände. Dächer passen zum Wandmaßstab; Vorderwände werden innen
+  durchsichtig, damit Figuren und Einrichtung bedienbar bleiben.
+- Spieler- und Zombie-Weltkollision auf körperliche Breite abgestimmt. Präzise
+  Fußabdrücke gelten gemeinsam für Wege, Sichtlinien und Sichtkegel; Durchgänge
+  funktionieren auch mit den vorhandenen Zombie-Körperkollisionen.
+
 # Zombie-Körperkollisionen und unauffällige Zuwanderung · 15.10.2026
 
 - Zombies halten untereinander maßstäblichen Körperabstand, weichen seitlich aus
