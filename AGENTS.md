@@ -30,8 +30,7 @@ zu einem neuen Fähigkeitensystem ausgebaut.
 
 Bereits erteilte Aufträge nicht durch zusätzliche Freigaberunden ersetzen.
 
-Maßstab vom 15.10.2026: Player 1,80 m; weiblicher Player 1,68 m für später
-vorgemerkt, jetzt kein neues Player-Modell. DIN-Türblatt und konkretes Kühlgerät
+Maßstab vom 15.10.2026: Player 1,80 m; weiblicher Player 1,68 m. DIN-Türblatt und konkretes Kühlgerät
 dienen als Größenanker, keine millimetergenaue Bauteilsimulation. Weibliche und
 männliche Zombies haben überlappende Größenbereiche und ID-stabile Körperhöhen.
 Der Maßstabsvergleich ist veröffentlicht. Am 15.10.2026 ebenfalls freigegeben:
@@ -48,8 +47,10 @@ Darstellung, Körperkollision, Wegsuche und Sicht verwenden dieselben Fußabdrü
 Innenböden haben ein 50-cm-Fugenraster. Realistische Bodentexturen bleiben vorgemerkt.
 Nachjustierung: Grundrisse etwas großzügiger, metrische Wand- und Türmaße bleiben.
 Getötete Zombies behalten Modellvariante, Größe und Ausrichtung als liegende Körper.
-Ein echtes Player-Modell ist als nächster separater Schritt vom Nutzer angekündigt;
-hier noch keine Modellwahl oder Implementierung vorwegnehmen.
+Freigabe vom 16.10.2026: kostenlose Quaternius Ultimate Modular Men/Women und
+Ultimate House Interior einbauen. Spieler behalten getrennte Kopf-, Oberkörper-,
+Bein- und Fußteile für spätere Kleidungsanpassungen. Türen und Kühlschränke an die
+bestehenden Metermaße anpassen; Darstellung und Kollision teilen die Assetmaße.
 
 Build und technische Modulauslagerung vom 02.10.2026 sind reine Infrastrukturarbeit.
 Die bestehenden Spielregeln bleiben maßgeblich. Nutzerklarstellung vom 15.10.2026:

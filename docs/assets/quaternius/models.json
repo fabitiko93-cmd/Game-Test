@@ -1,0 +1,5165 @@
+{
+  "version": 1,
+  "author": "Quaternius",
+  "license": "CC0-1.0",
+  "characters": {
+    "male-Adventurer": {
+      "file": "male-Adventurer-2a70333d41e7.glb.gz",
+      "sex": "male",
+      "style": "Adventurer",
+      "parts": {
+        "torso": "Adventurer_Body",
+        "feet": "Adventurer_Feet",
+        "head": "Adventurer_Head",
+        "legs": "Adventurer_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "21f7a61afb6bd6cef6961490c367594e3c2fc01ec1f041662131172ce763063e",
+      "referenceHeight": 1.8491309313974402,
+      "groundOffset": 0.001638074511367633,
+      "dimensions": [
+        0.5252004810593414,
+        1.8491309313974402,
+        0.37942978450461123
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.0666667222976685
+        },
+        "Gun_Shoot": {
+          "duration": 0.6000000238418579
+        },
+        "HitRecieve": {
+          "duration": 0.5666666626930237
+        },
+        "HitRecieve_2": {
+          "duration": 0.5666666626930237
+        },
+        "Idle": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.6666666865348816
+        },
+        "Idle_Neutral": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Sword": {
+          "duration": 1.6666666269302368
+        },
+        "Interact": {
+          "duration": 1.2666666507720947
+        },
+        "Kick_Left": {
+          "duration": 0.9333333373069763
+        },
+        "Kick_Right": {
+          "duration": 0.9333333373069763
+        },
+        "Punch_Left": {
+          "duration": 0.8333333134651184
+        },
+        "Punch_Right": {
+          "duration": 0.8333333134651184
+        },
+        "Roll": {
+          "duration": 1.3333333730697632
+        },
+        "Run": {
+          "duration": 0.800000011920929,
+          "distance": 2.0028519721528286
+        },
+        "Run_Back": {
+          "duration": 0.8333333134651184
+        },
+        "Run_Left": {
+          "duration": 0.800000011920929
+        },
+        "Run_Right": {
+          "duration": 0.800000011920929
+        },
+        "Run_Shoot": {
+          "duration": 0.8333333134651184,
+          "distance": 2.069565386063761
+        },
+        "Sword_Slash": {
+          "duration": 1.0333333015441895
+        },
+        "Walk": {
+          "duration": 1.3333333730697632,
+          "distance": 1.759707446273492
+        },
+        "Wave": {
+          "duration": 1.6666666269302368
+        }
+      }
+    },
+    "male-Beach": {
+      "file": "male-Beach-1d646ed27263.glb.gz",
+      "sex": "male",
+      "style": "Beach",
+      "parts": {
+        "torso": "Beach_Body",
+        "feet": "Beach_Feet",
+        "head": "Beach_Head",
+        "legs": "Beach_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "76e001ea131fd76a1bd938a7862606cb8037f7049b632783580b9bf4da2371a8",
+      "referenceHeight": 1.8794533960933288,
+      "groundOffset": 0.005286879378556274,
+      "dimensions": [
+        0.5283013732045747,
+        1.8794533960933288,
+        0.37252206655382003
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.0666667222976685
+        },
+        "Gun_Shoot": {
+          "duration": 0.6000000238418579
+        },
+        "HitRecieve": {
+          "duration": 0.5666666626930237
+        },
+        "HitRecieve_2": {
+          "duration": 0.5666666626930237
+        },
+        "Idle": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.6666666865348816
+        },
+        "Idle_Neutral": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Sword": {
+          "duration": 1.6666666269302368
+        },
+        "Interact": {
+          "duration": 1.2666666507720947
+        },
+        "Kick_Left": {
+          "duration": 0.9333333373069763
+        },
+        "Kick_Right": {
+          "duration": 0.9333333373069763
+        },
+        "Punch_Left": {
+          "duration": 0.8333333134651184
+        },
+        "Punch_Right": {
+          "duration": 0.8333333134651184
+        },
+        "Roll": {
+          "duration": 1.3333333730697632
+        },
+        "Run": {
+          "duration": 0.800000011920929,
+          "distance": 2.0028519721528286
+        },
+        "Run_Back": {
+          "duration": 0.8333333134651184
+        },
+        "Run_Left": {
+          "duration": 0.800000011920929
+        },
+        "Run_Right": {
+          "duration": 0.800000011920929
+        },
+        "Run_Shoot": {
+          "duration": 0.8333333134651184,
+          "distance": 2.069565386063761
+        },
+        "Sword_Slash": {
+          "duration": 1.0333333015441895
+        },
+        "Walk": {
+          "duration": 1.3333333730697632,
+          "distance": 1.759707446273492
+        },
+        "Wave": {
+          "duration": 1.6666666269302368
+        }
+      }
+    },
+    "male-Casual_2": {
+      "file": "male-Casual_2-2de97af1861b.glb.gz",
+      "sex": "male",
+      "style": "Casual_2",
+      "parts": {
+        "torso": "Casual2_Body",
+        "feet": "Casual2_Feet",
+        "head": "Casual2_Head",
+        "legs": "Casual2_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "55c654d09a2a5ff6e3bd6158d4a1b462f181cd6f1e12a0f5e9d959f9c3abc438",
+      "referenceHeight": 1.8500551783814785,
+      "groundOffset": 0.0012144845403509884,
+      "dimensions": [
+        0.5283013732045747,
+        1.8500551783814785,
+        0.44885106919279183
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.0666667222976685
+        },
+        "Gun_Shoot": {
+          "duration": 0.6000000238418579
+        },
+        "HitRecieve": {
+          "duration": 0.5666666626930237
+        },
+        "HitRecieve_2": {
+          "duration": 0.5666666626930237
+        },
+        "Idle": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.6666666865348816
+        },
+        "Idle_Neutral": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Sword": {
+          "duration": 1.6666666269302368
+        },
+        "Interact": {
+          "duration": 1.2666666507720947
+        },
+        "Kick_Left": {
+          "duration": 0.9333333373069763
+        },
+        "Kick_Right": {
+          "duration": 0.9333333373069763
+        },
+        "Punch_Left": {
+          "duration": 0.8333333134651184
+        },
+        "Punch_Right": {
+          "duration": 0.8333333134651184
+        },
+        "Roll": {
+          "duration": 1.3333333730697632
+        },
+        "Run": {
+          "duration": 0.800000011920929,
+          "distance": 2.0028519721528286
+        },
+        "Run_Back": {
+          "duration": 0.8333333134651184
+        },
+        "Run_Left": {
+          "duration": 0.800000011920929
+        },
+        "Run_Right": {
+          "duration": 0.800000011920929
+        },
+        "Run_Shoot": {
+          "duration": 0.8333333134651184,
+          "distance": 2.069565386063761
+        },
+        "Sword_Slash": {
+          "duration": 1.0333333015441895
+        },
+        "Walk": {
+          "duration": 1.3333333730697632,
+          "distance": 1.759707446273492
+        },
+        "Wave": {
+          "duration": 1.6666666269302368
+        }
+      }
+    },
+    "male-Casual_Hoodie": {
+      "file": "male-Casual_Hoodie-29d5cdfc6eee.glb.gz",
+      "sex": "male",
+      "style": "Casual_Hoodie",
+      "parts": {
+        "torso": "Casual_Body",
+        "feet": "Casual_Feet",
+        "head": "Casual_Head",
+        "legs": "Casual_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "dd74886c26998a0fa888b4ce557a0932d7d97b0265dd4c763154d081b7a6cb98",
+      "referenceHeight": 1.8624876066116116,
+      "groundOffset": 0.003964152174549522,
+      "dimensions": [
+        0.5443038139997529,
+        1.8624876066116116,
+        0.3725472279139944
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.0666667222976685
+        },
+        "Gun_Shoot": {
+          "duration": 0.6000000238418579
+        },
+        "HitRecieve": {
+          "duration": 0.5666666626930237
+        },
+        "HitRecieve_2": {
+          "duration": 0.5666666626930237
+        },
+        "Idle": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.6666666865348816
+        },
+        "Idle_Neutral": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Sword": {
+          "duration": 1.6666666269302368
+        },
+        "Interact": {
+          "duration": 1.2666666507720947
+        },
+        "Kick_Left": {
+          "duration": 0.9333333373069763
+        },
+        "Kick_Right": {
+          "duration": 0.9333333373069763
+        },
+        "Punch_Left": {
+          "duration": 0.8333333134651184
+        },
+        "Punch_Right": {
+          "duration": 0.8333333134651184
+        },
+        "Roll": {
+          "duration": 1.3333333730697632
+        },
+        "Run": {
+          "duration": 0.800000011920929,
+          "distance": 2.0028519721528286
+        },
+        "Run_Back": {
+          "duration": 0.8333333134651184
+        },
+        "Run_Left": {
+          "duration": 0.800000011920929
+        },
+        "Run_Right": {
+          "duration": 0.800000011920929
+        },
+        "Run_Shoot": {
+          "duration": 0.8333333134651184,
+          "distance": 2.069565386063761
+        },
+        "Sword_Slash": {
+          "duration": 1.0333333015441895
+        },
+        "Walk": {
+          "duration": 1.3333333730697632,
+          "distance": 1.759707446273492
+        },
+        "Wave": {
+          "duration": 1.6666666269302368
+        }
+      }
+    },
+    "male-Farmer": {
+      "file": "male-Farmer-4c76b9506a19.glb.gz",
+      "sex": "male",
+      "style": "Farmer",
+      "parts": {
+        "torso": "Farmer_Body",
+        "feet": "Farmer_Feet",
+        "head": "Farmer_Head",
+        "legs": "Farmer_Pants"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "46d3e85fa8d848ee479ab8e4672c16724ee4ea51f3af5733705a153937f93555",
+      "referenceHeight": 1.8488234794443166,
+      "groundOffset": 0.00019242936279061196,
+      "dimensions": [
+        0.5257288988935531,
+        1.8488234794443166,
+        0.39715935652633616
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.0666667222976685
+        },
+        "Gun_Shoot": {
+          "duration": 0.6000000238418579
+        },
+        "HitRecieve": {
+          "duration": 0.5666666626930237
+        },
+        "HitRecieve_2": {
+          "duration": 0.5666666626930237
+        },
+        "Idle": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.6666666865348816
+        },
+        "Idle_Neutral": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Sword": {
+          "duration": 1.6666666269302368
+        },
+        "Interact": {
+          "duration": 1.2666666507720947
+        },
+        "Kick_Left": {
+          "duration": 0.9333333373069763
+        },
+        "Kick_Right": {
+          "duration": 0.9333333373069763
+        },
+        "Punch_Left": {
+          "duration": 0.8333333134651184
+        },
+        "Punch_Right": {
+          "duration": 0.8333333134651184
+        },
+        "Roll": {
+          "duration": 1.3333333730697632
+        },
+        "Run": {
+          "duration": 0.800000011920929,
+          "distance": 2.0028519721528286
+        },
+        "Run_Back": {
+          "duration": 0.8333333134651184
+        },
+        "Run_Left": {
+          "duration": 0.800000011920929
+        },
+        "Run_Right": {
+          "duration": 0.800000011920929
+        },
+        "Run_Shoot": {
+          "duration": 0.8333333134651184,
+          "distance": 2.069565386063761
+        },
+        "Sword_Slash": {
+          "duration": 1.0333333015441895
+        },
+        "Walk": {
+          "duration": 1.3333333730697632,
+          "distance": 1.759707446273492
+        },
+        "Wave": {
+          "duration": 1.6666666269302368
+        }
+      }
+    },
+    "male-King": {
+      "file": "male-King-1b0dd5246494.glb.gz",
+      "sex": "male",
+      "style": "King",
+      "parts": {
+        "torso": "King_Body",
+        "feet": "King_Feet",
+        "head": "King_Head",
+        "legs": "King_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "659c7d84dcea8c6331698c3430484861944c83e629389425664b782d4aecd17c",
+      "referenceHeight": 1.8940702117727521,
+      "groundOffset": 0.0015047300363971094,
+      "dimensions": [
+        0.5735338195116126,
+        1.8940702117727521,
+        0.3632461225048542
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.0666667222976685
+        },
+        "Gun_Shoot": {
+          "duration": 0.6000000238418579
+        },
+        "HitRecieve": {
+          "duration": 0.5666666626930237
+        },
+        "HitRecieve_2": {
+          "duration": 0.5666666626930237
+        },
+        "Idle": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.6666666865348816
+        },
+        "Idle_Neutral": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Sword": {
+          "duration": 1.6666666269302368
+        },
+        "Interact": {
+          "duration": 1.2666666507720947
+        },
+        "Kick_Left": {
+          "duration": 0.9333333373069763
+        },
+        "Kick_Right": {
+          "duration": 0.9333333373069763
+        },
+        "Punch_Left": {
+          "duration": 0.8333333134651184
+        },
+        "Punch_Right": {
+          "duration": 0.8333333134651184
+        },
+        "Roll": {
+          "duration": 1.3333333730697632
+        },
+        "Run": {
+          "duration": 0.800000011920929,
+          "distance": 2.0028519721528286
+        },
+        "Run_Back": {
+          "duration": 0.8333333134651184
+        },
+        "Run_Left": {
+          "duration": 0.800000011920929
+        },
+        "Run_Right": {
+          "duration": 0.800000011920929
+        },
+        "Run_Shoot": {
+          "duration": 0.8333333134651184,
+          "distance": 2.069565386063761
+        },
+        "Sword_Slash": {
+          "duration": 1.0333333015441895
+        },
+        "Walk": {
+          "duration": 1.3333333730697632,
+          "distance": 1.759707446273492
+        },
+        "Wave": {
+          "duration": 1.6666666269302368
+        }
+      }
+    },
+    "male-Punk": {
+      "file": "male-Punk-9e6fb63e5c8d.glb.gz",
+      "sex": "male",
+      "style": "Punk",
+      "parts": {
+        "torso": "Punk_Body",
+        "feet": "Punk_Feet",
+        "head": "Punk_Head",
+        "legs": "Punk_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "f9224072f5e6cbb207eca250faa7f1868614a1a984074fe79c7b2862df4feb42",
+      "referenceHeight": 1.9608959696780788,
+      "groundOffset": 0.00396401268578662,
+      "dimensions": [
+        0.5283013732045747,
+        1.9608959696780788,
+        0.44736242145912586
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.0666667222976685
+        },
+        "Gun_Shoot": {
+          "duration": 0.6000000238418579
+        },
+        "HitRecieve": {
+          "duration": 0.5666666626930237
+        },
+        "HitRecieve_2": {
+          "duration": 0.5666666626930237
+        },
+        "Idle": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.6666666865348816
+        },
+        "Idle_Neutral": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Sword": {
+          "duration": 1.6666666269302368
+        },
+        "Interact": {
+          "duration": 1.2666666507720947
+        },
+        "Kick_Left": {
+          "duration": 0.9333333373069763
+        },
+        "Kick_Right": {
+          "duration": 0.9333333373069763
+        },
+        "Punch_Left": {
+          "duration": 0.8333333134651184
+        },
+        "Punch_Right": {
+          "duration": 0.8333333134651184
+        },
+        "Roll": {
+          "duration": 1.3333333730697632
+        },
+        "Run": {
+          "duration": 0.800000011920929,
+          "distance": 2.0028519721528286
+        },
+        "Run_Back": {
+          "duration": 0.8333333134651184
+        },
+        "Run_Left": {
+          "duration": 0.800000011920929
+        },
+        "Run_Right": {
+          "duration": 0.800000011920929
+        },
+        "Run_Shoot": {
+          "duration": 0.8333333134651184,
+          "distance": 2.069565386063761
+        },
+        "Sword_Slash": {
+          "duration": 1.0333333015441895
+        },
+        "Walk": {
+          "duration": 1.3333333730697632,
+          "distance": 1.759707446273492
+        },
+        "Wave": {
+          "duration": 1.6666666269302368
+        }
+      }
+    },
+    "male-Spacesuit": {
+      "file": "male-Spacesuit-57e511d74ff0.glb.gz",
+      "sex": "male",
+      "style": "Spacesuit",
+      "parts": {
+        "torso": "SpaceSuit_Body",
+        "feet": "SpaceSuit_Feet",
+        "head": "SpaceSuit_Head",
+        "legs": "SpaceSuit_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "33e0e0fbc6140ffc936a099fd84a274be406115c4b32aa0a697641710b67392a",
+      "referenceHeight": 1.8779676493907187,
+      "groundOffset": 0.0006859652581566083,
+      "dimensions": [
+        0.5397792296109993,
+        1.8779676493907187,
+        0.40893577488189703
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.0666667222976685
+        },
+        "Gun_Shoot": {
+          "duration": 0.6000000238418579
+        },
+        "HitRecieve": {
+          "duration": 0.5666666626930237
+        },
+        "HitRecieve_2": {
+          "duration": 0.5666666626930237
+        },
+        "Idle": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.6666666865348816
+        },
+        "Idle_Neutral": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Sword": {
+          "duration": 1.6666666269302368
+        },
+        "Interact": {
+          "duration": 1.2666666507720947
+        },
+        "Kick_Left": {
+          "duration": 0.9333333373069763
+        },
+        "Kick_Right": {
+          "duration": 0.9333333373069763
+        },
+        "Punch_Left": {
+          "duration": 0.8333333134651184
+        },
+        "Punch_Right": {
+          "duration": 0.8333333134651184
+        },
+        "Roll": {
+          "duration": 1.3333333730697632
+        },
+        "Run": {
+          "duration": 0.800000011920929,
+          "distance": 2.0028519721528286
+        },
+        "Run_Back": {
+          "duration": 0.8333333134651184
+        },
+        "Run_Left": {
+          "duration": 0.800000011920929
+        },
+        "Run_Right": {
+          "duration": 0.800000011920929
+        },
+        "Run_Shoot": {
+          "duration": 0.8333333134651184,
+          "distance": 2.069565386063761
+        },
+        "Sword_Slash": {
+          "duration": 1.0333333015441895
+        },
+        "Walk": {
+          "duration": 1.3333333730697632,
+          "distance": 1.759707446273492
+        },
+        "Wave": {
+          "duration": 1.6666666269302368
+        }
+      }
+    },
+    "male-Suit": {
+      "file": "male-Suit-b7f32ba9f50b.glb.gz",
+      "sex": "male",
+      "style": "Suit",
+      "parts": {
+        "torso": "Suit_Body",
+        "feet": "Suit_Feet",
+        "head": "Suit_Head",
+        "legs": "Suit_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "6c89fbb31b96c1a63ad94e3dee0942bd7b34bc789a5d39fd6a6a1738a9214fb3",
+      "referenceHeight": 1.8490810611909612,
+      "groundOffset": 0.0011054361383149986,
+      "dimensions": [
+        0.52608646952895,
+        1.8490810611909612,
+        0.37016934890754516
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.0666667222976685
+        },
+        "Gun_Shoot": {
+          "duration": 0.6000000238418579
+        },
+        "HitRecieve": {
+          "duration": 0.5666666626930237
+        },
+        "HitRecieve_2": {
+          "duration": 0.5666666626930237
+        },
+        "Idle": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.6666666865348816
+        },
+        "Idle_Neutral": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Sword": {
+          "duration": 1.6666666269302368
+        },
+        "Interact": {
+          "duration": 1.2666666507720947
+        },
+        "Kick_Left": {
+          "duration": 0.9333333373069763
+        },
+        "Kick_Right": {
+          "duration": 0.9333333373069763
+        },
+        "Punch_Left": {
+          "duration": 0.8333333134651184
+        },
+        "Punch_Right": {
+          "duration": 0.8333333134651184
+        },
+        "Roll": {
+          "duration": 1.3333333730697632
+        },
+        "Run": {
+          "duration": 0.800000011920929,
+          "distance": 2.0028519721528286
+        },
+        "Run_Back": {
+          "duration": 0.8333333134651184
+        },
+        "Run_Left": {
+          "duration": 0.800000011920929
+        },
+        "Run_Right": {
+          "duration": 0.800000011920929
+        },
+        "Run_Shoot": {
+          "duration": 0.8333333134651184,
+          "distance": 2.069565386063761
+        },
+        "Sword_Slash": {
+          "duration": 1.0333333015441895
+        },
+        "Walk": {
+          "duration": 1.3333333730697632,
+          "distance": 1.759707446273492
+        },
+        "Wave": {
+          "duration": 1.6666666269302368
+        }
+      }
+    },
+    "male-Swat": {
+      "file": "male-Swat-52089d8b90c8.glb.gz",
+      "sex": "male",
+      "style": "Swat",
+      "parts": {
+        "torso": "Swat_Body",
+        "feet": "Swat_Feet",
+        "head": "Swat_Head",
+        "legs": "Swat_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "622b3f36fcac90539ef8f7121ec1f11b5e1ae603a085019b3fa96eba20dddfd3",
+      "referenceHeight": 1.8457864004393838,
+      "groundOffset": 0.0011435450836921616,
+      "dimensions": [
+        0.5689439223113428,
+        1.8457864004393838,
+        0.3596510532967847
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.0666667222976685
+        },
+        "Gun_Shoot": {
+          "duration": 0.6000000238418579
+        },
+        "HitRecieve": {
+          "duration": 0.5666666626930237
+        },
+        "HitRecieve_2": {
+          "duration": 0.5666666626930237
+        },
+        "Idle": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.6666666865348816
+        },
+        "Idle_Neutral": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Sword": {
+          "duration": 1.6666666269302368
+        },
+        "Interact": {
+          "duration": 1.2666666507720947
+        },
+        "Kick_Left": {
+          "duration": 0.9333333373069763
+        },
+        "Kick_Right": {
+          "duration": 0.9333333373069763
+        },
+        "Punch_Left": {
+          "duration": 0.8333333134651184
+        },
+        "Punch_Right": {
+          "duration": 0.8333333134651184
+        },
+        "Roll": {
+          "duration": 1.3333333730697632
+        },
+        "Run": {
+          "duration": 0.800000011920929,
+          "distance": 2.0028519721528286
+        },
+        "Run_Back": {
+          "duration": 0.8333333134651184
+        },
+        "Run_Left": {
+          "duration": 0.800000011920929
+        },
+        "Run_Right": {
+          "duration": 0.800000011920929
+        },
+        "Run_Shoot": {
+          "duration": 0.8333333134651184,
+          "distance": 2.069565386063761
+        },
+        "Sword_Slash": {
+          "duration": 1.0333333015441895
+        },
+        "Walk": {
+          "duration": 1.3333333730697632,
+          "distance": 1.759707446273492
+        },
+        "Wave": {
+          "duration": 1.6666666269302368
+        }
+      }
+    },
+    "male-Worker": {
+      "file": "male-Worker-d9f9756de423.glb.gz",
+      "sex": "male",
+      "style": "Worker",
+      "parts": {
+        "torso": "Worker_Body",
+        "feet": "Worker_Feet",
+        "head": "Worker_Head",
+        "legs": "Worker_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "e49f8ec0f8a7de72dd26b1c01e6413c9a87a9116eeee21f9364ccd36bc286335",
+      "referenceHeight": 1.8576805168510566,
+      "groundOffset": 0.0035010898293635836,
+      "dimensions": [
+        0.5283013732045747,
+        1.8576805168510566,
+        0.38639248727407194
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.0666667222976685
+        },
+        "Gun_Shoot": {
+          "duration": 0.6000000238418579
+        },
+        "HitRecieve": {
+          "duration": 0.5666666626930237
+        },
+        "HitRecieve_2": {
+          "duration": 0.5666666626930237
+        },
+        "Idle": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.6666666865348816
+        },
+        "Idle_Neutral": {
+          "duration": 1.6666666269302368
+        },
+        "Idle_Sword": {
+          "duration": 1.6666666269302368
+        },
+        "Interact": {
+          "duration": 1.2666666507720947
+        },
+        "Kick_Left": {
+          "duration": 0.9333333373069763
+        },
+        "Kick_Right": {
+          "duration": 0.9333333373069763
+        },
+        "Punch_Left": {
+          "duration": 0.8333333134651184
+        },
+        "Punch_Right": {
+          "duration": 0.8333333134651184
+        },
+        "Roll": {
+          "duration": 1.3333333730697632
+        },
+        "Run": {
+          "duration": 0.800000011920929,
+          "distance": 2.0028519721528286
+        },
+        "Run_Back": {
+          "duration": 0.8333333134651184
+        },
+        "Run_Left": {
+          "duration": 0.800000011920929
+        },
+        "Run_Right": {
+          "duration": 0.800000011920929
+        },
+        "Run_Shoot": {
+          "duration": 0.8333333134651184,
+          "distance": 2.069565386063761
+        },
+        "Sword_Slash": {
+          "duration": 1.0333333015441895
+        },
+        "Walk": {
+          "duration": 1.3333333730697632,
+          "distance": 1.759707446273492
+        },
+        "Wave": {
+          "duration": 1.6666666269302368
+        }
+      }
+    },
+    "female-Adventurer": {
+      "file": "female-Adventurer-9aea8fc24192.glb.gz",
+      "sex": "female",
+      "style": "Adventurer",
+      "parts": {
+        "torso": "Adventurer_Body",
+        "feet": "Adventurer_Feet",
+        "head": "Adventurer_Head",
+        "legs": "Adventurer_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "65094211e53b49f6a834c617cc056834686fe794a0b515a6b97faa3e1130cc95",
+      "referenceHeight": 1.8208385014818946,
+      "groundOffset": 0.0005078932676009334,
+      "dimensions": [
+        0.5207633853660667,
+        1.8208385014818946,
+        0.4580352901764788
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.3333333730697632
+        },
+        "Gun_Shoot": {
+          "duration": 0.75
+        },
+        "HitRecieve": {
+          "duration": 0.7083333134651184
+        },
+        "HitRecieve_2": {
+          "duration": 0.7083333134651184
+        },
+        "Idle": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.8333333134651184
+        },
+        "Idle_Neutral": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Sword": {
+          "duration": 2.0833332538604736
+        },
+        "Interact": {
+          "duration": 1.5833333730697632
+        },
+        "Kick_Left": {
+          "duration": 1.1666666269302368
+        },
+        "Kick_Right": {
+          "duration": 1.1666666269302368
+        },
+        "Punch_Left": {
+          "duration": 1.0416666269302368
+        },
+        "Punch_Right": {
+          "duration": 1.0416666269302368
+        },
+        "Roll": {
+          "duration": 1.6666666269302368
+        },
+        "Run": {
+          "duration": 1,
+          "distance": 2.002852028137128
+        },
+        "Run_Back": {
+          "duration": 1.0416666269302368
+        },
+        "Run_Left": {
+          "duration": 1
+        },
+        "Run_Right": {
+          "duration": 1
+        },
+        "Run_Shoot": {
+          "duration": 1.0416666269302368,
+          "distance": 2.0695654603714293
+        },
+        "Sword_Slash": {
+          "duration": 1.2916666269302368
+        },
+        "Walk": {
+          "duration": 1.6666666269302368,
+          "distance": 1.7597074477378274
+        },
+        "Wave": {
+          "duration": 2.0833332538604736
+        }
+      }
+    },
+    "female-Casual": {
+      "file": "female-Casual-db685c4aaaef.glb.gz",
+      "sex": "female",
+      "style": "Casual",
+      "parts": {
+        "torso": "Casual_Body",
+        "feet": "Casual_Feet",
+        "head": "Casual_Head",
+        "legs": "Casual_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "b0fe6e92219cd71808844a20a1a8b960fd1cf640a6546dc6362b5add6604e87c",
+      "referenceHeight": 1.8453944874828634,
+      "groundOffset": 0.008566937756077008,
+      "dimensions": [
+        0.5210670226576168,
+        1.8453944874828634,
+        0.36873007287948684
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.3333333730697632
+        },
+        "Gun_Shoot": {
+          "duration": 0.75
+        },
+        "HitRecieve": {
+          "duration": 0.7083333134651184
+        },
+        "HitRecieve_2": {
+          "duration": 0.7083333134651184
+        },
+        "Idle": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.8333333134651184
+        },
+        "Idle_Neutral": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Sword": {
+          "duration": 2.0833332538604736
+        },
+        "Interact": {
+          "duration": 1.5833333730697632
+        },
+        "Kick_Left": {
+          "duration": 1.1666666269302368
+        },
+        "Kick_Right": {
+          "duration": 1.1666666269302368
+        },
+        "Punch_Left": {
+          "duration": 1.0416666269302368
+        },
+        "Punch_Right": {
+          "duration": 1.0416666269302368
+        },
+        "Roll": {
+          "duration": 1.6666666269302368
+        },
+        "Run": {
+          "duration": 1,
+          "distance": 2.002852028137128
+        },
+        "Run_Back": {
+          "duration": 1.0416666269302368
+        },
+        "Run_Left": {
+          "duration": 1
+        },
+        "Run_Right": {
+          "duration": 1
+        },
+        "Run_Shoot": {
+          "duration": 1.0416666269302368,
+          "distance": 2.0695654603714293
+        },
+        "Sword_Slash": {
+          "duration": 1.2916666269302368
+        },
+        "Walk": {
+          "duration": 1.6666666269302368,
+          "distance": 1.7597074477378274
+        },
+        "Wave": {
+          "duration": 2.0833332538604736
+        }
+      }
+    },
+    "female-Formal": {
+      "file": "female-Formal-64474b688b01.glb.gz",
+      "sex": "female",
+      "style": "Formal",
+      "parts": {
+        "head": "Formad_Head",
+        "torso": "Formal_Body",
+        "feet": "Formal_Feet",
+        "legs": "Formal_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "fdfcf454c4de037d31973eb28d8591bd7763035d49f46b380e63b1c832dc7ddf",
+      "referenceHeight": 1.8361427961914427,
+      "groundOffset": -0.0012326729478275007,
+      "dimensions": [
+        0.5207636740584052,
+        1.8361427961914427,
+        0.3720266844839075
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.3333333730697632
+        },
+        "Gun_Shoot": {
+          "duration": 0.75
+        },
+        "HitRecieve": {
+          "duration": 0.7083333134651184
+        },
+        "HitRecieve_2": {
+          "duration": 0.7083333134651184
+        },
+        "Idle": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.8333333134651184
+        },
+        "Idle_Neutral": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Sword": {
+          "duration": 2.0833332538604736
+        },
+        "Interact": {
+          "duration": 1.5833333730697632
+        },
+        "Kick_Left": {
+          "duration": 1.1666666269302368
+        },
+        "Kick_Right": {
+          "duration": 1.1666666269302368
+        },
+        "Punch_Left": {
+          "duration": 1.0416666269302368
+        },
+        "Punch_Right": {
+          "duration": 1.0416666269302368
+        },
+        "Roll": {
+          "duration": 1.6666666269302368
+        },
+        "Run": {
+          "duration": 1,
+          "distance": 2.002852028137128
+        },
+        "Run_Back": {
+          "duration": 1.0416666269302368
+        },
+        "Run_Left": {
+          "duration": 1
+        },
+        "Run_Right": {
+          "duration": 1
+        },
+        "Run_Shoot": {
+          "duration": 1.0416666269302368,
+          "distance": 2.0695654603714293
+        },
+        "Sword_Slash": {
+          "duration": 1.2916666269302368
+        },
+        "Walk": {
+          "duration": 1.6666666269302368,
+          "distance": 1.7597074477378274
+        },
+        "Wave": {
+          "duration": 2.0833332538604736
+        }
+      }
+    },
+    "female-Medieval": {
+      "file": "female-Medieval-9756ee22b0c7.glb.gz",
+      "sex": "female",
+      "style": "Medieval",
+      "parts": {
+        "torso": "Medieval_Body",
+        "feet": "Medieval_Feet",
+        "head": "Medieval_Head",
+        "legs": "Medieval_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "32c3cd6d4e59bd1f433bc5eeca788b1430399ef15dfd2e0fb4a038a967c0c293",
+      "referenceHeight": 1.8705120595811846,
+      "groundOffset": -0.00027325795875195104,
+      "dimensions": [
+        0.5611402511581289,
+        1.8705120595811846,
+        0.3716006328630374
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.3333333730697632
+        },
+        "Gun_Shoot": {
+          "duration": 0.75
+        },
+        "HitRecieve": {
+          "duration": 0.7083333134651184
+        },
+        "HitRecieve_2": {
+          "duration": 0.7083333134651184
+        },
+        "Idle": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.8333333134651184
+        },
+        "Idle_Neutral": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Sword": {
+          "duration": 2.0833332538604736
+        },
+        "Interact": {
+          "duration": 1.5833333730697632
+        },
+        "Kick_Left": {
+          "duration": 1.1666666269302368
+        },
+        "Kick_Right": {
+          "duration": 1.1666666269302368
+        },
+        "Punch_Left": {
+          "duration": 1.0416666269302368
+        },
+        "Punch_Right": {
+          "duration": 1.0416666269302368
+        },
+        "Roll": {
+          "duration": 1.6666666269302368
+        },
+        "Run": {
+          "duration": 1,
+          "distance": 2.002852028137128
+        },
+        "Run_Back": {
+          "duration": 1.0416666269302368
+        },
+        "Run_Left": {
+          "duration": 1
+        },
+        "Run_Right": {
+          "duration": 1
+        },
+        "Run_Shoot": {
+          "duration": 1.0416666269302368,
+          "distance": 2.0695654603714293
+        },
+        "Sword_Slash": {
+          "duration": 1.2916666269302368
+        },
+        "Walk": {
+          "duration": 1.6666666269302368,
+          "distance": 1.7597074477378274
+        },
+        "Wave": {
+          "duration": 2.0833332538604736
+        }
+      }
+    },
+    "female-Punk": {
+      "file": "female-Punk-881d64db68fa.glb.gz",
+      "sex": "female",
+      "style": "Punk",
+      "parts": {
+        "torso": "Punk_Body",
+        "feet": "Punk_Feet",
+        "head": "Punk_Head",
+        "legs": "Punk_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "61cc7f85a8e9b700cdb92ae8ebd6e3bdd1e8a510b57027f6c7d8c2b6ff3b0e0f",
+      "referenceHeight": 1.9504500815432042,
+      "groundOffset": -0.0015185084793154148,
+      "dimensions": [
+        0.5207633853660667,
+        1.9504500815432042,
+        0.386031110439728
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.3333333730697632
+        },
+        "Gun_Shoot": {
+          "duration": 0.75
+        },
+        "HitRecieve": {
+          "duration": 0.7083333134651184
+        },
+        "HitRecieve_2": {
+          "duration": 0.7083333134651184
+        },
+        "Idle": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.8333333134651184
+        },
+        "Idle_Neutral": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Sword": {
+          "duration": 2.0833332538604736
+        },
+        "Interact": {
+          "duration": 1.5833333730697632
+        },
+        "Kick_Left": {
+          "duration": 1.1666666269302368
+        },
+        "Kick_Right": {
+          "duration": 1.1666666269302368
+        },
+        "Punch_Left": {
+          "duration": 1.0416666269302368
+        },
+        "Punch_Right": {
+          "duration": 1.0416666269302368
+        },
+        "Roll": {
+          "duration": 1.6666666269302368
+        },
+        "Run": {
+          "duration": 1,
+          "distance": 2.002852028137128
+        },
+        "Run_Back": {
+          "duration": 1.0416666269302368
+        },
+        "Run_Left": {
+          "duration": 1
+        },
+        "Run_Right": {
+          "duration": 1
+        },
+        "Run_Shoot": {
+          "duration": 1.0416666269302368,
+          "distance": 2.0695654603714293
+        },
+        "Sword_Slash": {
+          "duration": 1.2916666269302368
+        },
+        "Walk": {
+          "duration": 1.6666666269302368,
+          "distance": 1.7597074477378274
+        },
+        "Wave": {
+          "duration": 2.0833332538604736
+        }
+      }
+    },
+    "female-SciFi": {
+      "file": "female-SciFi-fbf229464dca.glb.gz",
+      "sex": "female",
+      "style": "SciFi",
+      "parts": {
+        "torso": "SciFi_Body",
+        "feet": "SciFi_Feet",
+        "head": "SciFi_Head",
+        "legs": "SciFi_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "86bcb11a1bc18c744a23abe5e7bd4cc95e636ba1f405cecdbd5a0e2f7214b802",
+      "referenceHeight": 1.8471254272624327,
+      "groundOffset": -0.0002731690749617507,
+      "dimensions": [
+        0.5237832498880707,
+        1.8471254272624327,
+        0.3533024591069975
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.3333333730697632
+        },
+        "Gun_Shoot": {
+          "duration": 0.75
+        },
+        "HitRecieve": {
+          "duration": 0.7083333134651184
+        },
+        "HitRecieve_2": {
+          "duration": 0.7083333134651184
+        },
+        "Idle": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.8333333134651184
+        },
+        "Idle_Neutral": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Sword": {
+          "duration": 2.0833332538604736
+        },
+        "Interact": {
+          "duration": 1.5833333730697632
+        },
+        "Kick_Left": {
+          "duration": 1.1666666269302368
+        },
+        "Kick_Right": {
+          "duration": 1.1666666269302368
+        },
+        "Punch_Left": {
+          "duration": 1.0416666269302368
+        },
+        "Punch_Right": {
+          "duration": 1.0416666269302368
+        },
+        "Roll": {
+          "duration": 1.6666666269302368
+        },
+        "Run": {
+          "duration": 1,
+          "distance": 2.002852028137128
+        },
+        "Run_Back": {
+          "duration": 1.0416666269302368
+        },
+        "Run_Left": {
+          "duration": 1
+        },
+        "Run_Right": {
+          "duration": 1
+        },
+        "Run_Shoot": {
+          "duration": 1.0416666269302368,
+          "distance": 2.0695654603714293
+        },
+        "Sword_Slash": {
+          "duration": 1.2916666269302368
+        },
+        "Walk": {
+          "duration": 1.6666666269302368,
+          "distance": 1.7597074477378274
+        },
+        "Wave": {
+          "duration": 2.0833332538604736
+        }
+      }
+    },
+    "female-Soldier": {
+      "file": "female-Soldier-c4c8be302a05.glb.gz",
+      "sex": "female",
+      "style": "Soldier",
+      "parts": {
+        "torso": "Soldier_Body",
+        "feet": "Soldier_Feet",
+        "head": "Soldier_Head",
+        "legs": "Soldier_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "37112e60af92ff84d882a34e21f0f78a2afc14282e950fb0e3652e51d06e0b2d",
+      "referenceHeight": 1.8236165192267952,
+      "groundOffset": 0.0005078932676009334,
+      "dimensions": [
+        0.5207636017925197,
+        1.8236165192267952,
+        0.3253856125880715
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.3333333730697632
+        },
+        "Gun_Shoot": {
+          "duration": 0.75
+        },
+        "HitRecieve": {
+          "duration": 0.7083333134651184
+        },
+        "HitRecieve_2": {
+          "duration": 0.7083333134651184
+        },
+        "Idle": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.8333333134651184
+        },
+        "Idle_Neutral": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Sword": {
+          "duration": 2.0833332538604736
+        },
+        "Interact": {
+          "duration": 1.5833333730697632
+        },
+        "Kick_Left": {
+          "duration": 1.1666666269302368
+        },
+        "Kick_Right": {
+          "duration": 1.1666666269302368
+        },
+        "Punch_Left": {
+          "duration": 1.0416666269302368
+        },
+        "Punch_Right": {
+          "duration": 1.0416666269302368
+        },
+        "Roll": {
+          "duration": 1.6666666269302368
+        },
+        "Run": {
+          "duration": 1,
+          "distance": 2.002852028137128
+        },
+        "Run_Back": {
+          "duration": 1.0416666269302368
+        },
+        "Run_Left": {
+          "duration": 1
+        },
+        "Run_Right": {
+          "duration": 1
+        },
+        "Run_Shoot": {
+          "duration": 1.0416666269302368,
+          "distance": 2.0695654603714293
+        },
+        "Sword_Slash": {
+          "duration": 1.2916666269302368
+        },
+        "Walk": {
+          "duration": 1.6666666269302368,
+          "distance": 1.7597074477378274
+        },
+        "Wave": {
+          "duration": 2.0833332538604736
+        }
+      }
+    },
+    "female-Suit": {
+      "file": "female-Suit-d077a2e47d14.glb.gz",
+      "sex": "female",
+      "style": "Suit",
+      "parts": {
+        "torso": "Suit_Body",
+        "feet": "Suit_Feet",
+        "head": "Suit_Head",
+        "legs": "Suit_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "937d5c8d08fb5570f6a4e1dd79a3878335444d175aae3b0e9e2babdac36a17f7",
+      "referenceHeight": 1.8382536332765724,
+      "groundOffset": 0.0015889347645446283,
+      "dimensions": [
+        0.5207633443525312,
+        1.8382536332765724,
+        0.3697305322496855
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.3333333730697632
+        },
+        "Gun_Shoot": {
+          "duration": 0.75
+        },
+        "HitRecieve": {
+          "duration": 0.7083333134651184
+        },
+        "HitRecieve_2": {
+          "duration": 0.7083333134651184
+        },
+        "Idle": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.8333333134651184
+        },
+        "Idle_Neutral": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Sword": {
+          "duration": 2.0833332538604736
+        },
+        "Interact": {
+          "duration": 1.5833333730697632
+        },
+        "Kick_Left": {
+          "duration": 1.1666666269302368
+        },
+        "Kick_Right": {
+          "duration": 1.1666666269302368
+        },
+        "Punch_Left": {
+          "duration": 1.0416666269302368
+        },
+        "Punch_Right": {
+          "duration": 1.0416666269302368
+        },
+        "Roll": {
+          "duration": 1.6666666269302368
+        },
+        "Run": {
+          "duration": 1,
+          "distance": 2.002852028137128
+        },
+        "Run_Back": {
+          "duration": 1.0416666269302368
+        },
+        "Run_Left": {
+          "duration": 1
+        },
+        "Run_Right": {
+          "duration": 1
+        },
+        "Run_Shoot": {
+          "duration": 1.0416666269302368,
+          "distance": 2.0695654603714293
+        },
+        "Sword_Slash": {
+          "duration": 1.2916666269302368
+        },
+        "Walk": {
+          "duration": 1.6666666269302368,
+          "distance": 1.7597074477378274
+        },
+        "Wave": {
+          "duration": 2.0833332538604736
+        }
+      }
+    },
+    "female-Witch": {
+      "file": "female-Witch-efb6d968a729.glb.gz",
+      "sex": "female",
+      "style": "Witch",
+      "parts": {
+        "torso": "Witch_Body",
+        "feet": "Witch_Feet",
+        "head": "Witch_Head",
+        "legs": "Witch_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "d886c8c134a92b2013529edf7352e286ef386ca7c0f5fa3a568039d7c11b05fe",
+      "referenceHeight": 2.0348644186256593,
+      "groundOffset": -0.00027950767258163407,
+      "dimensions": [
+        0.594596714170007,
+        2.0348644186256593,
+        0.5457784967674841
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.3333333730697632
+        },
+        "Gun_Shoot": {
+          "duration": 0.75
+        },
+        "HitRecieve": {
+          "duration": 0.7083333134651184
+        },
+        "HitRecieve_2": {
+          "duration": 0.7083333134651184
+        },
+        "Idle": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.8333333134651184
+        },
+        "Idle_Neutral": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Sword": {
+          "duration": 2.0833332538604736
+        },
+        "Interact": {
+          "duration": 1.5833333730697632
+        },
+        "Kick_Left": {
+          "duration": 1.1666666269302368
+        },
+        "Kick_Right": {
+          "duration": 1.1666666269302368
+        },
+        "Punch_Left": {
+          "duration": 1.0416666269302368
+        },
+        "Punch_Right": {
+          "duration": 1.0416666269302368
+        },
+        "Roll": {
+          "duration": 1.6666666269302368
+        },
+        "Run": {
+          "duration": 1,
+          "distance": 2.002852028137128
+        },
+        "Run_Back": {
+          "duration": 1.0416666269302368
+        },
+        "Run_Left": {
+          "duration": 1
+        },
+        "Run_Right": {
+          "duration": 1
+        },
+        "Run_Shoot": {
+          "duration": 1.0416666269302368,
+          "distance": 2.0695654603714293
+        },
+        "Sword_Slash": {
+          "duration": 1.2916666269302368
+        },
+        "Walk": {
+          "duration": 1.6666666269302368,
+          "distance": 1.7597074477378274
+        },
+        "Wave": {
+          "duration": 2.0833332538604736
+        }
+      }
+    },
+    "female-Worker": {
+      "file": "female-Worker-05308efeeda4.glb.gz",
+      "sex": "female",
+      "style": "Worker",
+      "parts": {
+        "torso": "Worker_Body",
+        "feet": "Worker_Feet",
+        "head": "Worker_Head",
+        "legs": "Worker_Legs"
+      },
+      "animations": [
+        "Death",
+        "Gun_Shoot",
+        "HitRecieve",
+        "HitRecieve_2",
+        "Idle",
+        "Idle_Gun",
+        "Idle_Gun_Pointing",
+        "Idle_Gun_Shoot",
+        "Idle_Neutral",
+        "Idle_Sword",
+        "Interact",
+        "Kick_Left",
+        "Kick_Right",
+        "Punch_Left",
+        "Punch_Right",
+        "Roll",
+        "Run",
+        "Run_Back",
+        "Run_Left",
+        "Run_Right",
+        "Run_Shoot",
+        "Sword_Slash",
+        "Walk",
+        "Wave"
+      ],
+      "sourceSha256": "e2bfc1039f429e870a0119e274c2dd45f6304f00c39f4570dfeb9ed4d97a063d",
+      "referenceHeight": 1.8525483956184239,
+      "groundOffset": 0.0015889171108975975,
+      "dimensions": [
+        0.5207633815417876,
+        1.8525483956184239,
+        0.3616620930070738
+      ],
+      "clips": {
+        "Death": {
+          "duration": 1.3333333730697632
+        },
+        "Gun_Shoot": {
+          "duration": 0.75
+        },
+        "HitRecieve": {
+          "duration": 0.7083333134651184
+        },
+        "HitRecieve_2": {
+          "duration": 0.7083333134651184
+        },
+        "Idle": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Pointing": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Gun_Shoot": {
+          "duration": 0.8333333134651184
+        },
+        "Idle_Neutral": {
+          "duration": 2.0833332538604736
+        },
+        "Idle_Sword": {
+          "duration": 2.0833332538604736
+        },
+        "Interact": {
+          "duration": 1.5833333730697632
+        },
+        "Kick_Left": {
+          "duration": 1.1666666269302368
+        },
+        "Kick_Right": {
+          "duration": 1.1666666269302368
+        },
+        "Punch_Left": {
+          "duration": 1.0416666269302368
+        },
+        "Punch_Right": {
+          "duration": 1.0416666269302368
+        },
+        "Roll": {
+          "duration": 1.6666666269302368
+        },
+        "Run": {
+          "duration": 1,
+          "distance": 2.002852028137128
+        },
+        "Run_Back": {
+          "duration": 1.0416666269302368
+        },
+        "Run_Left": {
+          "duration": 1
+        },
+        "Run_Right": {
+          "duration": 1
+        },
+        "Run_Shoot": {
+          "duration": 1.0416666269302368,
+          "distance": 2.0695654603714293
+        },
+        "Sword_Slash": {
+          "duration": 1.2916666269302368
+        },
+        "Walk": {
+          "duration": 1.6666666269302368,
+          "distance": 1.7597074477378274
+        },
+        "Wave": {
+          "duration": 2.0833332538604736
+        }
+      }
+    }
+  },
+  "interiors": {
+    "Bathroom_Bathtub": {
+      "file": "Bathroom_Bathtub-72efe624dac0.glb.gz",
+      "dimensions": {
+        "width": 0.803755,
+        "height": 0.6301035,
+        "depth": 1.949868
+      },
+      "sourceDimensions": [
+        1.60751,
+        1.260207,
+        3.899736
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 248,
+      "sourceSha256": "9df05f82361de2ef954c8f7158dc971e96beca303326ae1c60ad2b8f6ed48add"
+    },
+    "Bathroom_Mirror1": {
+      "file": "Bathroom_Mirror1-3eec82fe5368.glb.gz",
+      "dimensions": {
+        "width": 0.32404,
+        "height": 0.4648335,
+        "depth": 0.0509855
+      },
+      "sourceDimensions": [
+        0.64808,
+        0.929667,
+        0.101971
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 76,
+      "sourceSha256": "6dd5558fa580ac0504291c43f133f8ca0a8948f8ce54fbba12b2938aa96d758f"
+    },
+    "Bathroom_Mirror2": {
+      "file": "Bathroom_Mirror2-7e3a23339c17.glb.gz",
+      "dimensions": {
+        "width": 0.268581,
+        "height": 0.387197,
+        "depth": 0.0188735
+      },
+      "sourceDimensions": [
+        0.537162,
+        0.774394,
+        0.037747
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 92,
+      "sourceSha256": "1220af913779380551e6c8a1cddc5e7be3938cb4e2e5d6abffdf5d2b89f78814"
+    },
+    "Bathroom_Shower1": {
+      "file": "Bathroom_Shower1-51623f0231d5.glb.gz",
+      "dimensions": {
+        "width": 0.9479245000000001,
+        "height": 1.7740544999999999,
+        "depth": 0.946418
+      },
+      "sourceDimensions": [
+        1.8958490000000001,
+        3.5481089999999997,
+        1.892836
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 652,
+      "sourceSha256": "b6a5c9b5fc5296227a3e2cfc2fb1b26efda74c3272f931f88ef9e84f278613ea"
+    },
+    "Bathroom_Sink": {
+      "file": "Bathroom_Sink-17d99336b317.glb.gz",
+      "dimensions": {
+        "width": 0.69475,
+        "height": 0.723415,
+        "depth": 0.4076315
+      },
+      "sourceDimensions": [
+        1.3895,
+        1.44683,
+        0.815263
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 350,
+      "sourceSha256": "8d0360f59260aeb497d582fa64a814b36d93d114fdd4dcd7398a81ee47db7b1d"
+    },
+    "Bathroom_Toilet": {
+      "file": "Bathroom_Toilet-fd23bfce19c6.glb.gz",
+      "dimensions": {
+        "width": 0.598334,
+        "height": 0.9503360000000001,
+        "depth": 0.845701
+      },
+      "sourceDimensions": [
+        1.196668,
+        1.9006720000000001,
+        1.691402
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 402,
+      "sourceSha256": "44c6600558efb8c04e0cdf187430bdc71581c4840e0fb42179f4e194533b0d3d"
+    },
+    "Bathroom_Toilet2": {
+      "file": "Bathroom_Toilet2-fe5bd310e982.glb.gz",
+      "dimensions": {
+        "width": 0.55557,
+        "height": 0.5038835,
+        "depth": 0.7699104999999999
+      },
+      "sourceDimensions": [
+        1.11114,
+        1.007767,
+        1.5398209999999999
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 334,
+      "sourceSha256": "bbd802f4e270f816cff6f3e4065c05a9e09d6fdee0cbf974ac7c1a1e79c0ef9a"
+    },
+    "Bathroom_ToiletPaper": {
+      "file": "Bathroom_ToiletPaper-c7b681e3b333.glb.gz",
+      "dimensions": {
+        "width": 0.1499705,
+        "height": 0.1722035,
+        "depth": 0.087438
+      },
+      "sourceDimensions": [
+        0.299941,
+        0.344407,
+        0.174876
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 276,
+      "sourceSha256": "20c9cbf468dd0ec8faa9d4109c893c07aa3108410b63c5d86d329bb1433e149d"
+    },
+    "Bathroom_ToiletPaperPile": {
+      "file": "Bathroom_ToiletPaperPile-f0834f65f981.glb.gz",
+      "dimensions": {
+        "width": 0.167239,
+        "height": 0.187354,
+        "depth": 0.174906
+      },
+      "sourceDimensions": [
+        0.334478,
+        0.374708,
+        0.349812
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 384,
+      "sourceSha256": "9f20326decb1e9b93fdfc8647e9bed2103e06fd5d5c657ae8dcb31734183931b"
+    },
+    "Bathroom_Towel": {
+      "file": "Bathroom_Towel-21aa50554a13.glb.gz",
+      "dimensions": {
+        "width": 0.592273,
+        "height": 0.3269105,
+        "depth": 0.08055799999999999
+      },
+      "sourceDimensions": [
+        1.184546,
+        0.653821,
+        0.161116
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 192,
+      "sourceSha256": "33c39cc550c041271d72d94f41d8de9efeb6e2ed7b26f43097e00d568590c233"
+    },
+    "Bathroom_WashingMachine": {
+      "file": "Bathroom_WashingMachine-30da773f1e7d.glb.gz",
+      "dimensions": {
+        "width": 0.645957,
+        "height": 0.7350975,
+        "depth": 0.661856
+      },
+      "sourceDimensions": [
+        1.291914,
+        1.470195,
+        1.323712
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 304,
+      "sourceSha256": "b7bfe78eb89f61062b86c8a19fac94b3d2492a2b6087f10213e07cdced106a7d"
+    },
+    "Bed_Bunk": {
+      "file": "Bed_Bunk-2891e1bb5115.glb.gz",
+      "dimensions": {
+        "width": 1.0844135,
+        "height": 1.5153569999999998,
+        "depth": 1.998697
+      },
+      "sourceDimensions": [
+        2.168827,
+        3.0307139999999997,
+        3.997394
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 960,
+      "sourceSha256": "021d87d15f3187961e7ef2cd6a7ef4bd698a673b685cfaf90b8943a609f6a1f0"
+    },
+    "Bed_King": {
+      "file": "Bed_King-68c43bfdb567.glb.gz",
+      "dimensions": {
+        "width": 1.532064,
+        "height": 0.607291,
+        "depth": 1.976422
+      },
+      "sourceDimensions": [
+        3.064128,
+        1.214582,
+        3.952844
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 676,
+      "sourceSha256": "be4e209534c6eb5e1c4baec42b06213bcd4d5b342dec1851c8d392fc46eaa0ff"
+    },
+    "Bed_Single": {
+      "file": "Bed_Single-e3b20d4ec75c.glb.gz",
+      "dimensions": {
+        "width": 0.9895725,
+        "height": 0.6772875,
+        "depth": 1.97
+      },
+      "sourceDimensions": [
+        1.979145,
+        1.354575,
+        3.94
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 536,
+      "sourceSha256": "c37657fb94f7d588ca5f9a3b7dba921112e2b7d59df62d423cf32429eee11f14"
+    },
+    "Bookshelf": {
+      "file": "Bookshelf-8167211e07fe.glb.gz",
+      "dimensions": {
+        "width": 1.159162,
+        "height": 2.21904,
+        "depth": 0.377999
+      },
+      "sourceDimensions": [
+        2.318324,
+        4.43808,
+        0.755998
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 120,
+      "sourceSha256": "42b05d9b02ca09a058af35e5cf4e63224d0b5c1f0bf2f5f8e97035e678895d7a"
+    },
+    "Carpet_1": {
+      "file": "Carpet_1-b06d570f597e.glb.gz",
+      "dimensions": {
+        "width": 1.0656155,
+        "height": 0.018329,
+        "depth": 1.546605
+      },
+      "sourceDimensions": [
+        2.131231,
+        0.036658,
+        3.09321
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 108,
+      "sourceSha256": "2832b14c1bb81abf90cb77339f311b8a9fca49fbd8769dcdec9f05eaaa6e3d31"
+    },
+    "Carpet_2": {
+      "file": "Carpet_2-64ab1e340e43.glb.gz",
+      "dimensions": {
+        "width": 1.5466045,
+        "height": 0.018329,
+        "depth": 1.5907225
+      },
+      "sourceDimensions": [
+        3.093209,
+        0.036658,
+        3.181445
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 98,
+      "sourceSha256": "1a97967315f03978178b67eaefb3ebd6c63455b023f5a23d45a6bb4e61ac2179"
+    },
+    "Carpet_Round": {
+      "file": "Carpet_Round-13a95b54f233.glb.gz",
+      "dimensions": {
+        "width": 1.2463665000000002,
+        "height": 0.007868,
+        "depth": 1.2655935
+      },
+      "sourceDimensions": [
+        2.4927330000000003,
+        0.015736,
+        2.531187
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 128,
+      "sourceSha256": "b76651a3af1857a13eb054e54106d9cca37d08350dba87dd9e06d50325c50f62"
+    },
+    "Chair_1": {
+      "file": "Chair_1-0638b84202a6.glb.gz",
+      "dimensions": {
+        "width": 0.380861,
+        "height": 0.8838865,
+        "depth": 0.412717
+      },
+      "sourceDimensions": [
+        0.761722,
+        1.767773,
+        0.825434
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 216,
+      "sourceSha256": "86c5b057f32953794f3cc62bb79027a543ca4b04a1211b0d34040b1f1fa49a7f"
+    },
+    "Chair_2": {
+      "file": "Chair_2-1a850cf0b872.glb.gz",
+      "dimensions": {
+        "width": 0.380861,
+        "height": 0.844679,
+        "depth": 0.412717
+      },
+      "sourceDimensions": [
+        0.761722,
+        1.689358,
+        0.825434
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 352,
+      "sourceSha256": "266c32e7abb171727397471050d489a2280ecc6e7e1c3906d2f0faf24d32cd02"
+    },
+    "Chair_3": {
+      "file": "Chair_3-53e485d922e2.glb.gz",
+      "dimensions": {
+        "width": 0.380861,
+        "height": 0.847019,
+        "depth": 0.418754
+      },
+      "sourceDimensions": [
+        0.761722,
+        1.694038,
+        0.837508
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 428,
+      "sourceSha256": "4a525462539245f7a43403f73b045fc7400b0d95eec377199fe7848e7349023b"
+    },
+    "Chair_4": {
+      "file": "Chair_4-2aa069216c4e.glb.gz",
+      "dimensions": {
+        "width": 0.380861,
+        "height": 0.8838865,
+        "depth": 0.412717
+      },
+      "sourceDimensions": [
+        0.761722,
+        1.767773,
+        0.825434
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 264,
+      "sourceSha256": "e9b23dca15e950929c2a2a5909024ea60e7331e2581e6599965da2ec3e4dd13d"
+    },
+    "Column_Round1": {
+      "file": "Column_Round1-cb2ef35306ea.glb.gz",
+      "dimensions": {
+        "width": 0.7000175,
+        "height": 0.886376,
+        "depth": 0.736042
+      },
+      "sourceDimensions": [
+        1.400035,
+        1.772752,
+        1.472084
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 332,
+      "sourceSha256": "3741e0189c6be0cbfd1ff00bec797a168e11bb823fc539f9759765c8e14391fd"
+    },
+    "Column_Round2": {
+      "file": "Column_Round2-c81893df4497.glb.gz",
+      "dimensions": {
+        "width": 0.7000175,
+        "height": 2.000323,
+        "depth": 0.736042
+      },
+      "sourceDimensions": [
+        1.400035,
+        4.000646,
+        1.472084
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 556,
+      "sourceSha256": "4f60eb9fe7edd2306481256d0e8d3f309697bcdb89faeb031eddcb21f3e9d7a3"
+    },
+    "Column_Round3": {
+      "file": "Column_Round3-6c6c2738d5e5.glb.gz",
+      "dimensions": {
+        "width": 0.700018,
+        "height": 2.7144945,
+        "depth": 0.736042
+      },
+      "sourceDimensions": [
+        1.400036,
+        5.428989,
+        1.472084
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 556,
+      "sourceSha256": "d5ee20bf06cc5cac8b8f1fd7e07155c083d3dda704982c159dc9b343ba6642d3"
+    },
+    "Column_SquareBig": {
+      "file": "Column_SquareBig-1ae9b7b29862.glb.gz",
+      "dimensions": {
+        "width": 0.4536345,
+        "height": 2.0792975,
+        "depth": 0.453634
+      },
+      "sourceDimensions": [
+        0.907269,
+        4.158595,
+        0.907268
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 180,
+      "sourceSha256": "25fd739b6b97ac223e35e7c2484c55c105f4e5575121bd101c6d1316fdf1cdef"
+    },
+    "Column_SquareSmall": {
+      "file": "Column_SquareSmall-b290f768c233.glb.gz",
+      "dimensions": {
+        "width": 0.453634,
+        "height": 1.22351,
+        "depth": 0.453634
+      },
+      "sourceDimensions": [
+        0.907268,
+        2.44702,
+        0.907268
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 148,
+      "sourceSha256": "221b51ccb73cc4cb0529b52487edbd47a6b6447291b1cba4caa5e20efb928fae"
+    },
+    "Couch_L": {
+      "file": "Couch_L-7429652638a0.glb.gz",
+      "dimensions": {
+        "width": 2.8072045,
+        "height": 1.1306615,
+        "depth": 2.163486
+      },
+      "sourceDimensions": [
+        5.614409,
+        2.261323,
+        4.326972
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 1428,
+      "sourceSha256": "cf66247bd6f53e6c85dad080ad474d7c5fb17c5b5dcc9c9546988425530d0384"
+    },
+    "Couch_Large1": {
+      "file": "Couch_Large1-c92bc2275af8.glb.gz",
+      "dimensions": {
+        "width": 2.737746,
+        "height": 1.05322,
+        "depth": 0.996144
+      },
+      "sourceDimensions": [
+        5.475492,
+        2.10644,
+        1.992288
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 1460,
+      "sourceSha256": "543213b0de038ce2d288c571b1163f1916fbdd6b1efdd8a10bd2e2322212e15a"
+    },
+    "Couch_Large2": {
+      "file": "Couch_Large2-b57164ed66a0.glb.gz",
+      "dimensions": {
+        "width": 2.5954625,
+        "height": 1.054022,
+        "depth": 0.9961445
+      },
+      "sourceDimensions": [
+        5.190925,
+        2.108044,
+        1.992289
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 1332,
+      "sourceSha256": "8b445ad21cc53f3b9155bee6949404b8c66d096c6794ee6eab791c274ac31ec7"
+    },
+    "Couch_Large3": {
+      "file": "Couch_Large3-0efe140246a3.glb.gz",
+      "dimensions": {
+        "width": 3.54258,
+        "height": 0.5441665,
+        "depth": 1.510753
+      },
+      "sourceDimensions": [
+        7.08516,
+        1.088333,
+        3.021506
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 1300,
+      "sourceSha256": "b2b2a22a3d525a9ceda999367383a6f1775e9deb484e79c202f01e137cfe4b3c"
+    },
+    "Couch_Medium1": {
+      "file": "Couch_Medium1-23e5c2f61351.glb.gz",
+      "dimensions": {
+        "width": 2.344071,
+        "height": 0.9550145,
+        "depth": 1.101731
+      },
+      "sourceDimensions": [
+        4.688142,
+        1.910029,
+        2.203462
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 1012,
+      "sourceSha256": "f64781accbeadffbb65af2d8477ea0aac557af297ca2d33d58ee69a5188bdbdf"
+    },
+    "Couch_Medium2": {
+      "file": "Couch_Medium2-54165251c604.glb.gz",
+      "dimensions": {
+        "width": 2.259331,
+        "height": 0.9796715,
+        "depth": 0.9997389999999999
+      },
+      "sourceDimensions": [
+        4.518662,
+        1.959343,
+        1.9994779999999999
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 924,
+      "sourceSha256": "5cbd8f9877fea913e7aff7c365f537f3bc7d4a8bba3ec1520c860e30571aa273"
+    },
+    "Couch_Small1": {
+      "file": "Couch_Small1-191283437958.glb.gz",
+      "dimensions": {
+        "width": 1.442735,
+        "height": 0.9550145,
+        "depth": 1.101731
+      },
+      "sourceDimensions": [
+        2.88547,
+        1.910029,
+        2.203462
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 852,
+      "sourceSha256": "fd08a845ddc4c7fa2c5c56684b460df51f8fc63c3802157bf1ec9adc3a4b6a62"
+    },
+    "Couch_Small2": {
+      "file": "Couch_Small2-747016c51172.glb.gz",
+      "dimensions": {
+        "width": 1.056825,
+        "height": 0.634557,
+        "depth": 0.9961445
+      },
+      "sourceDimensions": [
+        2.11365,
+        1.269114,
+        1.992289
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 468,
+      "sourceSha256": "e3a526a03efcf92ccd7b2ac7b7e37d16b92df36ec425b33a76db0fe2dde6f275"
+    },
+    "Curtains_Double": {
+      "file": "Curtains_Double-e0b6e21aa17d.glb.gz",
+      "dimensions": {
+        "width": 1.734399,
+        "height": 2.17224,
+        "depth": 0.238239
+      },
+      "sourceDimensions": [
+        3.468798,
+        4.34448,
+        0.476478
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 320,
+      "sourceSha256": "659f588c2cf3bca359d1b29645e9bf033c2b2d58cbfe2cab9aae449911b15944"
+    },
+    "Curtains_Single": {
+      "file": "Curtains_Single-95dc85b30563.glb.gz",
+      "dimensions": {
+        "width": 0.815997,
+        "height": 2.17224,
+        "depth": 0.238239
+      },
+      "sourceDimensions": [
+        1.631994,
+        4.34448,
+        0.476478
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 208,
+      "sourceSha256": "86cc706313adaff7bf07c1bd4b492bb1dc1ae0fe411762f299cdabc9f44b3845"
+    },
+    "Door_1": {
+      "file": "Door_1-b9aa25dc1d6c.glb.gz",
+      "dimensions": {
+        "width": 0.86,
+        "height": 1.985,
+        "depth": 0.06807296118215587
+      },
+      "sourceDimensions": [
+        1.735772,
+        4.187836,
+        0.42013100000000003
+      ],
+      "scale": [
+        0.49545677658125603,
+        0.473991818208736,
+        0.16202794171854937
+      ],
+      "panelDepth": 0.04,
+      "triangles": 456,
+      "sourceSha256": "a9ccfe34b2bd7f2821327f4962fbc5c949ad7f591b630e3dbd7f82ab6fab8f86"
+    },
+    "Door_2": {
+      "file": "Door_2-53da15d9cd98.glb.gz",
+      "dimensions": {
+        "width": 0.86,
+        "height": 1.985,
+        "depth": 0.07900047837465177
+      },
+      "sourceDimensions": [
+        1.739843,
+        4.197657,
+        0.421116
+      ],
+      "scale": [
+        0.49429747396747864,
+        0.47288284869392616,
+        0.18759790265544832
+      ],
+      "panelDepth": 0.04,
+      "triangles": 456,
+      "sourceSha256": "c87e07945abf8d257f7c7ec31ef4ab4e4590688c80f6d0feea1144a70e408af5"
+    },
+    "Door_3": {
+      "file": "Door_3-1100162e1166.glb.gz",
+      "dimensions": {
+        "width": 0.86,
+        "height": 1.985,
+        "depth": 0.06623323670882045
+      },
+      "sourceDimensions": [
+        1.735771,
+        4.187836,
+        0.415852
+      ],
+      "scale": [
+        0.495457062020278,
+        0.473991818208736,
+        0.15927117510272992
+      ],
+      "panelDepth": 0.04,
+      "triangles": 856,
+      "sourceSha256": "5aa697c5aa034b17855c7859abc91da54a3e4c5fbe373cc6a521684b38890f98"
+    },
+    "Door_4": {
+      "file": "Door_4-c9c3c527d408.glb.gz",
+      "dimensions": {
+        "width": 0.86,
+        "height": 1.985,
+        "depth": 0.07900047837465177
+      },
+      "sourceDimensions": [
+        1.739842,
+        4.197656,
+        0.421116
+      ],
+      "scale": [
+        0.4942977580722847,
+        0.47288296134795227,
+        0.18759790265544832
+      ],
+      "panelDepth": 0.04,
+      "triangles": 920,
+      "sourceSha256": "2f4490982ed068ba2908621eac07a044e0ad3e9a4df66f7f893b80055e39c72d"
+    },
+    "Door_5": {
+      "file": "Door_5-e94581d76f31.glb.gz",
+      "dimensions": {
+        "width": 0.8599999999999999,
+        "height": 1.985,
+        "depth": 0.07900047837465177
+      },
+      "sourceDimensions": [
+        1.739842,
+        4.197657,
+        0.421116
+      ],
+      "scale": [
+        0.4942977580722847,
+        0.47288284869392616,
+        0.18759790265544832
+      ],
+      "panelDepth": 0.04,
+      "triangles": 1224,
+      "sourceSha256": "09df1f2b233c846b7ddf749dcc539ba3ccba8f8da3172dac64d36c510f6a7383"
+    },
+    "Door_6": {
+      "file": "Door_6-443915fb3329.glb.gz",
+      "dimensions": {
+        "width": 0.86,
+        "height": 1.985,
+        "depth": 0.07864565046875582
+      },
+      "sourceDimensions": [
+        1.739842,
+        4.197657,
+        0.421116
+      ],
+      "scale": [
+        0.4942977580722847,
+        0.47288284869392616,
+        0.1867553131886602
+      ],
+      "panelDepth": 0.04,
+      "triangles": 832,
+      "sourceSha256": "dee7eedcf4d9f8e46aadaa7cf149badb37c051b93a824eadd9be8302336acada"
+    },
+    "Door_7": {
+      "file": "Door_7-e621f960b9d2.glb.gz",
+      "dimensions": {
+        "width": 0.8600000000000001,
+        "height": 1.985,
+        "depth": 0.04
+      },
+      "sourceDimensions": [
+        1.7398419999999999,
+        4.197657,
+        0.421116
+      ],
+      "scale": [
+        0.49429775807228477,
+        0.47288284869392616,
+        0.09498570465144997
+      ],
+      "panelDepth": 0.04,
+      "triangles": 172,
+      "sourceSha256": "0d674c94c72953a2322f6d73cc84b6ec115cb9588489a7f631cd9e890facb82f"
+    },
+    "Door_8": {
+      "file": "Door_8-d79997b458fd.glb.gz",
+      "dimensions": {
+        "width": 0.8600000000000001,
+        "height": 1.985,
+        "depth": 0.08299612610331017
+      },
+      "sourceDimensions": [
+        1.7398419999999999,
+        4.197656,
+        0.442415
+      ],
+      "scale": [
+        0.49429775807228477,
+        0.47288296134795227,
+        0.18759790265544832
+      ],
+      "panelDepth": 0.04,
+      "triangles": 2568,
+      "sourceSha256": "b18afead57a03319310e28837310d7db27b2bd60c837cb53b5c3ff7396c9b750"
+    },
+    "Door_9": {
+      "file": "Door_9-1e2004d62e77.glb.gz",
+      "dimensions": {
+        "width": 0.8600000000000001,
+        "height": 1.985,
+        "depth": 0.07900047837465177
+      },
+      "sourceDimensions": [
+        1.7398419999999999,
+        4.197656,
+        0.421116
+      ],
+      "scale": [
+        0.49429775807228477,
+        0.47288296134795227,
+        0.18759790265544832
+      ],
+      "panelDepth": 0.04,
+      "triangles": 920,
+      "sourceSha256": "f2bdd1bfb0e46ded82871ae695458dced7e48d06721f1d3ee42189308c01e180"
+    },
+    "Door_Double": {
+      "file": "Door_Double-d66f67f08bc8.glb.gz",
+      "dimensions": {
+        "width": 1.72,
+        "height": 1.985,
+        "depth": 0.0684541139744529
+      },
+      "sourceDimensions": [
+        3.482608,
+        4.187836,
+        0.429796
+      ],
+      "scale": [
+        0.493882745344868,
+        0.473991818208736,
+        0.1592711751027299
+      ],
+      "panelDepth": 0.04,
+      "triangles": 1720,
+      "sourceSha256": "d119c2590a60a6e9029e3efd3f3fa4db7e8217e919cade42d5c28be3e174d94a"
+    },
+    "Drawer_1": {
+      "file": "Drawer_1-181358b102db.glb.gz",
+      "dimensions": {
+        "width": 1.39703,
+        "height": 0.6764575,
+        "depth": 0.5593035
+      },
+      "sourceDimensions": [
+        2.79406,
+        1.352915,
+        1.118607
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 404,
+      "sourceSha256": "ad97121f78418c43e77412d3803064dff4c68b7963ec9eb3d6dedaee4fb3c9f9"
+    },
+    "Drawer_2": {
+      "file": "Drawer_2-daded19ec774.glb.gz",
+      "dimensions": {
+        "width": 2.0175995,
+        "height": 0.6524685,
+        "depth": 0.5593035
+      },
+      "sourceDimensions": [
+        4.035199,
+        1.304937,
+        1.118607
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 436,
+      "sourceSha256": "3b4334c9d5ec29e2fad07c2fde93e56c4364e68e571909625d3bb2751343fb33"
+    },
+    "Drawer_3": {
+      "file": "Drawer_3-b1c1fae09557.glb.gz",
+      "dimensions": {
+        "width": 2.076534,
+        "height": 0.7885895,
+        "depth": 0.668246
+      },
+      "sourceDimensions": [
+        4.153068,
+        1.577179,
+        1.336492
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 604,
+      "sourceSha256": "bdb9cd1750fcd2adefd9eb8652fc1da767fd780db9a378b5f20a2da96b845a79"
+    },
+    "Drawer_4": {
+      "file": "Drawer_4-a8bec1e15eb9.glb.gz",
+      "dimensions": {
+        "width": 1.39703,
+        "height": 1.0350584999999999,
+        "depth": 0.5593035
+      },
+      "sourceDimensions": [
+        2.79406,
+        2.0701169999999998,
+        1.118607
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 464,
+      "sourceSha256": "e015cfd17221e128106c4430a74eca8143152310cf3b8fffec5f16fe6de1b4e1"
+    },
+    "Drawer_5": {
+      "file": "Drawer_5-9b56c0b9f550.glb.gz",
+      "dimensions": {
+        "width": 1.39703,
+        "height": 0.6660915,
+        "depth": 0.576383
+      },
+      "sourceDimensions": [
+        2.79406,
+        1.332183,
+        1.152766
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 352,
+      "sourceSha256": "76d4b740f48fc20eee6b183731e14adb8c2be29663bd77059614da5729ded065"
+    },
+    "Fireplace": {
+      "file": "Fireplace-49bbab3b9265.glb.gz",
+      "dimensions": {
+        "width": 1.6249034999999998,
+        "height": 1.2805985,
+        "depth": 0.578923
+      },
+      "sourceDimensions": [
+        3.2498069999999997,
+        2.561197,
+        1.157846
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 360,
+      "sourceSha256": "a76c70095696b5adfcb8d622c3b9f9d10eb430002193cac23f1a20f565c7e953"
+    },
+    "Fork": {
+      "file": "Fork-6b49c0d91c74.glb.gz",
+      "dimensions": {
+        "width": 0.022351,
+        "height": 0.0050965,
+        "depth": 0.201588
+      },
+      "sourceDimensions": [
+        0.044702,
+        0.010193,
+        0.403176
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 188,
+      "sourceSha256": "8396f597307f9a63fdbe55899cf116f4339195c441dc4628780d00830bfaf597"
+    },
+    "Houseplant_1": {
+      "file": "Houseplant_1-716c24fac9f2.glb.gz",
+      "dimensions": {
+        "width": 0.3845195,
+        "height": 0.358679,
+        "depth": 0.34713
+      },
+      "sourceDimensions": [
+        0.769039,
+        0.717358,
+        0.69426
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 245,
+      "sourceSha256": "a0728a1f94e7faba3c86b5d02e3ae2b5c8e4c006c02f68d8902ceedcc671929e"
+    },
+    "Houseplant_2": {
+      "file": "Houseplant_2-e2eb88431e8b.glb.gz",
+      "dimensions": {
+        "width": 0.125275,
+        "height": 0.19244599999999998,
+        "depth": 0.125275
+      },
+      "sourceDimensions": [
+        0.25055,
+        0.38489199999999996,
+        0.25055
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 324,
+      "sourceSha256": "53072ccbe9684dd4b9b337d9131d5d4f141fcbc11efd9bdcd7b1e0fd33cef59a"
+    },
+    "Houseplant_3": {
+      "file": "Houseplant_3-434c112c571e.glb.gz",
+      "dimensions": {
+        "width": 0.171287,
+        "height": 0.4224585,
+        "depth": 0.169128
+      },
+      "sourceDimensions": [
+        0.342574,
+        0.844917,
+        0.338256
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 412,
+      "sourceSha256": "621bb239fe529a08eb422e2ea7d1cbad6186d8c50e5a3cfe660f3263cb9e7c59"
+    },
+    "Houseplant_4": {
+      "file": "Houseplant_4-eabaa4fbe7c4.glb.gz",
+      "dimensions": {
+        "width": 0.169128,
+        "height": 0.46418550000000003,
+        "depth": 0.169128
+      },
+      "sourceDimensions": [
+        0.338256,
+        0.9283710000000001,
+        0.338256
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 316,
+      "sourceSha256": "39afef1d47bb2ba268331ca5f160fb7e65cac1d3e91c18687b22786faa912557"
+    },
+    "Houseplant_5": {
+      "file": "Houseplant_5-2c25a9141875.glb.gz",
+      "dimensions": {
+        "width": 0.255891,
+        "height": 0.211815,
+        "depth": 0.2641775
+      },
+      "sourceDimensions": [
+        0.511782,
+        0.42363,
+        0.528355
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 492,
+      "sourceSha256": "be77bda6012a4d690caa75a9a1962fb892d09f4d057c7501b6fe3f720106e1a2"
+    },
+    "Houseplant_6": {
+      "file": "Houseplant_6-cee67590734a.glb.gz",
+      "dimensions": {
+        "width": 0.5199425,
+        "height": 0.4793045,
+        "depth": 0.525052
+      },
+      "sourceDimensions": [
+        1.039885,
+        0.958609,
+        1.050104
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 652,
+      "sourceSha256": "6a29dfdbd6472a64461da8c781aa3c6785174d9fbedc76a14b35925ffb67db9f"
+    },
+    "Houseplant_7": {
+      "file": "Houseplant_7-1badb387d5a0.glb.gz",
+      "dimensions": {
+        "width": 0.5831230000000001,
+        "height": 0.4409285,
+        "depth": 0.6100295
+      },
+      "sourceDimensions": [
+        1.1662460000000001,
+        0.881857,
+        1.220059
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 449,
+      "sourceSha256": "5d4a0a13183893d89aebe5715834e9d3802bfad2aa45f5133757526f7dc104db"
+    },
+    "Houseplant_8": {
+      "file": "Houseplant_8-18cf31f5a764.glb.gz",
+      "dimensions": {
+        "width": 0.25857399999999997,
+        "height": 0.778299,
+        "depth": 0.258567
+      },
+      "sourceDimensions": [
+        0.5171479999999999,
+        1.556598,
+        0.517134
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 310,
+      "sourceSha256": "bc6c7ab96004494c6e67a480fe434f21e55da3bd0c286689582010c63997c178"
+    },
+    "Kitchen_1Drawers": {
+      "file": "Kitchen_1Drawers-9ecb1c753eac.glb.gz",
+      "dimensions": {
+        "width": 0.505406,
+        "height": 0.8068155,
+        "depth": 0.5602135
+      },
+      "sourceDimensions": [
+        1.010812,
+        1.613631,
+        1.120427
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 84,
+      "sourceSha256": "fad738c97014b381e03b5f244ab7e37f005d3cee876347a044ada19494c3071d"
+    },
+    "Kitchen_2Drawers": {
+      "file": "Kitchen_2Drawers-65fc9c442a1c.glb.gz",
+      "dimensions": {
+        "width": 0.505406,
+        "height": 0.812269,
+        "depth": 0.5602135
+      },
+      "sourceDimensions": [
+        1.010812,
+        1.624538,
+        1.120427
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 148,
+      "sourceSha256": "a033c406fe62d4aff740d18837d4ee6bd2f87956d48d669965eca0a199f891c8"
+    },
+    "Kitchen_3Drawers": {
+      "file": "Kitchen_3Drawers-48eda28aebe1.glb.gz",
+      "dimensions": {
+        "width": 0.505406,
+        "height": 0.812269,
+        "depth": 0.5602135
+      },
+      "sourceDimensions": [
+        1.010812,
+        1.624538,
+        1.120427
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 212,
+      "sourceSha256": "207973965a2c527c140039fd6da7292671490a04162a26efd92114073a14b8bd"
+    },
+    "Kitchen_Cabinet1": {
+      "file": "Kitchen_Cabinet1-00860b149bb4.glb.gz",
+      "dimensions": {
+        "width": 0.505406,
+        "height": 0.783561,
+        "depth": 0.5357325
+      },
+      "sourceDimensions": [
+        1.010812,
+        1.567122,
+        1.071465
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 68,
+      "sourceSha256": "005bd751c143b4d841ab254f4435f7639e9cacaf590c69330debabe07d633093"
+    },
+    "Kitchen_Cabinet2": {
+      "file": "Kitchen_Cabinet2-f573f1f112c1.glb.gz",
+      "dimensions": {
+        "width": 0.505406,
+        "height": 0.783561,
+        "depth": 0.5357325
+      },
+      "sourceDimensions": [
+        1.010812,
+        1.567122,
+        1.071465
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 68,
+      "sourceSha256": "f62824683b245dc4f99c34b6ea3ec98acee07311c8f1f463d1a46111ef21faca"
+    },
+    "Kitchen_CabinetSmall": {
+      "file": "Kitchen_CabinetSmall-8a321d9d9ccf.glb.gz",
+      "dimensions": {
+        "width": 0.430617,
+        "height": 0.473722,
+        "depth": 0.5357325
+      },
+      "sourceDimensions": [
+        0.861234,
+        0.947444,
+        1.071465
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 68,
+      "sourceSha256": "20ac2ec7d4e282734eeaad597555613a774ffbeb81930cf7b7d0c5fd272e3a12"
+    },
+    "Kitchen_Fridge": {
+      "file": "Kitchen_Fridge-37f2aad47897.glb.gz",
+      "dimensions": {
+        "width": 0.6,
+        "height": 1.86,
+        "depth": 0.665
+      },
+      "sourceDimensions": [
+        1.297592,
+        3.308444,
+        1.30186
+      ],
+      "scale": [
+        0.46239495927841723,
+        0.5621978186724635,
+        0.5108076137219056
+      ],
+      "panelDepth": null,
+      "triangles": 404,
+      "sourceSha256": "d44613a31f0fe40a58eed6542fee84cd35eaa2a4b43df05c007160a3e4e1cb95"
+    },
+    "Kitchen_Oven": {
+      "file": "Kitchen_Oven-c3be9c0b8ce7.glb.gz",
+      "dimensions": {
+        "width": 0.505406,
+        "height": 0.808594,
+        "depth": 0.5602135
+      },
+      "sourceDimensions": [
+        1.010812,
+        1.617188,
+        1.120427
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 524,
+      "sourceSha256": "49ae3bdfb4765ca083492e37300cc2812a5e37bb81efd72660c8e6fbf961ecb9"
+    },
+    "Kitchen_Oven_Large": {
+      "file": "Kitchen_Oven_Large-9381a5a3b75c.glb.gz",
+      "dimensions": {
+        "width": 0.58561,
+        "height": 0.7963035,
+        "depth": 0.535182
+      },
+      "sourceDimensions": [
+        1.17122,
+        1.592607,
+        1.070364
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 528,
+      "sourceSha256": "5c42b118716b8ed9d18e28e5f3525e296cc8d7fdb43824c8c55f3b81b3e61e1a"
+    },
+    "Kitchen_Sink": {
+      "file": "Kitchen_Sink-feda72906c5d.glb.gz",
+      "dimensions": {
+        "width": 0.505406,
+        "height": 0.962198,
+        "depth": 0.5602135
+      },
+      "sourceDimensions": [
+        1.010812,
+        1.924396,
+        1.120427
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 444,
+      "sourceSha256": "d51fb26de77342c0b38465942fd51e34d5ae6c0e8344c8d92dd4ea3fc0c42655"
+    },
+    "Knife": {
+      "file": "Knife-edc4a122419d.glb.gz",
+      "dimensions": {
+        "width": 0.0174115,
+        "height": 0.0035515,
+        "depth": 0.20956599999999997
+      },
+      "sourceDimensions": [
+        0.034823,
+        0.007103,
+        0.41913199999999995
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 112,
+      "sourceSha256": "75c7cd638e590a249ce092174ff4200ba2f0bf8ab3b8f64d50d6793d778fd5ac"
+    },
+    "Light_Ceiling1": {
+      "file": "Light_Ceiling1-c20fcf2624f0.glb.gz",
+      "dimensions": {
+        "width": 0.220255,
+        "height": 0.41101899999999997,
+        "depth": 0.2180135
+      },
+      "sourceDimensions": [
+        0.44051,
+        0.8220379999999999,
+        0.436027
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 269,
+      "sourceSha256": "26e58ae203bc9c532ad4896490141a34608dca68aca476ed46c704e0c1e444ff"
+    },
+    "Light_Ceiling2": {
+      "file": "Light_Ceiling2-0ff6a576f7ec.glb.gz",
+      "dimensions": {
+        "width": 0.180403,
+        "height": 0.5060585,
+        "depth": 0.17856650000000002
+      },
+      "sourceDimensions": [
+        0.360806,
+        1.012117,
+        0.35713300000000003
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 196,
+      "sourceSha256": "eab02ae94a5d6078fed7e144ea6eda7abea00207506c47725e92a6f7fd99d2c3"
+    },
+    "Light_Ceiling3": {
+      "file": "Light_Ceiling3-b0e7c2004faf.glb.gz",
+      "dimensions": {
+        "width": 0.268521,
+        "height": 0.3389365,
+        "depth": 0.268521
+      },
+      "sourceDimensions": [
+        0.537042,
+        0.677873,
+        0.537042
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 820,
+      "sourceSha256": "c48fe345965c79c04ff03352b9c7dfc8a1025bd00c31042345107166ed2f87b7"
+    },
+    "Light_Ceiling4": {
+      "file": "Light_Ceiling4-226eeb262755.glb.gz",
+      "dimensions": {
+        "width": 0.387872,
+        "height": 0.648321,
+        "depth": 0.387872
+      },
+      "sourceDimensions": [
+        0.775744,
+        1.296642,
+        0.775744
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 820,
+      "sourceSha256": "3bab3275dd45100bf9bdba065c1932d20223b96e8d48fc6c92a5a5dba9589c85"
+    },
+    "Light_Ceiling5": {
+      "file": "Light_Ceiling5-c3ffc2bb161b.glb.gz",
+      "dimensions": {
+        "width": 0.265543,
+        "height": 0.0681405,
+        "depth": 0.279208
+      },
+      "sourceDimensions": [
+        0.531086,
+        0.136281,
+        0.558416
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 116,
+      "sourceSha256": "e15a0bf0f7c2cfe1bd09f43547b39309e4c19b7dede05c4f098785661345bfc2"
+    },
+    "Light_Ceiling6": {
+      "file": "Light_Ceiling6-59aa5ac9f30e.glb.gz",
+      "dimensions": {
+        "width": 0.265543,
+        "height": 0.064357,
+        "depth": 0.279208
+      },
+      "sourceDimensions": [
+        0.531086,
+        0.128714,
+        0.558416
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 112,
+      "sourceSha256": "53d7fc6eee6e948ba2aa057c99d0d930b66540cd9fefb77794508adce6a91deb"
+    },
+    "Light_CeilingSingle": {
+      "file": "Light_CeilingSingle-671cb14121d8.glb.gz",
+      "dimensions": {
+        "width": 0.132116,
+        "height": 0.23919200000000002,
+        "depth": 0.138915
+      },
+      "sourceDimensions": [
+        0.264232,
+        0.47838400000000003,
+        0.27783
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 232,
+      "sourceSha256": "ced50edbdd30fea802ea3232e2b375752b1fd702443be18aac789c99044778a4"
+    },
+    "Light_Chandelier": {
+      "file": "Light_Chandelier-40ee39ac7055.glb.gz",
+      "dimensions": {
+        "width": 0.4065535,
+        "height": 0.259408,
+        "depth": 0.40655300000000005
+      },
+      "sourceDimensions": [
+        0.813107,
+        0.518816,
+        0.8131060000000001
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 972,
+      "sourceSha256": "7bf133935c577a05b2349bab3c26b658b8560c6433f50a62504e1fc6b37fe4be"
+    },
+    "Light_Cube": {
+      "file": "Light_Cube-30411d09c2c4.glb.gz",
+      "dimensions": {
+        "width": 0.28187799999999996,
+        "height": 0.5176145,
+        "depth": 0.281878
+      },
+      "sourceDimensions": [
+        0.5637559999999999,
+        1.035229,
+        0.563756
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 368,
+      "sourceSha256": "ed59225690d8b66c68467d0d5af7ecd8fea69636ee53657655c57998d19b8eb7"
+    },
+    "Light_Cube2": {
+      "file": "Light_Cube2-ce7fd461e685.glb.gz",
+      "dimensions": {
+        "width": 0.277113,
+        "height": 0.461146,
+        "depth": 0.320361
+      },
+      "sourceDimensions": [
+        0.554226,
+        0.922292,
+        0.640722
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 444,
+      "sourceSha256": "51b9f11dd0d25fd1cf6bbbd86487513be8d96e424b965d4f3fa3b35e4e32644f"
+    },
+    "Light_Desk": {
+      "file": "Light_Desk-b06296469caf.glb.gz",
+      "dimensions": {
+        "width": 0.125765,
+        "height": 0.2866015,
+        "depth": 0.2265875
+      },
+      "sourceDimensions": [
+        0.25153,
+        0.573203,
+        0.453175
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 356,
+      "sourceSha256": "357b925d4a260d72c2972311d0eb3589459d1f9012ab734c76073c7294ef64ea"
+    },
+    "Light_Floor1": {
+      "file": "Light_Floor1-e68ede51ff05.glb.gz",
+      "dimensions": {
+        "width": 0.140446,
+        "height": 0.8016315,
+        "depth": 0.147674
+      },
+      "sourceDimensions": [
+        0.280892,
+        1.603263,
+        0.295348
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 226,
+      "sourceSha256": "83e98deb9b7108161d6242649071960b23fca04fd0f7d35431345045a72be18e"
+    },
+    "Light_Floor2": {
+      "file": "Light_Floor2-4e3cfb3d22e6.glb.gz",
+      "dimensions": {
+        "width": 0.156644,
+        "height": 0.3783495,
+        "depth": 0.1647055
+      },
+      "sourceDimensions": [
+        0.313288,
+        0.756699,
+        0.329411
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 276,
+      "sourceSha256": "18e0e1217cccd37cef288c49a10ae83936b0d197f04f5355f3dda0194c65ec18"
+    },
+    "Light_Floor3": {
+      "file": "Light_Floor3-68f1ccc60a45.glb.gz",
+      "dimensions": {
+        "width": 0.200123,
+        "height": 0.4470985,
+        "depth": 0.210422
+      },
+      "sourceDimensions": [
+        0.400246,
+        0.894197,
+        0.420844
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 244,
+      "sourceSha256": "cadc7ee586a2ca61e5c0a4ef0bfaf3a1cc78508158d9d6cb3655311cdf3d09b1"
+    },
+    "Light_Floor4": {
+      "file": "Light_Floor4-5f66701a022a.glb.gz",
+      "dimensions": {
+        "width": 0.17536649999999998,
+        "height": 0.381575,
+        "depth": 0.175367
+      },
+      "sourceDimensions": [
+        0.35073299999999996,
+        0.76315,
+        0.350734
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 244,
+      "sourceSha256": "f4830ee39f634b8ee6878a62974e0e0ed4acf7d069321bdbdf8bc8270f8672e2"
+    },
+    "Light_Icosahedron": {
+      "file": "Light_Icosahedron-79d9ab5a3b62.glb.gz",
+      "dimensions": {
+        "width": 0.251075,
+        "height": 0.439897,
+        "depth": 0.239648
+      },
+      "sourceDimensions": [
+        0.50215,
+        0.879794,
+        0.479296
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 1220,
+      "sourceSha256": "a7b3002fb9363f3429980dcf51f0e39700b31167e56d063cc748f23c23e8a57f"
+    },
+    "Light_Icosahedron2": {
+      "file": "Light_Icosahedron2-862157e2eb54.glb.gz",
+      "dimensions": {
+        "width": 0.8130809999999999,
+        "height": 0.439897,
+        "depth": 0.25107500000000005
+      },
+      "sourceDimensions": [
+        1.6261619999999999,
+        0.879794,
+        0.5021500000000001
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 3596,
+      "sourceSha256": "e19648d3d6e63215b06653169d0f731690192785d252081d946ce45bf1e264f7"
+    },
+    "Light_Small": {
+      "file": "Light_Small-462106b665cf.glb.gz",
+      "dimensions": {
+        "width": 0.077594,
+        "height": 0.053219,
+        "depth": 0.081587
+      },
+      "sourceDimensions": [
+        0.155188,
+        0.106438,
+        0.163174
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 116,
+      "sourceSha256": "1c3d58fdcfe66105a1fef15bba1f02ca8698d65a7607480055c214627aaf7ddc"
+    },
+    "Light_Stand1": {
+      "file": "Light_Stand1-2c3ccfbc6537.glb.gz",
+      "dimensions": {
+        "width": 0.386684,
+        "height": 1.4968915,
+        "depth": 0.4065835
+      },
+      "sourceDimensions": [
+        0.773368,
+        2.993783,
+        0.813167
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 244,
+      "sourceSha256": "872d09e361c05a00f2e90e204193dec5af0711f4adace6e78071b25c728d5bce"
+    },
+    "Light_Stand2": {
+      "file": "Light_Stand2-9effd2bc4c24.glb.gz",
+      "dimensions": {
+        "width": 0.338848,
+        "height": 1.4725075,
+        "depth": 0.33884800000000004
+      },
+      "sourceDimensions": [
+        0.677696,
+        2.945015,
+        0.6776960000000001
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 244,
+      "sourceSha256": "38efebc47ab8cffea9a55a159e282eb8cd44302a426313f9f94408ea06027b7e"
+    },
+    "NightStand_1": {
+      "file": "NightStand_1-12c0b8e0047a.glb.gz",
+      "dimensions": {
+        "width": 0.476115,
+        "height": 0.41245950000000003,
+        "depth": 0.476115
+      },
+      "sourceDimensions": [
+        0.95223,
+        0.8249190000000001,
+        0.95223
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 172,
+      "sourceSha256": "0f7d0b9826c96ad1107940d7609696ca44b3454f9c2b692f0679296cb8d6dc21"
+    },
+    "NightStand_2": {
+      "file": "NightStand_2-d0d288d685fd.glb.gz",
+      "dimensions": {
+        "width": 0.476115,
+        "height": 0.472626,
+        "depth": 0.476115
+      },
+      "sourceDimensions": [
+        0.95223,
+        0.945252,
+        0.95223
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 184,
+      "sourceSha256": "a95d743c8d87b9088f2785045230568e3e9936820294c2938a2b2ab1c72010b8"
+    },
+    "NightStand_3": {
+      "file": "NightStand_3-d848ad7c36ee.glb.gz",
+      "dimensions": {
+        "width": 0.476115,
+        "height": 0.413526,
+        "depth": 0.476115
+      },
+      "sourceDimensions": [
+        0.95223,
+        0.827052,
+        0.95223
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 272,
+      "sourceSha256": "754d53e04abcc874a28f9900e6d6814505c77b2fa74af07ee3ac83e5d27862fd"
+    },
+    "Plate_1": {
+      "file": "Plate_1-049c9c8219fe.glb.gz",
+      "dimensions": {
+        "width": 0.186799,
+        "height": 0.0162485,
+        "depth": 0.196412
+      },
+      "sourceDimensions": [
+        0.373598,
+        0.032497,
+        0.392824
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 136,
+      "sourceSha256": "05a62ab1609107feb8722a435c1bfe2717ca947f7ca486ae0a2dcfb20a1221c3"
+    },
+    "Plate_2": {
+      "file": "Plate_2-4c9838eae2bf.glb.gz",
+      "dimensions": {
+        "width": 0.176018,
+        "height": 0.012508,
+        "depth": 0.1760175
+      },
+      "sourceDimensions": [
+        0.352036,
+        0.025016,
+        0.352035
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 204,
+      "sourceSha256": "e46456e14dd2457ecdf17b0b82fd144e88026b2abdf27316c1584cdac885c93a"
+    },
+    "Plate_3": {
+      "file": "Plate_3-a9a564511dd8.glb.gz",
+      "dimensions": {
+        "width": 0.186799,
+        "height": 0.0173435,
+        "depth": 0.196412
+      },
+      "sourceDimensions": [
+        0.373598,
+        0.034687,
+        0.392824
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 136,
+      "sourceSha256": "c6611ac6e87cefe7da827ab9be35e2f4bc2b41560663ff798b116d8bfb23868e"
+    },
+    "Shelf_1": {
+      "file": "Shelf_1-3b30b394e1c6.glb.gz",
+      "dimensions": {
+        "width": 0.353672,
+        "height": 1.5833445,
+        "depth": 0.326092
+      },
+      "sourceDimensions": [
+        0.707344,
+        3.166689,
+        0.652184
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 96,
+      "sourceSha256": "06f1043a3fba525b7c383d1613030b34d8a3fc43c58ecc4057176b949a07d799"
+    },
+    "Shelf_2": {
+      "file": "Shelf_2-818c9541f5e0.glb.gz",
+      "dimensions": {
+        "width": 0.559574,
+        "height": 2.2190395,
+        "depth": 0.377999
+      },
+      "sourceDimensions": [
+        1.119148,
+        4.438079,
+        0.755998
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 120,
+      "sourceSha256": "e21fbeeb2873a7e91d22fe0e108a726f42156f8f1f7f2f4f33b80c69ee9272a4"
+    },
+    "Shelf_Large": {
+      "file": "Shelf_Large-b763aaec93d8.glb.gz",
+      "dimensions": {
+        "width": 1.690448,
+        "height": 2.21904,
+        "depth": 0.377999
+      },
+      "sourceDimensions": [
+        3.380896,
+        4.43808,
+        0.755998
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 220,
+      "sourceSha256": "c74160eb06427e6bd21a6ef671236ebb981856c72f949506954ba7a90a923155"
+    },
+    "Shelf_Small1": {
+      "file": "Shelf_Small1-d623a84a9be4.glb.gz",
+      "dimensions": {
+        "width": 0.972164,
+        "height": 0.28868900000000003,
+        "depth": 0.275193
+      },
+      "sourceDimensions": [
+        1.944328,
+        0.5773780000000001,
+        0.550386
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 132,
+      "sourceSha256": "5349e55ef6eaea9d39fcb61d7bbb4c89bc67a59838214717f8df190060ac0b23"
+    },
+    "Shelf_Small2": {
+      "file": "Shelf_Small2-9df7b8144cfc.glb.gz",
+      "dimensions": {
+        "width": 0.519811,
+        "height": 0.1949085,
+        "depth": 0.275193
+      },
+      "sourceDimensions": [
+        1.039622,
+        0.389817,
+        0.550386
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 92,
+      "sourceSha256": "db02c6484a7032093d86c4af9db1f2488c6193145cba5c183ff7ed03f1899160"
+    },
+    "Shelf_Small3": {
+      "file": "Shelf_Small3-113267102eef.glb.gz",
+      "dimensions": {
+        "width": 0.519811,
+        "height": 0.1949085,
+        "depth": 0.275193
+      },
+      "sourceDimensions": [
+        1.039622,
+        0.389817,
+        0.550386
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 48,
+      "sourceSha256": "2f7b8945dd7a0782b976aa2dbb84cbb3a6890692909035169139ac278994927d"
+    },
+    "Spoon": {
+      "file": "Spoon-f2baea5d09b8.glb.gz",
+      "dimensions": {
+        "width": 0.042235999999999996,
+        "height": 0.0089825,
+        "depth": 0.202687
+      },
+      "sourceDimensions": [
+        0.08447199999999999,
+        0.017965,
+        0.405374
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 128,
+      "sourceSha256": "925a0f3549d67523123d1b6521bfe26551d0a5a2cf9139955e6613ca35f9814a"
+    },
+    "Stool": {
+      "file": "Stool-3a7faab95b9c.glb.gz",
+      "dimensions": {
+        "width": 0.33767199999999997,
+        "height": 0.686151,
+        "depth": 0.355049
+      },
+      "sourceDimensions": [
+        0.6753439999999999,
+        1.372302,
+        0.710098
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 500,
+      "sourceSha256": "404e3e53234267c1b72399e8ac66173bf3a4f4c2078b4c870583d22aa7265c78"
+    },
+    "Table_RoundLarge": {
+      "file": "Table_RoundLarge-8a4277655a2b.glb.gz",
+      "dimensions": {
+        "width": 1.8566835,
+        "height": 0.5605975,
+        "depth": 0.970494
+      },
+      "sourceDimensions": [
+        3.713367,
+        1.121195,
+        1.940988
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 592,
+      "sourceSha256": "9bfc854df5e58bb25fd4561dd50d63947832b192654d6b4a5a021f62b8ec5d96"
+    },
+    "Table_RoundSmall": {
+      "file": "Table_RoundSmall-30568de9d309.glb.gz",
+      "dimensions": {
+        "width": 0.970494,
+        "height": 0.5736654999999999,
+        "depth": 0.970494
+      },
+      "sourceDimensions": [
+        1.940988,
+        1.1473309999999999,
+        1.940988
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 592,
+      "sourceSha256": "7e95bb32fe64438ff90e4f25407acf86ebd6173405da99fe0c150b9121bdbece"
+    },
+    "Table_RoundSmall2": {
+      "file": "Table_RoundSmall2-2372539cfa87.glb.gz",
+      "dimensions": {
+        "width": 0.970494,
+        "height": 0.6038924999999999,
+        "depth": 0.970494
+      },
+      "sourceDimensions": [
+        1.940988,
+        1.2077849999999999,
+        1.940988
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 744,
+      "sourceSha256": "0390a1d43662396625c2a4c7b5c3248418c64d56dfaacf95d9c9a530b946d93e"
+    },
+    "Trashcan_Cylindric": {
+      "file": "Trashcan_Cylindric-3bab03f4fda3.glb.gz",
+      "dimensions": {
+        "width": 0.37735,
+        "height": 0.537044,
+        "depth": 0.37735
+      },
+      "sourceDimensions": [
+        0.7547,
+        1.074088,
+        0.7547
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 380,
+      "sourceSha256": "60ed597c153e1163ed2de8273df546b699153c2eb38ca56268db27153c63bc9d"
+    },
+    "Trashcan_Green": {
+      "file": "Trashcan_Green-fc2bb7791a6b.glb.gz",
+      "dimensions": {
+        "width": 0.608638,
+        "height": 1.1056005,
+        "depth": 0.7956715
+      },
+      "sourceDimensions": [
+        1.217276,
+        2.211201,
+        1.591343
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 739,
+      "sourceSha256": "862d097051169e2868b34be6ed6d6c3a8583f231264ec20171cdd1533fa1c720"
+    },
+    "Trashcan_Large": {
+      "file": "Trashcan_Large-c7ad0416d312.glb.gz",
+      "dimensions": {
+        "width": 0.611618,
+        "height": 0.923144,
+        "depth": 0.6116185000000001
+      },
+      "sourceDimensions": [
+        1.223236,
+        1.846288,
+        1.2232370000000001
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 646,
+      "sourceSha256": "d2e0fa031b605eb413db121f0f02f1382c701d917c43340da6ee55f10628765c"
+    },
+    "Trashcan_Small1": {
+      "file": "Trashcan_Small1-39d371b99a18.glb.gz",
+      "dimensions": {
+        "width": 0.251514,
+        "height": 0.35622149999999997,
+        "depth": 0.153107
+      },
+      "sourceDimensions": [
+        0.503028,
+        0.7124429999999999,
+        0.306214
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 260,
+      "sourceSha256": "90aa1bcafb8769c8548f08e56e35e80b02e6a61165852fd7c6516e027f123d83"
+    },
+    "Trashcan_Small2": {
+      "file": "Trashcan_Small2-4e4e10b57955.glb.gz",
+      "dimensions": {
+        "width": 0.232388,
+        "height": 0.280139,
+        "depth": 0.214227
+      },
+      "sourceDimensions": [
+        0.464776,
+        0.560278,
+        0.428454
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 432,
+      "sourceSha256": "af1029d97e74ca204e994eb2555c0ff8b59fd0ebf8e94c674353dd8df6670974"
+    },
+    "Window_Large1": {
+      "file": "Window_Large1-f1737583afba.glb.gz",
+      "dimensions": {
+        "width": 0.9162144999999999,
+        "height": 0.849227,
+        "depth": 0.070552
+      },
+      "sourceDimensions": [
+        1.8324289999999999,
+        1.698454,
+        0.141104
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 252,
+      "sourceSha256": "d9f7da2e45313212775530283134fea8d7d5368868523099fe9e6b3d3d8f0904"
+    },
+    "Window_Large2": {
+      "file": "Window_Large2-411b3d9c8f30.glb.gz",
+      "dimensions": {
+        "width": 0.916215,
+        "height": 0.8492265,
+        "depth": 0.070552
+      },
+      "sourceDimensions": [
+        1.83243,
+        1.698453,
+        0.141104
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 372,
+      "sourceSha256": "2ffa89b178b09dbe8a134ebc040227da7a6d6bcc8d123b05d09697f901be6282"
+    },
+    "Window_Round1": {
+      "file": "Window_Round1-bec298fa8905.glb.gz",
+      "dimensions": {
+        "width": 0.453196,
+        "height": 0.7749005,
+        "depth": 0.056279
+      },
+      "sourceDimensions": [
+        0.906392,
+        1.549801,
+        0.112558
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 122,
+      "sourceSha256": "4ede73ac4d8da37d7dece6c3bf41bcdf9500be5fe08d3baba5495cd89eb16e78"
+    },
+    "Window_Round2": {
+      "file": "Window_Round2-1fa8e3742f7a.glb.gz",
+      "dimensions": {
+        "width": 0.45319600000000004,
+        "height": 0.7749005,
+        "depth": 0.0562785
+      },
+      "sourceDimensions": [
+        0.9063920000000001,
+        1.549801,
+        0.112557
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 134,
+      "sourceSha256": "a9aab8d060a777d93cd031e2ec683ddbd3befa43e3b4969019d01418bdc4648d"
+    },
+    "Window_Round3": {
+      "file": "Window_Round3-5b1e74402892.glb.gz",
+      "dimensions": {
+        "width": 0.45319600000000004,
+        "height": 0.7749005,
+        "depth": 0.056279
+      },
+      "sourceDimensions": [
+        0.9063920000000001,
+        1.549801,
+        0.112558
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 158,
+      "sourceSha256": "9aa234c03daecedb020bb194f8efa5eed7eb438957575ef2de18869f96a0ffae"
+    },
+    "Window_Small1": {
+      "file": "Window_Small1-8f0b556112c5.glb.gz",
+      "dimensions": {
+        "width": 0.464099,
+        "height": 0.6189755,
+        "depth": 0.070552
+      },
+      "sourceDimensions": [
+        0.928198,
+        1.237951,
+        0.141104
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 112,
+      "sourceSha256": "59e281ff81ae241ec768dba008fa4b5ef41e3765c96e3a7f4e0d6e0d8896b43d"
+    },
+    "Window_Small2": {
+      "file": "Window_Small2-a6ab7a3a9f2e.glb.gz",
+      "dimensions": {
+        "width": 0.4640995,
+        "height": 0.6189755,
+        "depth": 0.070552
+      },
+      "sourceDimensions": [
+        0.928199,
+        1.237951,
+        0.141104
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 132,
+      "sourceSha256": "150eafe526445ecd740efcf90cccefce1810d458162a8192beba020fcea959f2"
+    },
+    "Window_Small3": {
+      "file": "Window_Small3-60112c3eb09d.glb.gz",
+      "dimensions": {
+        "width": 0.4640995,
+        "height": 0.6189755,
+        "depth": 0.070552
+      },
+      "sourceDimensions": [
+        0.928199,
+        1.237951,
+        0.141104
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "panelDepth": null,
+      "triangles": 92,
+      "sourceSha256": "2da88602203a0ddd017343d524e11976b7e9aea402015cce02e3141799ac95ac"
+    }
+  },
+  "sources": [
+    "https://quaternius.com/packs/ultimatemodularcharacters.html",
+    "https://quaternius.com/packs/ultimatemodularwomen.html",
+    "https://opengameart.org/content/lowpoly-house-interior-pack"
+  ],
+  "characterMirror": "https://github.com/agentkaerf/FreeModels",
+  "furnitureArchiveSha256": "e59e14f0c2f57c6e5d3a057a77deeb7416c4fe3a6bdc5f27c8431f8a0bd7bbbb",
+  "playerReference": {
+    "male": 1.8500551783814785,
+    "female": 1.8453944874828634
+  }
+}

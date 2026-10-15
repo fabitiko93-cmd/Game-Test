@@ -6,6 +6,7 @@ import { clamp, distance, hash2, lineCells, mulberry32, uid } from "./util.js";
 import { obstacleClearance, segmentBlocked } from "./collision.js";
 import { buildingWalls, doorSide, doorGeometry } from "./building-geometry.js";
 import { PLAYER_BODY_RADIUS, ZOMBIE_WORLD_RADIUS, metersToTiles, WORLD_SCALE } from "./world-scale.js";
+import { furnishingDimensions, furnishingFootprint } from "./quaternius-catalog.js";
 
 export const BUILDINGS = [
   { id: "police", name: "POLIZEIPOSTEN", x: 16, y: 5, w: 8, h: 8, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
@@ -262,6 +263,7 @@ export class World {
   }
 
   addObject(type, x, y, options = {}) {
+    const furnishing=furnishingDimensions(type);
     const object = {
       id: options.id || `world-${++this.objectCounter}`,
       type,
@@ -275,6 +277,7 @@ export class World {
       static: options.static !== false,
       name: options.name || OBJECT_LABELS[type] || type,
       ...options,
+      ...(furnishing ? { footprint: furnishingFootprint({type,...options}), heightMeters: furnishing.height } : {}),
     };
     if (options.container && !options.items) object.items = this.rollLoot(options.container);
     this.objects.push(object);
@@ -528,6 +531,8 @@ export class World {
         survivorId: object.survivorId,
         deathCause: object.deathCause,
         zombieAppearance: object.zombieAppearance,
+        playerAppearance: object.playerAppearance,
+        facingYaw: object.facingYaw,
       }));
   }
 
