@@ -28,8 +28,10 @@ in favor of the ordinary gait. Alternating strikes use a 1.4-second visual
 cycle. The inactive source lead-in is skipped: source 0.62–0.9 s plays at 1x
 speed over the existing 0.28-second windup, followed by a calmer recovery.
 Damage, cooldown, movement and perception remain in the existing simulation.
-No death animation is present in the source; existing death/removal behavior
-is retained.
+No death animation is present in the source. Infected corpses now retain their
+original model identity, physical size and heading in a static prone rest pose.
+`corpses.json` supplies ten small, hashed sheets with eight matching views at
+the current 30-degree camera elevation. Human/player corpses remain separate.
 
 Gaits advance with simulation time at 0.5x (ambient), 0.65x (search), 0.75x
 (investigation) or 0.8x (chase) of the authored clip. Movement speed cannot
@@ -58,6 +60,7 @@ Regenerate using Python 3, numpy and Pillow:
 
 ```sh
 python scripts/prepare-zombies.py /path/to/original.glb
+python scripts/prepare-zombie-corpses.py /path/to/original.glb
 ```
 
 `--preview --output /path/to/qa` produces a contact sheet without replacing game

@@ -130,6 +130,8 @@ test("only walking sources ship for locomotion, with valid hashed PNGs and compl
   assert.deepEqual([...sources].sort(), ["attack_left", "attack_right", "idle", "idle2_alert", "idle3",
     "slowWalk", "Walk", "Walk2_limp"].sort());
   const installed = (await readdir(new URL("../docs/assets/zombies/", import.meta.url))).filter(name => name.endsWith(".png"));
+  const corpses = JSON.parse(await readFile(new URL("../docs/assets/zombies/corpses.json", import.meta.url)));
+  activeFiles.push(...corpses.variants.map(variant=>variant.file));
   assert.deepEqual(installed.sort(), activeFiles.sort(), "unused running/legacy atlases do not enter the offline cache");
 });
 

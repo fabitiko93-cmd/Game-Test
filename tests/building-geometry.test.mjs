@@ -67,12 +67,12 @@ test("player routes and real zombie movement pass every actual building entrance
   }
 });
 
-test("the compact fresh map keeps all mission containers reachable and entrances at their established locations", () => {
+test("the roomier fresh map keeps all mission containers reachable and entrances at their established locations", () => {
   const world=new World(), start=createPlayer();
   assert.ok(world.isWalkable(start.x,start.y)); assert.equal(world.insideBuilding(start)?.id,"safehouse");
   const safe=world.buildings.find(b=>b.id==="safehouse"), bounds=buildingBounds(safe);
-  assert.ok(tilesToMeters(bounds.maxX-bounds.minX)<9);
-  assert.ok(tilesToMeters(bounds.maxY-bounds.minY)<11);
+  assert.ok(Math.abs(tilesToMeters(bounds.maxX-bounds.minX)-10.24)<1e-9);
+  assert.ok(Math.abs(tilesToMeters(bounds.maxY-bounds.minY)-12.24)<1e-9);
   for(const door of world.objects.filter(o=>o.type==="door")) {door.locked=false;door.closed=false;door.solid=false;door.blocksSight=false;}
   world.touchSight();
   for(const name of ["KÜCHENSCHRANK","KÜHLSCHRANK","KOFFERRADIO","DIENSTSCHREIBTISCH","GESICHERTER WAFFENSCHRANK","MEDIKAMENTENSCHRANK"]) {

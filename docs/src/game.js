@@ -9,6 +9,7 @@ import { backgroundName, createPlayer, gainSkill, inflictZombieAttack, skillValu
 import { CombatSystem } from "./combat.js";
 import { GAME } from "./config.js";
 import { PlayerVisibility, playerCanSee } from "./player-visibility.js";
+import { zombieCorpseAppearance } from "./zombie-appearance.js";
 
 import { activeWeapon, ammoLabel, itemDefinition, removeItem, roundsInWeapon } from "./inventory.js";
 import { Navigator } from "./navigation.js";
@@ -565,6 +566,7 @@ export class Game {
   }
 
   killZombie(zombie, options = {}) {
+    if (zombie.removed) return;
     zombie.removed = true;
     this.player.kills += 1;
     if (this.player.combat.targetId === zombie.id) {
@@ -576,6 +578,7 @@ export class Game {
       solid: false,
       container: "corpse",
       name: "INFIZIERTER",
+      zombieAppearance: zombieCorpseAppearance(zombie),
       items: this.world.rollLoot("corpse"),
     });
     if (!options.silent) this.world.emitNoise(zombie.x, zombie.y, 2.1, "body", 2.2);

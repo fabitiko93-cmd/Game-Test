@@ -1,3 +1,16 @@
+# Großzügigere Gebäude und passende Zombie-Leichen · 15.10.2026
+
+- Alle vier Gebäude um zwei Meter je Grundrissachse erweitert: Unterschlupf
+  jetzt rund 10 × 12 m statt 8 × 10 m, Polizeiposten 14 × 14 m, Läden 14 × 16 m
+  zwischen den Wandachsen. Einrichtung verteilt sich auf die größere Fläche;
+  Eingänge und die metrischen Wand-/Türmaße bleiben erhalten.
+- Getötete Zombies behalten ihre Modellvariante, individuelle Körpergröße und
+  Ausrichtung als liegende echte Skelettmodelle. Kein Wechsel zur allgemeinen
+  Platzhalterleiche. Unbewegte Pose mit geprüftem Bodenkontakt, identischer
+  Geometrie und Textur; passende Originalmodell-Sprites bei fehlendem WebGL.
+- Loot, Auswahl und aktuelle Speicherung der Zombie-Leichen funktionieren weiter.
+  Ein neues Player-Modell bleibt der angekündigte nächste separate Schritt.
+
 # Maßstäbliche Gebäude und passende Türöffnungen · 15.10.2026
 
 - Baugeometrie vom groben Terrainraster getrennt: 24 cm dicke, 2,70 m hohe Wände

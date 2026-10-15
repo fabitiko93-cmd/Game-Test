@@ -41,6 +41,15 @@ bleiben auch für die Echtzeit-Modelle wirksam. Pro Figur werden nur Skelett und
 Mixer geklont; unveränderliche Textur und Mesh-Geometrie werden gemeinsam genutzt.
 Bei fehlendem WebGL oder Modell-Ladefehlern bleibt der vorhandene Sprite-Ersatz.
 
+Getötete Zombies behalten Original-ID, Variante, metrische Körpergröße und
+Blickrichtung in `corpse.zombieAppearance`, auch nach erneutem Laden. Mangels
+Death-Take wird die echte Rest-Skelettpose unbewegt auf den Rücken gelegt,
+anhand ihrer tatsächlichen verformten Mesh-Grenzen auf den Boden gesetzt und
+um ihren auswählbaren Weltpunkt zentriert. Keine generische Ersatzfigur und
+keine weiterlaufende Geh-/Ruheanimation; Loot und Interaktion bleiben bestehen.
+Der Sprite-Ersatz verwendet zehn passende, aus dem Originalmodell gerenderte
+Leichenansichten in `docs/assets/zombies/corpses.json`.
+
 Regenerieren (Python 3, numpy, Pillow):
 
 ```sh

@@ -8,10 +8,10 @@ import { buildingWalls, doorSide, doorGeometry } from "./building-geometry.js";
 import { PLAYER_BODY_RADIUS, ZOMBIE_WORLD_RADIUS, metersToTiles, WORLD_SCALE } from "./world-scale.js";
 
 export const BUILDINGS = [
-  { id: "police", name: "POLIZEIPOSTEN", x: 17, y: 6, w: 7, h: 7, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
-  { id: "market", name: "NAHKAUF", x: 37, y: 6, w: 7, h: 8, floor: "floor", door: { x: 40, y: 13 }, wall: "#777565", roof: "#4c5148" },
-  { id: "safehouse", name: "UNTERSCHLUPF", x: 6, y: 35, w: 5, h: 6, floor: "floor", door: { x: 8, y: 35 }, wall: "#6e6658", roof: "#354237" },
-  { id: "pharmacy", name: "APOTHEKE", x: 37, y: 35, w: 7, h: 8, floor: "pharmacyFloor", door: { x: 40, y: 35 }, wall: "#6f786d", roof: "#314239", locked: true, keyId: "pharmacy", lockDifficulty: 24 },
+  { id: "police", name: "POLIZEIPOSTEN", x: 16, y: 5, w: 8, h: 8, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
+  { id: "market", name: "NAHKAUF", x: 37, y: 5, w: 8, h: 9, floor: "floor", door: { x: 40, y: 13 }, wall: "#777565", roof: "#4c5148" },
+  { id: "safehouse", name: "UNTERSCHLUPF", x: 6, y: 35, w: 6, h: 7, floor: "floor", door: { x: 8, y: 35 }, wall: "#6e6658", roof: "#354237" },
+  { id: "pharmacy", name: "APOTHEKE", x: 37, y: 35, w: 8, h: 9, floor: "pharmacyFloor", door: { x: 40, y: 35 }, wall: "#6f786d", roof: "#314239", locked: true, keyId: "pharmacy", lockDifficulty: 24 },
 ];
 
 export const OPEN_POIS = [
@@ -116,17 +116,17 @@ export class World {
   }
 
   addContainers() {
-    const starter = this.addObject("cabinet", 6.65, 36.6, { interactable: true, solid: true, container: "kitchen", name: "KÜCHENSCHRANK", tutorial: true });
+    const starter = this.addObject("cabinet", 6.65, 36.8, { interactable: true, solid: true, container: "kitchen", name: "KÜCHENSCHRANK", tutorial: true });
     this.ensureItem(starter, createItem("kitchen_knife"));
     this.ensureItem(starter, createItem("bandage"));
     this.ensureItem(starter, createItem("water"));
-    this.addObject("fridge", 6.35, 38.5, { interactable: true, solid: true, container: "fridge", name: "KÜHLSCHRANK",
+    this.addObject("fridge", 6.35, 39.2, { interactable: true, solid: true, container: "fridge", name: "KÜHLSCHRANK",
       footprint: { x: metersToTiles(WORLD_SCALE.fridge.width / 2), y: metersToTiles(WORLD_SCALE.fridge.depth / 2) } });
-    this.addObject("radio", 9.25, 39.2, { interactable: true, solid: true, name: "KOFFERRADIO", used: false });
-    this.addObject("bed", 9.1, 36.4, { solid: true, name: "MATRATZE" });
+    this.addObject("radio", 10.25, 40.2, { interactable: true, solid: true, name: "KOFFERRADIO", used: false });
+    this.addObject("bed", 10.1, 36.5, { solid: true, name: "MATRATZE" });
 
-    this.addObject("desk", 18.2, 7, { interactable: true, solid: true, container: "police", name: "DIENSTSCHREIBTISCH" });
-    const policeLocker = this.addObject("gunlocker", 22, 7, {
+    this.addObject("desk", 17.2, 6, { interactable: true, solid: true, container: "police", name: "DIENSTSCHREIBTISCH" });
+    const policeLocker = this.addObject("gunlocker", 22, 6, {
       interactable: true, solid: true, container: "police", name: "GESICHERTER WAFFENSCHRANK",
       locked: true, keyId: "police", lockDifficulty: 30,
     });
@@ -141,18 +141,18 @@ export class World {
     const policeCorpse = this.addObject("corpse", 21.2, 9.2, { interactable: true, solid: false, container: "corpse", name: "POLIZIST" });
     this.ensureItem(policeCorpse, createItem("police_key"));
 
-    for (const [x, y] of [[37.8,6.8],[40,6.8],[42.2,6.8],[37.8,9.1],[40,9.1],[42.2,9.1],[37.8,11.4],[42.2,11.4]]) {
+    for (const [x, y] of [[37.8,5.8],[40.5,5.8],[43.2,5.8],[37.8,8.8],[40.5,8.8],[43.2,8.8],[37.8,11.1],[43.2,11.1]]) {
       this.addObject("shelf", x, y, { interactable: true, solid: true, container: "grocery", name: "VERKAUFSREGAL" });
     }
-    this.addObject("counter", 42, 12.2, { solid: true, name: "KASSE" });
+    this.addObject("counter", 43, 12.2, { solid: true, name: "KASSE" });
     this.addObject("locker", 37.7, 12, { interactable: true, solid: true, container: "clothing", name: "PERSONALSPIND" });
 
     const medicine = this.addObject("shelf", 38, 36.2, { interactable: true, solid: true, container: "pharmacy", name: "MEDIKAMENTENSCHRANK" });
     medicine.items.push(createItem("sealed_antibiotics"));
-    this.addObject("shelf", 38, 38.8, { interactable: true, solid: true, container: "pharmacy", name: "VERBANDSSCHRANK" });
-    this.addObject("shelf", 42, 36.2, { interactable: true, solid: true, container: "pharmacy", name: "APOTHEKENREGAL" });
-    this.addObject("counter", 40, 40.6, { solid: true, name: "TRESEN" });
-    this.addObject("corpse", 41.6, 39.3, { interactable: true, solid: false, container: "corpse", name: "APOTHEKERIN" });
+    this.addObject("shelf", 38, 39.6, { interactable: true, solid: true, container: "pharmacy", name: "VERBANDSSCHRANK" });
+    this.addObject("shelf", 43, 36.2, { interactable: true, solid: true, container: "pharmacy", name: "APOTHEKENREGAL" });
+    this.addObject("counter", 41, 41.6, { solid: true, name: "TRESEN" });
+    this.addObject("corpse", 42.6, 40.3, { interactable: true, solid: false, container: "corpse", name: "APOTHEKERIN" });
   }
 
   addStreetDetails() {
@@ -527,6 +527,7 @@ export class World {
         survivor: object.survivor,
         survivorId: object.survivorId,
         deathCause: object.deathCause,
+        zombieAppearance: object.zombieAppearance,
       }));
   }
 

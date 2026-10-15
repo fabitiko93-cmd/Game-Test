@@ -46,6 +46,10 @@ Gebäudemaßstab vom 15.10.2026: Baugeometrie ist vom 2-m-Terrainraster getrennt
 Wände, Türrahmen/-stürze und Gebäudegrundrisse folgen dem Figurenmaßstab;
 Darstellung, Körperkollision, Wegsuche und Sicht verwenden dieselben Fußabdrücke.
 Innenböden haben ein 50-cm-Fugenraster. Realistische Bodentexturen bleiben vorgemerkt.
+Nachjustierung: Grundrisse etwas großzügiger, metrische Wand- und Türmaße bleiben.
+Getötete Zombies behalten Modellvariante, Größe und Ausrichtung als liegende Körper.
+Ein echtes Player-Modell ist als nächster separater Schritt vom Nutzer angekündigt;
+hier noch keine Modellwahl oder Implementierung vorwegnehmen.
 
 Build und technische Modulauslagerung vom 02.10.2026 sind reine Infrastrukturarbeit.
 Die bestehenden Spielregeln bleiben maßgeblich. Nutzerklarstellung vom 15.10.2026:

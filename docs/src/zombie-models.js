@@ -1,10 +1,11 @@
-import { AnimationMixer, DirectionalLight, Group, HemisphereLight, LoopOnce,
+import { AnimationMixer, Box3, DirectionalLight, Group, HemisphereLight, LoopOnce,
   NoToneMapping, OrthographicCamera, Scene, SRGBColorSpace, WebGLRenderer } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { gunzipSync } from "three/addons/libs/fflate.module.js";
 import MODELS from "../assets/zombies3d/models.json" with { type: "json" };
-import { ZombieMotion } from "./zombie-motion.js";
+import { ZombieMotion, zombieModelYaw } from "./zombie-motion.js";
+import { zombieBodyProfile } from "./zombie-appearance.js";
 import { heightPixels, pixelsPerMeter } from "./world-scale.js";
 
 const ASSETS = new URL("../assets/zombies3d/", import.meta.url);
@@ -82,7 +83,7 @@ export class ZombieModels {
       if (clip.name.startsWith("attack")) { action.setLoop(LoopOnce, 1); action.clampWhenFinished = true; }
       return [clip.name, action];
     }));
-    entity = { root, mixer, actions, current: null, clip: null, lastAttackProgress: 0 };
+    entity = { root, model, mixer, actions, current: null, clip: null, lastAttackProgress: 0 };
     this.entities.set(zombie, entity);
     return entity;
   }
@@ -103,19 +104,47 @@ export class ZombieModels {
     for (const other of entity.actions.values()) if (other !== action && other.getEffectiveWeight() === 0) other.stop();
     entity.root.scale.setScalar(pose.scale);
     entity.root.rotation.y = pose.yaw;
-    this.scene.add(entity.root);
+    this.composite(ctx, entity.root, point, zombie.hurtFlash > 0);
+    return true;
+  }
+
+  drawCorpse(ctx, corpse, point) {
+    const appearance = corpse.zombieAppearance, body = zombieBodyProfile(appearance);
+    const asset = this.assets.get(body.variant);
+    if (!asset || !this.renderer || ["context-lost", "unavailable"].includes(this.status)) return false;
+    const entity = this.entity(corpse, null, asset); this.used.add(corpse);
+    if (!entity.corpse) {
+      // The supplied pack has no death clip. Lay its real, frozen rest skeleton
+      // on its back; retain the same mesh, texture, size and heading.
+      const action = entity.actions.get("rest");
+      action.reset().play(); entity.mixer.update(0);
+      entity.model.rotation.x = -Math.PI/2;
+      entity.root.rotation.y = zombieModelYaw(appearance);
+      entity.root.scale.setScalar(body.scale);
+      entity.root.updateMatrixWorld(true);
+      const bounds = new Box3().setFromObject(entity.root, true);
+      if (!bounds.isEmpty()) entity.root.position.set(
+        -(bounds.min.x+bounds.max.x)/2, -bounds.min.y, -(bounds.min.z+bounds.max.z)/2);
+      entity.root.updateMatrixWorld(true);
+      entity.corpse = true;
+    }
+    this.composite(ctx, entity.root, point);
+    return true;
+  }
+
+  composite(ctx, root, point, hurt = false) {
+    this.scene.add(root);
     // Clear both color and depth; no temporal blending / motion blur.
     this.renderer.clear(true, true, true);
     this.renderer.render(this.scene, this.camera);
     ctx.save();
-    if (zombie.hurtFlash > 0) ctx.globalAlpha *= .55;
+    if (hurt) ctx.globalAlpha *= .55;
     ctx.imageSmoothingEnabled = false;
     const x = Math.round((point.x-this.anchor.x)*this.pixelRatio)/this.pixelRatio;
     const y = Math.round((point.y-this.anchor.y)*this.pixelRatio)/this.pixelRatio;
     ctx.drawImage(this.renderer.domElement, x, y, this.size, this.size);
     ctx.restore();
-    this.scene.remove(entity.root);
-    return true;
+    this.scene.remove(root);
   }
 
   endFrame() {

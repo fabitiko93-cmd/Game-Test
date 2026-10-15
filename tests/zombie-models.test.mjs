@@ -3,12 +3,13 @@ import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
-import { AnimationClip, AnimationMixer, Group, Matrix4, Object3D, QuaternionKeyframeTrack,
-  Vector3, VectorKeyframeTrack } from "three";
+import { AnimationClip, AnimationMixer, Bone, Box3, BufferGeometry, Float32BufferAttribute,
+  Group, Matrix4, Object3D, QuaternionKeyframeTrack, Skeleton, SkinnedMesh,
+  Uint16BufferAttribute, Vector3, VectorKeyframeTrack } from "three";
 import { ZombieModels } from "../docs/src/zombie-models.js";
 import { ZombieMotion, zombieModelYaw } from "../docs/src/zombie-motion.js";
 import { createZombie, ZOMBIE_ATTACK } from "../docs/src/ai.js";
-import { zombieBodyProfile } from "../docs/src/zombie-appearance.js";
+import { zombieBodyProfile, zombieCorpseAppearance } from "../docs/src/zombie-appearance.js";
 import { WORLD_SCALE, pixelsPerMeter } from "../docs/src/world-scale.js";
 import { LOCOMOTION, speedInTiles } from "../docs/src/locomotion.js";
 import { STANCES } from "../docs/src/config.js";
@@ -31,11 +32,24 @@ async function loadRig(index) {
     for(let j=0;j<n;j++) out.push(a.componentType===5126?data.readFloatLE(j*4):data.readUInt16LE(j*2));
     return out;
   };
-  const nodes = g.nodes.map(n => { const o = new Object3D(); o.name=n.name;
+  const bones = new Set(g.skins.flatMap(s=>s.joints));
+  const nodes = g.nodes.map((n,i) => {
+    let o = bones.has(i) ? new Bone() : new Object3D();
+    if(n.mesh !== undefined) {
+      const attributes=g.meshes[n.mesh].primitives[0].attributes, geometry=new BufferGeometry();
+      geometry.setAttribute('position',new Float32BufferAttribute(accessor(attributes.POSITION),3));
+      geometry.setAttribute('skinIndex',new Uint16BufferAttribute(accessor(attributes.JOINTS_0),4));
+      geometry.setAttribute('skinWeight',new Float32BufferAttribute(accessor(attributes.WEIGHTS_0),4));
+      o=new SkinnedMesh(geometry);
+    }
+    o.name=n.name;
     if(n.matrix){o.matrix.fromArray(n.matrix);o.matrix.decompose(o.position,o.quaternion,o.scale);}
     if(n.translation)o.position.fromArray(n.translation);if(n.rotation)o.quaternion.fromArray(n.rotation);if(n.scale)o.scale.fromArray(n.scale);return o; });
   for(let i=0;i<nodes.length;i++)for(const child of g.nodes[i].children||[])nodes[i].add(nodes[child]);
   const scene = new Group(); for(const i of g.scenes[0].nodes)scene.add(nodes[i]);
+  scene.updateMatrixWorld(true);
+  g.nodes.forEach((n,i)=>{if(n.skin!==undefined){const skin=g.skins[n.skin],inverse=accessor(skin.inverseBindMatrices);
+    nodes[i].bind(new Skeleton(skin.joints.map(j=>nodes[j]),skin.joints.map((_,k)=>new Matrix4().fromArray(inverse,k*16))),new Matrix4());}});
   const animations = g.animations.map(a => new AnimationClip(a.name,-1,a.channels.map(ch=>{
     const s=a.samplers[ch.sampler], prop=ch.target.path==='rotation'?'quaternion':'position';
     const Track=prop==='quaternion'?QuaternionKeyframeTrack:VectorKeyframeTrack;
@@ -132,4 +146,32 @@ test("subframe poses are genuinely evaluated and every render clears old color/d
   z.attackCooldown=ZOMBIE_ATTACK.cooldown-ZOMBIE_ATTACK.windup;z.attackWindup=0;
   models.draw(ctx,z,.30,{x:100,y:100});assert.ok(Math.abs(entity.current.time-ZOMBIE_ATTACK.windup)<1e-7);
   models.beginFrame(3);models.endFrame();assert.equal(models.entities.size,0,'departed entities release independent skeleton state');
+});
+
+test("all ten corpse variants keep their real skinned mesh, physical size, heading and frozen grounded pose",async()=>{
+  const rigs=await Promise.all(metadata.variants.map((_,i)=>loadRig(i)));
+  const fake={domElement:{addEventListener(){}},setClearColor(){},setPixelRatio(){},setSize(){},clear(){},render(){}};
+  const models=new ZombieModels({createRenderer:()=>fake,loadAsset:async url=>rigs[metadata.variants.findIndex(m=>url.endsWith(m.file))]});
+  await models.ready;models.beginFrame(2);
+  const ctx={save(){},restore(){},drawImage(){}};
+  for(let variant=0;variant<10;variant++) {
+    const z=createZombie(10,20,variant,`zombie-${variant+1}`);
+    Object.assign(z,{facingX:Math.sin(variant),facingY:Math.cos(variant)});
+    const corpse={zombieAppearance:zombieCorpseAppearance(z)};
+    assert.equal(models.drawCorpse(ctx,corpse,{x:100,y:100}),true);
+    const entity=models.entities.get(corpse),bounds=new Box3().setFromObject(entity.root,true);
+    const body=zombieBodyProfile(z),size=bounds.getSize(new Vector3());
+    assert.equal(entity.root.scale.x,body.scale);
+    assert.equal(entity.root.rotation.y,zombieModelYaw(z));
+    assert.ok(Math.abs(bounds.min.y)<1e-6,`${variant}: corpse rests on the floor`);
+    assert.ok(Math.abs(bounds.min.x+bounds.max.x)<1e-6&&Math.abs(bounds.min.z+bounds.max.z)<1e-6,'body stays centred on its selectable world point');
+    assert.ok(size.y<.9&&Math.hypot(size.x,size.z)>body.height*.85,'a prone real body replaces the upright zombie');
+    let original,actual;rigs[variant].scene.traverse(o=>{if(o.isSkinnedMesh)original=o;});entity.model.traverse(o=>{if(o.isSkinnedMesh)actual=o;});
+    assert.equal(actual.geometry,original.geometry,'no replacement placeholder geometry');
+    assert.notEqual(actual.skeleton,original.skeleton,'each body has its own frozen skeleton');
+    const before=entity.root.toJSON();models.drawCorpse(ctx,corpse,{x:100,y:100});
+    assert.deepEqual(entity.root.toJSON(),before,'repeated frames never breathe, walk or attack');
+  }
+  models.endFrame();assert.equal(models.entities.size,10);
+  models.beginFrame(2);models.endFrame();assert.equal(models.entities.size,0);
 });
