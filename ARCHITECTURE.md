@@ -16,7 +16,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Deckungszone und Hide | `cover.js`, `cover-protection.js`, `stealth.js`, `cover-display.js`, `cover-surface.js` | Vegetation tarnt rundum, feste Deckung schützt pro Beobachter; gleiche Flächen/Kollision für Hide, Execution-Wege und interpolierte Bodenanzeigen; Darstellung in `render.js` |
 | Sicht, Verdacht, Verfolgung, Deckungssuche | `perception.js`, `cover-awareness.js`, `ai.js` | Basiswahrnehmung, Gedächtnis pro Zombie, Zustandswechsel; Sichtlinie in `world.js` |
 | Ruhephasen und Schlurfen | `zombie-idle.js` | Nur `idle`: Pausen, kurze erreichbare Wege und träge Drehung; `ai.js` behält Wahrnehmung und aktive Zustände |
-| Zombie-Modelle und Animationen | `zombie-animation.js`, `zombie-sprites.js`, `docs/assets/zombies/` | Zehn Polyart-Varianten, Zustands-/Angriffszuordnung, streckenabhängige Gangphase und acht Blickrichtungen; bedarfsgeladene Atlanten mit begrenztem Bildcache; `render.js` behält Tiefe, Schatten, Auswahl und Status. Offline-Aufbereitung: `scripts/prepare-zombies.py` |
+| Zombie-Modelle und Animationen | `zombie-animation.js`, `zombie-sprites.js`, `docs/assets/zombies/` | Zehn Polyart-Varianten, ruhige spielzeitbasierte Gehzyklen auch in Verfolgung, Angriff zur bestehenden Trefferzeit, acht zur Weltprojektion zugeordnete Ansichten; Metadaten im Bundle, inhaltlich benannte Bilddateien und begrenzter Bildcache. `render.js` behält Tiefe, Schatten, Auswahl und Status. Offline-Aufbereitung und anatomische Geh-Ausrichtung: `scripts/prepare-zombies.py` |
 | Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Ansatz prüft Ziel vor Bewegung in `movement.js`, verdeckte Wege und Zielumfahrung über `player-navigation.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
 | Wunden, Behandlung, Bedürfnisse, Fähigkeiten | `character.js`, `item-actions.js` | Bedürfnisablauf in `game.js`; Status-/Medizinanzeige in `ui.js` |
 | Gegenstände, Ausrüstung, Munition, Waffenmods | `inventory.js`, `data.js`, `item-actions.js` | Rucksack-/Waffenmenüs in `ui.js` |
@@ -71,9 +71,11 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
 - `vision-cone.test.mjs`: genaue Schatten an Wänden und Fahrzeugen, Türöffnungen,
   kleine Bewegungen/Drehungen, Geometrie-Cache bei Weltwechseln, weiche Grenzen und
   bestehender Erkennungsfarbverlauf ohne Änderungen an Wahrnehmungsdaten.
-- `zombie-animation.test.mjs`: zehn Varianten in alten/neuen Welten, alle zehn
-  Quellaktionen, Zustandszuordnung, bestehender Trefferzeitpunkt, Schrittphase
-  bei 30/60 FPS, Pause, Blickrichtungen, vollständige Bildraster und Bildcache.
+- `zombie-animation.test.mjs`: zehn Varianten in alten/neuen Welten, reine
+  Gehzuordnung, ruhige Kadenz bei 30/60 FPS unabhängig vom Bewegungstempo,
+  Pause, ruhiger Angriff zur bestehenden Trefferzeit, tatsächliche Sprite-
+  Projektion in allen Oktanten, Bildraster/-Hashes und Bildcache mit Drehung
+  während des Nachladens.
 - `directional-cover.test.mjs`: Schutz pro Beobachter, Vegetationsvorrang, glatte
   Zonenkanten/Wandkollision, Türöffnungen, sichere Execution-Wege und bestehende Geräuschregeln.
 - `.github/workflows/verify.yml`: alle Tests, JavaScript-Syntax und erforderliche
