@@ -3,6 +3,7 @@ import { beginCoverSearch, coverAwareExposure, updateCoverSearch } from "./cover
 import { VIEW } from "./config.js";
 import { clamp, distance, uid } from "./util.js";
 import { updateIdleZombie, ZOMBIE_IDLE } from "./zombie-idle.js";
+import { LOCOMOTION, speedInTiles } from "./locomotion.js";
 
 const INITIAL_POSITIONS = [
   [14, 18], [9, 21], [24, 20], [36, 20], [43, 18], [31, 10],
@@ -207,7 +208,7 @@ export class ZombieSystem {
     const ny = dy / length;
     zombie.desiredFacingX = nx;
     zombie.desiredFacingY = ny;
-    const speed = zombie.state === "chase" ? 2 : zombie.state === "investigate" ? 0.82 : zombie.state === "search" ? 0.58 : 0.36;
+    const speed = speedInTiles(LOCOMOTION.zombie[zombie.state] ?? LOCOMOTION.zombie.search);
     zombie.moving = game.moveEntity(zombie, nx * speed * delta, ny * speed * delta, 0.25);
     if (!zombie.moving) zombie.repathTimer = Math.min(zombie.repathTimer, 0.35);
   }

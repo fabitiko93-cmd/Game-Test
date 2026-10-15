@@ -1,3 +1,20 @@
+# Echtzeit-3D und maßstäbliche Bewegung · 15.10.2026
+
+- Zehn Polyart-Zombies als echte texturierte Skelettmodelle, Originalgeometrie und
+  fortlaufend interpolierte Animationsschlüssel. Weiche Pose-Übergänge zwischen
+  Ruhe, Gehen und Angriff; Running-Take bleibt ungenutzt.
+- Anatomische Ausrichtung und 30°-Kamera entsprechen der bestehenden 2:1-Welt.
+  Gleiche Sortierung/Verdeckung durch Wände, Vegetation, Dächer und Kameranebel.
+- Gehen koppelt die tatsächliche Wegstrecke an den gemessenen Fußweg des jeweiligen
+  Modells. Individuelle weibliche/männliche Größen bleiben über alle Posen stabil.
+- Geschwindigkeiten in m/s: Player 0,78 schleichen / 1,35 gehen / 3,20 sprinten;
+  Zombies 0,32 ambient / 0,70 suchen / 1,00 untersuchen / 1,44 verfolgen.
+  Geräusch-, Ausdauer-, Schadens- und Save-v4-Verträge bleiben erhalten.
+- Native Darstellung bis DPR 3, Zombie-Bewegung bis 60 Hz; frische WebGL-Puffer
+  ohne Motion Blur oder Frame-Überblendung. Sprite-Ersatz bei fehlendem WebGL.
+- Fest gepinnte Three.js-Abhängigkeit wird einschließlich Modellassets offline
+  mit ausgeliefert. Asset-, Kamera-, Zeit-/Weg- und Integrationsprüfungen erweitert.
+
 # Gemeinsamer Größenmaßstab · 15.10.2026
 
 - Player-Platzhalter auf 1,80 m und schmalere Körperproportionen kalibriert;

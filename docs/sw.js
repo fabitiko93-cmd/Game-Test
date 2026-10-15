@@ -1,5 +1,5 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "a7e3a39d44562c437fe3";
+const BUILD_ID = "26c1b421350edafb922f";
 const FILES = [
   "./assets/icon.svg",
   "./assets/reference-scale.json",
@@ -69,7 +69,20 @@ const FILES = [
   "./assets/zombies/9-walk-7fc76aa3ac.png",
   "./assets/zombies/README.md",
   "./assets/zombies/atlas.json",
-  "./build/main-MH3HCIBP.js",
+  "./assets/zombies3d/0-b158a3405843.glb.gz",
+  "./assets/zombies3d/1-ce2c8af9b00e.glb.gz",
+  "./assets/zombies3d/2-9846cce658dd.glb.gz",
+  "./assets/zombies3d/3-f1388b86c014.glb.gz",
+  "./assets/zombies3d/4-60fbfb8161b5.glb.gz",
+  "./assets/zombies3d/5-f85a870d3c92.glb.gz",
+  "./assets/zombies3d/6-050a62669016.glb.gz",
+  "./assets/zombies3d/7-f328f1706032.glb.gz",
+  "./assets/zombies3d/8-d67b22687f25.glb.gz",
+  "./assets/zombies3d/9-16ba30b95daf.glb.gz",
+  "./assets/zombies3d/README.md",
+  "./assets/zombies3d/THREE-LICENSE.txt",
+  "./assets/zombies3d/models.json",
+  "./build/main-O42ABP3S.js",
   "./build/style-KUDVED4H.css",
   "./index.html",
   "./manifest.webmanifest"

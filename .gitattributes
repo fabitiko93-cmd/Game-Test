@@ -1,0 +1,3 @@
+# Bundled vendor shaders retain their authored string whitespace.
+docs/build/** linguist-generated -whitespace
+docs/assets/zombies3d/*.glb.gz binary
