@@ -10,6 +10,7 @@ import { CombatSystem } from "./combat.js";
 import { GAME } from "./config.js";
 import { PlayerVisibility, playerCanSee } from "./player-visibility.js";
 import { zombieCorpseAppearance } from "./zombie-appearance.js";
+import { playerModelAppearance } from "./quaternius-catalog.js";
 
 import { activeWeapon, ammoLabel, itemDefinition, removeItem, roundsInWeapon } from "./inventory.js";
 import { Navigator } from "./navigation.js";
@@ -596,6 +597,8 @@ export class Game {
     this.world.addCorpse(this.player.x, this.player.y, `${this.player.name.toUpperCase()} · LEICHNAM`, belongings, {
       survivorId: this.player.id,
       deathCause: cause,
+      playerAppearance: playerModelAppearance(this.player),
+      facingYaw: Math.atan2(this.player.facingX,this.player.facingY),
     });
     this.player.inventory = [];
     this.player.equipment = { mainHand: null, offHand: null, head: null, torso: null, legs: null, back: null };

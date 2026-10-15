@@ -12,6 +12,9 @@ import { ZombieModels } from "./zombie-models.js";
 import { WORLD_SCALE, metersToTiles, heightPixels, pixelsPerMeter, playerDisplayScale } from "./world-scale.js";
 import { BUILDING_SCALE, buildingBounds, doorGeometry } from "./building-geometry.js";
 import { zombieBodyProfile } from "./zombie-appearance.js";
+import { QuaterniusAssets } from "./quaternius-assets.js";
+import { PlayerModels } from "./player-models.js";
+import { WorldModels } from "./world-models.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -36,6 +39,9 @@ export class Renderer {
     this.visionCones = new VisionConeDisplay();
     this.zombieSprites = new ZombieSprites();
     this.zombieModels = new ZombieModels();
+    this.modelLibrary = new QuaterniusAssets();
+    this.playerModels = new PlayerModels(this.zombieModels.pass,this.modelLibrary);
+    this.worldModels = new WorldModels(this.zombieModels.pass,this.modelLibrary);
     this.statusPaths = new Map(Object.entries(STATUS_ICONS).map(([id, icon]) => [id, new Path2D(icon.path)]));
     this.coverHintCache = { key: "", map: null, paths: null };
     this.diagnostics = false;
@@ -200,6 +206,7 @@ export class Renderer {
 
     this.zombieSprites.beginFrame();
     this.zombieModels?.beginFrame(this.scale);
+    this.playerModels?.beginFrame();
     if (this.canvas?.dataset) this.canvas.dataset.zombieRenderer = this.zombieModels?.status || "sprites";
 
     for (const drawable of drawables) {
@@ -209,6 +216,7 @@ export class Renderer {
     }
     this.zombieSprites.endFrame();
     this.zombieModels?.endFrame();
+    this.playerModels?.endFrame();
 
     this.drawRoofs(game);
     this.drawParticles();
@@ -391,7 +399,7 @@ export class Renderer {
       && ["south", "east"].includes(o.side) && game.world.insideBuilding(game.player, o.building);
     // Tall front walls must not hide the room's occupants and usable furniture.
     if (cutaway) { this.ctx.save(); this.ctx.globalAlpha *= .24; }
-    switch (o.type) {
+    if (!this.worldModels?.draw(this.ctx,o,this.iso(o.x,o.y))) switch (o.type) {
       case "wall": this.drawBlock(o.x, o.y, o.footprint ? o.footprint.x * 2 : .96,
         o.footprint ? o.footprint.y * 2 : .96, o.heightMeters ? heightPixels(o.heightMeters) : 42,
         o.color || "#70695c", 0, !o.footprint); break;
@@ -454,7 +462,9 @@ export class Renderer {
       y += horizontal ? inward*width/2 : -width/2;
       alongX = !horizontal;
     }
-    this.drawBlock(x, y, alongX ? width : depth, alongX ? depth : width, height, "#694b35");
+    const yaw=o.closed?(horizontal?0:-Math.PI/2):horizontal?(o.side==="south"?Math.PI/2:-Math.PI/2):(o.side==="east"?Math.PI:0);
+    if(!this.worldModels?.drawDoor(this.ctx,o,this.iso(x,y),yaw))
+      this.drawBlock(x, y, alongX ? width : depth, alongX ? depth : width, height, "#694b35");
     const p = this.iso(x + (alongX ? width*.3 : 0), y + (alongX ? 0 : width*.3), height * .55);
     this.ctx.fillStyle = o.locked ? "#b44a3d" : "#c3a55b"; this.ctx.fillRect(p.x, p.y, 2, 2);
     if (o.locked) {
@@ -506,6 +516,7 @@ export class Renderer {
 
   drawCorpse(o) {
     const p=this.iso(o.x,o.y),ctx=this.ctx;this.shadow(p,20,7,.3);
+    if(o.playerAppearance&&this.playerModels?.drawCorpse(ctx,o,p))return;
     if (o.zombieAppearance) {
       // Infected corpses stay in the same model family as their living bodies.
       if (!this.zombieModels?.drawCorpse(ctx, o, p)) this.zombieSprites.drawCorpse(ctx, o, p);
@@ -600,6 +611,7 @@ export class Renderer {
   }
 
   drawPlayer(player, game) {
+    if(player.dead&&player.appearance)return;
     const ctx = this.ctx;
     const p = this.withImpact(this.iso(player.x, player.y), player, .11);
     const crouched = player.stance === "sneak";
@@ -609,6 +621,7 @@ export class Renderer {
     const bob = player.moving ? Math.sin(game.elapsed * (player.running ? 10 : crouched ? 5 : 6)) * (crouched ? .5 : .8) : 0;
     const bodyScale = playerDisplayScale();
     this.shadow(p, (crouched ? 15 : 13) * bodyScale.x, (crouched ? 6 : 5) * bodyScale.x, .38);
+    if(this.playerModels?.draw(ctx,player,game.elapsed,p))return;
     ctx.save();
     ctx.translate(Math.round(p.x), Math.round(p.y + bob + bodyOffset));
     ctx.scale(bodyScale.x, bodyScale.y);

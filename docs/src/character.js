@@ -1,6 +1,7 @@
 import { BACKGROUNDS, ITEMS, SKILLS } from "./data.js";
 import { addItem, damageProtection, equipItem, equipmentProtection, createItem } from "./inventory.js";
 import { clamp, uid } from "./util.js";
+import { createPlayerAppearance } from "./quaternius-catalog.js";
 
 const RANKS = [
   [90, "MEISTERHAFT"],
@@ -16,13 +17,14 @@ export function cleanCharacterName(value) {
   return name || "Alex";
 }
 
-export function createPlayer({ name, background = "citizen", survivorNumber = 1 } = {}) {
+export function createPlayer({ name, background = "citizen", survivorNumber = 1, appearance } = {}) {
   const origin = BACKGROUNDS[background] || BACKGROUNDS.citizen;
   const player = {
     id: uid("survivor"),
     name: cleanCharacterName(name),
     background,
     survivorNumber,
+    appearance: createPlayerAppearance(appearance),
     x: 8,
     y: 36,
     facingX: 0,

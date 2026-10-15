@@ -1,3 +1,19 @@
+# Modulare Player und Quaternius-Einrichtung · 16.10.2026
+
+- Beide kostenlosen modularen Figurenpacks integriert: 21 Figuren mit je 24
+  Originalanimationen. Körper und Grundstil bei der Charaktererstellung wählbar;
+  Kopf, Oberkörper, Beine und Füße bleiben separat austauschbar. Arbeits-/Lederjacke
+  und Jeans wechseln passende sichtbare Teile. Ausrüstung folgt dem Skelett.
+- Spielerhöhe 1,80 m männlich / 1,68 m weiblich; Geh-/Laufphase aus tatsächlicher
+  Strecke, weiche Übergänge und geduckte Pose mit festem Fußkontakt. Getötete
+  Spieler behalten ihre Kleidung in der Original-Todespose.
+- Alle 123 House-Interior-Modelle aufgenommen; bestehende Betten, Regale,
+  Schränke, Tische, Tresen, Kühlschränke und Türblätter durch echte Modelle ersetzt.
+  Türblatt 86 × 198,5 × 4 cm, Kühlschrank 60 × 66,5 × 186 cm; Möbelmaße gelten
+  gemeinsam für Darstellung, Kollision und Wege. Gebäude behalten ihren Maßstab.
+- Gemeinsamer WebGL-Kontext, statische Möbelbilder in Geräteauflösung und echte
+  animierte Canvas-Geometrie als Ersatz für die neuen Modelle ohne WebGL.
+
 # Großzügigere Gebäude und passende Zombie-Leichen · 15.10.2026
 
 - Alle vier Gebäude um zwei Meter je Grundrissachse erweitert: Unterschlupf

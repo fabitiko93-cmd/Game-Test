@@ -15,6 +15,7 @@ import {
 } from "./inventory.js";
 import { backgroundName, skillRank, visibleInfectionState, woundBleeding, woundDisplay, woundTreatmentOptions } from "./character.js";
 import { TargetLayout } from "./target-layout.js";
+import { CHARACTER_STYLES, defaultStyle } from "./quaternius-catalog.js";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -28,6 +29,7 @@ export class GameUI {
     const ids = [
       "loading", "start-button", "hud", "character-creator", "creator-kicker", "creator-number",
       "character-name", "background-options", "background-description", "character-confirm",
+      "appearance-sex", "appearance-style",
       "hp-fill", "stamina-fill", "openfield-button", "openfield-label", "status-legend",
       "hunger-need", "thirst-need", "wound-need",
       "hunger-state", "thirst-state", "wound-state", "awareness-fill", "noise-fill",
@@ -59,6 +61,7 @@ export class GameUI {
     this.toastTimer = 0;
     this.bind();
     this.renderBackgroundOptions();
+    this.renderAppearanceOptions();
   }
 
   bind() {
@@ -66,7 +69,9 @@ export class GameUI {
     this.el.character_confirm.addEventListener("click", () => this.callbacks.createCharacter?.({
       name: this.el.character_name.value,
       background: this.selectedBackground,
+      appearance: {sex:this.el.appearance_sex.value,style:this.el.appearance_style.value},
     }));
+    this.el.appearance_sex.addEventListener("change",()=>this.renderAppearanceOptions());
     document.querySelectorAll("[data-close]").forEach(button => {
       button.addEventListener("click", () => this.closePanel(button.dataset.close));
     });
@@ -105,6 +110,16 @@ export class GameUI {
     }
     const selected = BACKGROUNDS[this.selectedBackground];
     this.el.background_description.textContent = selected.short;
+  }
+
+  renderAppearanceOptions() {
+    const sex=this.el.appearance_sex.value;
+    this.el.appearance_style.replaceChildren();
+    for(const [id,label] of Object.entries(CHARACTER_STYLES[sex])) {
+      const option=document.createElement("option");option.value=id;option.textContent=label;
+      this.el.appearance_style.append(option);
+    }
+    this.el.appearance_style.value=defaultStyle(sex);
   }
 
   setHasSave(hasSave) {

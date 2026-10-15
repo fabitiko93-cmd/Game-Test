@@ -1,49 +1,22 @@
-import { AnimationMixer, Box3, DirectionalLight, Group, HemisphereLight, LoopOnce,
-  NoToneMapping, OrthographicCamera, Scene, SRGBColorSpace, WebGLRenderer } from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { AnimationMixer, Box3, Group, LoopOnce } from "three";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
-import { gunzipSync } from "three/addons/libs/fflate.module.js";
+import { ModelPass, loadModelAsset } from "./model-pass.js";
 import MODELS from "../assets/zombies3d/models.json" with { type: "json" };
 import { ZombieMotion, zombieModelYaw } from "./zombie-motion.js";
 import { zombieBodyProfile } from "./zombie-appearance.js";
-import { heightPixels, pixelsPerMeter } from "./world-scale.js";
 
 const ASSETS = new URL("../assets/zombies3d/", import.meta.url);
-const VIEW_METERS = 3.2, CENTER_HEIGHT = .95;
-
-async function loadZombieAsset(url) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
-  const compressed = new Uint8Array(await response.arrayBuffer());
-  // Hosts may additionally advertise Content-Encoding and let fetch unpack it.
-  const bytes = compressed[0] === 31 && compressed[1] === 139 ? gunzipSync(compressed) : compressed;
-  return new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset+bytes.byteLength), ASSETS.href);
-}
 
 // Each live skeletal pose is rendered at native display resolution, then
 // composited at its ordinary sorted depth. Walls, trees, roofs and night fog
 // therefore cover a 3D person exactly as they cover other world drawables.
 // This is a fresh WebGL render EVERY frame, not a sprite or a frame cache.
 export class ZombieModels {
-  constructor({ createRenderer = options => new WebGLRenderer(options), loadAsset = loadZombieAsset } = {}) {
+  constructor({ createRenderer, loadAsset = loadModelAsset } = {}) {
     this.motion = new ZombieMotion(MODELS);
     this.assets = new Map(); this.entities = new Map(); this.used = new Set();
-    this.status = "loading"; this.pixelRatio = 0;
-    try {
-      this.renderer = createRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
-      this.renderer.setClearColor(0x000000, 0);
-      this.renderer.outputColorSpace = SRGBColorSpace;
-      this.renderer.toneMapping = NoToneMapping;
-      this.scene = new Scene();
-      this.camera = new OrthographicCamera(-VIEW_METERS/2, VIEW_METERS/2, VIEW_METERS/2, -VIEW_METERS/2, .1, 30);
-      this.camera.position.set(Math.sqrt(.375)*10, CENTER_HEIGHT+5, Math.sqrt(.375)*10);
-      this.camera.lookAt(0, CENTER_HEIGHT, 0);
-      this.scene.add(new HemisphereLight(0xe7eadb, 0x454537, 2));
-      const sunlight = new DirectionalLight(0xffedcf, 2.1); sunlight.position.set(-3, 7, 4); this.scene.add(sunlight);
-      this.renderer.domElement.addEventListener("webglcontextlost", event => {
-        event.preventDefault(); this.status = "context-lost";
-      });
-      this.renderer.domElement.addEventListener("webglcontextrestored", () => { this.status = "ready"; });
+    this.status = "loading"; this.pass = new ModelPass({ createRenderer });
+    if (this.pass.renderer) {
       // Shared immutable geometry/textures, independent skeleton per entity.
       this.ready = Promise.all(MODELS.variants.map(async (model, variant) => {
         try {
@@ -53,25 +26,25 @@ export class ZombieModels {
         } catch (error) {
           console.warn(`Zombie-Modell ${variant} konnte nicht geladen werden.`, error);
         }
-      })).then(() => { if (this.status === "loading") this.status = this.assets.size === 10 ? "ready" : "partial"; });
-    } catch (error) {
+      })).then(() => { this.assetStatus = this.assets.size === 10 ? "ready" : "partial"; });
+    } else {
       this.status = "unavailable"; this.ready = Promise.resolve();
-      console.warn("3D-Darstellung nicht verfügbar; Sprite-Ersatz aktiv.", error);
+      console.warn("3D-Darstellung nicht verfügbar; Sprite-Ersatz aktiv.");
     }
   }
 
   beginFrame(pixelRatio) {
     this.used.clear();
-    if (!this.renderer || this.pixelRatio === pixelRatio) return;
-    this.pixelRatio = pixelRatio;
-    this.size = Math.ceil(VIEW_METERS*pixelsPerMeter*pixelRatio)/pixelRatio;
-    this.renderer.setPixelRatio(pixelRatio);
-    this.renderer.setSize(this.size, this.size, false);
-    this.anchor = { x: this.size/2, y: this.size/2+heightPixels(CENTER_HEIGHT) };
-    const extent = this.size/pixelsPerMeter/2;
-    Object.assign(this.camera, { left: -extent, right: extent, top: extent, bottom: -extent });
-    this.camera.updateProjectionMatrix();
+    this.pass.beginFrame(pixelRatio);
   }
+
+  get renderer() { return this.pass.renderer; }
+  get status() { return this.pass && this.pass.status !== "ready" ? this.pass.status : this.assetStatus; }
+  set status(value) { this.assetStatus = value; }
+  get scene() { return this.pass.scene; }
+  get camera() { return this.pass.camera; }
+  get size() { return this.pass.size; }
+  get pixelRatio() { return this.pass.pixelRatio; }
 
   entity(zombie, pose, asset) {
     let entity = this.entities.get(zombie);
@@ -133,18 +106,7 @@ export class ZombieModels {
   }
 
   composite(ctx, root, point, hurt = false) {
-    this.scene.add(root);
-    // Clear both color and depth; no temporal blending / motion blur.
-    this.renderer.clear(true, true, true);
-    this.renderer.render(this.scene, this.camera);
-    ctx.save();
-    if (hurt) ctx.globalAlpha *= .55;
-    ctx.imageSmoothingEnabled = false;
-    const x = Math.round((point.x-this.anchor.x)*this.pixelRatio)/this.pixelRatio;
-    const y = Math.round((point.y-this.anchor.y)*this.pixelRatio)/this.pixelRatio;
-    ctx.drawImage(this.renderer.domElement, x, y, this.size, this.size);
-    ctx.restore();
-    this.scene.remove(root);
+    this.pass.draw(ctx, root, point, { hurt });
   }
 
   endFrame() {
