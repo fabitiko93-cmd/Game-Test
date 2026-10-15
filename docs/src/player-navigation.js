@@ -1,7 +1,8 @@
 import { MinHeap } from "./navigation.js";
 import { canInteract } from "./interaction.js";
+import { PLAYER_BODY_RADIUS } from "./world-scale.js";
 
-export const PLAYER_PATH_RULES = Object.freeze({ step: .25, radius: .27, coverDetour: 1.25, coverAllowance: .5 });
+export const PLAYER_PATH_RULES = Object.freeze({ step: .25, radius: PLAYER_BODY_RADIUS, coverDetour: 1.25, coverAllowance: .5 });
 const directions = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 const caches = new WeakMap();
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);

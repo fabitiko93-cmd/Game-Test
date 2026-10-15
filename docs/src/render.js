@@ -10,6 +10,7 @@ import { VisionConeDisplay } from "./vision-display.js";
 import { ZombieSprites } from "./zombie-sprites.js";
 import { ZombieModels } from "./zombie-models.js";
 import { WORLD_SCALE, metersToTiles, heightPixels, pixelsPerMeter, playerDisplayScale } from "./world-scale.js";
+import { BUILDING_SCALE, buildingBounds, doorGeometry } from "./building-geometry.js";
 import { zombieBodyProfile } from "./zombie-appearance.js";
 
 export class Renderer {
@@ -303,7 +304,9 @@ export class Renderer {
           this.diamond(p.x, p.y, VIEW.tileW + .8, VIEW.tileH + .8, "#0a100d");
           continue;
         }
-        const type = world.tiles[y][x];
+        let type = world.tiles[y][x];
+        // Interior finishes have their own fine plane, clipped to the walls.
+        if (["floor", "pharmacyFloor", "policeFloor", "clubFloor"].includes(type)) type = world.baseTile(x, y);
         const palette = COLORS[type] || COLORS.grass;
         const variant = Math.floor(hash2(x, y, world.seed) * palette.length) % palette.length;
         let color = palette[variant];
@@ -318,6 +321,31 @@ export class Renderer {
       }
     }
     this.metrics.visibleTiles = visibleTiles;
+    this.drawBuildingFloors(world);
+  }
+
+  drawBuildingFloors(world) {
+    const ctx = this.ctx, inset = metersToTiles(BUILDING_SCALE.wallThickness / 2);
+    const step = metersToTiles(BUILDING_SCALE.floorGrid);
+    for (const building of world.buildings || []) {
+      const minX = building.x + inset, minY = building.y + inset;
+      const maxX = building.x + building.w - 1 - inset, maxY = building.y + building.h - 1 - inset;
+      const center = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+      if (this.playerVisibility && !this.playerVisibility.canSee(center, this.viewPlayer)
+        && !this.playerVisibility.hasExplored(center)) continue;
+      const corners = [[minX,minY], [maxX,minY], [maxX,maxY], [minX,maxY]].map(([x,y]) => this.iso(x,y));
+      ctx.save(); ctx.beginPath(); ctx.moveTo(corners[0].x, corners[0].y);
+      for (const corner of corners.slice(1)) ctx.lineTo(corner.x, corner.y);
+      ctx.closePath(); ctx.fillStyle = COLORS[building.floor][1]; ctx.fill(); ctx.clip();
+      ctx.strokeStyle = "rgba(24,28,24,.13)"; ctx.lineWidth = .6; ctx.beginPath();
+      for (let x = Math.ceil(minX/step)*step; x < maxX; x += step) {
+        const a = this.iso(x,minY), b = this.iso(x,maxY); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+      }
+      for (let y = Math.ceil(minY/step)*step; y < maxY; y += step) {
+        const a = this.iso(minX,y), b = this.iso(maxX,y); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+      }
+      ctx.stroke(); ctx.restore();
+    }
   }
 
   diamond(x, y, w, h, fill, stroke = null) {
@@ -359,8 +387,14 @@ export class Renderer {
     const visible = playerCanSee(game, o);
     const selected = visible && this.selectedId === o.id;
     if (selected) this.drawSelection(o.x, o.y, o.solid ? .58 : .42);
+    const cutaway = o.footprint && ["wall", "door"].includes(o.type)
+      && ["south", "east"].includes(o.side) && game.world.insideBuilding(game.player, o.building);
+    // Tall front walls must not hide the room's occupants and usable furniture.
+    if (cutaway) { this.ctx.save(); this.ctx.globalAlpha *= .24; }
     switch (o.type) {
-      case "wall": this.drawBlock(o.x, o.y, .96, .96, 42, o.color || "#70695c"); break;
+      case "wall": this.drawBlock(o.x, o.y, o.footprint ? o.footprint.x * 2 : .96,
+        o.footprint ? o.footprint.y * 2 : .96, o.heightMeters ? heightPixels(o.heightMeters) : 42,
+        o.color || "#70695c", 0, !o.footprint); break;
       case "door": this.drawDoor(o); break;
       case "tree": this.drawTree(o); break;
       case "bush": this.drawBush(o); break;
@@ -385,6 +419,7 @@ export class Renderer {
       case "sign": this.drawSign(o); break;
       default: break;
     }
+    if (cutaway) this.ctx.restore();
     if (o.interactable && visible) {
       const hitZ = o.type === "corpse" || o.type === "groundloot" ? 7 : o.type === "radio" ? 12 : 19;
       const p = this.iso(o.x, o.y, hitZ);
@@ -394,31 +429,34 @@ export class Renderer {
     }
   }
 
-  drawBlock(x, y, w, d, height, color) {
+  drawBlock(x, y, w, d, height, color, base = 0, outline = true) {
     const ctx = this.ctx;
-    const a = this.iso(x - w/2, y - d/2), b = this.iso(x + w/2, y - d/2), c = this.iso(x + w/2, y + d/2), dP = this.iso(x - w/2, y + d/2);
-    const at = this.iso(x - w/2, y - d/2, height), bt = this.iso(x + w/2, y - d/2, height), ct = this.iso(x + w/2, y + d/2, height), dt = this.iso(x - w/2, y + d/2, height);
+    const a = this.iso(x - w/2, y - d/2, base), b = this.iso(x + w/2, y - d/2, base), c = this.iso(x + w/2, y + d/2, base), dP = this.iso(x - w/2, y + d/2, base);
+    const at = this.iso(x - w/2, y - d/2, base+height), bt = this.iso(x + w/2, y - d/2, base+height), ct = this.iso(x + w/2, y + d/2, base+height), dt = this.iso(x - w/2, y + d/2, base+height);
     ctx.fillStyle = this.shiftColor(color, -20); ctx.beginPath(); ctx.moveTo(dP.x,dP.y); ctx.lineTo(c.x,c.y); ctx.lineTo(ct.x,ct.y); ctx.lineTo(dt.x,dt.y); ctx.closePath(); ctx.fill();
     ctx.fillStyle = this.shiftColor(color, -8); ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(c.x,c.y); ctx.lineTo(ct.x,ct.y); ctx.lineTo(bt.x,bt.y); ctx.closePath(); ctx.fill();
     ctx.fillStyle = this.shiftColor(color, 12); ctx.beginPath(); ctx.moveTo(at.x,at.y); ctx.lineTo(bt.x,bt.y); ctx.lineTo(ct.x,ct.y); ctx.lineTo(dt.x,dt.y); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = "rgba(14,17,14,.28)"; ctx.lineWidth = 1; ctx.stroke();
+    if (outline) { ctx.strokeStyle = "rgba(14,17,14,.28)"; ctx.lineWidth = 1; ctx.stroke(); }
   }
 
   drawDoor(o) {
-    const width = metersToTiles(WORLD_SCALE.door.width);
-    const depth = metersToTiles(WORLD_SCALE.door.depth);
+    const geometry = doorGeometry(o), { width, depth, horizontal, opening, wallDepth, headHeight } = geometry;
     const height = heightPixels(WORLD_SCALE.door.height);
+    // The wall continues above the opening. Side jambs are physical wall parts.
+    this.drawBlock(o.x, o.y, horizontal ? opening : wallDepth, horizontal ? wallDepth : opening,
+      heightPixels(BUILDING_SCALE.wallHeight - headHeight), o.wallColor || "#70695c", heightPixels(headHeight), false);
+    this.drawBlock(o.x, o.y, horizontal ? opening : wallDepth, horizontal ? wallDepth : opening,
+      heightPixels(BUILDING_SCALE.frameWidth), "#514938", height, false);
+    let x = o.x, y = o.y, alongX = horizontal;
     if (!o.closed) {
-      const p = this.iso(o.x, o.y);
-      const tip = this.iso(o.x + (o.orientation === "x" ? 0 : width),
-        o.y + (o.orientation === "x" ? width : 0));
-      this.ctx.strokeStyle = "rgba(105,75,48,.9)"; this.ctx.lineWidth = 3;
-      this.ctx.beginPath(); this.ctx.moveTo(p.x, p.y); this.ctx.lineTo(tip.x, tip.y); this.ctx.stroke();
-      return;
+      const inward = o.side === "south" || o.side === "east" ? -1 : 1;
+      x += horizontal ? -width/2 : inward*width/2;
+      y += horizontal ? inward*width/2 : -width/2;
+      alongX = !horizontal;
     }
-    this.drawBlock(o.x, o.y, o.orientation === "x" ? width : depth,
-      o.orientation === "x" ? depth : width, height, "#694b35");
-    const p = this.iso(o.x, o.y, height * .55); this.ctx.fillStyle = o.locked ? "#b44a3d" : "#c3a55b"; this.ctx.fillRect(p.x + 3, p.y, 2, 2);
+    this.drawBlock(x, y, alongX ? width : depth, alongX ? depth : width, height, "#694b35");
+    const p = this.iso(x + (alongX ? width*.3 : 0), y + (alongX ? 0 : width*.3), height * .55);
+    this.ctx.fillStyle = o.locked ? "#b44a3d" : "#c3a55b"; this.ctx.fillRect(p.x, p.y, 2, 2);
     if (o.locked) {
       this.ctx.fillStyle = "#271713";
       this.ctx.fillRect(p.x + 3, p.y - 1, 5, 5);
@@ -832,7 +870,9 @@ export class Renderer {
       const center = { x: b.x + b.w / 2, y: b.y + b.h / 2 };
       if (game.playerVisibility && !playerCanSee(game, center) && !game.playerVisibility.hasExplored(center)) continue;
       const inside=game.world.insideBuilding(game.player,b.id);
-      const a=this.iso(b.x-.15,b.y-.15,48),c=this.iso(b.x+b.w-.85,b.y+b.h-.85,48),right=this.iso(b.x+b.w-.85,b.y-.15,48),left=this.iso(b.x-.15,b.y+b.h-.85,48);
+      const bounds = buildingBounds(b, metersToTiles(BUILDING_SCALE.roofOverhang));
+      const height = heightPixels(BUILDING_SCALE.wallHeight + BUILDING_SCALE.roofThickness);
+      const a=this.iso(bounds.minX,bounds.minY,height),c=this.iso(bounds.maxX,bounds.maxY,height),right=this.iso(bounds.maxX,bounds.minY,height),left=this.iso(bounds.minX,bounds.maxY,height);
       ctx.save();ctx.globalAlpha=inside?.id === b.id ? .07 : .94;
       ctx.fillStyle=b.roof;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(right.x,right.y);ctx.lineTo(c.x,c.y);ctx.lineTo(left.x,left.y);ctx.closePath();ctx.fill();
       ctx.strokeStyle="rgba(214,211,187,.22)";ctx.lineWidth=2;ctx.stroke();

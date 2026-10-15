@@ -5,6 +5,7 @@ import { clamp, distance } from "./util.js";
 import { findPlayerPath, pathToPlayerInteraction } from "./player-navigation.js";
 import { canInteract } from "./interaction.js";
 import { zombieStep } from "./zombie-collision.js";
+import { PLAYER_BODY_RADIUS } from "./world-scale.js";
 
 export function updateMovement(game, delta) {
   const player = game.player, navigation = player.navigation;
@@ -27,7 +28,7 @@ export function updateMovement(game, delta) {
     if (target && navigation.source === "combat" && distance(player, target) <= (stats?.range || .88) + .08) game.clearNavigation();
     while (navigation.path?.length && distance(player, navigation.path[0]) < .003) {
       const next = navigation.path.shift();
-      if (game.world.isWalkable(next.x, next.y, .27)) { player.x = next.x; player.y = next.y; }
+      if (game.world.isWalkable(next.x, next.y, PLAYER_BODY_RADIUS)) { player.x = next.x; player.y = next.y; }
       if (!navigation.path.length) game.arriveAtDestination();
     }
     waypoint = navigation.path?.[0];
@@ -61,7 +62,7 @@ export function updateMovement(game, delta) {
         if (length < .003) { navigation.path.shift(); if (!navigation.path.length) game.arriveAtDestination(); continue; }
         dx = tx / length; dy = ty / length;
         const travel = Math.min(budget, length), before = { x: player.x, y: player.y };
-        const moved = game.moveEntity(player, dx * travel, dy * travel, .27);
+        const moved = game.moveEntity(player, dx * travel, dy * travel, PLAYER_BODY_RADIUS);
         budget -= distance(before, player);
         if (distance(player, next) < .003) {
           navigation.path.shift();
@@ -74,7 +75,7 @@ export function updateMovement(game, delta) {
           break;
         }
       }
-    } else game.moveEntity(player, dx * budget, dy * budget, .27);
+    } else game.moveEntity(player, dx * budget, dy * budget, PLAYER_BODY_RADIUS);
   }
   const movedDistance = distance(previous, player);
   player.moving = movedDistance > .000001;

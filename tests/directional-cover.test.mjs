@@ -135,14 +135,14 @@ test("interpolated contours form smooth round tree rings and straight wall bands
   assert.ok(surface.contours.some(edge=>edge.some(value=>Math.abs(value-Math.round(value))>.01)));
   for(const edge of surface.contours) for(const [x,y] of [[edge[0],edge[1]],[edge[2],edge[3]]]) {
     const radius=Math.hypot(x*step-20,y*step-20);
-    assert.ok(Math.min(Math.abs(radius-.61),Math.abs(radius-(.34+COVER_RULES.margin)))<.008);
+    assert.ok(Math.min(Math.abs(radius-(.34+COVER_RULES.playerRadius)),Math.abs(radius-(.34+COVER_RULES.margin)))<.008);
   }
   const wallGame=fixture(); wall(wallGame);
   const id=wallGame.world.coverMap.at(wallGame.player).id;
   const band=buildCoverDisplay(wallGame.world,{x:12,y:9},id);
   const flat=band.contours.flatMap(edge=>[[edge[0]*step,edge[1]*step],[edge[2]*step,edge[3]*step]])
     .filter(([x,y])=>x>10&&x<14&&y>9&&y<10);
-  assert.ok(flat.length>10); assert.ok(flat.every(([,y])=>Math.abs(y-9.23)<1e-8));
+  assert.ok(flat.length>10); assert.ok(flat.every(([,y])=>Math.abs(y-(9.5-COVER_RULES.playerRadius))<1e-8));
   class Path { commands=[]; moveTo(...v){this.commands.push(["move",...v]);} lineTo(...v){this.commands.push(["line",...v]);} closePath(){this.commands.push(["close"]);} }
   const paths=coverDisplayPaths(surface,(x,y)=>({x,y}),Path);
   const areas=[];let loop=[];
