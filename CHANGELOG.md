@@ -1,3 +1,15 @@
+# Zombie-Körperkollisionen und unauffällige Zuwanderung · 15.10.2026
+
+- Zombies halten untereinander maßstäblichen Körperabstand, weichen seitlich aus
+  und stauen sich an Engstellen. Kontinuierliche Kontaktprüfung verhindert
+  Durchtunneln; alte Überlappungen werden langsam und ohne Wand-/Fahrzeugdurchtritt
+  aufgelöst. Die ursprüngliche Schritt-/Weg-Kopplung folgt der tatsächlichen Bewegung.
+- Zuwanderer entstehen nur außerhalb der 16-Tile-Spielersicht plus Sicherheitsrand
+  und nicht in bereits besetzten Körpern. Das bisher unbedingte Untersuchen eines
+  festen Kartenpunkts entfällt: ruhiges Einwandern, Alarm erst bei echtem Reiz.
+- Bestehende Deckungsmechaniken bleiben bis zur weiteren Erprobung erhalten;
+  Geräusch-, Ausdauer-, Kampf- und Speicherregeln werden nicht neu ausbalanciert.
+
 # Echtzeit-3D und maßstäbliche Bewegung · 15.10.2026
 
 - Echtzeit-3D ist beim normalen Spielstart aktiv; kein Vorschau-Link erforderlich.

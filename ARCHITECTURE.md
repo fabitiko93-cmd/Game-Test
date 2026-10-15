@@ -16,6 +16,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Deckungszone und Hide | `cover.js`, `cover-protection.js`, `stealth.js`, `cover-display.js`, `cover-surface.js` | Vegetation tarnt rundum, feste Deckung schützt pro Beobachter; gleiche Flächen/Kollision für Hide, Execution-Wege und interpolierte Bodenanzeigen; Darstellung in `render.js` |
 | Sicht, Verdacht, Verfolgung, Deckungssuche | `perception.js`, `cover-awareness.js`, `ai.js` | Basiswahrnehmung, Gedächtnis pro Zombie, Zustandswechsel; Sichtlinie in `world.js` |
 | Ruhephasen und Schlurfen | `zombie-idle.js` | Nur `idle`: Pausen, kurze erreichbare Wege und träge Drehung; `ai.js` behält Wahrnehmung und aktive Zustände |
+| Zombie-Körper und Zuwanderung | `zombie-collision.js`, `ai.js`, `movement.js` | Maßstäbliche Körperradien, kontinuierliche Kontaktprüfung, seitliches Ausweichen und begrenzte Trennung alter Überlappungen. Weltkollisionen bleiben maßgeblich. Zuwanderung außerhalb der Spielersicht mit Abstand; ruhiger Weg ins Gebiet ohne erfundenen Suchreiz. |
 | Zombie-Modelle und Animationen | `zombie-models.js`, `zombie-motion.js`, `docs/assets/zombies3d/` | Zehn echte skinned GLBs, Three.js als fest gepinnte gebündelte Abhängigkeit, interpolierte Original-Schlüssel und Pose-Blends pro Renderbild; Gehphase aus tatsächlicher Strecke und gemessenem Fußweg je Modell. Gemeinsame 2:1-Kamera und kontinuierliche Blickrichtung. Frischer WebGL-Pass pro Figur wird in die bestehende Tiefensortierung eingemischt; `render.js` behält Wände/Bäume/Dächer, Schatten und Status. Aufbereitung: `scripts/prepare-zombies-3d.py`. `zombie-animation.js`/`zombie-sprites.js` und bisherige Atlanten dienen als Ersatz bei fehlendem WebGL oder Ladefehlern. |
 | Größenmaßstab und Körperhöhen | `world-scale.js`, `zombie-appearance.js`, `locomotion.js`, `docs/assets/reference-scale.json` | Gemeinsamer Metermaßstab für Player, DIN-Türblatt, Kühlgerät und Zombie-Modelle. ID-stabile Körperhöhen ohne Save-Migration; Player 1,80 m, 1,68 m weiblicher Player vorgemerkt. `locomotion.js` hält Geschwindigkeiten in m/s und die Umrechnung in vorhandene Tiles. Vergleich/Quellen: `docs/assets/scale-reference/`; Generator `scripts/prepare-scale-reference.py`. |
 | Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Ansatz prüft Ziel vor Bewegung in `movement.js`, verdeckte Wege und Zielumfahrung über `player-navigation.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
@@ -82,6 +83,10 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
   bei 30/60/120 Hz, 32 kontinuierliche Richtungen zur echten Renderkamera,
   Zwischenposen innerhalb eines 60-Hz-Frames, Pause, Pose-Blends und frische
   Farb-/Tiefenpuffer ohne Motion Blur; unveränderte Geräusch-/Ausdauerwerte.
+- `zombie-collision.test.mjs`: Gegenverkehr, Türdurchgang und zwanzig gleichzeitig
+  verfolgende Zombies bei 30/60 Hz ohne Körperüberlappung, kein Durchtunneln,
+  sanfte Auflösung alter Stapel vor Wänden/Fahrzeugen, unsichtbare und ruhige
+  Zuwanderung mit echten Hörreizen sowie Routen und Populationsgrenze der echten Karte.
 - `directional-cover.test.mjs`: Schutz pro Beobachter, Vegetationsvorrang, glatte
   Zonenkanten/Wandkollision, Türöffnungen, sichere Execution-Wege und bestehende Geräuschregeln.
 - `.github/workflows/verify.yml`: alle Tests, JavaScript-Syntax und erforderliche
@@ -95,5 +100,6 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
   vor der Aktivierung auf das Ende alter Sitzungen. Alte Caches bleiben bis dahin
   verfügbar; ein anderer App-Cache wird nicht gelöscht. Online-Navigation bleibt
   aktuell, offline wird die vollständig installierte Spielseite verwendet.
-- Geräuschmechanik, Ausdauer und Save-v4 gelten als bestehende Verträge. Änderungen
-  daran benötigen einen passenden Nutzerauftrag.
+- Geräuschmechanik und Ausdauer bleiben ohne passenden Nutzerauftrag unverändert.
+  Spieltests beginnen mit neuen Spielständen; alte Spielstände benötigen keine
+  Übernahme oder Migration.

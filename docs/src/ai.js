@@ -4,6 +4,8 @@ import { VIEW } from "./config.js";
 import { clamp, distance, uid } from "./util.js";
 import { updateIdleZombie, ZOMBIE_IDLE } from "./zombie-idle.js";
 import { LOCOMOTION, speedInTiles } from "./locomotion.js";
+import { PLAYER_VIEW } from "./player-visibility.js";
+import { separateZombieBodies, zombieBodyRadius, zombieSpaceFree } from "./zombie-collision.js";
 
 const INITIAL_POSITIONS = [
   [14, 18], [9, 21], [24, 20], [36, 20], [43, 18], [31, 10],
@@ -83,6 +85,7 @@ export class ZombieSystem {
         nearbyUndetected = true;
       }
     }
+    separateZombieBodies(game, delta);
     return { nearbyUndetected };
   }
 
@@ -169,13 +172,23 @@ export class ZombieSystem {
   }
 
   updateMovement(zombie, game, delta) {
-    if (zombie.state === "idle") { updateIdleZombie(zombie, game, delta); return; }
+    if (zombie.state !== "idle" && zombie.migrationTarget) {
+      zombie.migrationTarget = null;
+      zombie.spawnX = zombie.x; zombie.spawnY = zombie.y;
+    }
+    if (zombie.state === "idle") {
+      if (zombie.migrationTarget && distance(zombie, zombie.migrationTarget) < .2) {
+        zombie.migrationTarget = null;
+        zombie.spawnX = zombie.x; zombie.spawnY = zombie.y;
+      }
+      if (!zombie.migrationTarget) { updateIdleZombie(zombie, game, delta); return; }
+    }
     zombie.idleBehavior = null;
     if (zombie.state === "suspicious") {
       zombie.moving = false;
       return;
     }
-    const target = zombie.target;
+    const target = zombie.state === "idle" ? zombie.migrationTarget : zombie.target;
     if (!target) {
       zombie.moving = false;
       return;
@@ -265,11 +278,26 @@ export class ZombieSystem {
       if (edge === "south") y = VIEW.worldH - 2;
       if (edge === "west") x = 1;
       if (edge === "east") x = VIEW.worldW - 2;
-      if (!game.world.isPathCellWalkable(x, y, { allowDoors: false })) continue;
+      // Tactical visibility is independent of obstacles and camera panning.
+      // Keep an additional body-sized margin outside its visible boundary.
+      if (distance({ x, y }, game.player) <= PLAYER_VIEW.radius + 2
+        || !game.world.isPathCellWalkable(x, y, { allowDoors: false })
+        || !game.world.isWalkable(x, y, .25)) continue;
       const zombie = createZombie(x, y, game.zombies.length + 1);
-      zombie.state = "investigate";
-      zombie.target = { x: 31, y: 20 };
-      zombie.stateTimer = 12;
+      if (!zombieSpaceFree(game, zombie, zombieBodyRadius(zombie))) continue;
+      const inward = { north: [0, 1], east: [-1, 0], south: [0, -1], west: [1, 0] }[edge];
+      const travel = 8 + game.random()*8, drift = (game.random()-.5)*4;
+      const goal = { x: clamp(x+inward[0]*travel-inward[1]*drift, 4, VIEW.worldW-5),
+        y: clamp(y+inward[1]*travel+inward[0]*drift, 4, VIEW.worldH-5) };
+      const path = this.navigator.findPath(game.world, zombie, goal, { allowDoors: false, maxNodes: 1500 });
+      if (!path.length || distance(zombie, path.at(-1)) < 3) continue;
+      // A migrant has no knowledge of the player and no invented stimulus.
+      // It ambles inward until real sight/sound interrupts, then rests locally.
+      zombie.migrationTarget = { ...path.at(-1) };
+      zombie.path = path; zombie.repathTimer = 1.4;
+      const first = path[0], d = distance(zombie, first);
+      zombie.facingX = zombie.desiredFacingX = (first.x-zombie.x)/d;
+      zombie.facingY = zombie.desiredFacingY = (first.y-zombie.y)/d;
       game.zombies.push(zombie);
       return zombie;
     }
