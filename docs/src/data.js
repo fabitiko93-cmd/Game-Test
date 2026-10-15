@@ -119,6 +119,8 @@ export const ITEMS = {
   bread: { name: "Halbes Graubrot", short: "Graubrot", type: "food", icon: "food", weight: 0.4, stack: 2, effect: { hunger: 32 }, description: "Trocken, aber ohne sichtbaren Schimmel." },
   canned_beans: { name: "Bohnendose", short: "Bohnen", type: "food", icon: "food", weight: 0.48, stack: 3, effect: { hunger: 45, thirst: 3 }, needs: "can_opener", description: "Nahrhaft, falls du sie aufbekommst." },
 
+  outfit_top: { name: "Oberbekleidung", short: "Oberteil", type: "clothing", icon: "clothing", equipSlot: "torso", protection: 0.12, weight: 1.05, stack: 1, condition: 80, description: "Das bei Spielbeginn gewählte Oberteil. Begrenzter Bissschutz." },
+  outfit_trousers: { name: "Hose", short: "Hose", type: "clothing", icon: "clothing", equipSlot: "legs", protection: 0.1, weight: 0.72, stack: 1, condition: 85, description: "Die bei Spielbeginn gewählte Beinkleidung." },
   work_jacket: { name: "Arbeitsjacke", short: "Jacke", type: "clothing", icon: "clothing", equipSlot: "torso", protection: 0.12, weight: 1.05, stack: 1, condition: 80, description: "Robuster Stoff mit begrenztem Bissschutz." },
   leather_jacket: { name: "Lederjacke", short: "Lederjacke", type: "clothing", icon: "clothing", equipSlot: "torso", protection: 0.28, weight: 1.65, stack: 1, condition: 90, description: "Schwer, aber deutlich widerstandsfähiger." },
   jeans: { name: "Jeans", short: "Jeans", type: "clothing", icon: "clothing", equipSlot: "legs", protection: 0.1, weight: 0.72, stack: 1, condition: 85, description: "Alltäglicher Schutz für die Beine." },

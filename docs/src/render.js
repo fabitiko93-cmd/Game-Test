@@ -15,6 +15,7 @@ import { zombieBodyProfile } from "./zombie-appearance.js";
 import { QuaterniusAssets } from "./quaternius-assets.js";
 import { PlayerModels } from "./player-models.js";
 import { WorldModels } from "./world-models.js";
+import { objectPickPolygon, pickHotspots } from "./object-selection.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -168,7 +169,9 @@ export class Renderer {
     this.width=width/zoom;this.height=height/zoom;this.scale=scale*zoom;
     try { drawables=this.drawWorld(game,delta); }
     finally { this.width=width;this.height=height;this.scale=scale;this.renderingWorld=false;this.ctx.restore(); }
-    for(const hotspot of this.hotspots){hotspot.x*=zoom;hotspot.y*=zoom;hotspot.radius*=zoom;}
+    for(const hotspot of this.hotspots){hotspot.x*=zoom;hotspot.y*=zoom;if(hotspot.radius)hotspot.radius*=zoom;
+      if(hotspot.polygon)for(const point of hotspot.polygon){point.x*=zoom;point.y*=zoom;}}
+    this.drawObjectChoices();
     this.drawVignette();drawCameraOverlay(this,game);this.drawEntityStatuses(game,drawables);
   }
 
@@ -212,7 +215,7 @@ export class Renderer {
       if (!playerCanSee(game, object) && (!rememberedScenery(object) || !game.playerVisibility?.hasExplored(object))) continue;
       const p = this.iso(object.x, object.y);
       if (p.x >= -130 && p.x <= this.width + 130 && p.y >= -160 && p.y <= this.height + 100) {
-        drawables.push({ kind: "object", ref: object, depth: object.x + object.y });
+        drawables.push({ kind: "object", ref: object, depth: object.renderDepth ?? object.x + object.y });
       }
     }
     for (const zombie of game.zombies) {
@@ -413,7 +416,7 @@ export class Renderer {
   drawObject(o, game) {
     const visible = playerCanSee(game, o);
     const selected = visible && this.selectedId === o.id;
-    if (selected) this.drawSelection(o.x, o.y, o.solid ? .58 : .42);
+    // Selected furniture is outlined around its actual projected body below.
     const cutaway = o.footprint && ["wall", "door"].includes(o.type)
       && ["south", "east"].includes(o.side) && game.world.insideBuilding(game.player, o.building);
     // Tall front walls must not hide the room's occupants and usable furniture.
@@ -448,10 +451,13 @@ export class Renderer {
     }
     if (cutaway) this.ctx.restore();
     if (o.interactable && visible) {
-      const hitZ = o.type === "corpse" || o.type === "groundloot" ? 7 : o.type === "radio" ? 12 : 19;
-      const p = this.iso(o.x, o.y, hitZ);
-      const radius = o.type === "door" ? 38 : o.type === "corpse" ? 36 : 34;
-      this.hotspots.push({ id: o.id, kind: "object", ref: o, x: p.x, y: p.y, radius });
+      const polygon=objectPickPolygon(this,o);
+      const p={x:polygon.reduce((sum,point)=>sum+point.x,0)/polygon.length,y:polygon.reduce((sum,point)=>sum+point.y,0)/polygon.length};
+      this.hotspots.push({ id:o.id,kind:"object",ref:o,...p,polygon });
+      if(selected){
+        const ctx=this.ctx;ctx.save();ctx.strokeStyle="#eed99a";ctx.fillStyle="rgba(238,217,154,.10)";ctx.lineWidth=1.5/(this.zoom||1);
+        ctx.beginPath();polygon.forEach((point,i)=>i?ctx.lineTo(point.x,point.y):ctx.moveTo(point.x,point.y));ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+      }
       if (this.contextId === o.id) this.drawContextMarker(p.x, p.y - 10);
     }
   }
@@ -938,7 +944,19 @@ export class Renderer {
   updateParticles(delta){for(const p of this.particles){p.x+=p.vx*delta;p.y+=p.vy*delta;p.z+=p.vz*delta;p.vz-=65*delta;p.life-=delta;}this.particles=this.particles.filter(p=>p.life>0);}
   drawParticles(){const ctx=this.ctx;for(const part of this.particles){if(this.playerVisibility&&!this.playerVisibility.canSee(part,this.viewPlayer))continue;const p=this.iso(part.x,part.y,Math.max(0,part.z));ctx.globalAlpha=clamp(part.life/part.maxLife,0,1);ctx.fillStyle=part.color;ctx.fillRect(p.x,p.y,part.size,part.size);}ctx.globalAlpha=1;}
 
-  pick(screenX,screenY){let best=null,bestDist=Infinity;for(const h of this.hotspots){if(this.playerVisibility&&!this.playerVisibility.canSee(h.ref,this.viewPlayer))continue;const d=Math.hypot(screenX-h.x,screenY-h.y);if(d<h.radius&&d<bestDist){best=h;bestDist=d;}}return best;}
+  pickCandidates(screenX,screenY){return pickHotspots(this.hotspots,screenX,screenY,ref=>!this.playerVisibility||this.playerVisibility.canSee(ref,this.viewPlayer));}
+  pick(screenX,screenY){return this.pickCandidates(screenX,screenY)[0]||null;}
+
+  drawObjectChoices(){
+    if(!this.choiceIds?.length)return;
+    const ctx=this.ctx;ctx.save();ctx.font="bold 11px monospace";ctx.textAlign="center";ctx.textBaseline="middle";
+    this.choiceIds.forEach((id,index)=>{const hit=this.hotspots.find(hit=>hit.id===id);if(!hit)return;
+      const top=hit.polygon.reduce((best,point)=>point.y<best.y?point:best,hit.polygon[0]);
+      const x=hit.x,y=top.y-8-index%2*14;
+      ctx.strokeStyle="#e8d398";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+9);ctx.lineTo(hit.x,hit.y);ctx.stroke();
+      ctx.fillStyle="#162019";ctx.beginPath();ctx.arc(x,y,10,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle="#fff0c5";ctx.fillText(String(index+1),x,y);
+    });ctx.restore();
+  }
 
   shiftColor(hex,amount){
     const clean=hex.replace("#","");if(clean.length!==6)return hex;

@@ -17,6 +17,7 @@ import { backgroundName, skillRank, visibleInfectionState, woundBleeding, woundD
 import { TargetLayout } from "./target-layout.js";
 import { CHARACTER_STYLES, defaultStyle } from "./quaternius-catalog.js";
 import { VIEW } from "./config.js";
+import { ObjectChoices } from "./object-selection.js";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -44,13 +45,14 @@ export class GameUI {
       "mission-panel", "mission-title", "mission-objective", "mission-description", "mission-steps", "status-panel",
       "inventory-panel", "equipment-grid", "inventory-grid", "item-description", "carry-weight",
       "customize-button", "drop-button", "use-button",
-      "container-panel", "container-kind", "container-name", "container-items", "take-all-button",
+      "object-picker", "container-panel", "container-kind", "container-name", "container-items", "take-all-button",
       "character-panel", "character-background", "character-title", "skill-list", "condition-summary", "wound-list",
       "weapon-panel", "weapon-title", "weapon-ammo", "weapon-condition", "mod-slots", "available-mods", "weapon-reload-button",
       "pause-panel", "continue-button", "diagnostics-button", "reset-button", "death-panel", "survived-time", "death-cause",
       "new-survivor-button", "toast",
     ];
     this.el = Object.fromEntries(ids.map(id => [id.replaceAll("-", "_"), document.getElementById(id)]));
+    this.objectChoices = new ObjectChoices(document.getElementById("object-picker"));
     this.targetLayout = new TargetLayout(this.el);
     this.el.status_legend.innerHTML = Object.entries(STATUS_ICONS).map(([id, icon]) =>
       `<span>${iconSVG(id)}<b>${icon.label}</b></span>`).join("");
@@ -261,12 +263,12 @@ export class GameUI {
     this.el.action_button.classList.remove("fire-ready");
     this.el.action_button.querySelector("span").textContent = "✦";
     const context = game.contextObject();
-    this.contextInfo = context;
     const selected = game.selectedObject();
+    this.contextInfo = selected || context;
     this.el.action_button.classList.toggle("ready", Boolean(context || selected));
     this.el.action_label.textContent = context?.actionLabel || (selected ? "HINGEHEN" : "AKTION");
-    if (context) {
-      this.el.target_label.textContent = context.name || "INTERAGIEREN";
+    if (selected || context) {
+      this.el.target_label.textContent = (selected || context).name || "INTERAGIEREN";
       this.el.target_label.classList.add("show");
     } else {
       this.el.target_label.classList.remove("show");
@@ -328,7 +330,10 @@ export class GameUI {
     this.toastTimer = window.setTimeout(() => this.el.toast.classList.remove("show"), duration * 1000);
   }
 
+  showObjectChoices(hits,game) { this.objectChoices.show(hits,game); }
+
   hasBlockingPanel() {
+    if(this.objectChoices?.game)return true;
     return ["mission-panel", "status-panel", "inventory-panel", "container-panel", "character-panel", "weapon-panel"]
       .some(id => !document.getElementById(id).classList.contains("hidden"));
   }
@@ -341,6 +346,7 @@ export class GameUI {
   }
 
   closeAllPanels() {
+    this.objectChoices?.hide();
     for (const id of ["mission-panel", "status-panel", "inventory-panel", "container-panel", "character-panel", "weapon-panel"]) this.closePanel(id);
   }
 
@@ -724,6 +730,7 @@ export class GameUI {
   }
 
   setPaused(paused) {
+    this.objectChoices?.hide();
     this.el.pause_panel.classList.toggle("hidden", !paused);
   }
 

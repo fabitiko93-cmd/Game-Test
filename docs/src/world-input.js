@@ -1,7 +1,16 @@
 
+function worldHit(game,x,y){
+  const hits=game.renderer.pickCandidates?.(x,y)||[game.renderer.pick(x,y)].filter(Boolean);
+  if(hits[0]?.kind==='object'&&hits.filter(hit=>hit.kind==='object').length>1&&game.ui.showObjectChoices){
+    game.ui.showObjectChoices(hits.filter(hit=>hit.kind==='object'),game);return {kind:'choices'};
+  }
+  return hits[0];
+}
+
 export function tapWorld(game, x, y) {
   if (!game.canAct() || game.input.cameraFree) return;
-  const hit = game.renderer.pick(x, y);
+  const hit = worldHit(game, x, y);
+  if(hit?.kind==="choices")return;
   if (hit?.kind === "zombie") {
     game.combat.selectTarget(game, hit.ref);
     game.ui.showMessage(game.player.combat.enabled ? "Ziel erfasst" : "Ziel gewählt · Kampfmodus aktivieren", 1.4);
@@ -24,7 +33,8 @@ export function tapWorld(game, x, y) {
 
 export function doubleTapWorld(game, x, y) {
   if (!game.canAct() || game.input.cameraFree) return;
-  const hit = game.renderer.pick(x, y);
+  const hit = worldHit(game, x, y);
+  if(hit?.kind==="choices")return;
   if (hit?.kind === "object") {
     game.queueInteraction(hit.ref);
     return;
@@ -40,7 +50,8 @@ export function doubleTapWorld(game, x, y) {
 
 export function startGuidedMovement(game, x, y, options = {}) {
   if (!game.canAct() || game.input.cameraFree) return;
-  const hit = game.renderer.pick(x, y);
+  const hit = worldHit(game, x, y);
+  if(hit?.kind==="choices"){game.holdBlocked=true;return;}
   game.holdBlocked = Boolean(hit);
   if (hit) {
     if (hit.kind === "zombie") game.combat.selectTarget(game, hit.ref);

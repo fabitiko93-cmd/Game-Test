@@ -1,3 +1,5 @@
+import { furnishingDimensions } from "./quaternius-catalog.js";
+
 // Metre-sized furnishings are individual objects, so later loot contents can be
 // attached without rebuilding the rooms. New storage starts empty for now.
 const ROOM_FURNITURE = {
@@ -12,20 +14,21 @@ const ROOM_FURNITURE = {
     ['Table_RoundLarge',2.05,2.25,'ESSTISCH',0,'table'],
     ['Chair_1',2.05,1.72,'ESSZIMMERSTUHL',0],
     ['Chair_1',2.05,2.78,'ESSZIMMERSTUHL',Math.PI],
-    ['Plate_1',2.05,2.1,'TELLER',0,'prop',.745],
-    ['Plate_2',2.05,2.4,'TELLER',0,'prop',.745],
-    ['Couch_Medium1',3.05,4.95,'SOFA',Math.PI],
-    ['Table_RoundSmall2',3.05,4.1,'COUCHTISCH'],
-    ['Carpet_2',3.05,4.45,'WOHNZIMMERTEPPICH',0,'rug'],
-    ['Light_Floor1',4.3,5.2,'STEHLAMPE'],
-    ['Houseplant_3',4.45,4.5,'ZIMMERPFLANZE'],
+    ['Plate_1',2.05,2.1,'TELLER',0,'prop','ESSTISCH'],
+    ['Plate_2',2.05,2.4,'TELLER',0,'prop','ESSTISCH'],
+    ['Couch_Medium1',3.05,5.55,'SOFA',Math.PI],
+    ['Table_RoundSmall2',3.05,4.85,'COUCHTISCH'],
+    ['Carpet_2',3.05,5.0,'WOHNZIMMERTEPPICH',0,'rug'],
+    ['NightStand_1',1.95,5.5,'SOFABEISTELLTISCH',Math.PI,'storage'],
+    ['Light_Desk',1.95,5.5,'LESELEUCHTE',0,'prop','SOFABEISTELLTISCH'],
+    ['Houseplant_3',4.65,2.65,'TOPFPFLANZE',0,'prop','KOMMODE'],
     ['NightStand_1',3.65,.58,'NACHTTISCH',Math.PI,'storage'],
-    ['Light_Desk',3.65,.58,'NACHTTISCHLAMPE',0,'prop',.56],
+    ['Light_Desk',3.65,.58,'NACHTTISCHLAMPE',0,'prop','NACHTTISCH'],
     ['Drawer_4',4.65,2.65,'KOMMODE',-Math.PI/2,'storage'],
     ['Shelf_Large',4.68,3.65,'BÜCHERREGAL',-Math.PI/2,'storage'],
     ['Bathroom_WashingMachine',.32,4.35,'WASCHMASCHINE',Math.PI/2,'storage'],
     ['Trashcan_Small1',.35,3.25,'KÜCHENEIMER',0,'storage'],
-    ['Houseplant_1',.65,5.45,'ZIMMERPFLANZE'],
+    ['Houseplant_1',2.4,2.25,'TOPFPFLANZE',0,'prop','ESSTISCH'],
   ],
   police: [
     ['Table_RoundLarge',3.45,1.3,'SCHREIBTISCH',0,'table'],
@@ -33,7 +36,7 @@ const ROOM_FURNITURE = {
     ['Chair_2',1.2,.5,'BÜROSTUHL',0],
     ['Chair_2',3.45,.7,'BÜROSTUHL',0],
     ['Chair_2',1.3,2.55,'BÜROSTUHL',0],
-    ['Light_Desk',3.7,1.3,'SCHREIBTISCHLAMPE',0,'prop',.75],
+    ['Light_Desk',3.7,1.3,'SCHREIBTISCHLAMPE',0,'prop','SCHREIBTISCH'],
     ['Drawer_4',.28,4.8,'AKTENSCHRANK',Math.PI/2,'storage'],
     ['Bookshelf',.25,5.75,'AKTENREGAL',Math.PI/2,'storage'],
     ['Shelf_Large',5.05,.22,'AKTENREGAL',0,'storage'],
@@ -41,9 +44,9 @@ const ROOM_FURNITURE = {
     ['Kitchen_Sink',6.7,3.95,'SPÜLENSCHRANK',-Math.PI/2,'storage'],
     ['Kitchen_Fridge',6.65,4.4,'PERSONALKÜHLSCHRANK',-Math.PI/2,'storage'],
     ['Chair_3',5.55,5.85,'WARTESITZ',Math.PI],
-    ['Chair_3',5.15,5.85,'WARTESITZ',Math.PI],
-    ['Chair_3',4.75,5.85,'WARTESITZ',Math.PI],
-    ['Houseplant_2',6.55,6.5,'ZIMMERPFLANZE'],
+    ['Chair_3',5.31,5.85,'WARTESITZ',Math.PI],
+    ['Chair_3',5.07,5.85,'WARTESITZ',Math.PI],
+    ['Houseplant_2',3.2,1.3,'TOPFPFLANZE',0,'prop','SCHREIBTISCH'],
     ['Trashcan_Cylindric',2.05,1.25,'PAPIERKORB',0,'storage'],
   ],
   market: [
@@ -71,7 +74,7 @@ const ROOM_FURNITURE = {
     ['Chair_4',3.9,1.3,'WARTESITZ',Math.PI/2],
     ['Chair_4',3.9,1.7,'WARTESITZ',Math.PI/2],
     ['Table_RoundSmall2',3.35,1.5,'BEISTELLTISCH'],
-    ['Houseplant_4',6.5,.55,'ZIMMERPFLANZE'],
+    ['Houseplant_4',3.35,1.5,'TOPFPFLANZE',0,'prop','BEISTELLTISCH'],
     ['Table_RoundSmall',1.65,6.3,'PAUSENTISCH',0,'table'],
     ['Chair_3',1.65,5.75,'PERSONALSTUHL',0],
     ['Chair_3',1.65,6.85,'PERSONALSTUHL',Math.PI],
@@ -83,11 +86,19 @@ const ROOM_FURNITURE = {
 export const ROOM_MODEL_ASSETS=[...new Set(Object.values(ROOM_FURNITURE).flat().map(row=>row[0]))];
 
 export function furnishBuildings(world) {
-  for(const building of world.buildings)for(const [modelAsset,x,y,name,yaw=0,role='furniture',elevationMeters=0] of ROOM_FURNITURE[building.id]||[]){
-    const storage=role==='storage';
-    world.addObject('furniture',building.x+x,building.y+y,{modelAsset,name,yaw,building:building.id,
-      solid:!['prop','mounted','rug'].includes(role),elevationMeters:elevationMeters+(role==='rug'?.006:0),
-      modelHeight:role==='table'?.74:undefined,lootable:role!=='rug',interactable:storage,...(storage?{items:[]}:{}),
-    });
+  for(const building of world.buildings){
+    const rows=ROOM_FURNITURE[building.id]||[],placed=[];
+    // Place supports first; small decor inherits the real surface height.
+    for(const [modelAsset,x,y,name,yaw=0,role='furniture',elevation=0] of [...rows.filter(row=>row[5]!=='prop'),...rows.filter(row=>row[5]==='prop')]){
+      const storage=role==='storage';
+      const support=role==='prop'?placed.filter(object=>object.name===elevation).sort((a,b)=>Math.hypot(a.x-building.x-x,a.y-building.y-y)-Math.hypot(b.x-building.x-x,b.y-building.y-y))[0]:null;
+      if(role==='prop'&&!support)throw new Error(`Missing support for ${name}`);
+      placed.push(world.addObject('furniture',building.x+x,building.y+y,{modelAsset,name,yaw,building:building.id,
+        solid:!['prop','mounted','rug'].includes(role),placementRole:role,
+        elevationMeters:support?furnishingDimensions(support).height+.002:Number(elevation||0)+(role==='rug'?.006:0),
+        ...(support?{supportId:support.id,renderDepth:support.x+support.y+.025}:{}),
+        modelHeight:role==='table'?.74:undefined,lootable:role!=='rug',interactable:storage,...(storage?{items:[]}:{}),
+      }));
+    }
   }
 }

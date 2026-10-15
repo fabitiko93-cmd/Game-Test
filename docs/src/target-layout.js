@@ -53,7 +53,7 @@ export class TargetLayout {
     this.el = elements;
     this.controls = [elements.hud.querySelector(".top-left"), elements.hud.querySelector(".utility"),
       ...elements.hud.querySelectorAll(".actions button"), elements.quickbar,
-      elements.hud.querySelector(".control-hint"), elements.hud.querySelector(".zoom-controls"), elements.message, elements.toast].filter(Boolean);
+      elements.hud.querySelector(".control-hint"), elements.hud.querySelector(".zoom-controls"), elements.message, elements.toast, elements.object_picker].filter(Boolean);
     this.geometry = null;
     this.sizes = new Map();
     this.previous = new Map();
@@ -63,7 +63,7 @@ export class TargetLayout {
     const width = game.renderer.width, height = game.renderer.height;
     const signature = `${width}:${height}:${this.el.openfield_button.className}:${this.el.reload_button.className}`
       + `:${this.el.quickbar.childElementCount}:${this.el.inventory_count.textContent}`
-      + `:${this.el.message.className}:${this.el.message.textContent}:${this.el.toast.className}:${this.el.toast.textContent}`;
+      + `:${this.el.object_picker?.className}:${this.el.message.className}:${this.el.message.textContent}:${this.el.toast.className}:${this.el.toast.textContent}`;
     if (this.geometry?.signature === signature) return this.geometry;
     const style = getComputedStyle(this.el.hud), offset = this.el.hud.getBoundingClientRect();
     const left = parseFloat(style.paddingLeft) || 0, top = parseFloat(style.paddingTop) || 0;
