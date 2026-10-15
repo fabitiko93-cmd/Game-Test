@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import vm from "node:vm";
@@ -22,6 +22,7 @@ for (const name of release.precache) {
 
 const temporary = await mkdtemp(path.join(os.tmpdir(), "sperrkreis-build-"));
 try {
+  await symlink(path.join(ROOT, "node_modules"), path.join(temporary, "node_modules"), "junction");
   await mkdir(path.join(temporary, "docs"));
   for (const name of ["src", "assets", "style.css", "manifest.webmanifest"]) {
     await cp(path.join(ROOT, "docs", name), path.join(temporary, "docs", name), { recursive: true });

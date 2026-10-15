@@ -107,8 +107,8 @@ test("noise and visible danger interrupt rest immediately without a grace period
   assert.deepEqual(watcher.target, { x: 20, y: 22 });
 });
 
-test("search and investigation retain their rates; chase has the agreed faster movement", () => {
-  for (const [state, speed, turnRate] of [["investigate", .82, 3.6], ["search", .58, 3.6], ["chase", 2, 5.2]]) {
+test("active states use metric movement rates and preserve their turning behavior", () => {
+  for (const [state, speed, turnRate] of [["investigate", .5, 3.6], ["search", .35, 3.6], ["chase", .72, 5.2]]) {
     const game = fixture(), z = game.zombies[0];
     Object.assign(z, { state, target: { x: 20, y: 22 }, path: [{ x: 20, y: 22 }], repathTimer: 1,
       facingX: 1, facingY: 0, desiredFacingX: 0, desiredFacingY: 1 });
@@ -149,8 +149,8 @@ test("real pursuit closes on walking and sneaking while a sprint opens distance 
       }
     }
     const gap = d(z, p);
-    if (stance === "run") assert.ok(gap > initial + 2, `sprint escapes at ${fps} FPS: ${gap}`);
-    else assert.ok(gap < initial - .1, `${stance} cannot outpace chase at ${fps} FPS: ${gap}`);
+    if (stance === "run") assert.ok(gap > initial + 1.5, `sprint escapes at ${fps} FPS: ${gap}`);
+    else assert.ok(gap < initial - .05, `${stance} cannot outpace chase at ${fps} FPS: ${gap}`);
   }
 });
 

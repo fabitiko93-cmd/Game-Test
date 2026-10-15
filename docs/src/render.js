@@ -8,6 +8,7 @@ import { PLAYER_VIEW, playerCanSee, rememberedScenery } from "./player-visibilit
 import { drawCameraOverlay } from "./camera-overlay.js";
 import { VisionConeDisplay } from "./vision-display.js";
 import { ZombieSprites } from "./zombie-sprites.js";
+import { ZombieModels } from "./zombie-models.js";
 import { WORLD_SCALE, metersToTiles, heightPixels, pixelsPerMeter, playerDisplayScale } from "./world-scale.js";
 import { zombieBodyProfile } from "./zombie-appearance.js";
 
@@ -33,6 +34,8 @@ export class Renderer {
     this.frame = 0;
     this.visionCones = new VisionConeDisplay();
     this.zombieSprites = new ZombieSprites();
+    // Public canary for visual QA before making the new renderer the default.
+    this.zombieModels = new URLSearchParams(window.location.search).get("zombies3d") === "preview" ? new ZombieModels() : null;
     this.statusPaths = new Map(Object.entries(STATUS_ICONS).map(([id, icon]) => [id, new Path2D(icon.path)]));
     this.coverHintCache = { key: "", map: null, paths: null };
     this.diagnostics = false;
@@ -196,6 +199,8 @@ export class Renderer {
     this.metrics.visibleObjects = drawables.length;
 
     this.zombieSprites.beginFrame();
+    this.zombieModels?.beginFrame(this.scale);
+    if (this.canvas?.dataset) this.canvas.dataset.zombieRenderer = this.zombieModels?.status || "sprites";
 
     for (const drawable of drawables) {
       if (drawable.kind === "object") this.drawObject(drawable.ref, game);
@@ -203,6 +208,7 @@ export class Renderer {
       else this.drawPlayer(drawable.ref, game);
     }
     this.zombieSprites.endFrame();
+    this.zombieModels?.endFrame();
 
     this.drawRoofs(game);
     this.drawParticles();
@@ -558,7 +564,7 @@ export class Renderer {
     const weapon = activeWeapon(player);
     const weaponDefinition = itemDefinition(weapon);
     const bodyOffset = 0;
-    const bob = player.moving ? Math.sin(this.frame * (player.running ? .44 : .3)) * (crouched ? .7 : 1.4) : 0;
+    const bob = player.moving ? Math.sin(game.elapsed * (player.running ? 10 : crouched ? 5 : 6)) * (crouched ? .5 : .8) : 0;
     const bodyScale = playerDisplayScale();
     this.shadow(p, (crouched ? 15 : 13) * bodyScale.x, (crouched ? 6 : 5) * bodyScale.x, .38);
     ctx.save();
@@ -644,7 +650,8 @@ export class Renderer {
     const bob = zombie.moving ? Math.sin(this.frame * .22 + zombie.phase) * 1.2 : 0;
     if (this.selectedId === zombie.id) this.drawSelection(zombie.x, zombie.y, .5);
     this.shadow(p, pixelsPerMeter * .27, pixelsPerMeter * .10, .4);
-    if (!this.zombieSprites.draw(ctx, zombie, game.elapsed, p)) this.drawZombieFallback(zombie, p, bob);
+    if (!this.zombieModels?.draw(ctx, zombie, game.elapsed, p)
+      && !this.zombieSprites.draw(ctx, zombie, game.elapsed, p)) this.drawZombieFallback(zombie, p, bob);
     if (zombie.hp < zombie.maxHp) {
       ctx.fillStyle = "#160b0a";
       ctx.fillRect(p.x - 13, p.y - 46, 26, 3);

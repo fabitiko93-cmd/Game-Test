@@ -1,10 +1,11 @@
 import { distance } from "./util.js";
+import { LOCOMOTION, speedInTiles } from "./locomotion.js";
 
 // Ambient behavior only. Awareness, investigation and chase stay in ai.js.
 export const ZOMBIE_IDLE = Object.freeze({
   pauseMin: 6, pauseMax: 14,
   stepMin: .5, stepMax: 1.5,
-  speed: .2, turnRate: .7,
+  speed: speedInTiles(LOCOMOTION.zombie.idle), turnRate: .7,
   lookAngle: .35, roamRadius: 3.5,
 });
 

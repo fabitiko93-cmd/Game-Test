@@ -1,0 +1,357 @@
+{
+  "version": 1,
+  "sourceSha256": "17b40fbdc717423184872f6bbfe3bdc92ca2390f6d32947e7ee433a67e278e73",
+  "author": "Denys Almaral",
+  "variants": [
+    {
+      "file": "0-b158a3405843.glb.gz",
+      "referenceHeight": 1.56694738,
+      "groundOffset": 0.00888182,
+      "clips": {
+        "rest": {
+          "duration": 7.36666667,
+          "source": "idle"
+        },
+        "alert": {
+          "duration": 7.36666667,
+          "source": "idle2_alert"
+        },
+        "shuffle": {
+          "duration": 2.0,
+          "source": "Walk2_limp",
+          "distance": 2.21528174
+        },
+        "walk": {
+          "duration": 2.13333333,
+          "source": "Walk",
+          "distance": 2.4870299
+        },
+        "attack_left": {
+          "duration": 1.4,
+          "source": "attack_left",
+          "hitTime": 0.28
+        },
+        "attack_right": {
+          "duration": 1.4,
+          "source": "attack_right",
+          "hitTime": 0.28
+        }
+      }
+    },
+    {
+      "file": "1-ce2c8af9b00e.glb.gz",
+      "referenceHeight": 1.62261597,
+      "groundOffset": -0.00596138,
+      "clips": {
+        "rest": {
+          "duration": 7.36666667,
+          "source": "idle3"
+        },
+        "alert": {
+          "duration": 7.36666667,
+          "source": "idle2_alert"
+        },
+        "shuffle": {
+          "duration": 2.83333333,
+          "source": "slowWalk",
+          "distance": 0.77954393
+        },
+        "walk": {
+          "duration": 2.13333333,
+          "source": "Walk",
+          "distance": 2.48702984
+        },
+        "attack_left": {
+          "duration": 1.4,
+          "source": "attack_left",
+          "hitTime": 0.28
+        },
+        "attack_right": {
+          "duration": 1.4,
+          "source": "attack_right",
+          "hitTime": 0.28
+        }
+      }
+    },
+    {
+      "file": "2-9846cce658dd.glb.gz",
+      "referenceHeight": 1.6212367,
+      "groundOffset": 0.00187118,
+      "clips": {
+        "rest": {
+          "duration": 7.36666667,
+          "source": "idle"
+        },
+        "alert": {
+          "duration": 7.36666667,
+          "source": "idle2_alert"
+        },
+        "shuffle": {
+          "duration": 2.83333333,
+          "source": "slowWalk",
+          "distance": 0.77954392
+        },
+        "walk": {
+          "duration": 2.13333333,
+          "source": "Walk",
+          "distance": 2.48702983
+        },
+        "attack_left": {
+          "duration": 1.4,
+          "source": "attack_left",
+          "hitTime": 0.28
+        },
+        "attack_right": {
+          "duration": 1.4,
+          "source": "attack_right",
+          "hitTime": 0.28
+        }
+      }
+    },
+    {
+      "file": "3-f1388b86c014.glb.gz",
+      "referenceHeight": 1.54044094,
+      "groundOffset": 0.00178036,
+      "clips": {
+        "rest": {
+          "duration": 7.36666667,
+          "source": "idle3"
+        },
+        "alert": {
+          "duration": 7.36666667,
+          "source": "idle2_alert"
+        },
+        "shuffle": {
+          "duration": 2.0,
+          "source": "Walk2_limp",
+          "distance": 2.09492002
+        },
+        "walk": {
+          "duration": 2.13333333,
+          "source": "Walk",
+          "distance": 2.35190327
+        },
+        "attack_left": {
+          "duration": 1.4,
+          "source": "attack_left",
+          "hitTime": 0.28
+        },
+        "attack_right": {
+          "duration": 1.4,
+          "source": "attack_right",
+          "hitTime": 0.28
+        }
+      }
+    },
+    {
+      "file": "4-60fbfb8161b5.glb.gz",
+      "referenceHeight": 1.67795569,
+      "groundOffset": 0.00905307,
+      "clips": {
+        "rest": {
+          "duration": 7.36666667,
+          "source": "idle"
+        },
+        "alert": {
+          "duration": 7.36666667,
+          "source": "idle2_alert"
+        },
+        "shuffle": {
+          "duration": 2.83333333,
+          "source": "slowWalk",
+          "distance": 0.79478619
+        },
+        "walk": {
+          "duration": 2.13333333,
+          "source": "Walk",
+          "distance": 2.53565808
+        },
+        "attack_left": {
+          "duration": 1.4,
+          "source": "attack_left",
+          "hitTime": 0.28
+        },
+        "attack_right": {
+          "duration": 1.4,
+          "source": "attack_right",
+          "hitTime": 0.28
+        }
+      }
+    },
+    {
+      "file": "5-f85a870d3c92.glb.gz",
+      "referenceHeight": 1.61752639,
+      "groundOffset": 0.0192105,
+      "clips": {
+        "rest": {
+          "duration": 7.36666667,
+          "source": "idle3"
+        },
+        "alert": {
+          "duration": 7.36666667,
+          "source": "idle2_alert"
+        },
+        "shuffle": {
+          "duration": 2.83333333,
+          "source": "slowWalk",
+          "distance": 0.7457409
+        },
+        "walk": {
+          "duration": 2.13333333,
+          "source": "Walk",
+          "distance": 2.39299089
+        },
+        "attack_left": {
+          "duration": 1.4,
+          "source": "attack_left",
+          "hitTime": 0.28
+        },
+        "attack_right": {
+          "duration": 1.4,
+          "source": "attack_right",
+          "hitTime": 0.28
+        }
+      }
+    },
+    {
+      "file": "6-050a62669016.glb.gz",
+      "referenceHeight": 1.76447477,
+      "groundOffset": 0.02228345,
+      "clips": {
+        "rest": {
+          "duration": 7.36666667,
+          "source": "idle"
+        },
+        "alert": {
+          "duration": 7.36666667,
+          "source": "idle2_alert"
+        },
+        "shuffle": {
+          "duration": 2.0,
+          "source": "Walk2_limp",
+          "distance": 2.29375728
+        },
+        "walk": {
+          "duration": 2.13333333,
+          "source": "Walk",
+          "distance": 2.59249947
+        },
+        "attack_left": {
+          "duration": 1.4,
+          "source": "attack_left",
+          "hitTime": 0.28
+        },
+        "attack_right": {
+          "duration": 1.4,
+          "source": "attack_right",
+          "hitTime": 0.28
+        }
+      }
+    },
+    {
+      "file": "7-f328f1706032.glb.gz",
+      "referenceHeight": 1.61119198,
+      "groundOffset": 0.02587231,
+      "clips": {
+        "rest": {
+          "duration": 7.36666667,
+          "source": "idle3"
+        },
+        "alert": {
+          "duration": 7.36666667,
+          "source": "idle2_alert"
+        },
+        "shuffle": {
+          "duration": 2.83333333,
+          "source": "slowWalk",
+          "distance": 0.74574104
+        },
+        "walk": {
+          "duration": 2.13333333,
+          "source": "Walk",
+          "distance": 2.3929913
+        },
+        "attack_left": {
+          "duration": 1.4,
+          "source": "attack_left",
+          "hitTime": 0.28
+        },
+        "attack_right": {
+          "duration": 1.4,
+          "source": "attack_right",
+          "hitTime": 0.28
+        }
+      }
+    },
+    {
+      "file": "8-d67b22687f25.glb.gz",
+      "referenceHeight": 1.62820856,
+      "groundOffset": 0.02447235,
+      "clips": {
+        "rest": {
+          "duration": 7.36666667,
+          "source": "idle"
+        },
+        "alert": {
+          "duration": 7.36666667,
+          "source": "idle2_alert"
+        },
+        "shuffle": {
+          "duration": 2.83333333,
+          "source": "slowWalk",
+          "distance": 0.74574107
+        },
+        "walk": {
+          "duration": 2.13333333,
+          "source": "Walk",
+          "distance": 2.39299142
+        },
+        "attack_left": {
+          "duration": 1.4,
+          "source": "attack_left",
+          "hitTime": 0.28
+        },
+        "attack_right": {
+          "duration": 1.4,
+          "source": "attack_right",
+          "hitTime": 0.28
+        }
+      }
+    },
+    {
+      "file": "9-16ba30b95daf.glb.gz",
+      "referenceHeight": 1.63167165,
+      "groundOffset": 0.02613611,
+      "clips": {
+        "rest": {
+          "duration": 7.36666667,
+          "source": "idle3"
+        },
+        "alert": {
+          "duration": 7.36666667,
+          "source": "idle2_alert"
+        },
+        "shuffle": {
+          "duration": 2.0,
+          "source": "Walk2_limp",
+          "distance": 2.11723884
+        },
+        "walk": {
+          "duration": 2.13333333,
+          "source": "Walk",
+          "distance": 2.39299102
+        },
+        "attack_left": {
+          "duration": 1.4,
+          "source": "attack_left",
+          "hitTime": 0.28
+        },
+        "attack_right": {
+          "duration": 1.4,
+          "source": "attack_right",
+          "hitTime": 0.28
+        }
+      }
+    }
+  ]
+}

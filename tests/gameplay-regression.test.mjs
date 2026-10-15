@@ -14,6 +14,7 @@ import { findPlayerPath, pathToPlayerInteraction, playerSegmentClear, playerPath
 import { pointSegmentDistance } from "../docs/src/collision.js";
 import { behindTarget } from "../docs/src/perception.js";
 import { InputController } from "../docs/src/input.js";
+import { ZOMBIE_IDLE } from "../docs/src/zombie-idle.js";
 
 function fixture(realWorld = false) {
   const world = new World();
@@ -258,7 +259,7 @@ test("an approach follows a walking zombie to its current rear and finishes", ()
   game.player.y = 8.5; game.stealth.refresh(game);
   assert.equal(game.stealth.executionAction(game), true);
   for (let i = 0; i < 200 && !target.removed; i++) {
-    target.y += .025;
+    target.y += ZOMBIE_IDLE.speed * .05;
     executionTick(game);
   }
   assert.equal(target.removed, true);

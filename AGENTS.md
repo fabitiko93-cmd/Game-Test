@@ -34,8 +34,11 @@ Maßstab vom 15.10.2026: Player 1,80 m; weiblicher Player 1,68 m für später
 vorgemerkt, jetzt kein neues Player-Modell. DIN-Türblatt und konkretes Kühlgerät
 dienen als Größenanker, keine millimetergenaue Bauteilsimulation. Weibliche und
 männliche Zombies haben überlappende Größenbereiche und ID-stabile Körperhöhen.
-Aktueller erster Schritt ist der Maßstabsvergleich; Echtzeit-3D-Zombies und der
-gemeinsame Tempo-/Schritt-Abgleich folgen anschließend. Vollständiger 3D-Weltport
+Der Maßstabsvergleich ist veröffentlicht. Am 15.10.2026 ebenfalls freigegeben:
+Echtzeit-3D-Zombies mit Original-Skelettanimationen, weichen Übergängen und einem
+gemeinsamen metrischen Tempo-/Schritt-Abgleich für Player und Zombies. Qualität
+hat Vorrang; keine künstliche Reduktion auf wenige Animationsbilder. Die
+Rennen-Animation bleibt ungenutzt. Vollständiger 3D-Weltport
 bleibt zurückgestellt. Späteres Setting umfasst Deutschland, mehrere Städte und
 Bundesländer; detaillierte Räume und Etagen bleiben als Ausbauziel erhalten.
 

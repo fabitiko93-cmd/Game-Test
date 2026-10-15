@@ -1,9 +1,11 @@
+import { LOCOMOTION, speedInTiles } from "./locomotion.js";
+
 export const VIEW = {
   tileW: 64,
   tileH: 32,
   worldW: 48,
   worldH: 48,
-  pixelRatioMax: 1.5,
+  pixelRatioMax: 3,
 };
 
 export const GAME = {
@@ -15,7 +17,7 @@ export const GAME = {
   migrationSeconds: 78,
   maxZombies: 20,
   maxRenderFps: 60,
-  aiStep: 1 / 30,
+  aiStep: 1 / 60,
 };
 
 export const SAVE = {
@@ -24,9 +26,9 @@ export const SAVE = {
 };
 
 export const STANCES = {
-  sneak: { label: "SCHLEICHEN", speed: 1.04, noise: 0.52, visibility: 0.55, stamina: 8.5 },
-  walk: { label: "GEHEN", speed: 1.88, noise: 1.45, visibility: 1, stamina: 7 },
-  run: { label: "RENNEN", speed: 3.38, noise: 5.4, visibility: 1.32, stamina: -17 },
+  sneak: { label: "SCHLEICHEN", speed: speedInTiles(LOCOMOTION.player.sneak), noise: 0.52, visibility: 0.55, stamina: 8.5 },
+  walk: { label: "GEHEN", speed: speedInTiles(LOCOMOTION.player.walk), noise: 1.45, visibility: 1, stamina: 7 },
+  run: { label: "RENNEN", speed: speedInTiles(LOCOMOTION.player.run), noise: 5.4, visibility: 1.32, stamina: -17 },
 };
 
 export const COLORS = {
