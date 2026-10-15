@@ -30,6 +30,15 @@ zu einem neuen Fähigkeitensystem ausgebaut.
 
 Bereits erteilte Aufträge nicht durch zusätzliche Freigaberunden ersetzen.
 
+Maßstab vom 15.10.2026: Player 1,80 m; weiblicher Player 1,68 m für später
+vorgemerkt, jetzt kein neues Player-Modell. DIN-Türblatt und konkretes Kühlgerät
+dienen als Größenanker, keine millimetergenaue Bauteilsimulation. Weibliche und
+männliche Zombies haben überlappende Größenbereiche und ID-stabile Körperhöhen.
+Aktueller erster Schritt ist der Maßstabsvergleich; Echtzeit-3D-Zombies und der
+gemeinsame Tempo-/Schritt-Abgleich folgen anschließend. Vollständiger 3D-Weltport
+bleibt zurückgestellt. Späteres Setting umfasst Deutschland, mehrere Städte und
+Bundesländer; detaillierte Räume und Etagen bleiben als Ausbauziel erhalten.
+
 Build und technische Modulauslagerung vom 02.10.2026 sind reine Infrastrukturarbeit.
 Die bestehenden Spielregeln und die Save-v4-Struktur bleiben maßgeblich.
 
