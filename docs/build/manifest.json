@@ -1,5 +1,5 @@
 {
-  "id": "ce02d994172239e28f28",
+  "id": "f2b4ab2069eabd7a7a0d",
   "script": "build/main-VJ4675ZA.js",
   "style": "build/style-44A7AVKL.css",
   "precache": [
@@ -50,7 +50,6 @@
     "assets/quaternius/Door_7-e621f960b9d2.glb.gz",
     "assets/quaternius/Door_8-d79997b458fd.glb.gz",
     "assets/quaternius/Door_9-1e2004d62e77.glb.gz",
-    "assets/quaternius/Door_Double-576d2b1ffe02.glb.gz",
     "assets/quaternius/Door_Double-d66f67f08bc8.glb.gz",
     "assets/quaternius/Drawer_1-181358b102db.glb.gz",
     "assets/quaternius/Drawer_2-daded19ec774.glb.gz",

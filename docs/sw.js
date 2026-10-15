@@ -1,5 +1,5 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "ce02d994172239e28f28";
+const BUILD_ID = "f2b4ab2069eabd7a7a0d";
 const FILES = [
   "./assets/icon.svg",
   "./assets/quaternius/Bathroom_Bathtub-72efe624dac0.glb.gz",
@@ -48,7 +48,6 @@ const FILES = [
   "./assets/quaternius/Door_7-e621f960b9d2.glb.gz",
   "./assets/quaternius/Door_8-d79997b458fd.glb.gz",
   "./assets/quaternius/Door_9-1e2004d62e77.glb.gz",
-  "./assets/quaternius/Door_Double-576d2b1ffe02.glb.gz",
   "./assets/quaternius/Door_Double-d66f67f08bc8.glb.gz",
   "./assets/quaternius/Drawer_1-181358b102db.glb.gz",
   "./assets/quaternius/Drawer_2-daded19ec774.glb.gz",
