@@ -1,32 +1,35 @@
 import { Group } from "three";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
-import { FURNITURE_MODELS, QUATERNIUS_MODELS, furnishingDimensions } from "./quaternius-catalog.js";
+import { FURNITURE_MODELS, QUATERNIUS_MODELS, furnishingDimensions, furnishingDefinition, furnishingYaw } from "./quaternius-catalog.js";
 import { heightPixels, pixelsPerMeter } from "./world-scale.js";
+import { ROOM_MODEL_ASSETS } from "./interior-layout.js";
 
 export class WorldModels {
   constructor(pass, library, { createCanvas = () => document.createElement("canvas") } = {}) {
     this.pass=pass; this.library=library; this.createCanvas=createCanvas; this.cache=new Map();
-    this.ready=Promise.all([...new Set([...Object.values(FURNITURE_MODELS).map(x=>x.asset),"Door_1"])].map(key=>library.request(key)));
+    this.ready=Promise.all([...new Set([...Object.values(FURNITURE_MODELS).map(x=>x.asset),...ROOM_MODEL_ASSETS,"Door_1"])].map(key=>library.request(key)));
   }
 
   model(type, locked = false) {
-    const definition=FURNITURE_MODELS[type]; if(!definition) return null;
+    const definition=furnishingDefinition(type); if(!definition) return null;
     const asset=this.library.get(definition.asset); if(!asset) return null;
     const root=new Group(),size=QUATERNIUS_MODELS.interiors[definition.asset].dimensions;
     const count=definition.count||1;
     for(let i=0;i<count;i++){const part=clone(asset.scene);part.position.x=(i-(count-1)/2)*size.width;part.position.z=definition.front?-.035:0;root.add(part);}
-    if(definition.front&&(type==="locker"||locked)) {
+    if(definition.front&&((type.type||type)==="locker"||locked)) {
       const door=this.library.get("Door_1");if(!door)return null;
       const front=clone(door.scene);front.scale.set(size.width/.86,size.height/1.985,1);
       front.position.z=size.depth/2;root.add(front);
     }
+    root.scale.y=furnishingDimensions(type).height/size.height;
     return root;
   }
 
   draw(ctx, object, point) {
-    if(!FURNITURE_MODELS[object.type])return false;
-    const yaw=object.orientation==="y"?-Math.PI/2:0;
-    return this.cached(ctx,`${object.type}-${Boolean(object.locked)}-${yaw}`,()=>this.model(object.type,object.locked),point,yaw,furnishingDimensions(object.type));
+    const definition=furnishingDefinition(object);if(!definition)return false;
+    const yaw=furnishingYaw(object),elevation=object.elevationMeters||0;
+    return this.cached(ctx,`${object.type}-${definition.asset}-${object.modelHeight||0}-${Boolean(object.locked)}-${yaw}`,()=>this.model(object,object.locked),
+      {x:point.x,y:point.y-heightPixels(elevation)},yaw,furnishingDimensions(object));
   }
 
   drawDoor(ctx, object, point, yaw) {

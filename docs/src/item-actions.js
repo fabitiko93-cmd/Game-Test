@@ -2,8 +2,10 @@ import { gainSkill, totalBleeding, treatWound as treatWoundWithItem, treatWithIt
 import { ITEMS } from "./data.js";
 import { activeWeapon, addItem, compatibleMods, equipItem, findItem, installMod, itemDefinition, removeItem, removeMod, unequipSlot } from "./inventory.js";
 import { clamp } from "./util.js";
+import { canInteract } from "./interaction.js";
 
 export function takeItem(game, container, itemId) {
+  if(!canInteract(game.world,game.player,container)){game.ui.showToast("NÄHER AN DEN BEHÄLTER HERANGEHEN");return;}
   const item = container.items?.find(entry => entry.id === itemId);
   if (!item) return;
   if (!addItem(game.player, item)) {

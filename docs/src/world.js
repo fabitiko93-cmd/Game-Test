@@ -7,6 +7,7 @@ import { obstacleClearance, segmentBlocked } from "./collision.js";
 import { buildingWalls, doorSide, doorGeometry } from "./building-geometry.js";
 import { PLAYER_BODY_RADIUS, ZOMBIE_WORLD_RADIUS, metersToTiles, WORLD_SCALE } from "./world-scale.js";
 import { furnishingDimensions, furnishingFootprint } from "./quaternius-catalog.js";
+import { furnishBuildings } from "./interior-layout.js";
 
 export const BUILDINGS = [
   { id: "police", name: "POLIZEIPOSTEN", x: 16, y: 5, w: 8, h: 8, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
@@ -70,6 +71,7 @@ export class World {
     this.addOutdoorLots();
     this.addVegetation();
     this.addContainers();
+    furnishBuildings(this);
   }
 
   baseTile(x, y) {
@@ -117,14 +119,14 @@ export class World {
   }
 
   addContainers() {
-    const starter = this.addObject("cabinet", 6.65, 36.8, { interactable: true, solid: true, container: "kitchen", name: "KÜCHENSCHRANK", tutorial: true });
+    const starter = this.addObject("cabinet", 6.26, 36.2, { interactable: true, solid: true, container: "kitchen", name: "KÜCHENSCHRANK", tutorial: true, yaw:Math.PI/2 });
     this.ensureItem(starter, createItem("kitchen_knife"));
     this.ensureItem(starter, createItem("bandage"));
     this.ensureItem(starter, createItem("water"));
-    this.addObject("fridge", 6.35, 39.2, { interactable: true, solid: true, container: "fridge", name: "KÜHLSCHRANK",
+    this.addObject("fridge", 6.3, 37.65, { interactable: true, solid: true, container: "fridge", name: "KÜHLSCHRANK",yaw:Math.PI/2,
       footprint: { x: metersToTiles(WORLD_SCALE.fridge.width / 2), y: metersToTiles(WORLD_SCALE.fridge.depth / 2) } });
     this.addObject("radio", 10.25, 40.2, { interactable: true, solid: true, name: "KOFFERRADIO", used: false });
-    this.addObject("bed", 10.1, 36.5, { solid: true, name: "MATRATZE" });
+    this.addObject("bed", 10.35, 36, { solid: true, name: "EINZELBETT" });
 
     this.addObject("desk", 17.2, 6, { interactable: true, solid: true, container: "police", name: "DIENSTSCHREIBTISCH" });
     const policeLocker = this.addObject("gunlocker", 22, 6, {
@@ -263,7 +265,7 @@ export class World {
   }
 
   addObject(type, x, y, options = {}) {
-    const furnishing=furnishingDimensions(type);
+    const furnishing=furnishingDimensions({type,...options});
     const object = {
       id: options.id || `world-${++this.objectCounter}`,
       type,
@@ -277,6 +279,7 @@ export class World {
       static: options.static !== false,
       name: options.name || OBJECT_LABELS[type] || type,
       ...options,
+      ...(type==='toolbox'&&!options.footprint?{footprint:{x:.31,y:.23}}:{}),
       ...(furnishing ? { footprint: furnishingFootprint({type,...options}), heightMeters: furnishing.height } : {}),
     };
     if (options.container && !options.items) object.items = this.rollLoot(options.container);
@@ -526,13 +529,14 @@ export class World {
         removed: object.removed,
         name: object.name,
         container: object.container,
-        items: deepCopy(object.items || []),
+        items: object.items?deepCopy(object.items):undefined,
         survivor: object.survivor,
         survivorId: object.survivorId,
         deathCause: object.deathCause,
         zombieAppearance: object.zombieAppearance,
         playerAppearance: object.playerAppearance,
         facingYaw: object.facingYaw,
+        modelAsset:object.modelAsset,modelHeight:object.modelHeight,elevationMeters:object.elevationMeters,yaw:object.yaw,lootable:object.lootable,
       }));
   }
 

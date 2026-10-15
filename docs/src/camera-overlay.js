@@ -18,8 +18,8 @@ export function drawCameraOverlay(renderer, game) {
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, 0, width, height);
-  ctx.ellipse(center.x, center.y, PLAYER_VIEW.radius * VIEW.tileW / Math.SQRT2,
-    PLAYER_VIEW.radius * VIEW.tileH / Math.SQRT2, 0, 0, Math.PI * 2, true);
+  ctx.ellipse(center.x, center.y, PLAYER_VIEW.radius * VIEW.tileW / Math.SQRT2*(renderer.zoom||1),
+    PLAYER_VIEW.radius * VIEW.tileH / Math.SQRT2*(renderer.zoom||1), 0, 0, Math.PI * 2, true);
   ctx.fillStyle = "rgba(3,9,7,.67)";
   ctx.fill("evenodd");
   ctx.restore();

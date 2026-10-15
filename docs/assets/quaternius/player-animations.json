@@ -1,0 +1,20 @@
+{
+  "file": "player-crouch-68cf13051891.glb.gz",
+  "author": "Quaternius",
+  "license": "CC0-1.0",
+  "source": "https://quaternius.itch.io/universal-animation-library",
+  "sourceFile": "Unreal-Godot/UAL1_Standard.glb",
+  "sourceSha256": "69591853d817488edaa8fd9bf8fc1d821eaeaf789f8627b3cd23b41c4ed67997",
+  "sampleRate": 30,
+  "clips": {
+    "Crouch_Walk": {
+      "sourceClip": "Crouch_Fwd_Loop",
+      "duration": 2,
+      "distance": 1.7132504247400133
+    },
+    "Crouch_Idle": {
+      "sourceClip": "Crouch_Idle_Loop",
+      "duration": 2.933333396911621
+    }
+  }
+}

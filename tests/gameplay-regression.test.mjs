@@ -137,6 +137,8 @@ test("loot cannot be reached through a wall or a closed intervening door", () =>
   const player = { x: 10, y: 9.3 };
   assert.equal(canInteract(world, player, loot), false);
   door.closed = false; door.solid = false; world.touchSight();
+  assert.equal(canInteract(world,player,loot),false,'an open door does not extend physical reach');
+  player.y=10.3;
   assert.equal(canInteract(world, player, loot), true);
 });
 

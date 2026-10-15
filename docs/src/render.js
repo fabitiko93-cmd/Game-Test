@@ -23,6 +23,7 @@ export class Renderer {
     this.width = 1;
     this.height = 1;
     this.scale = 1;
+    this.zoom = VIEW.zoomDefault;
     this.camera = { x: 0, y: 0 };
     this.cameraTarget = { x: 0, y: 0 };
     this.cameraFollowing = true;
@@ -99,12 +100,14 @@ export class Renderer {
 
   iso(x, y, z = 0) {
     const p = this.rawIso(x, y, z);
-    return { x: p.x - this.camera.x + this.width * .5, y: p.y - this.camera.y + this.height * .5 };
+    const zoom=this.renderingWorld?1:(this.zoom||1);
+    return { x: (p.x - this.camera.x)*zoom + this.width * .5, y: (p.y - this.camera.y)*zoom + this.height * .5 };
   }
 
   screenToWorld(x, y) {
-    const rx = x - this.width * .5 + this.camera.x;
-    const ry = y - this.height * .5 + this.camera.y;
+    const zoom=this.renderingWorld?1:(this.zoom||1);
+    const rx = (x - this.width * .5)/zoom + this.camera.x;
+    const ry = (y - this.height * .5)/zoom + this.camera.y;
     return { x: ry / VIEW.tileH + rx / VIEW.tileW, y: ry / VIEW.tileH - rx / VIEW.tileW };
   }
 
@@ -113,7 +116,7 @@ export class Renderer {
     if (snap) this.cameraFollowing = true;
     const p = this.rawIso(player.x, player.y, 0);
     this.cameraTarget.x = p.x;
-    this.cameraTarget.y = p.y - 34;
+    this.cameraTarget.y = p.y - 34/(this.zoom||1);
     const amount = snap ? 1 : .105;
     this.camera.x = lerp(this.camera.x, this.cameraTarget.x, amount);
     this.camera.y = lerp(this.camera.y, this.cameraTarget.y, amount);
@@ -127,8 +130,8 @@ export class Renderer {
 
   panBy(dx, dy) {
     if (!this.cameraPanning) return;
-    this.camera.x -= dx;
-    this.camera.y -= dy;
+    this.camera.x -= dx/(this.zoom||1);
+    this.camera.y -= dy/(this.zoom||1);
     this.clampCamera();
   }
 
@@ -143,21 +146,40 @@ export class Renderer {
   }
 
   clampCamera() {
+    const zoom=this.renderingWorld?1:(this.zoom||1),width=this.width/zoom,height=this.height/zoom;
     const corners = [
       this.rawIso(1, 1), this.rawIso(VIEW.worldW - 2, 1),
       this.rawIso(VIEW.worldW - 2, VIEW.worldH - 2), this.rawIso(1, VIEW.worldH - 2),
     ];
     const xs = corners.map(point => point.x);
     const ys = corners.map(point => point.y);
-    const minX = Math.min(...xs) + this.width * .5 - VIEW.tileW;
-    const maxX = Math.max(...xs) - this.width * .5 + VIEW.tileW;
-    const minY = Math.min(...ys) + this.height * .5 - VIEW.tileH * 1.5;
-    const maxY = Math.max(...ys) - this.height * .5 + VIEW.tileH * 1.5;
+    const minX = Math.min(...xs) + width * .5 - VIEW.tileW;
+    const maxX = Math.max(...xs) - width * .5 + VIEW.tileW;
+    const minY = Math.min(...ys) + height * .5 - VIEW.tileH * 1.5;
+    const maxY = Math.max(...ys) - height * .5 + VIEW.tileH * 1.5;
     this.camera.x = minX > maxX ? (minX + maxX) * .5 : clamp(this.camera.x, minX, maxX);
     this.camera.y = minY > maxY ? (minY + maxY) * .5 : clamp(this.camera.y, minY, maxY);
   }
 
   render(game, delta) {
+    const width=this.width,height=this.height,scale=this.scale,zoom=this.zoom||1;
+    let drawables;
+    this.ctx.save();this.renderingWorld=true;
+    this.width=width/zoom;this.height=height/zoom;this.scale=scale*zoom;
+    try { drawables=this.drawWorld(game,delta); }
+    finally { this.width=width;this.height=height;this.scale=scale;this.renderingWorld=false;this.ctx.restore(); }
+    for(const hotspot of this.hotspots){hotspot.x*=zoom;hotspot.y*=zoom;hotspot.radius*=zoom;}
+    this.drawVignette();drawCameraOverlay(this,game);this.drawEntityStatuses(game,drawables);
+  }
+
+  stepZoom(direction,player) {
+    const levels=VIEW.zoomLevels,index=levels.indexOf(this.zoom);
+    this.zoom=levels[clamp(index+Math.sign(direction),0,levels.length-1)];
+    if(this.cameraFollowing)this.follow(player,true);else this.clampCamera();
+    return this.zoom;
+  }
+
+  drawWorld(game, delta) {
     this.frame++;
     this.updateMetrics(delta);
     if (this.invalidDestination) {
@@ -223,10 +245,7 @@ export class Renderer {
     this.drawTracers();
     this.drawNoiseHints(game.world);
     this.drawLighting(game);
-    this.drawVignette();
-    drawCameraOverlay(this, game);
-    // Draw after scenery/lighting: cover never hides the player's status icons.
-    this.drawEntityStatuses(game, drawables);
+    return drawables;
   }
 
   drawEntityStatuses(game, drawables) {
@@ -239,7 +258,7 @@ export class Renderer {
       const icons = isPlayer ? playerStatusIcons(game) : zombieStatusIcons(entity, game);
       for (const icon of icons) {
         const x = isPlayer ? clamp(p.x + 20, 4, this.width - 63) + (icon.slot % 3) * 21 : p.x - 20 + icon.slot * 21;
-        const y = Math.max(5, isPlayer ? p.y - 43 + Math.floor(icon.slot / 3) * 21 : p.y - 72);
+        const y = Math.max(5, isPlayer ? p.y - Math.max(43,heightPixels(1.8)*(this.zoom||1)+8) + Math.floor(icon.slot / 3) * 21 : p.y - Math.max(72,heightPixels(2)*(this.zoom||1)+8));
         this.drawStatusIcon(icon, x, y);
       }
     }

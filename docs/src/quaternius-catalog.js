@@ -1,7 +1,9 @@
 import MODELS from "../assets/quaternius/models.json" with { type: "json" };
+import ANIMATIONS from "../assets/quaternius/player-animations.json" with { type: "json" };
 import { metersToTiles, WORLD_SCALE } from "./world-scale.js";
 
 export { MODELS as QUATERNIUS_MODELS };
+export { ANIMATIONS as PLAYER_ANIMATIONS };
 export const CHARACTER_STYLES = Object.freeze({
   male: { Casual_2: "Alltag", Casual_Hoodie: "Kapuzenjacke", Worker: "Arbeitskleidung", Farmer: "Landarbeit",
     Adventurer: "Outdoor", Suit: "Anzug", Punk: "Punk", Swat: "Einsatzkleidung" },
@@ -35,19 +37,27 @@ export const playerModelScale = appearance => playerHeight(appearance)/MODELS.pl
 
 export const FURNITURE_MODELS = Object.freeze({
   cabinet: { asset: "Kitchen_Cabinet1" }, fridge: { asset: "Kitchen_Fridge" }, shelf: { asset: "Bookshelf" },
-  bed: { asset: "Bed_Single" }, desk: { asset: "Table_RoundSmall" },
+  bed: { asset: "Bed_Single" }, desk: { asset: "Table_RoundLarge",height:.74 },
   locker: { asset: "Shelf_2", front: true }, gunlocker: { asset: "Shelf_2", front: true },
   counter: { asset: "Kitchen_3Drawers", count: 3 },
 });
 
-export function furnishingDimensions(type) {
-  const definition = FURNITURE_MODELS[type]; if (!definition) return null;
+export function furnishingDefinition(object) {
+  if(typeof object==="string")return FURNITURE_MODELS[object];
+  return MODELS.interiors[object.modelAsset]?{asset:object.modelAsset}:FURNITURE_MODELS[object.type];
+}
+
+export const furnishingYaw=object=>object.yaw??(object.orientation==="y"?-Math.PI/2:0);
+
+export function furnishingDimensions(object) {
+  const definition = furnishingDefinition(object); if (!definition) return null;
   const size = MODELS.interiors[definition.asset].dimensions;
-  return { ...size, width: size.width*(definition.count || 1), depth: size.depth+(definition.front ? .07 : 0) };
+  return { ...size,height:(typeof object==='object'?object.modelHeight:null)||definition.height||size.height,
+    width: size.width*(definition.count || 1), depth: size.depth+(definition.front ? .07 : 0) };
 }
 
 export function furnishingFootprint(object) {
-  const size = furnishingDimensions(object.type); if (!size) return null;
-  return object.orientation === "y" ? { x: metersToTiles(size.depth/2), y: metersToTiles(size.width/2) }
-    : { x: metersToTiles(size.width/2), y: metersToTiles(size.depth/2) };
+  const size = furnishingDimensions(object); if (!size) return null;
+  const yaw=furnishingYaw(object),c=Math.abs(Math.cos(yaw)),s=Math.abs(Math.sin(yaw));
+  return {x:metersToTiles((size.width*c+size.depth*s)/2),y:metersToTiles((size.width*s+size.depth*c)/2)};
 }

@@ -1,5 +1,5 @@
 import { activeWeapon, itemDefinition } from "./inventory.js";
-import { defaultStyle, playerModelAppearance, playerModelScale, QUATERNIUS_MODELS } from "./quaternius-catalog.js";
+import { defaultStyle, playerModelAppearance, playerModelScale, QUATERNIUS_MODELS, PLAYER_ANIMATIONS } from "./quaternius-catalog.js";
 import { WORLD_SCALE } from "./world-scale.js";
 
 const modulo = value => ((value%1)+1)%1;
@@ -9,19 +9,20 @@ export class PlayerMotion {
   sample(player,time) {
     const appearance=playerModelAppearance(player),scale=playerModelScale(appearance);
     const definition=QUATERNIUS_MODELS.characters[`${appearance.sex}-${defaultStyle(appearance.sex)}`];
+    const clipData=name=>PLAYER_ANIMATIONS.clips[name]||definition.clips[name];
     let record=this.entities.get(player);
     if(!record||time<record.time){record={time,x:player.x,y:player.y,phase:0,attackStart:-Infinity,attackTimer:0,shots:player.shots||0};this.entities.set(player,record);}
     const delta=Math.max(0,time-record.time),combat=player.combat||{},weapon=itemDefinition(activeWeapon(player));
     const firearm=weapon?.weaponKind==="firearm";
     if((combat.attackTimer||0)>record.attackTimer+.05){record.attackStart=time;record.attackClip=weapon?"Sword_Slash":"Punch_Right";}
     if((player.shots||0)>record.shots){record.attackStart=time;record.attackClip="Gun_Shoot";}
-    const attackAge=time-record.attackStart,attackData=definition.clips[record.attackClip];
-    let clip=player.moving?(player.running?"Run":"Walk"):(firearm?(combat.enabled?"Idle_Gun_Pointing":"Idle_Gun"):"Idle_Neutral");
+    const attackAge=time-record.attackStart,attackData=clipData(record.attackClip),crouched=player.stance==='sneak'&&!player.running;
+    let clip=player.moving?(player.running?'Run':crouched?'Crouch_Walk':'Walk'):(crouched?'Crouch_Idle':firearm?(combat.enabled?'Idle_Gun_Pointing':'Idle_Gun'):'Idle_Neutral');
     let progress;
     if(player.dead){clip="Death";progress=1;}
     else if(attackData&&attackAge<attackData.duration-.1){clip=record.attackClip;progress=Math.min(1,(attackAge+.1)/attackData.duration);}
     else {
-      const data=definition.clips[clip];
+      const data=clipData(clip);
       if(player.moving) {
         const travel=Math.hypot(player.x-record.x,player.y-record.y)*WORLD_SCALE.metersPerTile;
         if(delta>0&&travel<3)record.phase=modulo(record.phase+travel/(data.distance*scale));
@@ -29,6 +30,6 @@ export class PlayerMotion {
       progress=record.phase;
     }
     Object.assign(record,{time,x:player.x,y:player.y,attackTimer:combat.attackTimer||0,shots:player.shots||0});
-    return {appearance,scale,clip,progress,delta:Math.min(.1,delta),yaw:Math.atan2(player.facingX??0,player.facingY??1),crouched:player.stance==="sneak"};
+    return {appearance,scale,clip,progress,delta:Math.min(.1,delta),yaw:Math.atan2(player.facingX??0,player.facingY??1),crouched};
   }
 }

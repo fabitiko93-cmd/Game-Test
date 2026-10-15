@@ -1,4 +1,4 @@
-import { AnimationMixer, Box3, Group, LoopOnce, Quaternion, Skeleton, Vector3 } from "three";
+import { AnimationMixer, Box3, Group, LoopOnce, Skeleton, Vector3 } from "three";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { defaultStyle, playerModelScale, QUATERNIUS_MODELS } from "./quaternius-catalog.js";
@@ -17,47 +17,17 @@ function rebindPart(original,model) {
   return part;
 }
 
-function rotateBone(bone,from,to) {
-  const rotation=new Quaternion().setFromUnitVectors(from.normalize(),to.normalize());
-  const world=bone.getWorldQuaternion(new Quaternion()).premultiply(rotation);
-  bone.quaternion.copy(bone.parent.getWorldQuaternion(new Quaternion()).invert().multiply(world));bone.updateMatrixWorld(true);
-}
-
-export function crouchSkeleton(entity,amount) {
-  if(amount<.001)return;
-  const body=entity.model.getObjectByName("Body"),hips=body.getWorldPosition(new Vector3());
-  const forward=new Vector3(0,0,1).applyQuaternion(entity.root.quaternion);
-  const legs=["L","R"].map(side=>({upper:entity.model.getObjectByName(`UpperLeg${side}`),
-    lower:entity.model.getObjectByName(`LowerLeg${side}`),foot:entity.model.getObjectByName(`Foot${side}`)}));
-  const goals=legs.map(leg=>({position:leg.foot.getWorldPosition(new Vector3()),rotation:leg.foot.getWorldQuaternion(new Quaternion())}));
-  const affected=[body,...legs.flatMap(leg=>[leg.upper,leg.lower,leg.foot])];
-  entity.overlay=affected.map(bone=>({bone,position:bone.position.clone(),rotation:bone.quaternion.clone()}));
-  hips.y-=.22*amount;body.position.copy(body.parent.worldToLocal(hips));entity.root.updateMatrixWorld(true);
-  legs.forEach((leg,i)=>{
-    const start=leg.upper.getWorldPosition(new Vector3()),knee=leg.lower.getWorldPosition(new Vector3()),end=leg.foot.getWorldPosition(new Vector3());
-    const a=start.distanceTo(knee),b=knee.distanceTo(end),goal=goals[i].position;
-    const direction=goal.clone().sub(start),distance=Math.min(a+b-.00001,direction.length());direction.normalize();
-    const along=(a*a-b*b+distance*distance)/(2*distance),height=Math.sqrt(Math.max(0,a*a-along*along));
-    const bend=forward.clone().addScaledVector(direction,-forward.dot(direction)).normalize();
-    const target=start.clone().addScaledVector(direction,along).addScaledVector(bend,height);
-    rotateBone(leg.upper,knee.clone().sub(start),target.clone().sub(start));
-    const movedKnee=leg.lower.getWorldPosition(new Vector3()),movedFoot=leg.foot.getWorldPosition(new Vector3());
-    rotateBone(leg.lower,movedFoot.sub(movedKnee),goal.clone().sub(movedKnee));
-    leg.foot.quaternion.copy(leg.foot.parent.getWorldQuaternion(new Quaternion()).invert().multiply(goals[i].rotation));
-    leg.foot.updateMatrixWorld(true);
-  });
-}
-
 export class PlayerModels {
   constructor(pass,library) {
     this.pass=pass;this.library=library;this.entities=new Map();this.used=new Set();this.motion=new PlayerMotion();
-    this.ready=Promise.all(["male-Casual_2","female-Casual","male-Worker","female-Worker","male-Swat","male-Adventurer","Knife"].map(key=>library.request(key)));
+    this.ready=Promise.all(["male-Casual_2","female-Casual","male-Worker","female-Worker","male-Swat","male-Adventurer","Knife","player-motion"].map(key=>library.request(key)));
   }
   beginFrame(){this.used.clear();}
 
   entity(player,appearance) {
     const baseKey=`${appearance.sex}-${defaultStyle(appearance.sex)}`,base=this.library.get(baseKey);
-    const needed=PARTS.map(slot=>this.library.get(appearance[slot]));if(!base||needed.some(x=>!x))return null;
+    const motions=this.library.get('player-motion');
+    const needed=PARTS.map(slot=>this.library.get(appearance[slot]));if(!base||!motions||needed.some(x=>!x))return null;
     const signature=PARTS.map(slot=>appearance[slot]).join("|");
     let entity=this.entities.get(player);
     if(entity?.signature===signature)return entity;
@@ -70,14 +40,14 @@ export class PlayerModels {
       const part=rebindPart(needed[i].scene.getObjectByName(name),model);
       part.traverse(o=>{o.visible=true;});armature.add(part);
     }
-    const mixer=new AnimationMixer(model),actions=new Map(base.animations.map(clip=>{
+    const mixer=new AnimationMixer(model),actions=new Map([...base.animations,...motions.animations].map(clip=>{
       const action=mixer.clipAction(clip).setEffectiveTimeScale(0);
-      if(!["Walk","Run","Idle_Neutral","Idle_Gun","Idle_Gun_Pointing"].includes(clip.name)){action.setLoop(LoopOnce,1);action.clampWhenFinished=true;}
+      if(!["Walk","Run","Idle_Neutral","Idle_Gun","Idle_Gun_Pointing","Crouch_Walk","Crouch_Idle"].includes(clip.name)){action.setLoop(LoopOnce,1);action.clampWhenFinished=true;}
       return [clip.name,action];
     }));
     root.scale.setScalar(playerModelScale(appearance));
     root.position.y=QUATERNIUS_MODELS.characters[appearance.feet].groundOffset*root.scale.y;
-    entity={root,model,mixer,actions,signature,current:null,clip:null,crouch:0,overlay:[],weapon:null,weaponKind:null};
+    entity={root,model,mixer,actions,signature,current:null,clip:null,weapon:null,weaponKind:null};
     this.entities.set(player,entity);return entity;
   }
 
@@ -111,14 +81,11 @@ export class PlayerModels {
   }
 
   pose(entity,pose) {
-    for(const state of entity.overlay){state.bone.position.copy(state.position);state.bone.quaternion.copy(state.rotation);}entity.overlay=[];
     const action=entity.actions.get(pose.clip);
     if(entity.clip!==pose.clip){action.reset().setEffectiveTimeScale(0).setEffectiveWeight(1).play();if(entity.current)entity.current.crossFadeTo(action,.16,false);entity.current=action;entity.clip=pose.clip;}
     action.time=Math.min(.999999,pose.progress)*action.getClip().duration;entity.mixer.update(pose.delta);
     for(const other of entity.actions.values())if(other!==action&&other.getEffectiveWeight()===0)other.stop();
     entity.root.rotation.y=pose.yaw;entity.root.updateMatrixWorld(true);
-    entity.crouch+=(Number(pose.crouched)-entity.crouch)*Math.min(1,pose.delta*8);
-    crouchSkeleton(entity,entity.crouch);
   }
 
   draw(ctx,player,time,point) {

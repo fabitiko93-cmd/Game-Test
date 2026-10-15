@@ -1,3 +1,21 @@
+# Zoom, echte Schleichanimation und eingerichtete Räume · 16.10.2026
+
+- Kamera standardmäßig auf 175 %, per +/− zwischen 100 und 250 % verstellbar.
+  Welt, Modelle, Nebel und Antippziele folgen derselben Projektion; HUD und
+  Statusicons bleiben gleich groß. Bestehende Tipp-/Haltegesten bleiben erhalten.
+- Kostenlose Quaternius Universal Animation Library: Crouch-Idle und Crouch-Walk
+  auf beide modularen Figurenrigs übertragen. Die berechnete Duckpose entfällt.
+  Getrennte Fußknochen folgen den Schienbeinen, Sohlen haben Bodenkontakt; die
+  Schleichphase folgt der tatsächlichen Strecke. Vorhandene Kampfclips geprüft.
+- 69 einzelne Möbel und Details ergänzen die vier Gebäude: Küchenzeile mit
+  Hängeschränken/Herd/Spüle, Ess- und Wohnbereich, Nachttisch, Kommoden, Arbeitsplätze,
+  Warte-/Personalbereiche und weitere Waren-/Rezepturschränke. Ess-/Arbeitstische
+  auf 74 cm Höhe abgestimmt. Neue Behälter zunächst leer; Loot-Icons und weitere
+  Gegenstandsmodelle folgen separat.
+- Behälter öffnen erst innerhalb von 50 cm zum wirklichen Rand. Exakte
+  Annäherungspunkte funktionieren auch zwischen den Wegzellen; Auswahl, Öffnen
+  und Itemübernahme verwenden dieselbe Prüfung. Alle Behälter bleiben erreichbar.
+
 # Modulare Player und Quaternius-Einrichtung · 16.10.2026
 
 - Beide kostenlosen modularen Figurenpacks integriert: 21 Figuren mit je 24

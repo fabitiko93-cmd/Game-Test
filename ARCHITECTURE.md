@@ -10,7 +10,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 
 | Aufgabe | Zuständige Module | Relevante Verbindung |
 |---|---|---|
-| Tap, Doppeltap, Halten, Kamera | `input.js`, `world-input.js` | Eingabeereignis → Ziel/Interaktion/Kamera; Bildschirmkoordinaten in `render.js` |
+| Tap, Doppeltap, Halten, Kamera | `input.js`, `world-input.js`, `render.js`, `config.js` | Eingabeereignis → Ziel/Interaktion/Kamera. Zoom 100–250 %, Standard 175 %, nur +/−; Welt in passender Geräteauflösung, UI/Statusicons in Bildschirmkoordinaten. Projektion und inverse Tap-Koordinaten berücksichtigen Zoom; Ziehen bleibt pixelgenau. |
 | Spielersicht, Erkundung, Kameranebel | `player-visibility.js`, `camera-overlay.js` | 16-Tile-Rundumsicht unabhängig von Deckung/KI; Erkundung in Save v4, gemeinsame Sichtgrenze für Darstellung und Auswahl; Kamera bewegt nur den Bildausschnitt |
 | Laufziel, Weg und Ankunft | `player-navigation.js`, `movement.js` | Vierteltile-Spielerwege, präzise Ziele, begrenzte Deckungspräferenz; `navigation.js` bleibt die gröbere Zombie-Wegsuche |
 | Deckungszone und Hide | `cover.js`, `cover-protection.js`, `stealth.js`, `cover-display.js`, `cover-surface.js` | Vegetation tarnt rundum, feste Deckung schützt pro Beobachter; gleiche Flächen/Kollision für Hide, Execution-Wege und interpolierte Bodenanzeigen; Darstellung in `render.js` |
@@ -18,7 +18,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Ruhephasen und Schlurfen | `zombie-idle.js` | Nur `idle`: Pausen, kurze erreichbare Wege und träge Drehung; `ai.js` behält Wahrnehmung und aktive Zustände |
 | Zombie-Körper und Zuwanderung | `zombie-collision.js`, `ai.js`, `movement.js` | Maßstäbliche Körperradien, kontinuierliche Kontaktprüfung, seitliches Ausweichen und begrenzte Trennung alter Überlappungen. Weltkollisionen bleiben maßgeblich. Zuwanderung außerhalb der Spielersicht mit Abstand; ruhiger Weg ins Gebiet ohne erfundenen Suchreiz. |
 | Zombie-Modelle und Animationen | `zombie-models.js`, `zombie-motion.js`, `docs/assets/zombies3d/` | Zehn echte skinned GLBs, Three.js als fest gepinnte gebündelte Abhängigkeit, interpolierte Original-Schlüssel und Pose-Blends pro Renderbild; Gehphase aus tatsächlicher Strecke und gemessenem Fußweg je Modell. Gemeinsame 2:1-Kamera und kontinuierliche Blickrichtung. Frischer WebGL-Pass pro Figur wird in die bestehende Tiefensortierung eingemischt; `render.js` behält Wände/Bäume/Dächer, Schatten und Status. Aufbereitung: `scripts/prepare-zombies-3d.py`. `zombie-animation.js`/`zombie-sprites.js` und bisherige Atlanten dienen als Ersatz bei fehlendem WebGL oder Ladefehlern. |
-| Player-Modelle und Kleidung | `player-models.js`, `player-motion.js`, `quaternius-catalog.js`, `held-equipment.js` | Quaternius-Rigs mit vier austauschbaren Kleidungsteilen und 24 Originalclips. Wahl von Körper/Grundstil in `ui.js`; vorhandene Jacken/Jeans wechseln Modellteile. Schrittphase aus tatsächlicher Strecke, geduckte Pose mit Fuß-IK und Original-Todespose. |
+| Player-Modelle und Kleidung | `player-models.js`, `player-motion.js`, `quaternius-catalog.js`, `held-equipment.js` | Quaternius-Rigs mit vier austauschbaren Kleidungsteilen und 24 Originalclips plus zwei übertragenen Universal-Library-Schleichclips. Wahl von Körper/Grundstil in `ui.js`; vorhandene Jacken/Jeans wechseln Modellteile. Geh-/Schleichphase aus tatsächlicher Strecke, weiche Posewechsel und Original-Todespose. Übertragung: `scripts/prepare-player-animations.mjs`. |
 | Gemeinsamer Modellpass und Einrichtung | `model-pass.js`, `quaternius-assets.js`, `world-models.js`, `docs/assets/quaternius/` | Ein WebGL-Kontext für Zombies, Player und statische Einrichtung; gleiche 2:1-Kamera und Meterprojektion. Neue Farbmodelle können ohne WebGL als echte animierte Canvas-Dreiecke erscheinen. Möbel/Blätter einmal pro Ausrichtung und Geräteauflösung zwischengespeichert. Maße aus Assetmetadaten gelten auch in `world.js` für Kollision und Wege. Aufbereitung: `scripts/prepare-quaternius.py`, danach `scripts/measure-quaternius.mjs`; Quellen/Maße im Asset-README. |
 | Größenmaßstab und Körperhöhen | `world-scale.js`, `zombie-appearance.js`, `locomotion.js`, `docs/assets/reference-scale.json` | Gemeinsamer Metermaßstab für Player, DIN-Türblatt, Kühlgerät und Zombie-Modelle. ID-stabile Zombie-Körperhöhen; Player 1,80 m männlich / 1,68 m weiblich. `locomotion.js` hält Geschwindigkeiten in m/s und die Umrechnung in vorhandene Tiles. Vergleich/Quellen: `docs/assets/scale-reference/`; Generator `scripts/prepare-scale-reference.py`. |
 | Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Ansatz prüft Ziel vor Bewegung in `movement.js`, verdeckte Wege und Zielumfahrung über `player-navigation.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
@@ -36,6 +36,12 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
 Ein Patch erfordert nicht automatisch das Lesen jeder Datei in seiner Tabellenzeile.
+
+`interior-layout.js` ergänzt die vier Gebäude um einzeln adressierbare Möbel,
+Wandmontagen und Tischobjekte. `quaternius-catalog.js` liefert gedrehte physische
+Fußabdrücke und metrische Tischhöhen. `interaction.js` begrenzt Behälter auf 50 cm
+vom tatsächlichen Rand; `player-navigation.js` ergänzt dafür genaue Endpunkte
+zwischen den 50-cm-Wegzellen. Auch die Itemübernahme prüft die Nähe erneut.
 
 ## Bestehende Kopplungen
 
@@ -106,6 +112,10 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
   Zonenkanten/Wandkollision, Türöffnungen, sichere Execution-Wege und bestehende Geräuschregeln.
 - `.github/workflows/verify.yml`: alle Tests, JavaScript-Syntax und erforderliche
   Spieldateien. Bei reinen Dokumentationsänderungen genügt eine Diff-Prüfung.
+- `camera-interaction.test.mjs`: Projektion/inverse Taps, Ziehen und Zoomgrenzen,
+  native Weltauflösung und konstante UI-Koordinaten, echte HUD-Touchhandler ohne
+  anschließende Bewegungsbefehle, kurze Rand-Reichweite, vollständige Containerwege
+  in der eingerichteten Karte und echte Kampfereignisse mit Originalanimationen.
 - Browserprüfung auf die veränderte Bedienung oder Darstellung begrenzen.
   Eine Browser-/Canvasprüfung ersetzt keinen Test auf dem tatsächlichen iPhone.
 - Vor Spielreleases `npm run build`, `npm test` und `npm run build:check` verwenden.

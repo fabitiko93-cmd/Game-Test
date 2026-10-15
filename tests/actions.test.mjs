@@ -127,7 +127,7 @@ function fixture() {
   const mod = createItem("reflex_sight"); addItem(g.player, mod); g.useItem(mod.id);
   assert.equal(equipped.mods.optic.type, "reflex_sight");
   g.unmountMod(weapon.id, "optic"); assert.equal(equipped.mods.optic, undefined);
-  const loot = { items: [createItem("apple"), createItem("bandage")] };
+  const loot = {type:'groundloot',x:g.player.x,y:g.player.y, items: [createItem("apple"), createItem("bandage")] };
   g.takeAll(loot);
   assert.equal(loot.items.length, 0);
   const item = g.player.inventory.find(i => i.type === "apple");

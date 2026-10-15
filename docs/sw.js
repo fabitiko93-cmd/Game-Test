@@ -1,7 +1,8 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "f2b4ab2069eabd7a7a0d";
+const BUILD_ID = "52052a39b1533f3f6d01";
 const FILES = [
   "./assets/icon.svg",
+  "./assets/quaternius/ANIMATION-LICENSE.txt",
   "./assets/quaternius/Bathroom_Bathtub-72efe624dac0.glb.gz",
   "./assets/quaternius/Bathroom_Mirror1-3eec82fe5368.glb.gz",
   "./assets/quaternius/Bathroom_Mirror2-7e3a23339c17.glb.gz",
@@ -149,6 +150,8 @@ const FILES = [
   "./assets/quaternius/male-Swat-52089d8b90c8.glb.gz",
   "./assets/quaternius/male-Worker-d9f9756de423.glb.gz",
   "./assets/quaternius/models.json",
+  "./assets/quaternius/player-animations.json",
+  "./assets/quaternius/player-crouch-68cf13051891.glb.gz",
   "./assets/reference-scale.json",
   "./assets/scale-reference/README.md",
   "./assets/scale-reference/front.png",
@@ -240,8 +243,8 @@ const FILES = [
   "./assets/zombies3d/README.md",
   "./assets/zombies3d/THREE-LICENSE.txt",
   "./assets/zombies3d/models.json",
-  "./build/main-VJ4675ZA.js",
-  "./build/style-44A7AVKL.css",
+  "./build/main-TJFFSUXK.js",
+  "./build/style-OG62C7ZS.css",
   "./index.html",
   "./manifest.webmanifest"
 ];

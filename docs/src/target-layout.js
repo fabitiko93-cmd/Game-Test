@@ -1,3 +1,5 @@
+import { heightPixels } from "./world-scale.js";
+
 const gap = 8;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -51,7 +53,7 @@ export class TargetLayout {
     this.el = elements;
     this.controls = [elements.hud.querySelector(".top-left"), elements.hud.querySelector(".utility"),
       ...elements.hud.querySelectorAll(".actions button"), elements.quickbar,
-      elements.hud.querySelector(".control-hint"), elements.message, elements.toast].filter(Boolean);
+      elements.hud.querySelector(".control-hint"), elements.hud.querySelector(".zoom-controls"), elements.message, elements.toast].filter(Boolean);
     this.geometry = null;
     this.sizes = new Map();
     this.previous = new Map();
@@ -91,13 +93,14 @@ export class TargetLayout {
     const protect = (entity, important = false, object = false) => {
       if (!entity) return;
       const point = game.renderer.iso(entity.x, entity.y);
-      const rect = padded({ x: point.x - (object ? 55 : 35), y: point.y - (object ? 70 : 80),
-        width: object ? 110 : 105, height: object ? 95 : 100 }, 6);
+      const top=object?70:Math.max(80,heightPixels(2)*(game.renderer.zoom||1)+12);
+      const rect = padded({ x: point.x - (object ? 55 : 35), y: point.y - top,
+        width: object ? 110 : 105, height: top+20 }, 6);
       focus.push(rect); if (important) essential.push(rect);
     };
     protect(game.player, true); protect(enemy, true); protect(context, true, true);
     const p = game.renderer.iso(game.player.x, game.player.y);
-    const icons = padded({ x: clamp(p.x + 20, 4, game.renderer.width - 63), y: Math.max(5, p.y - 43), width: 63, height: 63 }, 6);
+    const icons = padded({ x: clamp(p.x + 20, 4, game.renderer.width - 63), y: Math.max(5, p.y - Math.max(43,heightPixels(1.8)*(game.renderer.zoom||1)+8)), width: 63, height: 63 }, 6);
     focus.push(icons); essential.push(icons);
     for (const zombie of game.zombies) if (!zombie.removed && zombie !== enemy
       && Math.hypot(zombie.x - game.player.x, zombie.y - game.player.y) < 8) protect(zombie);
