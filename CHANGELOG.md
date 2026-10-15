@@ -1,3 +1,25 @@
+# Animierte Polyart-Zombies · 15.10.2026
+
+- Zehn Zombie-Modelle von Denys Almaral (fünf weiblich, fünf männlich) ersetzen
+  die bisherigen Blockfiguren. Haare und Hüte bleiben erhalten. Acht isometrische
+  Blickrichtungen, gemeinsame Fußpunkte und bestehende Tiefensortierung.
+- Die zehn Bewegungen aus dem gemeinsamen GLB-Take sind auf die passenden
+  Zustände verteilt und auf alle benötigten Charaktervarianten übertragen:
+  Ruhe, Aufmerksamkeit, langsames/ungleichmäßiges Schlurfen, Untersuchung,
+  Rennen und abwechselnde linke/rechte Angriffe mit Erholung.
+- Schrittphasen folgen tatsächlich zurückgelegter Strecke. Ruheanimationen
+  folgen der Spielzeit und stoppen bei Pause. Angriffe passen zur bestehenden
+  Anlaufzeit von 0,28 Sekunden; Treffer und Abklingzeit bleiben unverändert.
+- Vorgerenderte transparente Atlanten für Canvas 2D, Bedarfsladen und begrenzter
+  Bildcache. Während eines Animationswechsels bleibt die zuletzt geladene Pose
+  sichtbar. Neue Assets gehören automatisch zum vollständigen Offlinecache.
+- Auch bestehende Save-v4-Welten verteilen die zehn Erscheinungen ohne Reset.
+  Auswahl, Lebensbalken, Statusicons, Sichtkegel, KI, Geräusche, Ausdauer und
+  bestehendes Sterbeverhalten bleiben erhalten. Eine eigene Todesanimation
+  enthält das Quellpaket nicht.
+- Automatische Prüfungen für die Zuordnung, alle PNG-Raster, 30/60-FPS-Gangphasen,
+  Pause, Angriffstiming und Bildcache; Canvas-Spielansichten mit allen Varianten.
+
 # Weiche Sichtkegel und Verfolgungstempo · 14.10.2026
 
 - Sichtkegel als transparenter Lichtschein ohne farbige oder dunkle Kontur.

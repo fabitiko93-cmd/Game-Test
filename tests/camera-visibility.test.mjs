@@ -110,6 +110,7 @@ test("render keeps nearby covered enemies, remembers scenery and hides distant z
     zombies: [{ id: "near-covered", x: 12, y: 10 }, { id: "far", x: 35, y: 10 }], contextObject: () => null };
   const renderer = Object.create(Renderer.prototype);
   Object.assign(renderer, { frame: 0, width: 960, height: 500, scale: 1, cameraFollowing: true,
+    zombieSprites: { beginFrame() {}, endFrame() {} },
     ctx: { setTransform() {}, fillRect() {}, save() {}, restore() {}, beginPath() {}, rect() {}, ellipse() {}, fill() {} },
     hotspots: [], metrics: {}, iso: (x, y) => ({ x: x * 10, y: y * 10 }), visibleWorldBounds: () => ({ minX: 0, minY: 0, maxX: 47, maxY: 47 }) });
   for (const method of ["updateMetrics", "updateParticles", "updateTracers", "follow", "drawGround", "drawBlood", "drawPlayerNoise",
