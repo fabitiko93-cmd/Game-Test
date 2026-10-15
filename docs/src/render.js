@@ -34,8 +34,7 @@ export class Renderer {
     this.frame = 0;
     this.visionCones = new VisionConeDisplay();
     this.zombieSprites = new ZombieSprites();
-    // Public canary for visual QA before making the new renderer the default.
-    this.zombieModels = new URLSearchParams(window.location.search).get("zombies3d") === "preview" ? new ZombieModels() : null;
+    this.zombieModels = new ZombieModels();
     this.statusPaths = new Map(Object.entries(STATUS_ICONS).map(([id, icon]) => [id, new Path2D(icon.path)]));
     this.coverHintCache = { key: "", map: null, paths: null };
     this.diagnostics = false;
