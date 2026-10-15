@@ -16,3 +16,9 @@ export function zombieBodyProfile(zombie) {
   return { variant, sex: female ? "female" : "male", height,
     scale: height / WORLD_SCALE.zombies.sourceReferenceHeights[variant] };
 }
+
+export function zombieCorpseAppearance(zombie) {
+  // Keep the original ID: both initial variants and individual height use it.
+  return { id: zombie.id, variant: zombieVariant(zombie),
+    facingX: zombie.facingX ?? 0, facingY: zombie.facingY ?? 1 };
+}

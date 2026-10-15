@@ -88,6 +88,10 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
   bei 30/60/120 Hz, 32 kontinuierliche Richtungen zur echten Renderkamera,
   Zwischenposen innerhalb eines 60-Hz-Frames, Pause, Pose-Blends und frische
   Farb-/Tiefenpuffer ohne Motion Blur; unveränderte Geräusch-/Ausdauerwerte.
+- `zombie-corpses.test.mjs`: echte Tötung mit gleicher Modellidentität und Körpergröße,
+  Loot/Selektion und aktuellem Save-Roundtrip; passende Originalmodell-Sprites als
+  WebGL-Ersatz. `zombie-models.test.mjs` prüft zusätzlich die zehn liegenden,
+  unbewegten Skelettkörper mit Bodenkontakt und unveränderter Geometrie.
 - `zombie-collision.test.mjs`: Gegenverkehr, Türdurchgang und zwanzig gleichzeitig
   verfolgende Zombies bei 30/60 Hz ohne Körperüberlappung, kein Durchtunneln,
   sanfte Auflösung alter Stapel vor Wänden/Fahrzeugen, unsichtbare und ruhige

@@ -1,5 +1,6 @@
-import { ZombieAnimator } from "./zombie-animation.js";
+import { ZombieAnimator, zombieDirection } from "./zombie-animation.js";
 import ATLAS from "../assets/zombies/atlas.json" with { type: "json" };
+import CORPSES from "../assets/zombies/corpses.json" with { type: "json" };
 import { zombieBodyProfile } from "./zombie-appearance.js";
 import { pixelsPerMeter, cameraElevationCosine } from "./world-scale.js";
 
@@ -80,4 +81,18 @@ export class ZombieSprites {
   }
 
   endFrame() { this.trim(); }
+
+  drawCorpse(ctx, corpse, p) {
+    const zombie = corpse.zombieAppearance, body = zombieBodyProfile(zombie);
+    const image = this.sheet(`${body.variant}-corpse`, CORPSES.variants[body.variant]);
+    if (!image) return false;
+    const { width, height, anchor, pixelsPerMeter: bakedScale, directionRows } = CORPSES;
+    const factor = pixelsPerMeter/bakedScale*body.scale;
+    const row = directionRows[zombieDirection(zombie)];
+    ctx.save(); ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(image, 0, row*height, width, height,
+      p.x-anchor[0]*factor, p.y-anchor[1]*factor, width*factor, height*factor);
+    ctx.restore();
+    return true;
+  }
 }
