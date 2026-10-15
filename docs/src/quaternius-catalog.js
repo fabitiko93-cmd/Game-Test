@@ -24,8 +24,12 @@ export function createPlayerAppearance(profile = {}) {
 
 export function playerModelAppearance(player) {
   const appearance = createPlayerAppearance(player.appearance);
-  const equipped = slot => player.inventory?.find(item=>item.id===player.equipment?.[slot])?.type;
-  const torso = equipped("torso"), legs = equipped("legs");
+  const equippedItem = slot => player.inventory?.find(item=>item.id===player.equipment?.[slot]);
+  for(const slot of ['torso','legs']) {
+    const item=equippedItem(slot),key=`${appearance.sex}-${item?.modelStyle}`;
+    if(['outfit_top','outfit_trousers'].includes(item?.type)&&MODELS.characters[key])appearance[slot]=key;
+  }
+  const torso = equippedItem("torso")?.type, legs = equippedItem("legs")?.type;
   if (torso === "work_jacket") appearance.torso = `${appearance.sex}-Worker`;
   if (torso === "leather_jacket") appearance.torso = `${appearance.sex}-Punk`;
   if (legs === "jeans") appearance.legs = `${appearance.sex}-${defaultStyle(appearance.sex)}`;

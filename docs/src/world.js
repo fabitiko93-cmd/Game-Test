@@ -536,6 +536,7 @@ export class World {
         zombieAppearance: object.zombieAppearance,
         playerAppearance: object.playerAppearance,
         facingYaw: object.facingYaw,
+        placementRole:object.placementRole,supportId:object.supportId,renderDepth:object.renderDepth,
         modelAsset:object.modelAsset,modelHeight:object.modelHeight,elevationMeters:object.elevationMeters,yaw:object.yaw,lootable:object.lootable,
       }));
   }

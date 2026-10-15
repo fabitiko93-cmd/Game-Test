@@ -1,3 +1,19 @@
+# Präzise Behälterauswahl, Startkleidung und Möblierung · 16.10.2026
+
+- Antippflächen folgen den projizierten Möbelkörpern einschließlich der Höhe.
+  Bei mehreren Zielen erscheint eine nummerierte Liste mit Namen und Entfernung;
+  passende Nummern stehen direkt am Objekt. Die Wahl markiert das Ziel, AKTION
+  führt anschließend hin bzw. benutzt es. Ein ausdrücklich gewähltes Ziel wird
+  nicht durch einen anderen nahen Behälter ersetzt. Keine neuen Touchgesten.
+- Gewählte Startkleidung bleibt auch mit angezogener Ausrüstung sichtbar.
+  Oberteil und Hose sind eigene Gegenstände mit gespeichertem Modellstil;
+  gefundene Arbeits-/Lederjacken und Jeans ersetzen das jeweilige Kleidungsteil.
+  Bisherige Schutz-, Gewichts- und Zustandswerte bleiben erhalten.
+- Kleine Topfpflanzen stehen auf Ess-/Schreibtischen, Kommode und Beistelltisch.
+  Lampen und Geschirr erhalten ihre Höhe aus der wirklichen Unterlage und werden
+  nach ihr gezeichnet. Wohnbereich und Wartesitze enger zusammengefasst, passende
+  Leseleuchte auf Sofabeistelltisch. Behälterreichweite weiterhin 50 cm.
+
 # Zoom, echte Schleichanimation und eingerichtete Räume · 16.10.2026
 
 - Kamera standardmäßig auf 175 %, per +/− zwischen 100 und 250 % verstellbar.

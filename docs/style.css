@@ -665,3 +665,12 @@ h1 span { color: var(--red-bright); }
 @media (pointer: coarse) {
   button { -webkit-user-select: none; user-select: none; }
 }
+
+.object-picker { position:absolute; z-index:35; left:calc(12px + var(--safe-left)); top:calc(66px + var(--safe-top)); width:min(270px,calc(100vw - 24px - var(--safe-left) - var(--safe-right))); max-height:calc(100dvh - 90px - var(--safe-top) - var(--safe-bottom)); display:flex; flex-direction:column; padding:10px; border:1px solid var(--line); background:var(--panel); box-shadow:0 8px 28px #0008; }
+.object-picker header { display:flex; justify-content:space-between; align-items:center; gap:8px; font:700 11px monospace; }
+.object-picker header button { width:44px; height:44px; background:transparent; font-size:25px; }
+.object-picker [data-object-choices] { overflow:auto; overscroll-behavior:contain; touch-action:pan-y; }
+.object-picker [data-object-choices] button { display:grid; grid-template-columns:26px 1fr; width:100%; min-height:48px; gap:3px 6px; padding:9px 5px; border-top:1px solid var(--line); text-align:left; background:transparent; font:600 10px monospace; touch-action:pan-y; }
+.object-picker [data-object-choices] b { grid-row:span 2; align-self:center; color:var(--yellow); font-size:15px; }
+.object-picker small { font:500 9px monospace; color:var(--muted); }
+.object-picker > small { padding:10px 3px 2px; }

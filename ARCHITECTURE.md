@@ -10,7 +10,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 
 | Aufgabe | Zuständige Module | Relevante Verbindung |
 |---|---|---|
-| Tap, Doppeltap, Halten, Kamera | `input.js`, `world-input.js`, `render.js`, `config.js` | Eingabeereignis → Ziel/Interaktion/Kamera. Zoom 100–250 %, Standard 175 %, nur +/−; Welt in passender Geräteauflösung, UI/Statusicons in Bildschirmkoordinaten. Projektion und inverse Tap-Koordinaten berücksichtigen Zoom; Ziehen bleibt pixelgenau. |
+| Tap, Doppeltap, Halten, Kamera | `input.js`, `world-input.js`, `object-selection.js`, `render.js`, `config.js` | Eingabeereignis → Ziel/Interaktion/Kamera. Zoom 100–250 %, Standard 175 %, nur +/−; Welt in passender Geräteauflösung, UI/Statusicons in Bildschirmkoordinaten. Projektion und inverse Tap-Koordinaten berücksichtigen Zoom; Ziehen bleibt pixelgenau. |
 | Spielersicht, Erkundung, Kameranebel | `player-visibility.js`, `camera-overlay.js` | 16-Tile-Rundumsicht unabhängig von Deckung/KI; Erkundung in Save v4, gemeinsame Sichtgrenze für Darstellung und Auswahl; Kamera bewegt nur den Bildausschnitt |
 | Laufziel, Weg und Ankunft | `player-navigation.js`, `movement.js` | Vierteltile-Spielerwege, präzise Ziele, begrenzte Deckungspräferenz; `navigation.js` bleibt die gröbere Zombie-Wegsuche |
 | Deckungszone und Hide | `cover.js`, `cover-protection.js`, `stealth.js`, `cover-display.js`, `cover-surface.js` | Vegetation tarnt rundum, feste Deckung schützt pro Beobachter; gleiche Flächen/Kollision für Hide, Execution-Wege und interpolierte Bodenanzeigen; Darstellung in `render.js` |
@@ -41,7 +41,13 @@ Ein Patch erfordert nicht automatisch das Lesen jeder Datei in seiner Tabellenze
 Wandmontagen und Tischobjekte. `quaternius-catalog.js` liefert gedrehte physische
 Fußabdrücke und metrische Tischhöhen. `interaction.js` begrenzt Behälter auf 50 cm
 vom tatsächlichen Rand; `player-navigation.js` ergänzt dafür genaue Endpunkte
-zwischen den 50-cm-Wegzellen. Auch die Itemübernahme prüft die Nähe erneut.
+zwischen den 50-cm-Wegzellen. Auch die Itemübernahme prüft die Nähe erneut. `object-selection.js` bildet
+Antippflächen aus projizierten Möbelkörpern inklusive Höhe; bei Überlappungen
+ordnet eine nummerierte Auswahlliste die Objekte eindeutig zu. Erst die
+bestehende Aktion führt zum gewählten Ziel. Kleine Dekoobjekte referenzieren
+ihre Unterlage und übernehmen deren Modellhöhe und Tiefenreihenfolge.
+Startoberteil/-hose speichern den gewählten Modellstil als Gegenstand; angelegte
+Lootkleidung ersetzt weiterhin nur den zugehörigen sichtbaren Kleidungsteil.
 
 ## Bestehende Kopplungen
 
@@ -128,3 +134,7 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
 - Geräuschmechanik und Ausdauer bleiben ohne passenden Nutzerauftrag unverändert.
   Spieltests beginnen mit neuen Spielständen; alte Spielstände benötigen keine
   Übernahme oder Migration.
+
+- `object-selection.test.mjs`: genaue erhöhte Tippflächen bei allen Zoomstufen,
+  Mehrfachauswahl ohne Bewegung/Interaktion, verbindliches ausgewähltes Ziel,
+  reale Deko-Unterlagen und gespeicherte/wechselbare Startkleidung.

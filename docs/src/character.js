@@ -85,8 +85,8 @@ export function createPlayer({ name, background = "citizen", survivorNumber = 1,
     deathCause: null,
   };
 
-  const jacket = createItem("work_jacket");
-  const jeans = createItem("jeans");
+  const jacket = createItem("outfit_top",1,{modelStyle:player.appearance.torso.split('-').slice(1).join('-')});
+  const jeans = createItem("outfit_trousers",1,{modelStyle:player.appearance.legs.split('-').slice(1).join('-')});
   const bag = createItem("canvas_bag");
   addItem(player, jacket);
   addItem(player, jeans);

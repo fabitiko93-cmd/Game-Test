@@ -366,7 +366,7 @@ export class Game {
 
   contextObject() {
     const selected = this.selectedObject();
-    if (selected && canInteract(this.world, this.player, selected)) return this.decorateAction(selected);
+    if (selected) return canInteract(this.world, this.player, selected) ? this.decorateAction(selected) : null;
     let best = null;
     let bestDistance = GAME.interactionRange;
     for (const object of this.world.objectsNear(this.player.x, this.player.y, GAME.interactionRange + 1)) {
