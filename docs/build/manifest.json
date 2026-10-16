@@ -1,6 +1,6 @@
 {
-  "id": "5fd001163dce9eb995a8",
-  "script": "build/main-XRZMME5R.js",
+  "id": "4d9d9d4f1f2842e7e3cf",
+  "script": "build/main-DO266VBI.js",
   "style": "build/style-PLX5HYIS.css",
   "precache": [
     "assets/icon.svg",
@@ -245,7 +245,7 @@
     "assets/zombies3d/README.md",
     "assets/zombies3d/THREE-LICENSE.txt",
     "assets/zombies3d/models.json",
-    "build/main-XRZMME5R.js",
+    "build/main-DO266VBI.js",
     "build/style-PLX5HYIS.css",
     "index.html",
     "manifest.webmanifest"
