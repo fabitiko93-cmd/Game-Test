@@ -51,7 +51,7 @@ export class InputController {
       if (key === "f" && !event.repeat) this.callbacks.recenter?.();
       if (key === "escape" && !event.repeat) this.callbacks.pause?.();
     });
-    window.addEventListener("keyup", event => this.keys.delete(event.key.toLowerCase()));
+    window.addEventListener("keyup", event => {this.keys.delete(event.key.toLowerCase());if(event.key.toLowerCase()==="e")this.callbacks.actionEnd?.();});
     window.addEventListener("blur", () => this.cancelPointer());
 
     this.canvas.addEventListener("pointerdown", event => this.pointerDown(event));
@@ -61,7 +61,8 @@ export class InputController {
     this.canvas.addEventListener("contextmenu", event => event.preventDefault());
 
     this.button("attack-button", () => this.callbacks.combat?.());
-    this.button("action-button", () => this.callbacks.action?.());
+    this.button("action-button", () => this.callbacks.action?.(), () => this.callbacks.actionEnd?.());
+    this.button("fire-mode-button", () => this.callbacks.fireMode?.());
     this.button("execute-button", element => this.callbacks.execute?.({
       mode: element.dataset.executionAction, targetId: element.dataset.executionTarget,
     }));
@@ -78,7 +79,7 @@ export class InputController {
     this.button("pause-button", () => this.callbacks.pause?.());
   }
 
-  button(id, callback) {
+  button(id, callback, release) {
     const element = document.getElementById(id);
     if (!element) return;
     element.addEventListener("pointerdown", event => {
@@ -89,9 +90,31 @@ export class InputController {
       // move/up must never overwrite the command or become a ground double tap.
       this.cancelPointer();
       this.lastTap.time = 0;
+      if (release) {
+        this.buttonRelease = release;
+        this.buttonPointerId = event.pointerId;
+        try { element.setPointerCapture?.(event.pointerId); } catch (_) {}
+      }
       callback(element);
       vibrate(7);
     });
+    if (release) {
+      const stop = event => {
+        if (event && event.pointerId !== this.buttonPointerId) return;
+        const finish = this.buttonRelease;
+        this.buttonRelease = null; this.buttonPointerId = null; finish?.();
+      };
+      element.addEventListener("pointerup", stop);
+      element.addEventListener("pointercancel", stop);
+      element.addEventListener("lostpointercapture", stop);
+      element.addEventListener("pointermove", event => {
+        if (event.pointerId !== this.buttonPointerId) return;
+        const rect = element.getBoundingClientRect();
+        if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) stop(event);
+      });
+      window.addEventListener("pointerup", stop);
+      window.addEventListener("pointercancel", stop);
+    }
   }
 
   coordinates(event) {
@@ -240,6 +263,7 @@ export class InputController {
   }
 
   cancelPointer() {
+    const finish = this.buttonRelease; this.buttonRelease = null; this.buttonPointerId = null; finish?.();
     window.clearTimeout(this.holdTimer);
     if (this.holding) this.callbacks.holdEnd?.();
     if (this.panning) this.callbacks.panEnd?.();

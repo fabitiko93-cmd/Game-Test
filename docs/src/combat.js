@@ -1,5 +1,5 @@
 import { gainSkill, skillValue } from "./character.js";
-import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponStats } from "./inventory.js";
+import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponFireMode, weaponStats } from "./inventory.js";
 import { behindTarget } from "./perception.js";
 import { clamp, distance, vibrate } from "./util.js";
 import { executionBlockReason, STEALTH_RULES } from "./stealth.js";
@@ -12,6 +12,7 @@ export class CombatSystem {
 
   selectTarget(game, zombie) {
     if (zombie && !playerCanSee(game, zombie)) return;
+    this.stopFiring(game);
     game.player.combat.targetId = zombie?.id || null;
     game.player.combat.waitingForTarget = false;
     game.renderer.selectedId = zombie?.id || null;
@@ -35,6 +36,7 @@ export class CombatSystem {
   }
 
   end(game, { keepTarget = false } = {}) {
+    this.stopFiring(game);
     const combat = game.player.combat, targetId = combat.targetId;
     combat.enabled = false;
     combat.pendingTargetId = null; combat.pendingAttack = 0;
@@ -50,12 +52,14 @@ export class CombatSystem {
   update(game, delta) {
     const player = game.player;
     const combat = player.combat;
-    combat.attackCooldown = Math.max(0, combat.attackCooldown - delta);
+    combat.attackCooldown = combat.triggerHeld ? combat.attackCooldown - delta : Math.max(0, combat.attackCooldown - delta);
     combat.attackTimer = Math.max(0, combat.attackTimer - delta);
-    combat.recoil = Math.max(0, combat.recoil - delta * 1.5);
+    combat.recoil = Math.max(0, combat.recoil - delta * (weaponStats(activeWeapon(player))?.recoilRecovery || 1.5));
 
     const manualMovement = game.player.navigation?.source === "manual"
       && (game.player.navigation.path.length || player.moving || game.player.navigation.manualUntil > game.elapsed);
+    if (combat.triggerHeld && (manualMovement || player.moving || game.paused || player.dead || game.ui?.hasBlockingPanel?.()
+      || activeWeapon(player)?.id !== combat.triggerWeaponId || combat.targetId !== combat.triggerTargetId)) this.stopFiring(game);
     const pursuit = game.zombies.some(z => !z.removed && (z.state === "chase" || z.sightMemory?.visible));
     if (combat.enabled && pursuit) combat.hadPursuit = true;
     if (combat.enabled && ((!this.target(game) && !combat.waitingForTarget) || (combat.hadPursuit && !pursuit))) this.end(game);
@@ -68,6 +72,7 @@ export class CombatSystem {
 
     const target = this.target(game);
     if (!combat.enabled || !target || manualMovement || player.stealthState?.execution) {
+      this.stopFiring(game);
       combat.aim = Math.max(0, combat.aim - delta * 1.7);
       return;
     }
@@ -96,6 +101,25 @@ export class CombatSystem {
     } else {
       combat.aim = Math.max(0, combat.aim - delta * (player.moving ? 2.8 : 1.1));
     }
+    if (combat.triggerHeld && combat.attackCooldown <= .000001) {
+      const result = this.fire(game);
+      if (!result.ok) { this.stopFiring(game); game.ui?.showToast?.(result.message); }
+    }
+  }
+
+  beginFiring(game) {
+    this.stopFiring(game);
+    const weapon = activeWeapon(game.player), target = this.target(game);
+    const result = this.fire(game);
+    if (result.ok && weaponFireMode(weapon) === "auto" && !target.removed && game.player.combat.enabled) {
+      Object.assign(game.player.combat, { triggerHeld: true, triggerWeaponId: weapon.id, triggerTargetId: target.id });
+    }
+    return result;
+  }
+
+  stopFiring(game) {
+    Object.assign(game.player.combat, { triggerHeld: false, triggerWeaponId: null, triggerTargetId: null });
+    game.player.combat.attackCooldown = Math.max(0, game.player.combat.attackCooldown || 0);
   }
 
   beginMelee(game, target, weapon, stats) {
@@ -176,10 +200,10 @@ export class CombatSystem {
     if (!combat.enabled || !target || definition?.weaponKind !== "firearm") {
       return { ok: false, message: "KEIN SCHUSSZIEL" };
     }
-    if (combat.attackCooldown > 0) return { ok: false, message: "WAFFE NOCH NICHT STABIL" };
+    if (combat.attackCooldown > .000001) return { ok: false, message: "WAFFE NOCH NICHT STABIL" };
     const d = distance(player, target);
     if (d > stats.range || !game.world.hasLineOfSight(player, target)) return { ok: false, message: "KEINE FREIE SCHUSSLINIE" };
-    if (!consumeShot(weapon)) return { ok: false, message: "WAFFE LEER · NACHLADEN" };
+    if (!consumeShot(weapon)) return { ok: false, message: definition.feed === "magazine" && !weapon.magazine ? "KEIN MAGAZIN EINGESETZT" : "WAFFE LEER · NACHLADEN" };
     game.stealth?.onAttack(game);
 
     this.facePlayer(player, target);
@@ -189,7 +213,7 @@ export class CombatSystem {
     const painPenalty = player.pain * 0.0014;
     const hitChance = clamp(
       stats.accuracy * (0.38 + combat.aim * 0.62) * (0.72 + (weapon.condition ?? 100) * 0.0028)
-        + skill * 0.0018 - distancePenalty - closePenalty - painPenalty,
+        + skill * 0.0018 - distancePenalty - closePenalty - painPenalty - (stats.recoilPerShot ? combat.recoil * .18 : 0),
       0.12,
       0.98,
     );
@@ -207,20 +231,38 @@ export class CombatSystem {
     vibrate(weapon.type === "shotgun_12g" ? [28, 18, 24] : 22);
 
     if (hit) {
+      const impact = { x: target.x, y: target.y };
       const headshotChance = clamp(stats.headshot + combat.aim * 0.4 + skill * 0.0015, 0.08, 0.82);
       const headshot = game.random() < headshotChance;
-      const damage = stats.damage * (0.9 + game.random() * 0.2) * (headshot ? 2.25 : 1);
+      const baseDamage = stats.damage * (0.9 + game.random() * 0.2);
+      const damage = baseDamage * (headshot ? 2.25 : 1);
       this.damageZombie(game, target, damage, headshot ? "KOPFTREFFER" : null);
       gainSkill(player, "firearms", headshot ? 0.68 : 0.46);
       if (definition.spread) this.shotgunSplash(game, target, stats, damage);
+      if (stats.penetration) this.penetrate(game, target.id, impact, stats, baseDamage);
     } else {
       game.ui.showMessage("Schuss verfehlt", 0.8);
       gainSkill(player, "firearms", 0.16);
     }
-    combat.attackCooldown = stats.recovery;
-    combat.recoil = 1;
-    combat.aim = Math.max(0.04, combat.aim * 0.18);
+    combat.attackCooldown = stats.fireInterval ? stats.fireInterval + Math.min(0, combat.attackCooldown) : stats.recovery;
+    combat.recoil = stats.recoilPerShot ? Math.min(1.5, combat.recoil + stats.recoilPerShot) : 1;
+    combat.aim = Math.max(0.04, combat.aim * (stats.aimRetention || .18));
     return { ok: true, message: `${ammoLabel(weapon)} · ${Math.round(hitChance * 100)} %` };
+  }
+
+  penetrate(game, primaryId, impact, stats, damage) {
+    const player = game.player, dx = impact.x - player.x, dy = impact.y - player.y, length = Math.hypot(dx, dy);
+    if (!length) return;
+    const candidates = game.zombies.filter(zombie => {
+      if (zombie.removed || zombie.id === primaryId) return false;
+      const x = zombie.x - player.x, y = zombie.y - player.y;
+      const along = (x * dx + y * dy) / length, across = Math.abs(x * dy - y * dx) / length;
+      return along > length + .05 && along <= stats.range && across <= .16 && game.world.hasLineOfSight(player, zombie);
+    }).sort((a, b) => distance(player, a) - distance(player, b));
+    for (const zombie of candidates.slice(0, stats.penetration)) {
+      game.renderer.trace(impact, zombie, true);
+      this.damageZombie(game, zombie, damage * stats.penetrationDamage, "DURCHSCHUSS");
+    }
   }
 
   shotgunSplash(game, primary, stats, primaryDamage) {
@@ -234,8 +276,8 @@ export class CombatSystem {
     }
   }
 
-  reload(game) {
-    const weapon = activeWeapon(game.player);
+  reload(game, weapon = activeWeapon(game.player)) {
+    this.stopFiring(game);
     const stats = weaponStats(weapon);
     const result = reloadWeapon(game.player, weapon);
     if (result.ok) {

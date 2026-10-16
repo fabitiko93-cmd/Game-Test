@@ -1,6 +1,6 @@
 import { gainSkill, totalBleeding, treatWound as treatWoundWithItem, treatWithItem } from "./character.js";
 import { ITEMS } from "./data.js";
-import { activeWeapon, addItem, compatibleMods, equipItem, findItem, installMod, itemDefinition, removeItem, removeMod, unequipSlot } from "./inventory.js";
+import { activeWeapon, addItem, compatibleMods, cycleFireMode, emptyMagazine, ejectMagazine, equipItem, fillMagazine, findItem, insertMagazine, installMod, itemDefinition, removeItem, removeMod, unequipSlot } from "./inventory.js";
 import { clamp } from "./util.js";
 import { canInteract } from "./interaction.js";
 
@@ -57,6 +57,7 @@ export function useItem(game, id) {
   let message = "";
 
   if (definition.type === "weapon" || definition.equipSlot) {
+    game.combat.stopFiring?.(game);
     const result = equipItem(game.player, id);
     message = result.message;
     if (result.ok) game.sound("equip");
@@ -81,7 +82,14 @@ export function useItem(game, id) {
     message = result.message;
     game.player.bleeding = totalBleeding(game.player);
     game.sound("consume");
-  } else if (definition.type === "ammo" || definition.type === "magazine") {
+  } else if (definition.type === "magazine") {
+    const result = fillMagazine(game.player, item.id);
+    if (!result.ok) { game.ui.showToast(result.message); return; }
+    message = result.message;
+  } else if (definition.type === "ammo") {
+    if (itemDefinition(activeWeapon(game.player))?.feed === "magazine") {
+      game.ui.showToast("ZUM BEFÜLLEN EIN MAGAZIN IM RUCKSACK AUSWÄHLEN"); return;
+    }
     const result = game.combat.reload(game);
     message = result.message;
     if (!result.ok) {
@@ -148,6 +156,8 @@ export function openWeaponPanel(game, id) {
 }
 
 export function mountMod(game, weaponId, modId) {
+  if (!game.canAct(true)) return;
+  game.combat.stopFiring(game);
   const result = installMod(game.player, weaponId, modId);
   game.ui.showToast(result.message);
   if (result.ok) game.sound("equip");
@@ -158,7 +168,9 @@ export function mountMod(game, weaponId, modId) {
 }
 
 export function unmountMod(game, weaponId, slot) {
-  const result = removeMod(game.player, weaponId, slot);
+  if (!game.canAct(true)) return;
+  game.combat.stopFiring(game);
+  const result = slot === "magazine" ? ejectMagazine(game.player, weaponId) : removeMod(game.player, weaponId, slot);
   game.ui.showToast(result.message);
   const weapon = findItem(game.player, weaponId);
   game.ui.openWeaponPanel(weapon, game.player);
@@ -166,10 +178,40 @@ export function unmountMod(game, weaponId, slot) {
   game.save();
 }
 
-export function reload(game) {
+export function reload(game, weaponId) {
   if (!game.canAct(true)) return;
-  const result = game.combat.reload(game);
+  const result = game.combat.reload(game, weaponId ? findItem(game.player, weaponId) : activeWeapon(game.player));
   game.ui.showToast(result.message);
   game.ui.refreshAll(game.player, game);
   game.save();
+}
+
+function finishWeaponAction(game, result) {
+  game.combat.stopFiring(game);
+  game.ui.showToast(result.message);
+  if (result.ok) game.sound("equip");
+  game.ui.refreshAll(game.player, game);
+  game.save();
+}
+
+export function changeMagazine(game, weaponId, magazineId) {
+  if (!game.canAct(true)) return;
+  const result = magazineId ? insertMagazine(game.player, weaponId, magazineId) : ejectMagazine(game.player, weaponId);
+  if (result.ok) { game.player.combat.aim = 0; game.player.combat.attackCooldown = .55; }
+  finishWeaponAction(game, result);
+}
+
+export function loadMagazine(game, magazineId) {
+  if (!game.canAct(true)) return;
+  finishWeaponAction(game, fillMagazine(game.player, magazineId));
+}
+
+export function unloadMagazine(game, magazineId) {
+  if (!game.canAct(true)) return;
+  finishWeaponAction(game, emptyMagazine(game.player, magazineId));
+}
+
+export function toggleFireMode(game, weaponId) {
+  if (!game.canAct(true)) return;
+  finishWeaponAction(game, cycleFireMode(weaponId ? findItem(game.player, weaponId) : activeWeapon(game.player)));
 }

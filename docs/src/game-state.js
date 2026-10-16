@@ -3,12 +3,16 @@ import { createInitialZombies } from "./ai.js";
 import { ensureStealthState } from "./stealth.js";
 import { totalBleeding } from "./character.js";
 import { PlayerVisibility } from "./player-visibility.js";
+import { PLAYER_BODY_RADIUS } from "./world-scale.js";
 
 const deepCopy = value => JSON.parse(JSON.stringify(value));
 
 export function serialize(game) {
   game.playerVisibility?.update(game.player);
   const player = deepCopy(game.player);
+  player.combat.triggerHeld = false;
+  player.combat.triggerWeaponId = null;
+  player.combat.triggerTargetId = null;
   player.navigation = {
     path: [],
     destination: null,
@@ -72,9 +76,10 @@ export function load(game) {
   // Preserve old saves while moving only entities now intersecting a corrected
   // vehicle footprint (or an old invalid spawn) to the nearest free cell.
   for (const entity of [game.player, ...game.zombies]) {
-    if (entity.removed || game.world.isWalkable(entity.x, entity.y, 0.27)) continue;
+    const radius = entity === game.player ? PLAYER_BODY_RADIUS : .27;
+    if (entity.removed || game.world.isWalkable(entity.x, entity.y, radius)) continue;
     const point = game.navigator.nearestWalkable(game.world, entity, { allowDoors: false });
-    if (point && game.world.isWalkable(point.x, point.y, 0.27)) {
+    if (point && game.world.isWalkable(point.x, point.y, radius)) {
       entity.x = point.x;
       entity.y = point.y;
       if (entity !== game.player) { entity.path = []; entity.repathTimer = 0; }

@@ -67,6 +67,21 @@ export const ITEMS = {
   baseball_bat: melee("Baseballschläger", "Schläger", "blunt", 25, 1.55, 1.42, 0.85, 4.1, 1.15, 2, "Reichweite und Kontrolle gegen einzelne Infizierte."),
   axe: melee("Spaltaxt", "Axt", "blades", 42, 1.34, 1.75, 0.78, 5.2, 1.65, 2, "Langsam und anstrengend, dafür verheerend."),
 
+  ak_762: firearm("AK · 7,62×39", "AK", {
+    icon: "ak", weight: 3, hands: 2, damage: 62, range: 13, aimTime: 1.15, recovery: .24,
+    accuracy: .76, headshot: .2, noise: 28, feed: "magazine", ammoType: "ammo_762x39",
+    magazineTypes: ["mag_ak_30"], modSlots: ["stock", "optic", "muzzle"],
+    fireModes: ["semi", "auto"], fireInterval: .1, recoilPerShot: .36, recoilRecovery: 1.35,
+    aimRetention: .42, mobility: 1, penetration: 1, penetrationDamage: .6,
+    description: "Schaftloses AK-Grundmodell. Schnell im Anschlag, kräftig im Rückstoß. Semi: tippen. Auto: SCHUSS halten. Magazine separat befüllen und einsetzen.",
+  }),
+  ammo_762x39: { name: "7,62×39-Patronen", short: "7,62×39", type: "ammo", icon: "ammo", ammoType: "ammo_762x39", weight: .05, roundWeight: .016, weightStep: .05, stack: 30, description: "Lose AK-Munition. Zum Befüllen ein separates 30er-Magazin auswählen. Das Stapelgewicht wird auf 50 g aufgerundet." },
+  mag_ak_30: { name: "AK-30er-Magazin", short: "AK-Magazin", type: "magazine", icon: "magazine", ammoType: "ammo_762x39", capacity: 30, compatible: ["ak_762"], weight: .25, stack: 1, description: "Eigenständiges 30er-Magazin: 0–14 Patronen 250 g, ab 15 Patronen 300 g. Befüllen und Einsetzen sind getrennte Aktionen." },
+  ak_fixed_stock: { name: "Fester AK-Schaft", short: "Fester Schaft", type: "mod", icon: "mod", modSlot: "stock", compatible: ["ak_762"], weight: .45, stack: 1, effects: { mobilityMul: .94, aimTimeMul: 1.12, recoilPerShotMul: .64, recoilRecoveryAdd: .6, aimRetentionAdd: .2 }, description: "450 g. Deutlich stabilerer Rückstoß; etwas langsamer im Anschlag und weniger beweglich." },
+  ak_frame_stock: { name: "Duster-Rahmenschaft", short: "Duster-Schaft", type: "mod", icon: "mod", modSlot: "stock", compatible: ["ak_762"], weight: .35, stack: 1, effects: { mobilityMul: .97, aimTimeMul: 1.06, recoilPerShotMul: .8, recoilRecoveryAdd: .35, aimRetentionAdd: .12 }, description: "350 g. Offener Rahmenschaft: mittlere Stabilität bei weniger Gewicht und besserer Handhabung als der feste Schaft." },
+  ak_acog_3x: { name: "Kompaktes ACOG 3×", short: "ACOG 3×", type: "mod", icon: "mod", modSlot: "optic", compatible: ["ak_762"], weight: .3, stack: 1, effects: { rangeAdd: 4, aimTimeMul: 1.1, closePenalty: .12, mobilityMul: .99 }, description: "300 g. Dreifachvisierung für mehr nutzbare Distanz; auf kürzeste Entfernung unhandlicher." },
+  ak_suppressor: { name: "AK-Schalldämpfer", short: "AK-Dämpfer", type: "mod", icon: "mod", modSlot: "muzzle", compatible: ["ak_762"], weight: .4, stack: 1, effects: { noiseMul: .48, aimTimeMul: 1.08, mobilityMul: .98 }, description: "400 g. Reduziert den Schussknall, erhöht Länge und Gewicht. Schaden und Durchschlagskraft bleiben unverändert." },
+
   pistol_9mm: firearm("9-mm-Pistole", "Pistole", {
     weight: 0.86, hands: 1, damage: 44, range: 9.2, aimTime: 1.35, recovery: 0.48,
     accuracy: 0.72, headshot: 0.2, noise: 18, feed: "magazine",
@@ -95,8 +110,8 @@ export const ITEMS = {
   ammo_38: { name: ".38-Patronen", short: ".38", type: "ammo", icon: "ammo", ammoType: "ammo_38", weight: 0.014, stack: 24, description: "Munition für den Revolver." },
   shell_12g: { name: "Kaliber-12-Schrot", short: "12/70", type: "ammo", icon: "ammo", ammoType: "shell_12g", weight: 0.044, stack: 16, description: "Schrotpatronen für die Flinte." },
   ammo_rifle: { name: "Jagdpatronen", short: "Jagdpatr.", type: "ammo", icon: "ammo", ammoType: "ammo_rifle", weight: 0.026, stack: 20, description: "Büchsenmunition für das Jagdgewehr." },
-  mag_9mm_12: { name: "9-mm-Magazin", short: "Magazin", type: "magazine", icon: "magazine", ammoType: "ammo_9mm", capacity: 12, compatible: ["pistol_9mm"], weight: 0.11, stack: 1, description: "Standardmagazin mit zwölf Patronen." },
-  mag_9mm_18: { name: "Verlängertes 9-mm-Magazin", short: "18er-Mag.", type: "magazine", icon: "magazine", ammoType: "ammo_9mm", capacity: 18, compatible: ["pistol_9mm"], weight: 0.16, stack: 1, description: "Mehr Patronen, aber spürbar schwerer." },
+  mag_9mm_12: { name: "9-mm-Magazin", short: "Magazin", type: "magazine", icon: "magazine", ammoType: "ammo_9mm", capacity: 12, compatible: ["pistol_9mm"], weight: 0.1, stack: 1, description: "Standardmagazin mit zwölf Patronen. Separat befüllen; ab halber Füllung 50 g schwerer." },
+  mag_9mm_18: { name: "Verlängertes 9-mm-Magazin", short: "18er-Mag.", type: "magazine", icon: "magazine", ammoType: "ammo_9mm", capacity: 18, compatible: ["pistol_9mm"], weight: 0.15, stack: 1, description: "Separates Magazin mit achtzehn Patronen; ab halber Füllung 50 g schwerer." },
 
   reflex_sight: { name: "Leuchtpunktvisier", short: "Leuchtpunkt", type: "mod", icon: "mod", modSlot: "optic", compatible: ["pistol_9mm", "shotgun_12g"], effects: { aimTimeMul: 0.78 }, weight: 0.14, stack: 1, description: "Beschleunigt die Zielerfassung auf kurze Distanz." },
   hunting_scope: { name: "Jagdzielfernrohr", short: "Zielfernrohr", type: "mod", icon: "mod", modSlot: "optic", compatible: ["hunting_rifle"], effects: { aimTimeMul: 0.82, rangeAdd: 4, closePenalty: 0.16 }, weight: 0.42, stack: 1, description: "Große Reichweite, aber unhandlich auf engstem Raum." },
@@ -156,6 +171,8 @@ export const LOOT_TABLES = {
     ["bread", 0.4, 1, 1], ["apple", 0.48, 1, 2], ["can_opener", 0.22, 1, 1],
   ],
   police: [
+    ["ak_762", 0.08, 1, 1], ["mag_ak_30", 0.18, 1, 1], ["ammo_762x39", 0.26, 6, 15],
+    ["ak_fixed_stock", 0.06, 1, 1], ["ak_frame_stock", 0.04, 1, 1], ["ak_acog_3x", 0.03, 1, 1], ["ak_suppressor", 0.025, 1, 1],
     ["ammo_9mm", 0.62, 4, 14], ["ammo_38", 0.34, 3, 10], ["mag_9mm_12", 0.38, 1, 1],
     ["bandage", 0.38, 1, 1], ["motorcycle_helmet", 0.18, 1, 1], ["pistol_suppressor", 0.08, 1, 1],
   ],

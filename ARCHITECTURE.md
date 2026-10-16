@@ -54,6 +54,13 @@ behalten die bisherige Tiefenreihenfolge.
 mit kompatiblen Mods, vollen/leeren Wechselmagazinen und drei Stapeln passender
 Munition. `world.js` platziert die Kiste direkt neben dem frischen Startpunkt;
 entnommene Gegenstände bleiben über die normale Weltobjektspeicherung entnommen.
+`weapon-models.js` lädt die in acht echte Teile zerlegte AK-Geometrie und verwendet
+dieselbe Konfiguration für Hand und drehbare Waffenbank. `rifle-pose.js` passt beide
+Arme an die Griffpunkte an, erhält Bein-/Körperanimation und begrenzt die Reichweite
+der Arme. `inventory.js` verwaltet eigenständige Magazine, getrennte Füll-/Wechsel-
+aktionen, zwei Füllgewichtsstufen, Feuermodus und Modwerte. `combat.js` führt
+gehaltenes Auto-Feuer mit sicheren Abbrüchen, Rückstoß und geraden Durchschüssen
+aus. Der HUD-Abzug in `input.js` beendet Feuer auch bei Pointer-Abbruch/Blur.
 Startoberteil/-hose speichern den gewählten Modellstil als Gegenstand; angelegte
 Lootkleidung ersetzt weiterhin nur den zugehörigen sichtbaren Kleidungsteil.
 
@@ -150,3 +157,8 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
 - `render-order.test.mjs`: echter Teppich/Couchtisch und übermalter Küchenschrank,
   Überlagerungen in allen vier Gebäuden, Vorderwände, Deko-Unterlagen, vollständige
   Objektlisten und tatsächlicher Bodenpass vor Effekten und erhöhten Objekten.
+- `ak.test.mjs`: kompatible Startsets, Magazinaktionen/Identität/Füllgewicht,
+  Mod-/Bewegungseffekte, Auto-Kadenz bei 30/60/120 Hz, Abbruchfälle, Durchschuss,
+  reale GLB-Teile und Save-Roundtrip. `rifle-pose.test.mjs`: beide Originalrigs,
+  sieben Animationsclips und vier Ausrichtungen mit zusammenhängenden Armen,
+  Stützhand am Griff, unveränderten Beinen und passender Mündungsrichtung.

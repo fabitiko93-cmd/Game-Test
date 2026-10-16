@@ -4,6 +4,8 @@ import { activeWeapon, itemDefinition } from "./inventory.js";
 import { defaultStyle, playerModelScale, QUATERNIUS_MODELS } from "./quaternius-catalog.js";
 import { PlayerMotion } from "./player-motion.js";
 import { heldEquipment } from "./held-equipment.js";
+import { WeaponModels, weaponModelSignature } from "./weapon-models.js";
+import { applyRiflePose } from "./rifle-pose.js";
 
 const PARTS=["head","torso","legs","feet"];
 
@@ -19,7 +21,7 @@ function rebindPart(original,model) {
 
 export class PlayerModels {
   constructor(pass,library) {
-    this.pass=pass;this.library=library;this.entities=new Map();this.used=new Set();this.motion=new PlayerMotion();
+    this.pass=pass;this.library=library;this.entities=new Map();this.used=new Set();this.motion=new PlayerMotion();this.weapons=new WeaponModels();
     this.ready=Promise.all(["male-Casual_2","female-Casual","male-Worker","female-Worker","male-Swat","male-Adventurer","Knife","player-motion"].map(key=>library.request(key)));
   }
   beginFrame(){this.used.clear();}
@@ -53,7 +55,7 @@ export class PlayerModels {
 
   equip(entity,player) {
     const item=activeWeapon(player),definition=itemDefinition(item),kind=definition?.weaponKind||null;
-    const bag=Boolean(player.equipment?.back),key=`${kind}-${item?.type}-${bag}`;
+    const bag=Boolean(player.equipment?.back),key=`${kind}-${weaponModelSignature(item)}-${bag}`;
     if(entity.weaponKind===key)return;
     if(entity.weapon){
       entity.weapon.parent.remove(entity.weapon);
@@ -62,7 +64,10 @@ export class PlayerModels {
     }
     if(entity.backpack){entity.backpack.parent.remove(entity.backpack);entity.backpack=null;}
     const generated=heldEquipment(item?.type);
-    if(generated) {
+    if(item?.type==='ak_762') {
+      const model=this.weapons.create(item);if(!model)return;
+      entity.weapon=model;entity.model.getObjectByName("WristR").add(model);
+    } else if(generated) {
       entity.weapon=generated;generated.userData.generated=true;entity.model.getObjectByName("WristR").add(generated);
     } else if(kind==="firearm") {
       const gun=this.library.get("male-Swat");if(!gun)return;
@@ -91,6 +96,7 @@ export class PlayerModels {
   draw(ctx,player,time,point) {
     const pose=this.motion.sample(player,time),entity=this.entity(player,pose.appearance);if(!entity)return false;
     this.used.add(player);this.equip(entity,player);this.pose(entity,pose);
+    if(activeWeapon(player)?.type==='ak_762')applyRiflePose(entity,player);
     return this.pass.draw(ctx,entity.root,point,{software:true,hurt:player.hurtFlash>0});
   }
 

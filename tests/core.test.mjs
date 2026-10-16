@@ -10,6 +10,8 @@ import {
   ammoLabel,
   createItem,
   equipItem,
+  ejectMagazine,
+  fillMagazine,
   findItem,
   installMod,
   reloadWeapon,
@@ -75,6 +77,9 @@ assert.equal(equipItem(hunter, pistol.id).ok, true);
 assert.equal(installMod(hunter, pistol.id, suppressor.id).ok, true);
 const livePistol = findItem(hunter, pistol.id);
 assert.ok(weaponStats(livePistol).noise < ITEMS.pistol_9mm.noise);
+const detachedMagazineId = livePistol.magazine.id;
+assert.equal(ejectMagazine(hunter, livePistol.id).ok, true);
+assert.equal(fillMagazine(hunter, detachedMagazineId).ok, true);
 assert.equal(reloadWeapon(hunter, livePistol).ok, true);
 assert.equal(ammoLabel(livePistol), "12/12");
 

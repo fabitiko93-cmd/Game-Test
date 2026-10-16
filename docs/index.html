@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="sperrkreis-build" content="4d9d9d4f1f2842e7e3cf">
+  <meta name="sperrkreis-build" content="dd72ea93802f60081cdd">
   <meta name="theme-color" content="#111714">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,7 +12,7 @@
   <title>SPERRKREIS 98</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="build/style-PLX5HYIS.css">
+  <link rel="stylesheet" href="build/style-RVY5EKHV.css">
 </head>
 <body>
   <main id="game-shell" aria-label="SPERRKREIS 98">
@@ -87,6 +87,7 @@
         <button id="stance-button" class="round stance"><span>◒</span><small id="stance-label">SCHLEICHEN</small></button>
         <button id="openfield-button" class="round openfield hidden" aria-label="Freifeldtarnung"><span>◈</span><small id="openfield-label">TARNEN</small></button>
         <button id="reload-button" class="reload hidden"><span>↻</span><small>NACHLADEN</small></button>
+        <button id="fire-mode-button" class="fire-mode hidden" aria-label="Feuermodus wechseln">SEMI</button>
       </nav>
 
       <nav class="utility" aria-label="Menü">
@@ -221,13 +222,21 @@
         <div><small>WAFFENBANK</small><h2 id="weapon-title">WAFFE</h2></div>
         <button class="close" data-close="weapon-panel">×</button>
       </header>
+      <div class="weapon-body">
       <div class="weapon-summary">
         <span id="weapon-ammo">0/0</span>
         <span id="weapon-condition">ZUSTAND 100 %</span>
       </div>
+      <div id="weapon-inspection" class="weapon-inspection hidden">
+        <canvas id="weapon-preview" aria-label="AK-Modell, zum Drehen seitlich ziehen"></canvas>
+        <small>ZIEHEN ZUM DREHEN</small>
+      </div>
+      <div class="weapon-settings"><span id="weapon-stats"></span><button id="weapon-mode-button" class="hidden">SEMI</button></div>
       <div id="mod-slots" class="mod-slots"></div>
+      <div id="weapon-magazines" class="hidden"><h3>MAGAZINE IM RUCKSACK</h3><div id="magazine-list" class="magazine-list"></div></div>
       <h3>PASSENDE TEILE IM RUCKSACK</h3>
       <div id="available-mods" class="available-mods"></div>
+      </div>
       <footer><span>Anbauteile antippen</span><button id="weapon-reload-button">NACHLADEN</button></footer>
     </section>
 
@@ -253,6 +262,6 @@
 
     <div id="toast" class="toast"></div>
   </main>
-  <script type="module" src="build/main-DO266VBI.js"></script>
+  <script type="module" src="build/main-FCX7KRMK.js"></script>
 </body>
 </html>

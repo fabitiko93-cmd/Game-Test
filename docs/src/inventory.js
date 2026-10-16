@@ -12,6 +12,7 @@ export function createItem(type, count = 1, options = {}) {
   if (definition.condition) item.condition = options.condition ?? definition.condition;
   if (definition.type === "weapon") {
     item.mods = deepCopy(options.mods || {});
+    if (definition.fireModes) item.fireMode = definition.fireModes.includes(options.fireMode) ? options.fireMode : definition.fireModes[0];
     if (definition.feed === "internal") item.rounds = options.rounds ?? 0;
     if (definition.feed === "magazine") {
       item.magazine = options.magazine ? deepCopy(options.magazine) : null;
@@ -42,13 +43,12 @@ export function itemWeight(item) {
   const definition = itemDefinition(item);
   if (!definition) return 0;
   let weight = definition.weight * Math.max(1, item.count || 1);
+  if (definition.roundWeight) weight = Math.ceil((definition.roundWeight * Math.max(1, item.count || 1) - 1e-9) / definition.weightStep) * definition.weightStep;
   if (item.magazine) weight += itemWeight(item.magazine);
   if (definition.feed === "internal" && item.rounds) {
     weight += (ITEMS[definition.ammoType]?.weight || 0) * item.rounds;
   }
-  if (definition.type === "magazine" && item.rounds) {
-    weight += (ITEMS[definition.ammoType]?.weight || 0) * item.rounds;
-  }
+  if (definition.type === "magazine" && (item.rounds || 0) >= Math.ceil(definition.capacity / 2)) weight += .05;
   for (const mod of Object.values(item.mods || {})) weight += itemWeight(mod);
   const carriedMultiplier = Object.values(item.mods || {}).reduce(
     (value, mod) => value * (itemDefinition(mod)?.effects?.carriedWeightMul || 1),
@@ -81,7 +81,22 @@ export function carryCapacity(player) {
 }
 
 export function canCarry(player, item) {
-  return inventoryWeight(player) + itemWeight(item) <= carryCapacity(player) + 0.001;
+  let additional = itemWeight(item);
+  if (itemDefinition(item)?.roundWeight) {
+    let remaining = item.count || 1;
+    additional = 0;
+    for (const existing of player.inventory.filter(entry => entry.type === item.type && isStackable(entry))) {
+      const moved = Math.min(remaining, itemDefinition(item).stack - existing.count);
+      additional += itemWeight({...existing, count: existing.count + moved}) - itemWeight(existing);
+      remaining -= moved;
+      if (!remaining) break;
+    }
+    while (remaining > 0) {
+      const moved = Math.min(remaining, itemDefinition(item).stack);
+      additional += itemWeight({...item, count: moved}); remaining -= moved;
+    }
+  }
+  return inventoryWeight(player) + additional <= carryCapacity(player) + 0.001;
 }
 
 function clearEquipmentReference(player, id) {
@@ -208,6 +223,18 @@ export function weaponStats(weapon) {
   return stats;
 }
 
+export function weaponFireMode(weapon) {
+  const modes = itemDefinition(weapon)?.fireModes || ["semi"];
+  return modes.includes(weapon?.fireMode) ? weapon.fireMode : modes[0];
+}
+
+export function cycleFireMode(weapon) {
+  const modes = itemDefinition(weapon)?.fireModes;
+  if (!modes?.length) return { ok: false, message: "KEIN UMSCHALTBARER FEUERMODUS" };
+  weapon.fireMode = modes[(modes.indexOf(weaponFireMode(weapon)) + 1) % modes.length];
+  return { ok: true, message: weapon.fireMode === "auto" ? "FULLAUTO · SCHUSS HALTEN" : "SEMI · EIN SCHUSS PRO TIPP" };
+}
+
 export function compatibleMods(player, weapon) {
   const definition = itemDefinition(weapon);
   if (!definition?.modSlots) return [];
@@ -246,13 +273,55 @@ export function removeMod(player, weaponId, slot) {
   return { ok: true, message: `${itemDefinition(mod).name.toUpperCase()} ENTFERNT` };
 }
 
-function fillMagazine(player, magazine) {
+export function fillMagazine(player, magazineId) {
+  const magazine = findItem(player, magazineId);
   const definition = itemDefinition(magazine);
+  if (definition?.type !== "magazine") return { ok: false, message: "SEPARATES MAGAZIN AUSWÄHLEN" };
   const missing = definition.capacity - (magazine.rounds || 0);
-  if (missing <= 0) return 0;
+  if (missing <= 0) return { ok: false, message: "MAGAZIN IST VOLL" };
+  const original = player.inventory.map(item => ({item, count: item.count})), previousRounds = magazine.rounds || 0, previousWeight = inventoryWeight(player);
   const moved = consumeType(player, definition.ammoType, missing);
+  if (!moved) return { ok: false, message: "KEINE PASSENDE MUNITION" };
   magazine.rounds = (magazine.rounds || 0) + moved;
-  return moved;
+  if (inventoryWeight(player) > Math.max(carryCapacity(player), previousWeight) + .001) {
+    magazine.rounds = previousRounds;
+    player.inventory = original.map(({item, count}) => {item.count = count; return item;});
+    return { ok: false, message: "ZU SCHWER FÜR DIE NÄCHSTE MAGAZIN-GEWICHTSSTUFE" };
+  }
+  return { ok: true, message: `MAGAZIN BEFÜLLT · ${magazine.rounds}/${definition.capacity}` };
+}
+
+export function emptyMagazine(player, magazineId) {
+  const magazine = findItem(player, magazineId), definition = itemDefinition(magazine);
+  if (definition?.type !== "magazine" || !magazine.rounds) return { ok: false, message: "MAGAZIN IST LEER" };
+  const rounds = magazine.rounds;
+  magazine.rounds = 0;
+  if (!addItem(player, createItem(definition.ammoType, rounds))) {
+    magazine.rounds = rounds;
+    return { ok: false, message: "ZU SCHWER FÜR LOSE MUNITION" };
+  }
+  return { ok: true, message: `${rounds} PATRONEN AUS DEM MAGAZIN ENTNOMMEN` };
+}
+
+export function insertMagazine(player, weaponId, magazineId) {
+  const weapon = findItem(player, weaponId), definition = itemDefinition(weapon), magazine = findItem(player, magazineId);
+  if (definition?.feed !== "magazine" || !definition.magazineTypes.includes(magazine?.type)) {
+    return { ok: false, message: "MAGAZIN PASST NICHT AN DIESE WAFFE" };
+  }
+  const previous = weapon.magazine;
+  weapon.magazine = removeItem(player, magazine.id);
+  // Both magazines were already carried. Moving them between inventory and slot
+  // conserves mass and must never discard the outgoing magazine at full capacity.
+  if (previous) player.inventory.push(previous);
+  return { ok: true, message: `MAGAZIN EINGESETZT · ${ammoLabel(weapon)}` };
+}
+
+export function ejectMagazine(player, weaponId) {
+  const weapon = findItem(player, weaponId);
+  if (!weapon?.magazine) return { ok: false, message: "KEIN MAGAZIN EINGESETZT" };
+  player.inventory.push(weapon.magazine);
+  weapon.magazine = null;
+  return { ok: true, message: "MAGAZIN HERAUSGENOMMEN" };
 }
 
 export function reloadWeapon(player, weapon = activeWeapon(player)) {
@@ -261,23 +330,12 @@ export function reloadWeapon(player, weapon = activeWeapon(player)) {
 
   if (definition.feed === "magazine") {
     const candidates = player.inventory.filter(item => definition.magazineTypes.includes(item.type));
-    for (const magazine of candidates) fillMagazine(player, magazine);
     candidates.sort((a, b) => (b.rounds || 0) - (a.rounds || 0));
     const currentRounds = weapon.magazine?.rounds || 0;
     const best = candidates[0];
 
-    if (best && (best.rounds || 0) > currentRounds) {
-      const next = removeItem(player, best.id);
-      if (weapon.magazine) addItem(player, weapon.magazine);
-      weapon.magazine = next;
-      return { ok: true, message: `MAGAZIN EINGESETZT · ${next.rounds}/${itemDefinition(next).capacity}` };
-    }
-
-    if (weapon.magazine) {
-      const moved = fillMagazine(player, weapon.magazine);
-      if (moved > 0) return { ok: true, message: `MAGAZIN GELADEN · ${weapon.magazine.rounds}/${itemDefinition(weapon.magazine).capacity}` };
-    }
-    return { ok: false, message: weapon.magazine ? "KEINE WEITERE 9-MM-MUNITION" : "KEIN PASSENDES MAGAZIN" };
+    if (best && (!weapon.magazine || (best.rounds || 0) > currentRounds)) return insertMagazine(player, weapon.id, best.id);
+    return { ok: false, message: weapon.magazine ? "KEIN VOLLERES ERSATZMAGAZIN · MAGAZIN SEPARAT BEFÜLLEN" : "KEIN PASSENDES MAGAZIN" };
   }
 
   const missing = definition.capacity - (weapon.rounds || 0);

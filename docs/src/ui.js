@@ -10,20 +10,25 @@ import {
   findItem,
   inventoryWeight,
   itemDefinition,
+  itemWeight,
   roundsInWeapon,
   weaponCapacity,
+  weaponFireMode,
+  weaponStats,
 } from "./inventory.js";
 import { backgroundName, skillRank, visibleInfectionState, woundBleeding, woundDisplay, woundTreatmentOptions } from "./character.js";
 import { TargetLayout } from "./target-layout.js";
 import { CHARACTER_STYLES, defaultStyle } from "./quaternius-catalog.js";
 import { VIEW } from "./config.js";
 import { ObjectChoices } from "./object-selection.js";
+import { tilesToMeters } from "./world-scale.js";
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
   muzzle: "MÜNDUNG",
   stock: "SCHAFT",
   utility: "ZUBEHÖR",
+  magazine: "MAGAZIN",
 };
 
 export class GameUI {
@@ -38,7 +43,7 @@ export class GameUI {
       "awareness-state", "noise-state", "cover-fill", "cover-state", "location", "clock", "message", "target-label",
       "enemy-target", "enemy-state", "enemy-name", "enemy-hp-fill", "aim-meter", "aim-fill", "ammo-label",
       "execute-button", "execute-label", "execute-hint",
-      "action-button", "action-label", "attack-button", "stance-button", "stance-label", "reload-button",
+      "action-button", "action-label", "attack-button", "stance-button", "stance-label", "reload-button", "fire-mode-button",
       "mission-button", "mission-indicator", "status-button", "inventory-button", "inventory-count", "character-button",
       "recenter-button", "pause-button", "quickbar", "debug-stats",
       "zoom-in-button", "zoom-out-button", "zoom-label",
@@ -48,6 +53,7 @@ export class GameUI {
       "object-picker", "container-panel", "container-kind", "container-name", "container-items", "take-all-button",
       "character-panel", "character-background", "character-title", "skill-list", "condition-summary", "wound-list",
       "weapon-panel", "weapon-title", "weapon-ammo", "weapon-condition", "mod-slots", "available-mods", "weapon-reload-button",
+      "weapon-inspection", "weapon-preview", "weapon-stats", "weapon-mode-button", "weapon-magazines", "magazine-list",
       "pause-panel", "continue-button", "diagnostics-button", "reset-button", "death-panel", "survived-time", "death-cause",
       "new-survivor-button", "toast",
     ];
@@ -61,6 +67,7 @@ export class GameUI {
     this.selectedItemId = null;
     this.openContainer = null;
     this.weaponId = null;
+    this.weaponPreviewYaw = Math.PI * .75;
     this.messageTimer = 0;
     this.toastTimer = 0;
     this.bind();
@@ -86,7 +93,20 @@ export class GameUI {
     this.el.drop_button.addEventListener("click", () => this.selectedItemId && this.callbacks.dropItem?.(this.selectedItemId));
     this.el.customize_button.addEventListener("click", () => this.selectedItemId && this.callbacks.customize?.(this.selectedItemId));
     this.el.take_all_button.addEventListener("click", () => this.openContainer && this.callbacks.takeAll?.(this.openContainer));
-    this.el.weapon_reload_button.addEventListener("click", () => this.callbacks.reloadWeapon?.());
+    this.el.weapon_reload_button.addEventListener("click", () => this.callbacks.reloadWeapon?.(this.weaponId));
+    this.el.weapon_mode_button.addEventListener("click", () => this.callbacks.fireMode?.(this.weaponId));
+    let previewPointer = null, previewX = 0;
+    this.el.weapon_preview.addEventListener("pointerdown", event => {
+      event.preventDefault(); event.stopPropagation();
+      if (previewPointer !== null) return;
+      previewPointer = event.pointerId; previewX = event.clientX;
+      try { this.el.weapon_preview.setPointerCapture(event.pointerId); } catch (_) {}
+    });
+    this.el.weapon_preview.addEventListener("pointermove", event => {
+      if (event.pointerId !== previewPointer) return;
+      event.preventDefault(); this.weaponPreviewYaw += (event.clientX - previewX) * .012; previewX = event.clientX;
+    });
+    for (const event of ["pointerup", "pointercancel", "lostpointercapture"]) this.el.weapon_preview.addEventListener(event, () => {previewPointer = null;});
     this.el.diagnostics_button.addEventListener("click", () => this.callbacks.diagnostics?.());
   }
 
@@ -215,6 +235,10 @@ export class GameUI {
     const weapon = activeWeapon(player);
     const firearm = itemDefinition(weapon)?.weaponKind === "firearm";
     this.el.reload_button.classList.toggle("hidden", !firearm);
+    const switchable = (itemDefinition(weapon)?.fireModes?.length || 0) > 1;
+    this.el.fire_mode_button.classList.toggle("hidden", !switchable);
+    this.el.fire_mode_button.textContent = weaponFireMode(weapon) === "auto" ? "AUTO" : "SEMI";
+    this.el.fire_mode_button.setAttribute("aria-label", `Feuermodus ${this.el.fire_mode_button.textContent}, antippen zum Wechseln`);
     this.targetLayout.update(game, this.contextInfo);
     if (!this.el.debug_stats.classList.contains("hidden")) this.el.debug_stats.textContent = game.renderer.diagnosticsText();
   }
@@ -256,7 +280,7 @@ export class GameUI {
       this.el.action_button.classList.add("fire-ready");
       this.el.action_button.classList.toggle("ready", player.combat.aim > 0.72);
       this.el.action_button.querySelector("span").textContent = "◎";
-      this.el.action_label.textContent = "SCHUSS";
+      this.el.action_label.textContent = weaponFireMode(weapon) === "auto" ? "SCHUSS HALTEN" : "SCHUSS";
       this.el.target_label.classList.remove("show");
       return;
     }
@@ -480,9 +504,10 @@ export class GameUI {
       const required = ITEMS[definition.needs]?.name || definition.needs;
       extra += ` · BENÖTIGT: ${required.toUpperCase()}`;
     }
+    extra += ` · ${itemWeight(item).toLocaleString("de-DE", {minimumFractionDigits: 2, maximumFractionDigits: 2})} KG`;
     this.el.item_description.textContent = `${definition.description}${extra}`;
     this.el.use_button.textContent = definition.type === "weapon" || definition.equipSlot ? "AUSRÜSTEN"
-      : definition.type === "ammo" || definition.type === "magazine" ? "NACHLADEN"
+      : definition.type === "magazine" ? "BEFÜLLEN" : definition.type === "ammo" ? "NACHLADEN"
         : definition.type === "mod" ? "MONTIEREN" : "BENUTZEN";
   }
 
@@ -627,6 +652,7 @@ export class GameUI {
   openWeaponPanel(weapon, player) {
     if (!weapon) return;
     this.closeAllPanels();
+    if (this.weaponId !== weapon.id) this.weaponPreviewYaw = Math.PI * .75;
     this.weaponId = weapon.id;
     this.el.weapon_panel.classList.remove("hidden");
     this.renderWeaponPanel(weapon, player);
@@ -637,15 +663,21 @@ export class GameUI {
     this.el.weapon_title.textContent = definition.name.toUpperCase();
     this.el.weapon_ammo.textContent = `MUNITION ${ammoLabel(weapon)}`;
     this.el.weapon_condition.textContent = `ZUSTAND ${Math.round(weapon.condition || 0)} %`;
+    const stats = weaponStats(weapon);
+    this.el.weapon_inspection.classList.toggle("hidden", weapon.type !== "ak_762");
+    this.el.weapon_stats.textContent = `${itemWeight(weapon).toLocaleString("de-DE", {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg · ${Math.round(tilesToMeters(stats.range))} m · Anschlag ${stats.aimTime.toFixed(2).replace(".", ",")} s${stats.recoilPerShot ? ` · Rückstoß ${Math.round(stats.recoilPerShot * 100)}` : ""}`;
+    this.el.weapon_mode_button.classList.toggle("hidden", !definition.fireModes);
+    this.el.weapon_mode_button.textContent = weaponFireMode(weapon) === "auto" ? "AUTO · HALTEN" : "SEMI · TIPPEN";
+    this.el.weapon_reload_button.textContent = definition.feed === "magazine" ? "MAGAZIN WECHSELN" : "NACHLADEN";
     this.el.mod_slots.replaceChildren();
-    for (const slot of definition.modSlots || []) {
-      const installed = weapon.mods?.[slot];
+    for (const slot of [...(definition.feed === "magazine" ? ["magazine"] : []), ...(definition.modSlots || [])]) {
+      const installed = slot === "magazine" ? weapon.magazine : weapon.mods?.[slot];
       const button = document.createElement("button");
       button.className = "mod-slot";
       const label = document.createElement("small");
       label.textContent = MOD_SLOT_LABELS[slot] || slot.toUpperCase();
       const value = document.createElement("strong");
-      value.textContent = installed ? itemDefinition(installed).short : "LEER";
+      value.textContent = installed ? slot === "magazine" ? `${installed.rounds || 0}/${itemDefinition(installed).capacity}` : itemDefinition(installed).short : "LEER";
       button.append(label, value);
       button.disabled = !installed;
       if (installed) {
@@ -654,6 +686,25 @@ export class GameUI {
       }
       this.el.mod_slots.append(button);
     }
+
+    this.el.weapon_magazines.classList.toggle("hidden", definition.feed !== "magazine");
+    this.el.magazine_list.replaceChildren();
+    for (const magazine of player.inventory.filter(item => definition.magazineTypes?.includes(item.type))) {
+      const row = document.createElement("div"); row.className = "magazine-row";
+      const name = document.createElement("span"), capacity = itemDefinition(magazine).capacity;
+      name.textContent = `${itemDefinition(magazine).short} ${magazine.rounds || 0}/${capacity} · ${Math.round(itemWeight(magazine) * 1000)} g`;
+      row.append(name);
+      for (const [label, action, disabled] of [
+        ["EINSETZEN", () => this.callbacks.insertMagazine?.(weapon.id, magazine.id), false],
+        ["BEFÜLLEN", () => this.callbacks.fillMagazine?.(magazine.id), magazine.rounds >= capacity || !countType(player, itemDefinition(magazine).ammoType)],
+        ["ENTLEEREN", () => this.callbacks.emptyMagazine?.(magazine.id), !magazine.rounds],
+      ]) {
+        const button = document.createElement("button"); button.textContent = label; button.disabled = disabled;
+        button.addEventListener("click", action); row.append(button);
+      }
+      this.el.magazine_list.append(row);
+    }
+    if (!this.el.magazine_list.children.length) this.el.magazine_list.textContent = "KEIN PASSENDES WECHSELMAGAZIN IM RUCKSACK";
 
     this.el.available_mods.replaceChildren();
     const available = compatibleMods(player, weapon);
@@ -675,6 +726,12 @@ export class GameUI {
         this.el.available_mods.append(button);
       }
     }
+  }
+
+  drawWeaponPreview(game) {
+    if (this.el.weapon_panel.classList.contains("hidden")) return;
+    const weapon = findItem(game.player, this.weaponId);
+    if (weapon?.type === "ak_762") game.renderer.weaponInspection.draw(this.el.weapon_preview, weapon, this.weaponPreviewYaw);
   }
 
   renderQuickbar(player) {

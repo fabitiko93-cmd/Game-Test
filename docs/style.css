@@ -365,6 +365,7 @@ h1 span { color: var(--red-bright); }
 }
 .reload span { font-size: 16px; }
 .reload small { font: 600 7px "IBM Plex Mono", monospace; }
+.fire-mode { position: absolute; right: 86px; bottom: 38px; width: 72px; min-height: 36px; border: 1px solid var(--line); background: #26372e; color: #e2c581; font: 700 11px "IBM Plex Mono", monospace; }
 @keyframes ready { 50% { box-shadow: inset 0 0 18px #0008, 0 0 18px rgba(198,164,93,.52); } }
 
 .utility { position: absolute; top: calc(9px + var(--safe-top)); right: calc(11px + var(--safe-right)); display: flex; gap: 5px; pointer-events: auto; }
@@ -558,6 +559,20 @@ h1 span { color: var(--red-bright); }
 .wound-empty { padding: 10px; color: #7f867c; text-align: center; font: 500 8px "IBM Plex Mono", monospace; }
 
 .weapon-panel { left: 50%; width: min(500px, calc(100vw - 24px)); transform: translateX(-50%); }
+.weapon-panel { display: flex; flex-direction: column; }
+.weapon-panel > header, .weapon-panel > footer { flex-shrink: 0; }
+.weapon-body { overflow-y: auto; min-height: 0; }
+.weapon-inspection { position: relative; height: 110px; background: radial-gradient(ellipse, #394039, #151d18); }
+#weapon-preview { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+.weapon-inspection > small { position: absolute; bottom: 4px; left: 9px; pointer-events: none; color: #858d7d; font: 500 7px "IBM Plex Mono", monospace; }
+.weapon-settings { display: flex; align-items: center; gap: 8px; padding: 6px 9px; font: 500 8px "IBM Plex Mono", monospace; color: #bdc3ae; }
+.weapon-settings > span { flex: 1; }
+.weapon-settings button { min-height: 34px; padding: 5px 9px; background: #344235; color: #dfca90; }
+.magazine-list { display: grid; gap: 5px; padding: 5px 8px 8px; color: #9ca791; font: 500 8px "IBM Plex Mono", monospace; }
+.magazine-row { display: flex; align-items: center; gap: 4px; }
+.magazine-row > span { flex: 1; }
+.magazine-row button { min-height: 34px; padding: 4px 6px; font: 600 7px "IBM Plex Mono", monospace; background: #303c32; }
+.item-icon.ak { background: url("./assets/weapons/ak-icon.svg") center / contain no-repeat; width: 36px; }
 .weapon-summary { display: flex; justify-content: space-between; padding: 7px 10px; color: #cac7b7; background: rgba(0,0,0,.18); font: 600 9px "IBM Plex Mono", monospace; }
 .mod-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 8px; }
 .mod-slot { min-height: 48px; padding: 5px; text-align: left; border: 1px dashed rgba(238,233,216,.22); background: rgba(255,255,255,.025); }
