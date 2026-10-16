@@ -1,5 +1,5 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "7ce5780f4a4d5f757250";
+const BUILD_ID = "0a0cca094abfe83de979";
 const FILES = [
   "./assets/icon.svg",
   "./assets/quaternius/ANIMATION-LICENSE.txt",
@@ -243,7 +243,7 @@ const FILES = [
   "./assets/zombies3d/README.md",
   "./assets/zombies3d/THREE-LICENSE.txt",
   "./assets/zombies3d/models.json",
-  "./build/main-EEJOKMCX.js",
+  "./build/main-RI4VTHQP.js",
   "./build/style-PLX5HYIS.css",
   "./index.html",
   "./manifest.webmanifest"

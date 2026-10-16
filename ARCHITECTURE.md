@@ -29,7 +29,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Missionsfortschritt | `missions.js`, `game.js` | `updateMission`; Missionsmenü in `ui.js` |
 | Speichern und Laden | `save.js`, `game-state.js`, `world.js` | `serialize`/`load`, Weltobjekte und Zustand; Save-Version in `config.js` |
 | Nachfolgefigur und Weltbeginn | `game.js` | Überlebender, Startzustand und bestehende Welt |
-| Grafik, Auflösung, Renderleistung | `render.js`, `vision-cone.js`, `vision-display.js`, `vision-geometry.js`, `config.js` | Kamera, Projektion, sichtbare Objekte, Canvas; weiche Kegel auf gemeinsamer Ebene mit genauer Hindernisabschattung, Farbe nach bestehender Sicht-Erkennung; Spieltakt in `game.js` |
+| Grafik, Auflösung, Renderleistung | `render.js`, `render-order.js`, `vision-cone.js`, `vision-display.js`, `vision-geometry.js`, `config.js` | Kamera, Projektion, sichtbare Objekte, Canvas; weiche Kegel auf gemeinsamer Ebene mit genauer Hindernisabschattung, Farbe nach bestehender Sicht-Erkennung; Spieltakt in `game.js` |
 | Start, Laufzeitparameter, Hilfsfunktionen | `main.js`, `config.js`, `util.js` | `main.js` verbindet Welt, Renderer, Eingabe, UI und Game |
 | Audio | `game-audio.js` | Bestehende Web-Audio-Presets; `Game.sound` bleibt als Aufruf erhalten |
 | Veröffentlichung und Offlinecache | `scripts/build.mjs`, `web/index.html`, `web/service-worker.js` | Generiert Einstieg, Hashdateien, Cache-ID und vollständige Cacheliste |
@@ -46,6 +46,10 @@ Antippflächen aus projizierten Möbelkörpern inklusive Höhe; bei Überlappung
 ordnet eine nummerierte Auswahlliste die Objekte eindeutig zu. Erst die
 bestehende Aktion führt zum gewählten Ziel. Kleine Dekoobjekte referenzieren
 ihre Unterlage und übernehmen deren Modellhöhe und Tiefenreihenfolge.
+`render-order.js` ordnet überlappende Raumobjekte nach ihren tatsächlichen
+Beziehungen zu Rück-/Vorderwänden und Unterlagen. Teppiche bilden eine eigene
+Bodenebene vor Blut, Bodenmarkierungen, Möbeln und Figuren. Unabhängige Objekte
+behalten die bisherige Tiefenreihenfolge.
 Startoberteil/-hose speichern den gewählten Modellstil als Gegenstand; angelegte
 Lootkleidung ersetzt weiterhin nur den zugehörigen sichtbaren Kleidungsteil.
 
@@ -138,3 +142,7 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
 - `object-selection.test.mjs`: genaue erhöhte Tippflächen bei allen Zoomstufen,
   Mehrfachauswahl ohne Bewegung/Interaktion, verbindliches ausgewähltes Ziel,
   reale Deko-Unterlagen und gespeicherte/wechselbare Startkleidung.
+
+- `render-order.test.mjs`: echter Teppich/Couchtisch und übermalter Küchenschrank,
+  Überlagerungen in allen vier Gebäuden, Vorderwände, Deko-Unterlagen, vollständige
+  Objektlisten und tatsächlicher Bodenpass vor Effekten und erhöhten Objekten.

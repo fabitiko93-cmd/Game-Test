@@ -1,3 +1,13 @@
+# Teppich unter Möbeln und vollständige Schrankdarstellung · 16.10.2026
+
+- Teppiche werden als eigene Bodenebene nach dem Untergrund und vor Möbeln,
+  Figuren, Blut und Zielmarkierungen gezeichnet. Der Teppich im Unterschlupf
+  übermalt den Couchtisch nicht mehr.
+- Überlappende Rückwände werden vor den Raumobjekten gezeichnet, Vorderwände
+  danach. Dadurch übermalen breite Wandsegmente keine Teile der vollständigen
+  Schrankmodelle mehr. Deko bleibt nach ihrer Unterlage eingeordnet; unabhängige
+  Objekte behalten die bisherige Tiefenreihenfolge.
+
 # Präzise Behälterauswahl, Startkleidung und Möblierung · 16.10.2026
 
 - Antippflächen folgen den projizierten Möbelkörpern einschließlich der Höhe.

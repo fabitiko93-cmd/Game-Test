@@ -15,6 +15,7 @@ import { zombieBodyProfile } from "./zombie-appearance.js";
 import { QuaterniusAssets } from "./quaternius-assets.js";
 import { PlayerModels } from "./player-models.js";
 import { WorldModels } from "./world-models.js";
+import { isFloorObject, sortWorldDrawables } from "./render-order.js";
 import { objectPickPolygon, pickHotspots } from "./object-selection.js";
 
 export class Renderer {
@@ -201,14 +202,6 @@ export class Renderer {
     ctx.fillRect(0, 0, this.width, this.height);
     this.hotspots.length = 0;
 
-    this.drawGround(game.world, game.minutes);
-    this.drawBlood(game.world);
-    this.drawPlayerNoise(game);
-    this.drawCoverHints(game);
-    this.drawVisionCones(game);
-    this.drawDestination();
-    this.contextId = game.contextObject()?.id || null;
-
     const drawables = [];
     const bounds = this.visibleWorldBounds(4);
     for (const object of game.world.objectsInBounds(bounds.minX, bounds.minY, bounds.maxX, bounds.maxY)) {
@@ -226,7 +219,7 @@ export class Renderer {
       }
     }
     drawables.push({ kind: "player", ref: game.player, depth: game.player.x + game.player.y + .08 });
-    drawables.sort((a, b) => a.depth - b.depth);
+    sortWorldDrawables(drawables,game.world);
     this.metrics.visibleObjects = drawables.length;
 
     this.zombieSprites.beginFrame();
@@ -234,7 +227,17 @@ export class Renderer {
     this.playerModels?.beginFrame();
     if (this.canvas?.dataset) this.canvas.dataset.zombieRenderer = this.zombieModels?.status || "sprites";
 
+    this.drawGround(game.world, game.minutes);
+    for(const drawable of drawables)if(isFloorObject(drawable))this.drawObject(drawable.ref,game);
+    this.drawBlood(game.world);
+    this.drawPlayerNoise(game);
+    this.drawCoverHints(game);
+    this.drawVisionCones(game);
+    this.drawDestination();
+    this.contextId = game.contextObject()?.id || null;
+
     for (const drawable of drawables) {
+      if(isFloorObject(drawable))continue;
       if (drawable.kind === "object") this.drawObject(drawable.ref, game);
       else if (drawable.kind === "zombie") this.drawZombie(drawable.ref, game);
       else this.drawPlayer(drawable.ref, game);
