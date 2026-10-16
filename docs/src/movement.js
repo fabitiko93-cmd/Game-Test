@@ -1,6 +1,6 @@
 import { GAME, STANCES } from "./config.js";
 import { skillValue } from "./character.js";
-import { activeWeapon, itemDefinition, inventoryWeight, carryCapacity } from "./inventory.js";
+import { activeWeapon, itemDefinition, inventoryWeight, carryCapacity, weaponStats } from "./inventory.js";
 import { clamp, distance } from "./util.js";
 import { findPlayerPath, pathToPlayerInteraction } from "./player-navigation.js";
 import { canInteract } from "./interaction.js";
@@ -43,7 +43,7 @@ export function updateMovement(game, delta) {
   const previous = { x: player.x, y: player.y };
   if (Math.hypot(dx, dy) > 0) {
     const burden = inventoryWeight(player) / Math.max(1, carryCapacity(player));
-    let budget = stance.speed * clamp(1.08 - burden * .16, .72, 1) * delta;
+    let budget = stance.speed * clamp(1.08 - burden * .16, .72, 1) * (weaponStats(activeWeapon(player))?.mobility || 1) * delta;
     if (waypoint) {
       for (let leg = 0; leg < 6 && budget > .00001 && navigation.path.length; leg++) {
         const next = navigation.path[0], door = game.world.doorAtCell(next.x, next.y)

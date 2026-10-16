@@ -1,3 +1,29 @@
+# Modulare AK mit Semi/Fullauto und eigenen Magazinen · 17.10.2026
+
+- AK-Grundmodell aus Nutzer-Variante 2 (`AssaultRifle_3`): echte CC0-Geometrie
+  mit getrenntem Magazin, festem Schaft, Duster-Rahmenschaft, kompaktem 3×-ACOG
+  und Schalldämpfer. Anbauteile wechseln sichtbar in Hand und Waffenbank.
+- Drehbare Modellansicht mit Gewicht, Reichweite, Anschlag und Rückstoß.
+  Zweiarmige Haltung passt sich den männlichen/weiblichen Originalanimationen
+  an; Mündung und Blickrichtung stimmen überein.
+- 7,62×39, 30er-Magazin, Semi und Fullauto. Tippen löst einen Schuss aus;
+  Auto feuert beim Halten von SCHUSS. Loslassen, Abbruch, Bewegung, Menüs,
+  Pause, Ziel-/Waffenwechsel und fehlende Schusslinie stoppen den Feuerstoß.
+- Schäfte verbessern Rückstoßkontrolle bei mehr Gewicht und weniger Mobilität;
+  das ACOG erhöht die nutzbare Distanz. Der Dämpfer senkt den Knall ohne Schaden
+  oder Durchschlag zu mindern. AK-Durchschüsse können ein weiteres ausgerichtetes
+  Ziel treffen; feste Hindernisse blockieren weiterhin die Schusslinie.
+- Befüllen, Entleeren, Einsetzen und Herausnehmen sind getrennte Magazinaktionen.
+  NACHLADEN wechselt Magazine und befüllt sie nicht automatisch. Teilfüllung und
+  Gegenstandsidentität bleiben erhalten; unpassende Magazine werden abgewiesen.
+- AK-Startgewichte: Basis 3 kg, fester Schaft 450 g, Rahmen 350 g, ACOG 300 g,
+  Dämpfer 400 g. 30er-Magazin samt Inhalt: 0–14 Patronen 250 g, 15–30 Patronen
+  300 g. Alle Wechselmagazine nutzen die zwei Füllgewichtsstufen; lose AK-Munition
+  wird stapelweise auf 50 g gerundet. Enthaltene Munition wird nicht doppelt gewogen.
+- Vollständiges AK-Testset in der Startkiste; AK/Teile/Munition zusätzlich als
+  seltene Polizeibeute. Modkonfiguration, Magazine und Feuermodus werden gespeichert;
+  ein gehaltener Abzug wird beim Laden stets beendet.
+
 # Waffen-Testkiste am Startpunkt · 17.10.2026
 
 - Frei zugängliche Kiste direkt neben der Startfigur im Eingangsbereich des

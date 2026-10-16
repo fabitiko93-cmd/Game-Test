@@ -17,6 +17,7 @@ import { PlayerModels } from "./player-models.js";
 import { WorldModels } from "./world-models.js";
 import { isFloorObject, sortWorldDrawables } from "./render-order.js";
 import { objectPickPolygon, pickHotspots } from "./object-selection.js";
+import { WeaponInspection } from "./weapon-models.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -44,6 +45,7 @@ export class Renderer {
     this.zombieModels = new ZombieModels();
     this.modelLibrary = new QuaterniusAssets();
     this.playerModels = new PlayerModels(this.zombieModels.pass,this.modelLibrary);
+    this.weaponInspection = new WeaponInspection(this.zombieModels.pass, this.playerModels.weapons);
     this.worldModels = new WorldModels(this.zombieModels.pass,this.modelLibrary);
     this.statusPaths = new Map(Object.entries(STATUS_ICONS).map(([id, icon]) => [id, new Path2D(icon.path)]));
     this.coverHintCache = { key: "", map: null, paths: null };

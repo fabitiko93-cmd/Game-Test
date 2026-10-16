@@ -12,6 +12,7 @@ import { visionExposure } from "../docs/src/perception.js";
 import { playerStatusIcons, zombieStatusIcons } from "../docs/src/status-icons.js";
 import { addItem, createItem, equipItem } from "../docs/src/inventory.js";
 import { SaveStore } from "../docs/src/save.js";
+import { PLAYER_BODY_RADIUS } from "../docs/src/world-scale.js";
 
 function fixture(background = "citizen") {
   const world = new World();
@@ -263,7 +264,7 @@ scenario("v11 save loads without reset and repairs the old car-overlap spawn", (
   g.saveStore = { read: () => ({ seed: 981013, mission: 2, player: JSON.parse(JSON.stringify(g.player)), zombies: [] }) };
   assert.equal(Game.prototype.load.call(g), true);
   assert.equal(g.mission, 2); assert.ok(g.player.inventory.some(i => i.type === "kitchen_knife"));
-  assert.equal(g.world.isWalkable(g.player.x, g.player.y, .27), true);
+  assert.equal(g.world.isWalkable(g.player.x, g.player.y, PLAYER_BODY_RADIUS), true);
   assert.equal(g.stealth.hasOpenfield(g.player), true);
 });
 

@@ -71,6 +71,14 @@ im Unterschlupf liegen, samt allen kompatiblen eingeführten Mods, passenden
 Magazinen und Munition. `weapon-test-crate.js` leitet den Inhalt aus `ITEMS` ab;
 neue Waffen und Teile dort mit vollständiger Kompatibilität definieren.
 
+AK-Basis vom 17.10.2026: Nutzer-Variante 2 = `AssaultRifle_3`, schaftlos;
+7,62×39, Semi/Fullauto, eigener Magazinplatz. Fester Schaft, Duster-Rahmen,
+3×-ACOG und Dämpfer sind wechselbare Gegenstände und sichtbare Modellteile.
+Der Dämpfer senkt weder Schaden noch Durchschlag. Neue AK-Gewichte folgen
+50-g-Schritten; Magazine inklusive Inhalt haben zwei Stufen (30er: 0–14 / 15–30,
+Differenz 50 g). Befüllen und Wechseln bleiben getrennte Aktionen. Farbe allein
+definiert keine neue Waffe; AWP und Bullpups bleiben ausgeschlossen.
+
 Beauftragte Patches bis zum überprüften Abschluss führen. Fortschrittsmeldungen
 beenden die Arbeit nicht. Bei beauftragter Veröffentlichung gehören Commit,
 Zusammenführung, erfolgreiches Deployment und Prüfung des normalen Spieleinstiegs

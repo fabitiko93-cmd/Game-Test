@@ -14,7 +14,7 @@ v12 und v12.1 sind veröffentlicht; die tatsächlich implementierten Änderungen
   unmittelbar erreichbare Testkiste. Jede implementierte Waffe erhält sämtliche
   passenden eingeführten Mods, eigene Magazine und Munition. Der Inhalt folgt
   automatisch den tatsächlichen Gegenstands- und Kompatibilitätsdefinitionen.
-- Beschlossen für die AK, noch nicht implementiert: Nutzer-Variante 2 ist das
+- AK-Grundmodell und vereinbarte Mods implementiert: Nutzer-Variante 2 ist das
   schaftlose Grundmodell (`AssaultRifle_3` im Pack). Nutzer-Variante 3 ist die
   klassische Ausführung mit festem Schaft (`AssaultRifle_2`). Nutzer-Variante 1
   (`AssaultRifle_1`, kurzer Lauf, gerades Pistolen-/SMG-Magazin) später separat.
@@ -23,11 +23,15 @@ v12 und v12.1 sind veröffentlicht; die tatsächlich implementierten Änderungen
   Anschlag, aber schlechtere Rückstoßkontrolle. Fester Schaft schwerer, weniger
   beweglich und stabiler. Mods: fester Schaft, Duster-/Rahmenschaft, kompaktes
   3×-ACOG und Schalldämpfer. Letzte Nutzerkorrektur: keine Durchschlagsminderung
-  durch den Schalldämpfer. Konkrete Balancewerte/Gewichte sind noch offen.
+  durch den Schalldämpfer. Erste Implementierungsbalance: Basis 3 kg, fester
+  Schaft 450 g, Rahmen 350 g, ACOG 300 g, Dämpfer 400 g. Dies sind überprüfbare
+  Startwerte für Spieltests; noch keine abschließend abgestimmte Feinbalance.
 - Magazine sind eigene Gegenstände; Waffen können ohne Magazin vorkommen.
-  Befüllen und Wechseln sollen getrennte Aktionen werden. Gewichte in 50-g-
+  Befüllen, Entleeren und Wechseln sind getrennte Aktionen. Gewichte in 50-g-
   Schritten. Magazin inklusive Munition hat zwei Gewichtsstufen: unter halber
   Füllung die untere Stufe, ab halber Füllung +50 g (30er: 0–14 / 15–30).
+  AK-Startwert: 250/300 g. Die Basis-Laufgeometrie bleibt beim Schaftwechsel
+  gleich; weitere Lauf-/Kalibervarianten und Nutzer-Variante 1 bleiben später.
 - AWP und Bullpup-Gewehre sind ausgeschlossen. Kleidung bleibt beim kommenden
   Ausbau zunächst optisch; weitere Ausrüstungsfunktionen werden gesondert geplant.
 

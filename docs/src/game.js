@@ -64,6 +64,8 @@ export class Game {
     this.input.callbacks = {
       combat: () => this.combat.toggle(this),
       action: () => this.primaryAction(),
+      actionEnd: () => this.combat.stopFiring(this),
+      fireMode: () => ItemActions.toggleFireMode(this),
       execute: command => this.executeAction(command),
       stance: () => this.toggleStance(),
       openfield: () => { if (this.canAct()) this.stealth.activateOpenfield(this); },
@@ -99,7 +101,12 @@ export class Game {
       customize: id => this.openWeaponPanel(id),
       installMod: (weaponId, modId) => this.mountMod(weaponId, modId),
       removeMod: (weaponId, slot) => this.unmountMod(weaponId, slot),
-      reloadWeapon: () => this.reload(),
+      reloadWeapon: weaponId => ItemActions.reload(this, weaponId),
+      insertMagazine: (weaponId, magazineId) => ItemActions.changeMagazine(this, weaponId, magazineId),
+      ejectMagazine: weaponId => ItemActions.changeMagazine(this, weaponId, null),
+      emptyMagazine: magazineId => ItemActions.unloadMagazine(this, magazineId),
+      fillMagazine: magazineId => ItemActions.loadMagazine(this, magazineId),
+      fireMode: weaponId => ItemActions.toggleFireMode(this, weaponId),
       newSurvivor: () => this.requestSuccessor(),
       diagnostics: () => this.toggleDiagnostics(),
       panelClosed: () => {},
@@ -223,6 +230,7 @@ export class Game {
     this.lastFrame = now;
     if (!this.paused && !this.dead) this.update(delta);
     this.renderer.render(this, delta);
+    this.ui.drawWeaponPreview?.(this);
     this.uiTick -= delta;
     if (this.uiTick <= 0) {
       this.ui.update(this.player, this);
@@ -392,7 +400,7 @@ export class Game {
     if (!this.canAct()) return;
     const weapon = activeWeapon(this.player);
     if (itemDefinition(weapon)?.weaponKind === "firearm" && this.player.combat.enabled && this.combat.target(this)) {
-      const result = this.combat.fire(this);
+      const result = this.combat.beginFiring(this);
       if (!result.ok) this.ui.showToast(result.message);
       this.ui.refreshAll(this.player, this);
       return;
@@ -710,6 +718,8 @@ export class Game {
   }
 
   setPaused(paused) {
+    this.combat.stopFiring(this);
+    this.input.cancelPointer?.();
     this.paused = paused;
     this.input.enabled = !paused && !this.dead;
     this.ui.setPaused(paused);
