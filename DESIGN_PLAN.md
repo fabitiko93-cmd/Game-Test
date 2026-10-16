@@ -8,6 +8,31 @@ v12 und v12.1 sind veröffentlicht; die tatsächlich implementierten Änderungen
 
 ## Arbeitsweise und Status
 
+### Waffenplanung und direkter Testzugang · 17.10.2026
+
+- Umgesetzt: Neue Welten enthalten im Eingangsbereich des Unterschlupfs eine
+  unmittelbar erreichbare Testkiste. Jede implementierte Waffe erhält sämtliche
+  passenden eingeführten Mods, eigene Magazine und Munition. Der Inhalt folgt
+  automatisch den tatsächlichen Gegenstands- und Kompatibilitätsdefinitionen.
+- Beschlossen für die AK, noch nicht implementiert: Nutzer-Variante 2 ist das
+  schaftlose Grundmodell (`AssaultRifle_3` im Pack). Nutzer-Variante 3 ist die
+  klassische Ausführung mit festem Schaft (`AssaultRifle_2`). Nutzer-Variante 1
+  (`AssaultRifle_1`, kurzer Lauf, gerades Pistolen-/SMG-Magazin) später separat.
+  Varianten 4/5 bleiben vorerst ungenutzt; Farbe allein definiert keine neue Waffe.
+- AK: 7,62×39, Semi und Fullauto; ohne Schaft beweglicher und schneller im
+  Anschlag, aber schlechtere Rückstoßkontrolle. Fester Schaft schwerer, weniger
+  beweglich und stabiler. Mods: fester Schaft, Duster-/Rahmenschaft, kompaktes
+  3×-ACOG und Schalldämpfer. Letzte Nutzerkorrektur: keine Durchschlagsminderung
+  durch den Schalldämpfer. Konkrete Balancewerte/Gewichte sind noch offen.
+- Magazine sind eigene Gegenstände; Waffen können ohne Magazin vorkommen.
+  Befüllen und Wechseln sollen getrennte Aktionen werden. Gewichte in 50-g-
+  Schritten. Magazin inklusive Munition hat zwei Gewichtsstufen: unter halber
+  Füllung die untere Stufe, ab halber Füllung +50 g (30er: 0–14 / 15–30).
+- AWP und Bullpup-Gewehre sind ausgeschlossen. Kleidung bleibt beim kommenden
+  Ausbau zunächst optisch; weitere Ausrüstungsfunktionen werden gesondert geplant.
+
+### Bisherige Arbeitsweise
+
 - Nutzerideen bleiben erhalten, solange sie nicht ausdrücklich gemeinsam verworfen wurden.
 - Vor jedem betroffenen Systementwurf die Wiedervorlagen unten prüfen. Eine Idee vor
   einer Festlegung ansprechen, die ihre spätere Integration wesentlich verteuert.

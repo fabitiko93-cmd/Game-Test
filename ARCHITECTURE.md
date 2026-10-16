@@ -50,6 +50,10 @@ ihre Unterlage und übernehmen deren Modellhöhe und Tiefenreihenfolge.
 Beziehungen zu Rück-/Vorderwänden und Unterlagen. Teppiche bilden eine eigene
 Bodenebene vor Blut, Bodenmarkierungen, Möbeln und Figuren. Unabhängige Objekte
 behalten die bisherige Tiefenreihenfolge.
+`weapon-test-crate.js` erzeugt für jede definierte Waffe ein vollständiges Testset
+mit kompatiblen Mods, vollen/leeren Wechselmagazinen und drei Stapeln passender
+Munition. `world.js` platziert die Kiste direkt neben dem frischen Startpunkt;
+entnommene Gegenstände bleiben über die normale Weltobjektspeicherung entnommen.
 Startoberteil/-hose speichern den gewählten Modellstil als Gegenstand; angelegte
 Lootkleidung ersetzt weiterhin nur den zugehörigen sichtbaren Kleidungsteil.
 
