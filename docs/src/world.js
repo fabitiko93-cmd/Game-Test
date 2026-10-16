@@ -8,6 +8,7 @@ import { buildingWalls, doorSide, doorGeometry } from "./building-geometry.js";
 import { PLAYER_BODY_RADIUS, ZOMBIE_WORLD_RADIUS, metersToTiles, WORLD_SCALE } from "./world-scale.js";
 import { furnishingDimensions, furnishingFootprint } from "./quaternius-catalog.js";
 import { furnishBuildings } from "./interior-layout.js";
+import { createWeaponTestItems } from "./weapon-test-crate.js";
 
 export const BUILDINGS = [
   { id: "police", name: "POLIZEIPOSTEN", x: 16, y: 5, w: 8, h: 8, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
@@ -72,6 +73,13 @@ export class World {
     this.addVegetation();
     this.addContainers();
     furnishBuildings(this);
+    const safehouse = this.buildings.find(building => building.id === "safehouse");
+    this.addObject("weaponcrate", safehouse.door.x - .45, safehouse.door.y + 1.05, {
+      id: "starter-weapon-test-crate", name: "WAFFEN-TESTKISTE", building: safehouse.id,
+      interactable: true, solid: true, locked: false,
+      footprint: { x: metersToTiles(.45), y: metersToTiles(.325) }, heightMeters: .5,
+      items: createWeaponTestItems(),
+    });
   }
 
   baseTile(x, y) {

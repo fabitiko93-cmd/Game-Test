@@ -436,6 +436,7 @@ export class Renderer {
         metersToTiles(WORLD_SCALE.fridge.width), metersToTiles(WORLD_SCALE.fridge.depth)); break;
       case "shelf": this.drawShelf(o); break;
       case "toolbox": this.drawFurniture(o, "#6f2d28", 11, .62, .46); break;
+      case "weaponcrate": this.drawWeaponCrate(o); break;
       case "desk": this.drawFurniture(o, "#51483b", 18, .86, .58); break;
       case "locker": this.drawFurniture(o, "#59625d", 34, .58, .48); break;
       case "gunlocker": this.drawFurniture(o, o.locked ? "#4c5550" : "#626d65", 37, .68, .48); break;
@@ -524,6 +525,20 @@ export class Renderer {
   drawFurniture(o, color, height, w, d) {
     const p = this.iso(o.x,o.y); this.shadow(p,17,6,.25); this.drawBlock(o.x,o.y,w,d,height,color);
     if (o.interactable) { const h = this.iso(o.x,o.y,height*.55); this.ctx.fillStyle="#b49a62"; this.ctx.fillRect(h.x+3,h.y,3,2); }
+  }
+
+  drawWeaponCrate(o) {
+    const width = o.footprint.x * 2, depth = o.footprint.y * 2, height = heightPixels(o.heightMeters);
+    const p = this.iso(o.x, o.y);
+    this.shadow(p, 12, 5, .25);
+    this.drawBlock(o.x, o.y, width, depth, height, "#68704c");
+    this.drawBlock(o.x, o.y, width, depth, height * .12, "#859065", height * .88);
+    for (const offset of [-.3, .3]) {
+      this.drawBlock(o.x + width * offset, o.y, width * .09, depth, height * .035, "#393e35", height);
+    }
+    const latch = this.iso(o.x, o.y + depth / 2, height * .7);
+    this.ctx.fillStyle = "#c4b77c";
+    this.ctx.fillRect(latch.x - 2, latch.y, 4, 3);
   }
 
   drawShelf(o) {

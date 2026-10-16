@@ -1,3 +1,13 @@
+# Waffen-Testkiste am Startpunkt · 17.10.2026
+
+- Frei zugängliche Kiste direkt neben der Startfigur im Eingangsbereich des
+  Unterschlupfs. Der Weg zur Tür bleibt frei; die normalen 50 cm Reichweite gelten.
+- Jeder neue Spielstand enthält alle implementierten Waffen, pro Waffe alle
+  kompatiblen Mods, passende volle und leere Wechselmagazine sowie drei Stapel
+  Munition. Neue Einträge im Gegenstandskatalog werden automatisch berücksichtigt.
+- Waffen liegen unmodifiziert und ungeladen bereit, Magazine als eigene Objekte.
+  Entnahmen werden gespeichert; Laden füllt die Kiste nicht erneut auf.
+
 # Teppich unter Möbeln und vollständige Schrankdarstellung · 16.10.2026
 
 - Teppiche werden als eigene Bodenebene nach dem Untergrund und vor Möbeln,

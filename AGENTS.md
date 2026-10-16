@@ -65,6 +65,12 @@ Die bestehenden Spielregeln bleiben maßgeblich. Nutzerklarstellung vom 15.10.20
 Tests beginnen mit neuen Spielständen. Abwärtskompatibilität, Übernahme und
 Migration alter Spielstände sind keine Anforderung für Folgepatches.
 
+Testzugang vom 17.10.2026: Jede implementierte Waffe muss bei einem neuen
+Spielstand in der frei zugänglichen Waffen-Testkiste direkt neben dem Startpunkt
+im Unterschlupf liegen, samt allen kompatiblen eingeführten Mods, passenden
+Magazinen und Munition. `weapon-test-crate.js` leitet den Inhalt aus `ITEMS` ab;
+neue Waffen und Teile dort mit vollständiger Kompatibilität definieren.
+
 Beauftragte Patches bis zum überprüften Abschluss führen. Fortschrittsmeldungen
 beenden die Arbeit nicht. Bei beauftragter Veröffentlichung gehören Commit,
 Zusammenführung, erfolgreiches Deployment und Prüfung des normalen Spieleinstiegs
