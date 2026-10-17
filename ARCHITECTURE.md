@@ -55,10 +55,23 @@ mit kompatiblen Mods, vollen/leeren Wechselmagazinen und drei Stapeln passender
 Munition. `world.js` platziert die Kiste direkt neben dem frischen Startpunkt;
 entnommene Gegenstände bleiben über die normale Weltobjektspeicherung entnommen.
 `weapon-models.js` lädt die in acht echte Teile zerlegte AK-Geometrie und verwendet
-dieselbe Konfiguration für Hand und drehbare Waffenbank. `rifle-pose.js` passt beide
+dieselbe Konfiguration für Hand und drehbare Waffenbank. `equipment-views.js` steuert
+die Ausrüstungsslots der Charakteransicht, drei Charakterreiter sowie auswählbare
+Waffen-Mod-Slots und ihre Verbindungslinien. Beide Ansichten drehen per einzelner
+Zeigergeste; die Waffe lässt sich zusätzlich kippen. `character-inspection.js`
+verwendet einen getrennt posierten Klon mit tatsächlicher Kleidung und Ausrüstung.
+`model-pass.js` zeichnet beide Menüs mit eigener Kamera auf Körper-/Waffenhöhe im
+gemeinsamen WebGL-Kontext; der nächste Weltpass stellt seine Auflösung wieder her.
+`player-motion.js` erhält die Schrittphase und dreht die Figur begrenzt über den
+kürzesten Winkel zur Laufrichtung. `movement.js` hält nach Erschöpfung Gehtempo bis
+zum nächsten Sprintbefehl, statt zwischen Gehen und Sprint zu pendeln; bestehende
+Ausdauer- und Geräuschwerte bleiben erhalten. `rifle-pose.js` passt beide
 Arme und Finger an die tatsächlichen Handflächen-/Griffabstände an; leichte
 Oberkörperdrehung, getrennte Stützhandrotation und Schafthaltungen ergänzen die
-erhaltene Ganganimation. Korrekturen werden vor der nächsten Animation/Abwahl
+erhaltene Ganganimation. Diagonale Tragehaltung, Hüfthaltung bei Bewegung und
+Anlegen beim tatsächlichen Anvisieren werden weich überblendet. Mit Schaft folgt
+die Schaftkappe einem Schulterkontaktpunkt; schaftlos gilt eine eigene Position.
+Korrekturen werden vor der nächsten Animation/Abwahl
 zurückgenommen; Armlängen bleiben erhalten. `character-shadow.js` gewinnt je Fuß
 wenige echte Sohlenproben, verfolgt ihre animierten Positionen und zeichnet weiche,
 bei Fußheben schwächere Kontaktschatten. `render.js` ruft diesen Bodenpass nach

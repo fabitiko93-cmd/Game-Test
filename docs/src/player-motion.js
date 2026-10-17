@@ -11,7 +11,8 @@ export class PlayerMotion {
     const definition=QUATERNIUS_MODELS.characters[`${appearance.sex}-${defaultStyle(appearance.sex)}`];
     const clipData=name=>PLAYER_ANIMATIONS.clips[name]||definition.clips[name];
     let record=this.entities.get(player);
-    if(!record||time<record.time){record={time,x:player.x,y:player.y,phase:0,attackStart:-Infinity,attackTimer:0,shots:player.shots||0};this.entities.set(player,record);}
+    const targetYaw=Math.atan2(player.facingX??0,player.facingY??1);
+    if(!record||time<record.time){record={time,x:player.x,y:player.y,yaw:targetYaw,phase:0,attackStart:-Infinity,attackTimer:0,shots:player.shots||0};this.entities.set(player,record);}
     const delta=Math.max(0,time-record.time),combat=player.combat||{},weapon=itemDefinition(activeWeapon(player));
     const firearm=weapon?.weaponKind==="firearm";
     if((combat.attackTimer||0)>record.attackTimer+.05){record.attackStart=time;record.attackClip=weapon?"Sword_Slash":"Punch_Right";}
@@ -29,7 +30,14 @@ export class PlayerMotion {
       } else if(delta>0)record.phase=modulo(record.phase+delta/data.duration);
       progress=record.phase;
     }
+    // A new path changes the destination immediately, not the body's orientation
+    // or foot phase. Turn along the shortest arc, including across +/- PI.
+    if(delta>0){
+      const turn=Math.atan2(Math.sin(targetYaw-record.yaw),Math.cos(targetYaw-record.yaw));
+      record.yaw+=Math.max(-9*delta,Math.min(9*delta,turn*(1-Math.exp(-14*delta))));
+      record.yaw=Math.atan2(Math.sin(record.yaw),Math.cos(record.yaw));
+    }
     Object.assign(record,{time,x:player.x,y:player.y,attackTimer:combat.attackTimer||0,shots:player.shots||0});
-    return {appearance,scale,clip,progress,delta:Math.min(.1,delta),yaw:Math.atan2(player.facingX??0,player.facingY??1),crouched};
+    return {appearance,scale,clip,progress,delta:Math.min(.1,delta),yaw:record.yaw,crouched};
   }
 }
