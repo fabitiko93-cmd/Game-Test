@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="sperrkreis-build" content="ba25bd3a7ca4f5e0f71e">
+  <meta name="sperrkreis-build" content="64c320f9df592690068f">
   <meta name="theme-color" content="#111714">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,7 +12,7 @@
   <title>SPERRKREIS 98</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="build/style-T4VBRQEH.css">
+  <link rel="stylesheet" href="build/style-WPEYC5AG.css">
 </head>
 <body>
   <main id="game-shell" aria-label="SPERRKREIS 98">
@@ -255,12 +255,18 @@
         <button id="weapon-view-reset" class="view-reset" aria-label="Waffenansicht zurücksetzen">↺</button>
       </div>
       <div class="weapon-settings"><span id="weapon-stats"></span><button id="weapon-mode-button" class="hidden">SEMI</button></div>
-      <div id="weapon-slot-detail" class="weapon-slot-detail"></div>
-      <div id="weapon-magazines" class="hidden"><h3>MAGAZINE IM RUCKSACK</h3><div id="magazine-list" class="magazine-list"></div></div>
-      <h3 id="weapon-parts-title">PASSENDE TEILE IM RUCKSACK</h3>
-      <div id="available-mods" class="available-mods"></div>
       </div>
       <footer><span>Anbauteile antippen</span><button id="weapon-reload-button">NACHLADEN</button></footer>
+      <button id="weapon-picker-backdrop" class="weapon-picker-backdrop hidden" aria-label="Teileauswahl schließen" tabindex="-1"></button>
+      <section id="weapon-slot-picker" class="weapon-slot-picker hidden" role="dialog" aria-modal="true" aria-labelledby="weapon-picker-title">
+        <header><h3 id="weapon-picker-title">TEILE AUSWÄHLEN</h3><button id="weapon-picker-close" class="close" aria-label="Teileauswahl schließen">×</button></header>
+        <div class="weapon-picker-body">
+          <div id="weapon-slot-detail" class="weapon-slot-detail"></div>
+          <div id="weapon-magazines" class="hidden"><h3>MAGAZINE IM RUCKSACK</h3><div id="magazine-list" class="magazine-list"></div></div>
+          <h3 id="weapon-parts-title">PASSENDE TEILE IM RUCKSACK</h3>
+          <div id="available-mods" class="available-mods"></div>
+        </div>
+      </section>
     </section>
 
     <section id="pause-panel" class="modal hidden">
@@ -285,6 +291,6 @@
 
     <div id="toast" class="toast"></div>
   </main>
-  <script type="module" src="build/main-Y7RE5BWQ.js"></script>
+  <script type="module" src="build/main-SDIVAN7B.js"></script>
 </body>
 </html>

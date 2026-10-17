@@ -741,6 +741,18 @@ h1 span { color: var(--red-bright); }
 .model-placeholder { display:none; position:absolute; top:44%; left:28%; right:28%; text-align:center; color:#9da98e; font:500 9px "IBM Plex Mono",monospace; line-height:1.6; }
 .no-model .model-placeholder { display:block; }
 .no-model .orbit-hint, .no-model .view-reset { display:none; }
+.weapon-picker-backdrop { position:absolute; inset:0; z-index:6; border:0; background:#0009; }
+.weapon-slot-picker { position:absolute; z-index:7; top:46px; right:12px; bottom:12px; width:min(370px,calc(100% - 24px)); display:flex; flex-direction:column; overflow:hidden; border:1px solid #baa06a; background:#172219; box-shadow:0 8px 32px #000c; }
+.weapon-slot-picker > header { min-height:44px; flex-shrink:0; }
+.weapon-slot-picker > header .close { width:44px; height:44px; }
+.weapon-slot-picker > header h3 { font-size:10px; color:#eddaaa; }
+.weapon-picker-body { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; }
+.weapon-slot-picker .available-mods { grid-template-columns:1fr; max-height:none; min-height:0; overflow:visible; padding:8px; }
+.weapon-slot-picker .mod-item { display:flex; align-items:center; gap:12px; min-height:50px; padding:8px 10px; text-align:left; }
+.weapon-slot-picker .mod-item small { font-size:11px; }
+.weapon-slot-picker .magazine-row { flex-wrap:wrap; gap:6px; padding:6px 2px; border-bottom:1px solid var(--line); }
+.weapon-slot-picker .magazine-row > span { flex-basis:100%; padding-bottom:4px; font-size:10px; }
+.weapon-slot-picker .magazine-row button { min-height:44px; font-size:9px; padding:5px 10px; }
 @media (max-width:600px) {
   .character-equipment { grid-template-columns:minmax(0,1fr) 168px; }
   .model-slots button { width:82px; padding:5px; }

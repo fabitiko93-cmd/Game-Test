@@ -33,12 +33,22 @@ function button(label,action,className='loadout-action'){const node=element('but
 export class EquipmentViews {
   constructor(ui){
     this.ui=ui;this.characterYaw=0;this.characterSlot='torso';this.characterTab='equipment';this.weaponSlot='stock';this.linkCache=new WeakMap();
-    const ids=['character-preview','character-inspection','character-links','character-slots','character-equipment-detail','weapon-model-stage','weapon-links','weapon-slot-detail','weapon-parts-title'];
+    const ids=['character-preview','character-inspection','character-links','character-slots','character-equipment-detail','weapon-model-stage','weapon-links','weapon-slot-detail','weapon-parts-title','weapon-slot-picker','weapon-picker-title','weapon-picker-close','weapon-picker-backdrop'];
     this.el=Object.fromEntries(ids.map(id=>[id.replaceAll('-','_'),document.getElementById(id)]));
     this.cancelCharacter=bindModelOrbit(this.el.character_preview,()=>({yaw:this.characterYaw}),value=>{this.characterYaw=value.yaw;});
     this.cancelWeapon=bindModelOrbit(ui.el.weapon_preview,()=>({yaw:ui.weaponPreviewYaw,pitch:ui.weaponPreviewPitch}),value=>{ui.weaponPreviewYaw=value.yaw;ui.weaponPreviewPitch=value.pitch;},{tilt:true});
     document.getElementById('character-view-reset').addEventListener('click',()=>{this.characterYaw=0;});
     document.getElementById('weapon-view-reset').addEventListener('click',()=>{ui.weaponPreviewYaw=Math.PI/2;ui.weaponPreviewPitch=0;});
+    this.el.weapon_picker_close.addEventListener('click',()=>this.closeWeaponPicker());
+    this.el.weapon_picker_backdrop.addEventListener('click',()=>this.closeWeaponPicker());
+    this.el.weapon_slot_picker.addEventListener('keydown',event=>{
+      if(event.key==='Escape'){event.preventDefault();event.stopPropagation();this.closeWeaponPicker();}
+      if(event.key==='Tab'){
+        const focusable=[...this.el.weapon_slot_picker.querySelectorAll('button:not(:disabled)')].filter(node=>node.getClientRects().length);
+        const index=focusable.indexOf(document.activeElement);
+        if((event.shiftKey&&index<=0)||(!event.shiftKey&&index===focusable.length-1)){event.preventDefault();(event.shiftKey?focusable.at(-1):focusable[0])?.focus();}
+      }
+    });
     document.querySelectorAll('[data-character-tab]').forEach(node=>node.addEventListener('click',()=>this.showCharacterTab(node.dataset.characterTab)));
   }
   showCharacterTab(tab){
@@ -74,9 +84,18 @@ export class EquipmentViews {
     const definition=itemDefinition(weapon),slots=[...(definition.feed==='magazine'?['magazine']:[]),...(definition.modSlots||[])];
     if(!slots.includes(this.weaponSlot))this.weaponSlot=slots[0]||null;
   }
-  selectWeaponSlot(slot,weapon,player){this.weaponSlot=slot;this.ui.renderWeaponPanel(weapon,player);}
+  selectWeaponSlot(slot,weapon,player){this.weaponSlot=slot;this.ui.renderWeaponPanel(weapon,player);this.openWeaponPicker();}
+  openWeaponPicker(){
+    this.el.weapon_slot_picker.classList.remove('hidden');this.el.weapon_picker_backdrop.classList.remove('hidden');
+    this.el.weapon_picker_close.focus({preventScroll:true});
+  }
+  closeWeaponPicker({returnFocus=true}={}){
+    this.el.weapon_slot_picker.classList.add('hidden');this.el.weapon_picker_backdrop.classList.add('hidden');
+    if(returnFocus)this.ui.el.mod_slots.querySelector(`[data-slot="${this.weaponSlot}"]`)?.focus({preventScroll:true});
+  }
   renderWeapon(weapon){
     const slot=this.weaponSlot,installed=slot==='magazine'?weapon.magazine:weapon.mods?.[slot],detail=this.el.weapon_slot_detail;
+    this.el.weapon_picker_title.textContent=`${MOD_LABELS[slot]||'TEILE'} AUSWÄHLEN`;
     this.el.weapon_model_stage.classList.toggle('no-model',weapon.type!=='ak_762');
     for(const node of this.ui.el.mod_slots.children){node.classList.toggle('selected',node.dataset.slot===slot);node.setAttribute('aria-pressed',String(node.dataset.slot===slot));}
     detail.replaceChildren(element('strong','',`${MOD_LABELS[slot]||'ANBAUTEILE'} · ${installed?itemDefinition(installed).name:'LEER'}`));

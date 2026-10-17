@@ -356,6 +356,7 @@ export class GameUI {
   closePanel(id) {
     if(id==='character-panel')this.equipmentViews?.cancelCharacter();
     if(id==='weapon-panel')this.equipmentViews?.cancelWeapon();
+    if(id==='weapon-panel')this.equipmentViews?.closeWeaponPicker({returnFocus:false});
     document.getElementById(id)?.classList.add("hidden");
     if (id === "container-panel") this.openContainer = null;
     if (id === "weapon-panel") this.weaponId = null;
@@ -646,11 +647,13 @@ export class GameUI {
   openWeaponPanel(weapon, player) {
     if (!weapon) return;
     const changed=this.weaponId!==weapon.id;
+    const pickerOpen=!this.equipmentViews.el.weapon_slot_picker.classList.contains('hidden');
     this.closeAllPanels();
     if (changed) {this.weaponPreviewYaw = Math.PI/2;this.weaponPreviewPitch=0;this.equipmentViews.weaponSlot='stock';}
     this.weaponId = weapon.id;
     this.el.weapon_panel.classList.remove("hidden");
     this.renderWeaponPanel(weapon, player);
+    if(pickerOpen&&!changed)this.equipmentViews.openWeaponPicker();
   }
 
   renderWeaponPanel(weapon, player) {

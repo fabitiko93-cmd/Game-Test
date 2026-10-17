@@ -255,12 +255,18 @@
         <button id="weapon-view-reset" class="view-reset" aria-label="Waffenansicht zurücksetzen">↺</button>
       </div>
       <div class="weapon-settings"><span id="weapon-stats"></span><button id="weapon-mode-button" class="hidden">SEMI</button></div>
-      <div id="weapon-slot-detail" class="weapon-slot-detail"></div>
-      <div id="weapon-magazines" class="hidden"><h3>MAGAZINE IM RUCKSACK</h3><div id="magazine-list" class="magazine-list"></div></div>
-      <h3 id="weapon-parts-title">PASSENDE TEILE IM RUCKSACK</h3>
-      <div id="available-mods" class="available-mods"></div>
       </div>
       <footer><span>Anbauteile antippen</span><button id="weapon-reload-button">NACHLADEN</button></footer>
+      <button id="weapon-picker-backdrop" class="weapon-picker-backdrop hidden" aria-label="Teileauswahl schließen" tabindex="-1"></button>
+      <section id="weapon-slot-picker" class="weapon-slot-picker hidden" role="dialog" aria-modal="true" aria-labelledby="weapon-picker-title">
+        <header><h3 id="weapon-picker-title">TEILE AUSWÄHLEN</h3><button id="weapon-picker-close" class="close" aria-label="Teileauswahl schließen">×</button></header>
+        <div class="weapon-picker-body">
+          <div id="weapon-slot-detail" class="weapon-slot-detail"></div>
+          <div id="weapon-magazines" class="hidden"><h3>MAGAZINE IM RUCKSACK</h3><div id="magazine-list" class="magazine-list"></div></div>
+          <h3 id="weapon-parts-title">PASSENDE TEILE IM RUCKSACK</h3>
+          <div id="available-mods" class="available-mods"></div>
+        </div>
+      </section>
     </section>
 
     <section id="pause-panel" class="modal hidden">

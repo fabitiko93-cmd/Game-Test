@@ -57,7 +57,10 @@ entnommene Gegenstände bleiben über die normale Weltobjektspeicherung entnomme
 `weapon-models.js` lädt die in acht echte Teile zerlegte AK-Geometrie und verwendet
 dieselbe Konfiguration für Hand und drehbare Waffenbank. `equipment-views.js` steuert
 die Ausrüstungsslots der Charakteransicht, drei Charakterreiter sowie auswählbare
-Waffen-Mod-Slots und ihre Verbindungslinien. Beide Ansichten drehen per einzelner
+Waffen-Mod-Slots und ihre Verbindungslinien. Antippen eines Waffen-Slots öffnet
+eine sichtbare Teileauswahl als Dialog mit kompatiblen Mods bzw. Magazinaktionen;
+die Auswahl ist unabhängig von der Scrollposition der Modellansicht erreichbar.
+Beide Ansichten drehen per einzelner
 Zeigergeste; die Waffe lässt sich zusätzlich kippen. `character-inspection.js`
 verwendet einen getrennt posierten Klon mit tatsächlicher Kleidung und Ausrüstung.
 `model-pass.js` zeichnet beide Menüs mit eigener Kamera auf Körper-/Waffenhöhe im
