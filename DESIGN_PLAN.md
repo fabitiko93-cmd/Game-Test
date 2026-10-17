@@ -35,6 +35,29 @@ v12 und v12.1 sind veröffentlicht; die tatsächlich implementierten Änderungen
 - AWP und Bullpup-Gewehre sind ausgeschlossen. Kleidung bleibt beim kommenden
   Ausbau zunächst optisch; weitere Ausrüstungsfunktionen werden gesondert geplant.
 
+### Figuren: Schattenprüfung und spätere Kampfüberarbeitung · 17.10.2026
+
+- Nutzerrückmeldung: Die AK liegt sichtbar nicht gut in der Hand des Players.
+  Das Kampfsystem soll später grundsätzlich überarbeitet beziehungsweise neu
+  gestaltet werden; konkrete Regeln und Umfang bleiben offen (I-13).
+- Aktueller Auftrag: Form und Platzierung der Figurenschatten prüfen. Kein
+  Auftrag zur sofortigen Kampfüberarbeitung oder Umsetzung eines Schattenumbaus.
+- Geprüfte Grundlage: AK-Spielstand `244b465`, unveränderte Originalmodelle,
+  Browserdarstellung mit WebGL und 15 festgehaltene Posen: Player/Playerin,
+  Stand, Gehen, Schleichen, verschiedene Richtungen sowie kleine/große Zombies.
+- Befund: `render.js` zeichnet vor jeder Figur eine hart begrenzte Ellipse mit
+  pauschal +2 Bildpunkten nach unten. Sie folgt weder den animierten Sohlen noch
+  der Ausrichtung. Zombies behalten dieselbe Schattenabmessung unabhängig von
+  ihrer Körpergröße. `model-pass.js` beleuchtet die Figuren, erzeugt aber keinen
+  auf den Boden projizierten Modellschatten.
+- Sichtprüfung bestätigt abseits der Ellipse auftretende Bodenkontakte beim
+  Gehen und Schleichen. Die tiefsten Sohlen-/Meshpunkte der Stichprobe liegen
+  etwa zwischen −1,3 und +2,4 cm relativ zum Boden. Ein allgemeines Verschieben
+  aller Figuren ist daraus nicht abzuleiten.
+- Assistentenvorschlag, noch nicht beauftragt: weich auslaufende Kontaktschatten
+  am tatsächlichen Fußkontakt, angepasst an Pose, Ausrichtung und Figurengröße;
+  angehobene Füße schwächer berücksichtigen. Als eigenen Grafikschritt behandeln.
+
 ### Bisherige Arbeitsweise
 
 - Nutzerideen bleiben erhalten, solange sie nicht ausdrücklich gemeinsam verworfen wurden.
@@ -337,6 +360,7 @@ Zurückgestellt ist kein vergebener Implementierungsauftrag.
 | I-10 | Openfield-Stealth-Perk soll skillbar werden; spätere Stufen sollen Hide im Kampf ermöglichen; Nutzer, 21.09.2026 | Nutzeridee für später; erste Version bleibt 10 Sekunden Hide / 30 Sekunden Cooldown und nur geduckt. Treffer brechen den Perk auch jetzt nicht. | … Perk-/Skillfortschritt, Speicherung von Fähigkeiten, Stufen oder Aktivierungssperren dauerhaft festgelegt werden. Erst am relevanten Entscheidungspunkt erneut ansprechen. |
 | I-11 | Fahrzeuge mit thematischem Charakter: Polizei, Feuerwehr, Krankenwagen und Unfallautos; Nutzer, 25.09.2026 | Für spätere Politur ausdrücklich erhalten; kein aktueller Grafik-/Fahrmechanikauftrag | … Fahrzeugtypen, Erscheinungsbilder, Zustände oder Fahrzeug-Lootprofile festgelegt beziehungsweise erweitert werden. |
 | I-12 | Sukzessive an echten suburbanen/urbanen Gebietsstrukturen orientieren; Nutzer, 25.09.2026 | Ziel für spätere Weltentwicklung; ergänzt I-06 und I-07 | … neue Gebiete, Straßennetze, Grundstücke, Gebäudegruppen, Zufahrten und Weltformat entworfen werden. Vor einer schwer revidierbaren Kartenstruktur aktiv ansprechen. |
+| I-13 | Kampfsystem später grundsätzlich überarbeiten/neugestalten; AK liegt nicht gut in der Playerhand; Nutzer, 17.10.2026 | Für später erhalten; Umfang und Regeln offen, kein aktueller Implementierungsauftrag | … Kampfregeln, Waffenhaltung, Griffpunkte, Zielausrichtung oder Kampfanimationen weiter ausgebaut werden. Nutzerkritik an der visuellen Haltung trotz bestandener technischer Posentests berücksichtigen. |
 
 ### Wiedervorlage, die schon die anstehende Planung betrifft
 
