@@ -19,6 +19,7 @@ export class ModelPass {
     this.status = "ready"; this.pixelRatio = 1;
     this.scene = new Scene();
     this.camera = new OrthographicCamera(-1.6, 1.6, 1.6, -1.6, .1, 30);
+    this.inspectionCamera = new OrthographicCamera(-1, 1, 1, -1, .1, 30);
     this.scene.add(new HemisphereLight(0xe7eadb, 0x454537, 2));
     const sun = new DirectionalLight(0xffedcf, 2.1); sun.position.set(-3, 7, 4); this.scene.add(sun);
     try {
@@ -59,19 +60,41 @@ export class ModelPass {
     ctx.restore(); this.scene.remove(root); return true;
   }
 
-  drawSoftware(ctx, root, point, hurt = false) {
+  // Menus share the renderer, but have their own eye-level camera. Invalidate
+  // the size cache afterwards so the next world pass restores its resolution.
+  drawInspection(canvas, root, { height = 2.15, center = new Vector3(0,.9,0), elevation = 0 } = {}) {
+    const rect=canvas.getBoundingClientRect(), ratio=Math.min(2,globalThis.devicePixelRatio||1);
+    if(rect.width<1||rect.height<1)return null;
+    const width=Math.round(rect.width*ratio),pixelsHeight=Math.round(rect.height*ratio);
+    if(canvas.width!==width||canvas.height!==pixelsHeight){canvas.width=width;canvas.height=pixelsHeight;}
+    const ctx=canvas.getContext('2d'),camera=this.inspectionCamera,half=height/2,aspect=width/pixelsHeight;
+    Object.assign(camera,{left:-half*aspect,right:half*aspect,top:half,bottom:-half});
+    camera.position.copy(center).add(new Vector3(0,Math.sin(elevation)*10,Math.cos(elevation)*10));
+    camera.lookAt(center);camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
+    ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,width,pixelsHeight);
+    root.updateMatrixWorld(true);
+    if(this.renderer&&this.status==='ready'){
+      this.renderer.setPixelRatio(ratio);this.renderer.setSize(rect.width,rect.height,false);
+      this.scene.add(root);
+      try {this.renderer.clear(true,true,true);this.renderer.render(this.scene,camera);ctx.drawImage(this.renderer.domElement,0,0,width,pixelsHeight);}
+      finally {this.scene.remove(root);this.deviceRatio=null;}
+    } else this.drawSoftware(ctx,root,{x:width/2,y:pixelsHeight/2},false,{camera,width,height:pixelsHeight,offsetY:0});
+    return point=>{const p=point.clone().project(camera);return {x:(p.x+1)*rect.width/2,y:(1-p.y)*rect.height/2};};
+  }
+
+  drawSoftware(ctx, root, point, hurt = false, {camera=this.camera,width=this.size,height=this.size,offsetY=heightPixels(this.centerHeight)} = {}) {
     // The new models use material colours. A canvas-only browser can therefore
     // draw their actual posed triangles, retaining clothing and animation.
     root.updateMatrixWorld(true);
-    const faces = [], camera = new Vector3(Math.sqrt(.375), .5, Math.sqrt(.375));
+    const faces = [], direction = camera.getWorldDirection(new Vector3()).negate();
     const light = new Vector3(-3, 7, 4).normalize(), normal = new Vector3(), edge = new Vector3();
     root.traverseVisible(mesh => {
       if (!mesh.isMesh) return;
       const geometry = mesh.geometry, positions = geometry.attributes.position, index = geometry.index;
       const vertices = Array.from({ length: positions.count }, (_, i) => mesh.getVertexPosition(i, new Vector3()).applyMatrix4(mesh.matrixWorld));
       const projected = vertices.map(v => {
-        const p = v.clone().project(this.camera);
-        return { x: point.x + p.x*this.size/2, y: point.y - p.y*this.size/2 - heightPixels(this.centerHeight) };
+        const p = v.clone().project(camera);
+        return { x: point.x + p.x*width/2, y: point.y - p.y*height/2 - offsetY };
       });
       const count = index ? index.count : positions.count;
       for (let i=0; i<count; i+=3) {
@@ -79,10 +102,10 @@ export class ModelPass {
         let material = mesh.material;
         if (Array.isArray(material)) material = material[geometry.groups.find(group=>i>=group.start&&i<group.start+group.count)?.materialIndex || 0];
         normal.subVectors(v[1],v[0]).cross(edge.subVectors(v[2],v[0])).normalize();
-        if (normal.dot(camera)<0) { if (material.side!==DoubleSide) continue; normal.negate(); }
+        if (normal.dot(direction)<0) { if (material.side!==DoubleSide) continue; normal.negate(); }
         const shade = .64+.36*Math.max(0,normal.dot(light));
         const color = new Color().copy(material.color).multiplyScalar(shade).convertLinearToSRGB();
-        faces.push({ points: ids.map(k=>projected[k]), depth: v.reduce((sum,p)=>sum+p.dot(camera),0),
+        faces.push({ points: ids.map(k=>projected[k]), depth: v.reduce((sum,p)=>sum+p.dot(direction),0),
           color: `rgb(${Math.round(color.r*255)},${Math.round(color.g*255)},${Math.round(color.b*255)})` });
       }
     });

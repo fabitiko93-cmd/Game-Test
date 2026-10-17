@@ -102,7 +102,7 @@ export class PlayerModels {
   prepare(player,time) {
     const pose=this.motion.sample(player,time),entity=this.entity(player,pose.appearance);if(!entity)return false;
     this.used.add(player);this.equip(entity,player);this.pose(entity,pose);
-    if(activeWeapon(player)?.type==='ak_762')applyRiflePose(entity,player);
+    if(activeWeapon(player)?.type==='ak_762')applyRiflePose(entity,player,pose.delta);
     this.prepared.set(player,{entity,time});return entity;
   }
 

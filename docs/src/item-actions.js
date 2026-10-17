@@ -147,6 +147,7 @@ export function unequip(game, slot) {
   if (!item) return;
   game.ui.refreshAll(game.player, game);
   game.ui.showToast(`${itemDefinition(item).name.toUpperCase()} ABGELEGT`);
+  game.save();
 }
 
 export function openWeaponPanel(game, id) {

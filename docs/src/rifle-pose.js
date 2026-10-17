@@ -11,7 +11,7 @@ const supportRotation = new Quaternion().setFromRotationMatrix(new Matrix4().mak
 // The long authored palm reaches from the wrist to the metacarpal knuckles.
 export const RIFLE_HANDS = Object.freeze({
   right: new Vector3(-.032, 0, -.14),
-  left: new Vector3(.145, .03, .275),
+  left: new Vector3(.145, .03, .255),
 });
 
 export function captureRifleRig(model) {
@@ -49,8 +49,8 @@ function poseFingers(entity) {
     if(thumb.every(Boolean)) {
       for(const entry of thumb)entry.bone.quaternion.copy(entry.rotation);
       entity.root.updateMatrixWorld(true);
-      const target=side==="R"?new Vector3(.015,.025,-.015):new Vector3(.025,.105,.265);
-      const pole=side==="R"?new Vector3(-.01,.085,-.05):new Vector3(.11,.13,.29);
+      const target=side==="R"?new Vector3(.015,.025,-.015):new Vector3(.025,.105,.245);
+      const pole=side==="R"?new Vector3(-.01,.085,-.05):new Vector3(.11,.13,.27);
       fitArm(...thumb.map(e=>e.bone),entity.weapon.localToWorld(target),entity.weapon.localToWorld(pole));
     }
   }
@@ -82,7 +82,13 @@ function fitArm(upper, lower, wrist, target, pole) {
   pointBone(upper, lower, nextElbow); pointBone(lower, wrist, nextHand);
 }
 
-export function applyRiflePose(entity, player) {
+export function riflePosture(player) {
+  if(player.moving)return 'hip';
+  if(player.combat?.enabled&&player.combat?.targetId&&(player.combat.aim>0||player.combat.triggerHeld))return 'aim';
+  return 'carry';
+}
+
+export function applyRiflePose(entity, player, delta=1, posture=riflePosture(player)) {
   const model = entity.model, root = entity.root, weapon = entity.weapon;
   if (!weapon || player.dead) return;
   const bone = name => model.getObjectByName(name);
@@ -98,22 +104,30 @@ export function applyRiflePose(entity, player) {
     const entry=entity.rifleHands.get(part+side);if(entry)entry.bone.quaternion.copy(entry.rotation);
   }
   root.updateMatrixWorld(true);
-  const aimed=player.combat?.enabled&&!player.moving;
-  const hasStock=weapon.getObjectByName('FixedStock')?.visible||weapon.getObjectByName('SkeletonStock')?.visible;
+  const blend=entity.rifleBlend ||= {carry:posture==='carry'?1:0,hip:posture==='hip'?1:0,aim:posture==='aim'?1:0};
+  const amount=delta>=.5?1:1-Math.exp(-Math.max(0,delta)*12);
+  for(const state of ['carry','hip','aim'])blend[state]+=(Number(state===posture)-blend[state])*amount;
+  entity.riflePosture=posture;
+  const stockContact=weapon.userData.stockContact;
   // Bring the support shoulder forward, instead of collapsing the firing arm
   // to make both hands reach. Preserve the original head direction and gait.
   if(chest) {
     const headRotation=head?.getWorldQuaternion(new Quaternion());
-    orientWorld(chest,new Quaternion().setFromAxisAngle(new Vector3(0,1,0),aimed?-.48:-.30).multiply(chest.getWorldQuaternion(new Quaternion())));
+    const turn=-.12*blend.carry-.40*blend.hip-.78*blend.aim;
+    orientWorld(chest,new Quaternion().setFromAxisAngle(new Vector3(0,1,0),turn).multiply(chest.getWorldQuaternion(new Quaternion())));
     if(head)orientWorld(head,headRotation);
     root.updateMatrixWorld(true);
   }
-  const pitch = (aimed ? .02 : .28) - (player.combat?.recoil || 0) * .035;
-  const gunRotation = root.getWorldQuaternion(new Quaternion()).multiply(new Quaternion().setFromEuler(new Euler(pitch, 0, 0)));
+  const pitch = -.88*blend.carry+.20*blend.hip+.015*blend.aim-(player.combat?.recoil || 0)*.035;
+  const gunRotation = root.getWorldQuaternion(new Quaternion()).multiply(new Quaternion().setFromEuler(new Euler(pitch,.98*blend.carry,0,'YXZ')));
   const shoulder = root.worldToLocal(right[0].getWorldPosition(new Vector3()));
-  const gunGoal=root.localToWorld(shoulder.clone().add(new Vector3(
-    .015, aimed ? (hasStock ? -.055 : -.12) : -.20, hasStock ? .286 : .23)));
   const scaled=point=>point.clone().multiply(root.getWorldScale(new Vector3())).applyQuaternion(gunRotation);
+  const carryGoal=root.localToWorld(shoulder.clone().add(new Vector3(.065,-.35,.20)));
+  const hipGoal=root.localToWorld(shoulder.clone().add(new Vector3(.015,-.30,.23)));
+  const shoulderContact=root.localToWorld(shoulder.clone().add(new Vector3(-.012,.05,.055)));
+  const aimGoal=stockContact?shoulderContact.clone().sub(scaled(stockContact)):root.localToWorld(shoulder.clone().add(new Vector3(.03,-.10,.25)));
+  const gunGoal=carryGoal.multiplyScalar(blend.carry).addScaledVector(hipGoal,blend.hip).addScaledVector(aimGoal,blend.aim);
+  entity.rifleShoulderContact=shoulderContact;
   const offsets=[scaled(RIFLE_HANDS.right),scaled(RIFLE_HANDS.left)];
   // Walking/running twists the shoulders. Keep the chosen grip inside both
   // arms' actual reach rather than stretching a sleeve or detaching a hand.

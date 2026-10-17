@@ -20,6 +20,7 @@ import { objectPickPolygon, pickHotspots } from "./object-selection.js";
 import { WeaponInspection } from "./weapon-models.js";
 import { drawFallbackShadow } from "./character-shadow.js";
 import { playerHeight } from "./quaternius-catalog.js";
+import { CharacterInspection } from './character-inspection.js';
 
 export class Renderer {
   constructor(canvas) {
@@ -48,6 +49,7 @@ export class Renderer {
     this.modelLibrary = new QuaterniusAssets();
     this.playerModels = new PlayerModels(this.zombieModels.pass,this.modelLibrary);
     this.weaponInspection = new WeaponInspection(this.zombieModels.pass, this.playerModels.weapons);
+    this.characterInspection = new CharacterInspection(this.zombieModels.pass,this.modelLibrary,this.playerModels.weapons);
     this.worldModels = new WorldModels(this.zombieModels.pass,this.modelLibrary);
     this.statusPaths = new Map(Object.entries(STATUS_ICONS).map(([id, icon]) => [id, new Path2D(icon.path)]));
     this.coverHintCache = { key: "", map: null, paths: null };

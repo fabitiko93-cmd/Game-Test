@@ -204,11 +204,28 @@
         <div><small id="character-background">HINTERGRUND</small><h2 id="character-title">ÜBERLEBENDER</h2></div>
         <button class="close" data-close="character-panel">×</button>
       </header>
-      <div class="character-layout">
+      <nav class="character-tabs" aria-label="Charakterbereiche">
+        <button data-character-tab="equipment" class="active" aria-pressed="true">AUSRÜSTUNG</button>
+        <button data-character-tab="skills" aria-pressed="false">FÄHIGKEITEN</button>
+        <button data-character-tab="condition" aria-pressed="false">ZUSTAND</button>
+      </nav>
+      <div id="character-equipment" class="character-equipment" data-character-page="equipment">
+        <div id="character-inspection" class="model-inspection character-inspection">
+          <canvas id="character-preview" tabindex="0" aria-label="Charakter von allen Seiten betrachten: seitlich ziehen oder Pfeiltasten verwenden"></canvas>
+          <svg id="character-links" class="model-links" aria-hidden="true"></svg>
+          <div id="character-slots" class="model-slots"></div>
+          <small class="orbit-hint">ZIEHEN ZUM DREHEN</small>
+          <button id="character-view-reset" class="view-reset" aria-label="Charakteransicht zurücksetzen">↺</button>
+        </div>
+        <aside id="character-equipment-detail" class="loadout-detail" aria-label="Gewählter Ausrüstungsplatz"></aside>
+      </div>
+      <div class="character-layout hidden" data-character-page="skills">
         <div>
           <h3>FÄHIGKEITEN</h3>
           <div id="skill-list" class="skill-list"></div>
         </div>
+      </div>
+      <div class="character-layout hidden" data-character-page="condition">
         <div>
           <h3>ZUSTAND</h3>
           <div id="condition-summary" class="condition-summary"></div>
@@ -227,14 +244,20 @@
         <span id="weapon-ammo">0/0</span>
         <span id="weapon-condition">ZUSTAND 100 %</span>
       </div>
-      <div id="weapon-inspection" class="weapon-inspection hidden">
-        <canvas id="weapon-preview" aria-label="AK-Modell, zum Drehen seitlich ziehen"></canvas>
-        <small>ZIEHEN ZUM DREHEN</small>
+      <div id="weapon-model-stage" class="model-inspection weapon-model-stage">
+        <div id="weapon-inspection" class="weapon-inspection hidden">
+          <canvas id="weapon-preview" tabindex="0" aria-label="Waffenmodell betrachten: ziehen zum Drehen und Kippen oder Pfeiltasten verwenden"></canvas>
+        </div>
+        <svg id="weapon-links" class="model-links" aria-hidden="true"></svg>
+        <div id="mod-slots" class="mod-slots model-slots"></div>
+        <small class="orbit-hint">ZIEHEN ZUM DREHEN · AUF/AB ZUM KIPPEN</small>
+        <span class="model-placeholder">FÜR DIESE WAFFE IST NOCH KEIN 3D-MODELL VORHANDEN</span>
+        <button id="weapon-view-reset" class="view-reset" aria-label="Waffenansicht zurücksetzen">↺</button>
       </div>
       <div class="weapon-settings"><span id="weapon-stats"></span><button id="weapon-mode-button" class="hidden">SEMI</button></div>
-      <div id="mod-slots" class="mod-slots"></div>
+      <div id="weapon-slot-detail" class="weapon-slot-detail"></div>
       <div id="weapon-magazines" class="hidden"><h3>MAGAZINE IM RUCKSACK</h3><div id="magazine-list" class="magazine-list"></div></div>
-      <h3>PASSENDE TEILE IM RUCKSACK</h3>
+      <h3 id="weapon-parts-title">PASSENDE TEILE IM RUCKSACK</h3>
       <div id="available-mods" class="available-mods"></div>
       </div>
       <footer><span>Anbauteile antippen</span><button id="weapon-reload-button">NACHLADEN</button></footer>

@@ -22,6 +22,7 @@ import { CHARACTER_STYLES, defaultStyle } from "./quaternius-catalog.js";
 import { VIEW } from "./config.js";
 import { ObjectChoices } from "./object-selection.js";
 import { tilesToMeters } from "./world-scale.js";
+import { EquipmentViews } from './equipment-views.js';
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
@@ -67,7 +68,9 @@ export class GameUI {
     this.selectedItemId = null;
     this.openContainer = null;
     this.weaponId = null;
-    this.weaponPreviewYaw = Math.PI * .75;
+    this.weaponPreviewYaw = Math.PI/2;
+    this.weaponPreviewPitch = 0;
+    this.equipmentViews = new EquipmentViews(this);
     this.messageTimer = 0;
     this.toastTimer = 0;
     this.bind();
@@ -95,18 +98,6 @@ export class GameUI {
     this.el.take_all_button.addEventListener("click", () => this.openContainer && this.callbacks.takeAll?.(this.openContainer));
     this.el.weapon_reload_button.addEventListener("click", () => this.callbacks.reloadWeapon?.(this.weaponId));
     this.el.weapon_mode_button.addEventListener("click", () => this.callbacks.fireMode?.(this.weaponId));
-    let previewPointer = null, previewX = 0;
-    this.el.weapon_preview.addEventListener("pointerdown", event => {
-      event.preventDefault(); event.stopPropagation();
-      if (previewPointer !== null) return;
-      previewPointer = event.pointerId; previewX = event.clientX;
-      try { this.el.weapon_preview.setPointerCapture(event.pointerId); } catch (_) {}
-    });
-    this.el.weapon_preview.addEventListener("pointermove", event => {
-      if (event.pointerId !== previewPointer) return;
-      event.preventDefault(); this.weaponPreviewYaw += (event.clientX - previewX) * .012; previewX = event.clientX;
-    });
-    for (const event of ["pointerup", "pointercancel", "lostpointercapture"]) this.el.weapon_preview.addEventListener(event, () => {previewPointer = null;});
     this.el.diagnostics_button.addEventListener("click", () => this.callbacks.diagnostics?.());
   }
 
@@ -363,6 +354,8 @@ export class GameUI {
   }
 
   closePanel(id) {
+    if(id==='character-panel')this.equipmentViews?.cancelCharacter();
+    if(id==='weapon-panel')this.equipmentViews?.cancelWeapon();
     document.getElementById(id)?.classList.add("hidden");
     if (id === "container-panel") this.openContainer = null;
     if (id === "weapon-panel") this.weaponId = null;
@@ -565,6 +558,7 @@ export class GameUI {
   }
 
   renderCharacter(player, game) {
+    this.equipmentViews.renderCharacter(player);
     this.el.character_title.textContent = player.name.toUpperCase();
     this.el.character_background.textContent = `${backgroundName(player).toUpperCase()} · ÜBERLEBENDER ${String(player.survivorNumber).padStart(2, "0")}`;
     this.el.skill_list.replaceChildren();
@@ -651,14 +645,16 @@ export class GameUI {
 
   openWeaponPanel(weapon, player) {
     if (!weapon) return;
+    const changed=this.weaponId!==weapon.id;
     this.closeAllPanels();
-    if (this.weaponId !== weapon.id) this.weaponPreviewYaw = Math.PI * .75;
+    if (changed) {this.weaponPreviewYaw = Math.PI/2;this.weaponPreviewPitch=0;this.equipmentViews.weaponSlot='stock';}
     this.weaponId = weapon.id;
     this.el.weapon_panel.classList.remove("hidden");
     this.renderWeaponPanel(weapon, player);
   }
 
   renderWeaponPanel(weapon, player) {
+    this.equipmentViews.prepareWeapon(weapon);
     const definition = itemDefinition(weapon);
     this.el.weapon_title.textContent = definition.name.toUpperCase();
     this.el.weapon_ammo.textContent = `MUNITION ${ammoLabel(weapon)}`;
@@ -674,16 +670,17 @@ export class GameUI {
       const installed = slot === "magazine" ? weapon.magazine : weapon.mods?.[slot];
       const button = document.createElement("button");
       button.className = "mod-slot";
+      button.dataset.slot = slot;
       const label = document.createElement("small");
       label.textContent = MOD_SLOT_LABELS[slot] || slot.toUpperCase();
       const value = document.createElement("strong");
       value.textContent = installed ? slot === "magazine" ? `${installed.rounds || 0}/${itemDefinition(installed).capacity}` : itemDefinition(installed).short : "LEER";
       button.append(label, value);
-      button.disabled = !installed;
+      button.disabled = false;
       if (installed) {
         button.title = itemDefinition(installed).description;
-        button.addEventListener("click", () => this.callbacks.removeMod?.(weapon.id, slot));
       }
+      button.addEventListener('click',()=>this.equipmentViews.selectWeaponSlot(slot,weapon,player));
       this.el.mod_slots.append(button);
     }
 
@@ -707,7 +704,7 @@ export class GameUI {
     if (!this.el.magazine_list.children.length) this.el.magazine_list.textContent = "KEIN PASSENDES WECHSELMAGAZIN IM RUCKSACK";
 
     this.el.available_mods.replaceChildren();
-    const available = compatibleMods(player, weapon);
+    const available = compatibleMods(player, weapon).filter(mod=>itemDefinition(mod).modSlot===this.equipmentViews.weaponSlot);
     if (!available.length) {
       const empty = document.createElement("div");
       empty.className = "available-empty";
@@ -726,12 +723,11 @@ export class GameUI {
         this.el.available_mods.append(button);
       }
     }
+    this.equipmentViews.renderWeapon(weapon);
   }
 
   drawWeaponPreview(game) {
-    if (this.el.weapon_panel.classList.contains("hidden")) return;
-    const weapon = findItem(game.player, this.weaponId);
-    if (weapon?.type === "ak_762") game.renderer.weaponInspection.draw(this.el.weapon_preview, weapon, this.weaponPreviewYaw);
+    this.equipmentViews.draw(game);
   }
 
   renderQuickbar(player) {

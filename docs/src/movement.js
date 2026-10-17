@@ -38,7 +38,11 @@ export function updateMovement(game, delta) {
       dx /= length; dy /= length;
     }
   }
-  const canRun = requestedRun && player.stance !== "sneak" && player.stamina > 4;
+  // An exhausted, still-held sprint must not alternate Run/Walk every frame
+  // as walking recovers enough stamina for one more sprint frame.
+  if (!requestedRun) navigation.sprintExhausted = false;
+  if (requestedRun && player.stamina <= 4) navigation.sprintExhausted = true;
+  const canRun = requestedRun && !navigation.sprintExhausted && player.stance !== "sneak" && player.stamina > 4;
   const mode = player.stance === "sneak" ? "sneak" : canRun ? "run" : "walk", stance = STANCES[mode];
   const previous = { x: player.x, y: player.y };
   if (Math.hypot(dx, dy) > 0) {
@@ -139,6 +143,7 @@ export function setDestination(game, requestedPoint, options = {}) {
   navigation.destination = { ...path.at(-1) };
   navigation.interactionId = options.interactionId || null;
   navigation.runRequested = Boolean(options.run);
+  if (!options.guided) navigation.sprintExhausted = false;
   navigation.guided = Boolean(options.guided);
   navigation.source = options.source || "manual";
   if (navigation.source === "manual") navigation.manualUntil = game.elapsed + 1.25;
