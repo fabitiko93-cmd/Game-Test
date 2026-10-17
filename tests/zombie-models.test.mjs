@@ -11,6 +11,7 @@ import { ZombieMotion, zombieModelYaw } from "../docs/src/zombie-motion.js";
 import { createZombie, ZOMBIE_ATTACK } from "../docs/src/ai.js";
 import { zombieBodyProfile, zombieCorpseAppearance } from "../docs/src/zombie-appearance.js";
 import { WORLD_SCALE, pixelsPerMeter } from "../docs/src/world-scale.js";
+import { createSoleProbes, sampleSoleContacts } from "../docs/src/character-shadow.js";
 import { LOCOMOTION, speedInTiles } from "../docs/src/locomotion.js";
 import { STANCES } from "../docs/src/config.js";
 
@@ -85,6 +86,25 @@ test("all ten real skinned models retain metric height, ground contact and autho
       assert.ok(clip.tracks.some(t=>t.times.length>30),'real skeletal keys, not a small pose atlas');
       if(spec.distance)assert.ok(spec.distance>.5&&spec.distance<3.5);
       if(clip.name.startsWith('attack'))assert.ok(clip.tracks.some(t=>[...t.times].some(t=>Math.abs(t-ZOMBIE_ATTACK.windup)<1e-6)));
+    }
+  }
+});
+
+test('all ten source rigs retain separate animated foot contacts, including a raised source foot',async()=>{
+  for(let variant=0;variant<10;variant++) {
+    const rig=await loadRig(variant),root=new Group();root.add(rig.scene);
+    root.scale.setScalar(zombieBodyProfile({id:`sole-${variant}`,variant}).scale);
+    const probes=createSoleProbes(root);assert.equal(probes.length,2,`variant ${variant}: two feet`);
+    const mixer=new AnimationMixer(rig.scene);
+    for(const clip of ['rest','walk']) {
+      mixer.stopAllAction();const action=mixer.clipAction(rig.animations.find(a=>a.name===clip));action.play();
+      for(const phase of [0,.25,.5,.75]) {
+        action.time=phase*action.getClip().duration;mixer.update(0);root.updateMatrixWorld(true);
+        const contacts=sampleSoleContacts(probes);
+        assert.ok(contacts.every(c=>c.length>0&&c.length<.6),`${variant} ${clip} ${phase}: no shadow spanning both feet`);
+        let min=Infinity;root.traverseVisible(mesh=>{if(!mesh.isSkinnedMesh)return;for(let i=0;i<mesh.geometry.attributes.position.count;i++)min=Math.min(min,mesh.getVertexPosition(i,new Vector3()).applyMatrix4(mesh.matrixWorld).y);});
+        assert.ok(Math.min(...contacts.map(c=>c.height))-min<.035,`${variant} ${clip} ${phase}: contact follows the lowest sole`);
+      }
     }
   }
 });

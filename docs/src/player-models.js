@@ -5,7 +5,8 @@ import { defaultStyle, playerModelScale, QUATERNIUS_MODELS } from "./quaternius-
 import { PlayerMotion } from "./player-motion.js";
 import { heldEquipment } from "./held-equipment.js";
 import { WeaponModels, weaponModelSignature } from "./weapon-models.js";
-import { applyRiflePose } from "./rifle-pose.js";
+import { applyRiflePose, captureRifleRig, restoreRiflePose } from "./rifle-pose.js";
+import { createSoleProbes, drawSoleShadows, sampleSoleContacts } from "./character-shadow.js";
 
 const PARTS=["head","torso","legs","feet"];
 
@@ -21,10 +22,10 @@ function rebindPart(original,model) {
 
 export class PlayerModels {
   constructor(pass,library) {
-    this.pass=pass;this.library=library;this.entities=new Map();this.used=new Set();this.motion=new PlayerMotion();this.weapons=new WeaponModels();
+    this.pass=pass;this.library=library;this.entities=new Map();this.used=new Set();this.prepared=new Map();this.motion=new PlayerMotion();this.weapons=new WeaponModels();
     this.ready=Promise.all(["male-Casual_2","female-Casual","male-Worker","female-Worker","male-Swat","male-Adventurer","Knife","player-motion"].map(key=>library.request(key)));
   }
-  beginFrame(){this.used.clear();}
+  beginFrame(){this.used.clear();this.prepared.clear();}
 
   entity(player,appearance) {
     const baseKey=`${appearance.sex}-${defaultStyle(appearance.sex)}`,base=this.library.get(baseKey);
@@ -37,9 +38,11 @@ export class PlayerModels {
     const model=clone(base.scene),root=new Group();root.add(model);
     model.traverse(o=>{if(o.isMesh)o.visible=false;});
     const armature=model.getObjectByName("CharacterArmature");
+    const clothing={};
     for(let i=0;i<PARTS.length;i++) {
       const slot=PARTS[i],name=QUATERNIUS_MODELS.characters[appearance[slot]].parts[slot];
       const part=rebindPart(needed[i].scene.getObjectByName(name),model);
+      clothing[slot]=part;
       part.traverse(o=>{o.visible=true;});armature.add(part);
     }
     const mixer=new AnimationMixer(model),actions=new Map([...base.animations,...motions.animations].map(clip=>{
@@ -50,6 +53,8 @@ export class PlayerModels {
     root.scale.setScalar(playerModelScale(appearance));
     root.position.y=QUATERNIUS_MODELS.characters[appearance.feet].groundOffset*root.scale.y;
     entity={root,model,mixer,actions,signature,current:null,clip:null,weapon:null,weaponKind:null};
+    entity.rifleHands=captureRifleRig(model);
+    entity.soles=createSoleProbes(root,clothing.feet);
     this.entities.set(player,entity);return entity;
   }
 
@@ -86,6 +91,7 @@ export class PlayerModels {
   }
 
   pose(entity,pose) {
+    restoreRiflePose(entity);
     const action=entity.actions.get(pose.clip);
     if(entity.clip!==pose.clip){action.reset().setEffectiveTimeScale(0).setEffectiveWeight(1).play();if(entity.current)entity.current.crossFadeTo(action,.16,false);entity.current=action;entity.clip=pose.clip;}
     action.time=Math.min(.999999,pose.progress)*action.getClip().duration;entity.mixer.update(pose.delta);
@@ -93,10 +99,23 @@ export class PlayerModels {
     entity.root.rotation.y=pose.yaw;entity.root.updateMatrixWorld(true);
   }
 
-  draw(ctx,player,time,point) {
+  prepare(player,time) {
     const pose=this.motion.sample(player,time),entity=this.entity(player,pose.appearance);if(!entity)return false;
     this.used.add(player);this.equip(entity,player);this.pose(entity,pose);
     if(activeWeapon(player)?.type==='ak_762')applyRiflePose(entity,player);
+    this.prepared.set(player,{entity,time});return entity;
+  }
+
+  drawShadow(ctx,player,time,point) {
+    const entity=this.prepare(player,time);if(!entity)return false;
+    entity.root.updateMatrixWorld(true);
+    drawSoleShadows(ctx,sampleSoleContacts(entity.soles),point,entity.root.scale.y);return true;
+  }
+
+  draw(ctx,player,time,point) {
+    const prepared=this.prepared.get(player);
+    const entity=prepared?.time===time?prepared.entity:this.prepare(player,time);if(!entity)return false;
+    this.prepared.delete(player);
     return this.pass.draw(ctx,entity.root,point,{software:true,hurt:player.hurtFlash>0});
   }
 

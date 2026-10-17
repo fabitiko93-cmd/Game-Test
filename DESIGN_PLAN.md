@@ -40,12 +40,13 @@ v12 und v12.1 sind veröffentlicht; die tatsächlich implementierten Änderungen
 - Nutzerrückmeldung: Die AK liegt sichtbar nicht gut in der Hand des Players.
   Das Kampfsystem soll später grundsätzlich überarbeitet beziehungsweise neu
   gestaltet werden; konkrete Regeln und Umfang bleiben offen (I-13).
-- Aktueller Auftrag: Form und Platzierung der Figurenschatten prüfen. Kein
-  Auftrag zur sofortigen Kampfüberarbeitung oder Umsetzung eines Schattenumbaus.
+- Freigabe nach der Prüfung: „Schatten Go, first Grip Fix Try Go“. Weiche
+  Kontaktschatten und ein erster AK-Griff-Fix mit den vorhandenen Rigs umsetzen;
+  die grundsätzliche Kampfüberarbeitung bleibt für später erhalten.
 - Geprüfte Grundlage: AK-Spielstand `244b465`, unveränderte Originalmodelle,
   Browserdarstellung mit WebGL und 15 festgehaltene Posen: Player/Playerin,
   Stand, Gehen, Schleichen, verschiedene Richtungen sowie kleine/große Zombies.
-- Befund: `render.js` zeichnet vor jeder Figur eine hart begrenzte Ellipse mit
+- Befund vor der Korrektur: `render.js` zeichnet vor jeder Figur eine hart begrenzte Ellipse mit
   pauschal +2 Bildpunkten nach unten. Sie folgt weder den animierten Sohlen noch
   der Ausrichtung. Zombies behalten dieselbe Schattenabmessung unabhängig von
   ihrer Körpergröße. `model-pass.js` beleuchtet die Figuren, erzeugt aber keinen
@@ -54,9 +55,16 @@ v12 und v12.1 sind veröffentlicht; die tatsächlich implementierten Änderungen
   Gehen und Schleichen. Die tiefsten Sohlen-/Meshpunkte der Stichprobe liegen
   etwa zwischen −1,3 und +2,4 cm relativ zum Boden. Ein allgemeines Verschieben
   aller Figuren ist daraus nicht abzuleiten.
-- Assistentenvorschlag, noch nicht beauftragt: weich auslaufende Kontaktschatten
-  am tatsächlichen Fußkontakt, angepasst an Pose, Ausrichtung und Figurengröße;
-  angehobene Füße schwächer berücksichtigen. Als eigenen Grafikschritt behandeln.
+- Umsetzung der Freigabe: weich auslaufende Schatten aus wenigen zwischengespeicherten
+  echten Sohlenvertices je Fuß; Pose, Ausrichtung, Größe und Fußheben fließen ein.
+  Eigener Bodenpass verhindert Übermalen von Figuren/Möbeln. Sprite-/Ladeersatz
+  und liegende Körper erhalten einen weichen metrischen Ersatzschatten.
+- Erster AK-Griff-Fix: tatsächlichen Abstand zwischen Handgelenk und Handfläche
+  berücksichtigen, Stützhand unter den Vorderschaft drehen, Finger und Daumen
+  eigens posieren. Leicht gedrehter Oberkörper und getrennte Haltungen mit/ohne
+  Schaft; beide Arme behalten ihre Länge. Ganganimation bleibt erhalten.
+  Beim Ablegen der AK werden die ursprünglichen Knochenposen wiederhergestellt.
+  Dies ist die erste visuelle Verbesserung, keine vollständige Kampfüberarbeitung.
 
 ### Bisherige Arbeitsweise
 

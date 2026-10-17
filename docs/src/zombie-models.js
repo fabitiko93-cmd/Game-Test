@@ -4,6 +4,7 @@ import { ModelPass, loadModelAsset } from "./model-pass.js";
 import MODELS from "../assets/zombies3d/models.json" with { type: "json" };
 import { ZombieMotion, zombieModelYaw } from "./zombie-motion.js";
 import { zombieBodyProfile } from "./zombie-appearance.js";
+import { createSoleProbes, drawSoleShadows, sampleSoleContacts } from "./character-shadow.js";
 
 const ASSETS = new URL("../assets/zombies3d/", import.meta.url);
 
@@ -14,7 +15,7 @@ const ASSETS = new URL("../assets/zombies3d/", import.meta.url);
 export class ZombieModels {
   constructor({ createRenderer, loadAsset = loadModelAsset } = {}) {
     this.motion = new ZombieMotion(MODELS);
-    this.assets = new Map(); this.entities = new Map(); this.used = new Set();
+    this.assets = new Map(); this.entities = new Map(); this.used = new Set(); this.prepared = new Map();
     this.status = "loading"; this.pass = new ModelPass({ createRenderer });
     if (this.pass.renderer) {
       // Shared immutable geometry/textures, independent skeleton per entity.
@@ -35,6 +36,7 @@ export class ZombieModels {
 
   beginFrame(pixelRatio) {
     this.used.clear();
+    this.prepared.clear();
     this.pass.beginFrame(pixelRatio);
   }
 
@@ -57,11 +59,12 @@ export class ZombieModels {
       return [clip.name, action];
     }));
     entity = { root, model, mixer, actions, current: null, clip: null, lastAttackProgress: 0 };
+    entity.soles = createSoleProbes(root);
     this.entities.set(zombie, entity);
     return entity;
   }
 
-  draw(ctx, zombie, time, point) {
+  prepare(zombie, time) {
     const pose = this.motion.sample(zombie, time), asset = this.assets.get(pose.variant);
     if (!asset || !this.renderer || ["context-lost", "unavailable"].includes(this.status)) return false;
     const entity = this.entity(zombie, pose, asset); this.used.add(zombie);
@@ -77,8 +80,20 @@ export class ZombieModels {
     for (const other of entity.actions.values()) if (other !== action && other.getEffectiveWeight() === 0) other.stop();
     entity.root.scale.setScalar(pose.scale);
     entity.root.rotation.y = pose.yaw;
-    this.composite(ctx, entity.root, point, zombie.hurtFlash > 0);
-    return true;
+    entity.root.updateMatrixWorld(true);
+    this.prepared.set(zombie, { entity, time }); return entity;
+  }
+
+  drawShadow(ctx, zombie, time, point) {
+    const entity = this.prepare(zombie, time); if (!entity) return false;
+    drawSoleShadows(ctx, sampleSoleContacts(entity.soles), point, entity.root.scale.y); return true;
+  }
+
+  draw(ctx, zombie, time, point) {
+    const prepared = this.prepared.get(zombie);
+    const entity = prepared?.time === time ? prepared.entity : this.prepare(zombie, time); if (!entity) return false;
+    this.prepared.delete(zombie);
+    this.composite(ctx, entity.root, point, zombie.hurtFlash > 0); return true;
   }
 
   drawCorpse(ctx, corpse, point) {

@@ -1,3 +1,18 @@
+# Weiche Figurenschatten und erster AK-Griff-Fix · 17.10.2026
+
+- Player und alle zehn Zombie-Modelle erhalten weich auslaufende Kontaktschatten
+  aus ihren animierten Sohlen. Größe, Ausrichtung und Fußheben wirken sich aus;
+  der pauschale Versatz und die harten Scheiben entfallen. Schatten liegen auf
+  dem Boden vor der Zeichnung von Möbeln und Figuren. Für Lade-/Spriteersatz
+  sowie liegende Körper gibt es weiche, maßstäbliche Ersatzschatten.
+- AK sitzt mit Abstandskorrektur zwischen Handgelenk und Griff in der Handfläche.
+  Eigene Finger-/Daumenposen und gedrehte Stützhand umschließen Pistolengriff und
+  Vorderschaft; Oberkörper und Haltung berücksichtigen den Schaftzustand.
+  Arme behalten ihre Länge, Beine die vorhandene Ganganimation. Beim Ablegen
+  kehren die Knochen zur ursprünglichen Animation zurück.
+- Erster freigegebener Griffversuch; die grundsätzliche Kampfüberarbeitung bleibt
+  vorgemerkt. Waffenwerte, Bedienung und Geräusch-/Ausdauerregeln bleiben erhalten.
+
 # Modulare AK mit Semi/Fullauto und eigenen Magazinen · 17.10.2026
 
 - AK-Grundmodell aus Nutzer-Variante 2 (`AssaultRifle_3`): echte CC0-Geometrie
