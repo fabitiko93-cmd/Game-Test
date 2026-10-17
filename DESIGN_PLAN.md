@@ -66,6 +66,30 @@ v12 und v12.1 sind veröffentlicht; die tatsächlich implementierten Änderungen
   Beim Ablegen der AK werden die ursprünglichen Knochenposen wiederhergestellt.
   Dies ist die erste visuelle Verbesserung, keine vollständige Kampfüberarbeitung.
 
+### Weltinteraktion und spätere Energieversorgung · 17.10.2026
+
+- Nutzeridee zur Abstimmung, kein Implementierungsauftrag: Handlungen sollen
+  möglichst durch verlässliche Weltregeln und ihre Folgen wirken. Gefährliche
+  Aufstellorte nicht pauschal durch Bauverbote ausschließen. Eigener Baugrund
+  soll die Platzierung eingrenzen und flächiges Vollbauen der Welt verhindern.
+- Musterbeispiel für später: Generatoren liefern Energie für Unterkünfte und
+  Licht. Ihr Betrieb kann die Umgebung und andere Figuren beeinflussen,
+  einschließlich gefährlicher Abgasbelastung im Gebäude, Tod im Schlaf sowie
+  Brand oder Explosion bei entsprechend modellierter Ursache. Die konkreten
+  Spielregeln, Hinweise, Berechtigungen und zeitlichen Abläufe bleiben offen.
+- Nutzer möchte Zusammenhänge durch Weltinteraktion verstehen können, ohne
+  ein verpflichtendes Tutorial oder eine starre Innen-/Außen-Platzierungssperre.
+  Spätere eigene Basen und mögliche Clans gehören zum betrachteten Kontext;
+  Enklaven und militärische Sperrzonen können erhaltene Energieversorgung haben.
+  Generatoren sind das erste Beispiel; andere Energiequellen/Bioreaktoren später.
+- Assistentenvorschläge zur weiteren Abstimmung: gemeinsame Raumzustände und
+  Verbindungen statt unabhängiger Sonderprüfungen pro Gegenstand; Vergiftung und
+  Brand/Explosion als getrennte Wirkungsketten behandeln. Hinweise über Figuren,
+  Geräte und nachvollziehbare Folgen in der Welt zugänglich machen. Noch kein
+  neues Geräusch-, Gesundheits-, Bau- oder Stromsystem aus dieser Notiz ableiten.
+- Iststand: Uhrzeit beeinflusst Darstellung und Lichtscheine; Energieverbrauch,
+  Stromnetze, Generatoren und Raumluft werden derzeit nicht simuliert.
+
 ### Bisherige Arbeitsweise
 
 - Nutzerideen bleiben erhalten, solange sie nicht ausdrücklich gemeinsam verworfen wurden.
@@ -369,6 +393,7 @@ Zurückgestellt ist kein vergebener Implementierungsauftrag.
 | I-11 | Fahrzeuge mit thematischem Charakter: Polizei, Feuerwehr, Krankenwagen und Unfallautos; Nutzer, 25.09.2026 | Für spätere Politur ausdrücklich erhalten; kein aktueller Grafik-/Fahrmechanikauftrag | … Fahrzeugtypen, Erscheinungsbilder, Zustände oder Fahrzeug-Lootprofile festgelegt beziehungsweise erweitert werden. |
 | I-12 | Sukzessive an echten suburbanen/urbanen Gebietsstrukturen orientieren; Nutzer, 25.09.2026 | Ziel für spätere Weltentwicklung; ergänzt I-06 und I-07 | … neue Gebiete, Straßennetze, Grundstücke, Gebäudegruppen, Zufahrten und Weltformat entworfen werden. Vor einer schwer revidierbaren Kartenstruktur aktiv ansprechen. |
 | I-13 | Kampfsystem später grundsätzlich überarbeiten/neugestalten; AK liegt nicht gut in der Playerhand; Nutzer, 17.10.2026 | Für später erhalten; Umfang und Regeln offen, kein aktueller Implementierungsauftrag | … Kampfregeln, Waffenhaltung, Griffpunkte, Zielausrichtung oder Kampfanimationen weiter ausgebaut werden. Nutzerkritik an der visuellen Haltung trotz bestandener technischer Posentests berücksichtigen. |
+| I-14 | Freie Platzierung auf eigenem Baugrund mit nachvollziehbaren Weltfolgen statt pauschalen Sicherheits-Bauverboten; Generator als Beispiel für Energie, Abgasbelastung und weitere Gefahren; Nutzer, 17.10.2026 | Langfristige Nutzeridee zur Abstimmung, kein aktueller Implementierungsauftrag; Basen/Clans und spätere Energiequellen bleiben berücksichtigt | … Baugrund, Raum-/Gebäudezustände, Energieversorgung, Umwelteinflüsse, Schlaf oder Clan-Berechtigungen dauerhaft festgelegt beziehungsweise erweitert werden. Wiederverwendbare Ursache-Wirkungs-Beziehungen offenhalten. |
 
 ### Wiedervorlage, die schon die anstehende Planung betrifft
 
