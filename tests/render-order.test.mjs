@@ -48,9 +48,12 @@ test('the actual renderer paints rugs once between terrain and floor effects, be
  Object.assign(r,{ctx:{setTransform(){},fillRect(){}},frame:0,scale:1,width:844,height:390,metrics:{},iso:(x,y)=>({x:400+(x-y)*10,y:180+(x+y-46)*5}),hotspots:[],particles:[],tracers:[],camera:{x:0,y:0},
   zombieSprites:{beginFrame(){},endFrame(){}},visibleWorldBounds:()=>({minX:5,minY:34,maxX:13,maxY:43}),drawObject(o){calls.push(o.placementRole==='rug'?'rug':'body');},drawPlayer(){calls.push('player');}});
  for(const name of ['updateMetrics','updateParticles','updateTracers','follow','drawRoofs','drawParticles','drawTracers','drawNoiseHints','drawLighting'])r[name]=()=>{};
- for(const name of ['drawGround','drawBlood','drawPlayerNoise','drawCoverHints','drawVisionCones','drawDestination'])r[name]=()=>calls.push(name);
+ for(const name of ['drawGround','drawBlood','drawCharacterShadows','drawPlayerNoise','drawCoverHints','drawVisionCones','drawDestination'])r[name]=()=>calls.push(name);
  const game={world,player:{id:'player',x:8,y:38},zombies:[],minutes:400,contextObject:()=>null};
  r.drawWorld(game,0);
  assert.equal(calls.filter(c=>c==='rug').length,1);assert.ok(calls.indexOf('drawGround')<calls.indexOf('rug'));
  assert.ok(calls.indexOf('rug')<calls.indexOf('drawBlood'));assert.ok(calls.indexOf('rug')<calls.indexOf('drawDestination'));assert.ok(calls.indexOf('rug')<calls.indexOf('body'));
+ assert.ok(calls.indexOf('rug')<calls.indexOf('drawCharacterShadows'));
+ assert.ok(calls.indexOf('drawCharacterShadows')<calls.indexOf('body'));
+ assert.ok(calls.indexOf('drawCharacterShadows')<calls.indexOf('player'));
 });

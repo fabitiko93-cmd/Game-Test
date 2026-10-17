@@ -56,8 +56,15 @@ Munition. `world.js` platziert die Kiste direkt neben dem frischen Startpunkt;
 entnommene Gegenstände bleiben über die normale Weltobjektspeicherung entnommen.
 `weapon-models.js` lädt die in acht echte Teile zerlegte AK-Geometrie und verwendet
 dieselbe Konfiguration für Hand und drehbare Waffenbank. `rifle-pose.js` passt beide
-Arme an die Griffpunkte an, erhält Bein-/Körperanimation und begrenzt die Reichweite
-der Arme. `inventory.js` verwaltet eigenständige Magazine, getrennte Füll-/Wechsel-
+Arme und Finger an die tatsächlichen Handflächen-/Griffabstände an; leichte
+Oberkörperdrehung, getrennte Stützhandrotation und Schafthaltungen ergänzen die
+erhaltene Ganganimation. Korrekturen werden vor der nächsten Animation/Abwahl
+zurückgenommen; Armlängen bleiben erhalten. `character-shadow.js` gewinnt je Fuß
+wenige echte Sohlenproben, verfolgt ihre animierten Positionen und zeichnet weiche,
+bei Fußheben schwächere Kontaktschatten. `render.js` ruft diesen Bodenpass nach
+Teppichen/Blut und vor erhöhten Objekten auf; `player-models.js`/`zombie-models.js`
+teilen hierfür eine vorbereitete Pose zwischen Schatten und Körperzeichnung.
+`inventory.js` verwaltet eigenständige Magazine, getrennte Füll-/Wechsel-
 aktionen, zwei Füllgewichtsstufen, Feuermodus und Modwerte. `combat.js` führt
 gehaltenes Auto-Feuer mit sicheren Abbrüchen, Rückstoß und geraden Durchschüssen
 aus. Der HUD-Abzug in `input.js` beendet Feuer auch bei Pointer-Abbruch/Blur.
@@ -161,4 +168,8 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
   Mod-/Bewegungseffekte, Auto-Kadenz bei 30/60/120 Hz, Abbruchfälle, Durchschuss,
   reale GLB-Teile und Save-Roundtrip. `rifle-pose.test.mjs`: beide Originalrigs,
   sieben Animationsclips und vier Ausrichtungen mit zusammenhängenden Armen,
-  Stützhand am Griff, unveränderten Beinen und passender Mündungsrichtung.
+  Stützhand am Griff, unveränderten Beinen und passender Mündungsrichtung;
+  alle Schaftzustände, echte Fingerpositionen am Griff/Vorderschaft und Rücknahme
+  der Korrekturen beim Ablegen. `character-shadow.test.mjs`: echte Sohlenproben
+  beider Rigs beim Gehen/Schleichen, identische 3D-/Bodenprojektion, schwächere
+  Schatten angehobener Füße und eine gemeinsame Pose für Schatten/Körper.

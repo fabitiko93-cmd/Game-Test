@@ -102,7 +102,7 @@ test("moving enemies and stale hotspots cannot bypass the range limit while play
 });
 
 test("render keeps nearby covered enemies, remembers scenery and hides distant zombies/loose loot", () => {
-  const visibility = new PlayerVisibility(), player = { x: 10, y: 10 }, draws = [];
+  const visibility = new PlayerVisibility(), player = { x: 10, y: 10 }, draws = [], shadows = [];
   visibility.update(player); visibility.update({ x: 35, y: 10 });
   const objects = [{ id: "known-car", type: "car", x: 35, y: 10 }, { id: "loose", type: "groundloot", x: 35, y: 10 },
     { id: "unknown", type: "car", x: 45, y: 45 }];
@@ -111,7 +111,8 @@ test("render keeps nearby covered enemies, remembers scenery and hides distant z
   const renderer = Object.create(Renderer.prototype);
   Object.assign(renderer, { frame: 0, width: 960, height: 500, scale: 1, cameraFollowing: true,
     zombieSprites: { beginFrame() {}, endFrame() {} },
-    ctx: { setTransform() {}, fillRect() {}, save() {}, restore() {}, beginPath() {}, rect() {}, ellipse() {}, fill() {} },
+    ctx: { setTransform() {}, fillRect() {}, save() {}, restore() {}, beginPath() {}, rect() {}, ellipse() {}, fill() {},
+      transform(...values) { shadows.push(values.slice(4)); }, createRadialGradient() { return { addColorStop() {} }; } },
     hotspots: [], metrics: {}, iso: (x, y) => ({ x: x * 10, y: y * 10 }), visibleWorldBounds: () => ({ minX: 0, minY: 0, maxX: 47, maxY: 47 }) });
   for (const method of ["updateMetrics", "updateParticles", "updateTracers", "follow", "drawGround", "drawBlood", "drawPlayerNoise",
     "drawCoverHints", "drawVisionCones", "drawDestination", "drawRoofs", "drawParticles", "drawTracers", "drawNoiseHints",
@@ -119,6 +120,7 @@ test("render keeps nearby covered enemies, remembers scenery and hides distant z
   renderer.drawObject = object => draws.push(object.id); renderer.drawZombie = zombie => draws.push(zombie.id); renderer.drawPlayer = () => {};
   renderer.render(game, .016);
   assert.deepEqual(draws.sort(), ["known-car", "near-covered"]);
+  assert.deepEqual(shadows.sort((a,b)=>a[0]-b[0]),[[100,100],[120,100]],'only visible player/nearby zombie cast a floor shadow');
 });
 
 test("exploration roundtrips through Game save/load; old and malformed exploration remain compatible", () => {

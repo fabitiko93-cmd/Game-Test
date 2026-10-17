@@ -18,6 +18,8 @@ import { WorldModels } from "./world-models.js";
 import { isFloorObject, sortWorldDrawables } from "./render-order.js";
 import { objectPickPolygon, pickHotspots } from "./object-selection.js";
 import { WeaponInspection } from "./weapon-models.js";
+import { drawFallbackShadow } from "./character-shadow.js";
+import { playerHeight } from "./quaternius-catalog.js";
 
 export class Renderer {
   constructor(canvas) {
@@ -232,6 +234,7 @@ export class Renderer {
     this.drawGround(game.world, game.minutes);
     for(const drawable of drawables)if(isFloorObject(drawable))this.drawObject(drawable.ref,game);
     this.drawBlood(game.world);
+    this.drawCharacterShadows(game,drawables);
     this.drawPlayerNoise(game);
     this.drawCoverHints(game);
     this.drawVisionCones(game);
@@ -560,7 +563,7 @@ export class Renderer {
   }
 
   drawCorpse(o) {
-    const p=this.iso(o.x,o.y),ctx=this.ctx;this.shadow(p,20,7,.3);
+    const p=this.iso(o.x,o.y),ctx=this.ctx;
     if(o.playerAppearance&&this.playerModels?.drawCorpse(ctx,o,p))return;
     if (o.zombieAppearance) {
       // Infected corpses stay in the same model family as their living bodies.
@@ -665,7 +668,6 @@ export class Renderer {
     const bodyOffset = 0;
     const bob = player.moving ? Math.sin(game.elapsed * (player.running ? 10 : crouched ? 5 : 6)) * (crouched ? .5 : .8) : 0;
     const bodyScale = playerDisplayScale();
-    this.shadow(p, (crouched ? 15 : 13) * bodyScale.x, (crouched ? 6 : 5) * bodyScale.x, .38);
     if(this.playerModels?.draw(ctx,player,game.elapsed,p))return;
     ctx.save();
     ctx.translate(Math.round(p.x), Math.round(p.y + bob + bodyOffset));
@@ -749,7 +751,6 @@ export class Renderer {
     const p = this.withImpact(this.iso(zombie.x, zombie.y), zombie, .11);
     const bob = zombie.moving ? Math.sin(this.frame * .22 + zombie.phase) * 1.2 : 0;
     if (this.selectedId === zombie.id) this.drawSelection(zombie.x, zombie.y, .5);
-    this.shadow(p, pixelsPerMeter * .27, pixelsPerMeter * .10, .4);
     if (!this.zombieModels?.draw(ctx, zombie, game.elapsed, p)
       && !this.zombieSprites.draw(ctx, zombie, game.elapsed, p)) this.drawZombieFallback(zombie, p, bob);
     if (zombie.hp < zombie.maxHp) {
@@ -837,6 +838,25 @@ export class Renderer {
     if (!(entity.hitKick > 0)) return point;
     const offset = this.rawIso((entity.impactX || 0) * amount, (entity.impactY || 0) * amount);
     return { x: point.x + offset.x * entity.hitKick, y: point.y + offset.y * entity.hitKick };
+  }
+
+  drawCharacterShadows(game,drawables) {
+    for(const {kind,ref} of drawables) {
+      const point=this.withImpact(this.iso(ref.x,ref.y),ref,.11);
+      if(kind==='player') {
+        if(ref.dead&&ref.appearance)continue;
+        if(!this.playerModels?.drawShadow(this.ctx,ref,game.elapsed,point))
+          drawFallbackShadow(this.ctx,point,playerHeight(ref.appearance),Math.atan2(ref.facingX||0,ref.facingY||1));
+      } else if(kind==='zombie') {
+        if(!this.zombieModels?.drawShadow(this.ctx,ref,game.elapsed,point))
+          drawFallbackShadow(this.ctx,point,zombieBodyProfile(ref).height,Math.atan2(ref.facingX||0,ref.facingY||1));
+      } else if(ref.type==='corpse') {
+        const appearance=ref.zombieAppearance;
+        const height=appearance?zombieBodyProfile(appearance).height:playerHeight(ref.playerAppearance);
+        const yaw=appearance?Math.atan2(appearance.facingX||0,appearance.facingY||1):ref.facingYaw||0;
+        drawFallbackShadow(this.ctx,point,height,yaw,true);
+      }
+    }
   }
 
   drawVisionCones(game) {
