@@ -1,7 +1,7 @@
 {
-  "id": "ba25bd3a7ca4f5e0f71e",
-  "script": "build/main-Y7RE5BWQ.js",
-  "style": "build/style-T4VBRQEH.css",
+  "id": "64c320f9df592690068f",
+  "script": "build/main-SDIVAN7B.js",
+  "style": "build/style-WPEYC5AG.css",
   "precache": [
     "assets/icon.svg",
     "assets/quaternius/ANIMATION-LICENSE.txt",
@@ -251,8 +251,8 @@
     "assets/zombies3d/THREE-LICENSE.txt",
     "assets/zombies3d/models.json",
     "build/assets/ak-icon-JY273CYI.svg",
-    "build/main-Y7RE5BWQ.js",
-    "build/style-T4VBRQEH.css",
+    "build/main-SDIVAN7B.js",
+    "build/style-WPEYC5AG.css",
     "index.html",
     "manifest.webmanifest"
   ]
