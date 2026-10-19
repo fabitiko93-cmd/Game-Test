@@ -1,6 +1,6 @@
 {
-  "id": "54b0bcaa9598d73715f6",
-  "script": "build/main-QWVFD434.js",
+  "id": "a6c9cd4956c3e04fbe27",
+  "script": "build/main-PQJKJI34.js",
   "style": "build/style-WPEYC5AG.css",
   "precache": [
     "assets/icon.svg",
@@ -253,7 +253,7 @@
     "assets/zombies3d/THREE-LICENSE.txt",
     "assets/zombies3d/models.json",
     "build/assets/ak-icon-JY273CYI.svg",
-    "build/main-QWVFD434.js",
+    "build/main-PQJKJI34.js",
     "build/style-WPEYC5AG.css",
     "index.html",
     "manifest.webmanifest"
