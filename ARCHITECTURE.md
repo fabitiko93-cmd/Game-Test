@@ -68,10 +68,15 @@ gemeinsamen WebGL-Kontext; der nächste Weltpass stellt seine Auflösung wieder 
 `player-motion.js` erhält die Schrittphase und dreht die Figur begrenzt über den
 kürzesten Winkel zur Laufrichtung. `movement.js` hält nach Erschöpfung Gehtempo bis
 zum nächsten Sprintbefehl, statt zwischen Gehen und Sprint zu pendeln; bestehende
-Ausdauer- und Geräuschwerte bleiben erhalten. `rifle-pose.js` passt beide
+Ausdauer- und Geräuschwerte bleiben erhalten. `rifle-animation.js` überträgt die
+aufbereiteten KayKit-Ziel-/Schuss-/Tragebewegungen auf den Oberkörper beider Rigs;
+`scripts/prepare-rifle-animations.mjs` erzeugt getrennte 30-Hz-Daten mit
+Bind-Pose-Korrektur. Die vorhandene Beinanimation läuft auch beim AK-Schuss weiter.
+`rifle-pose.js` passt beide
 Arme und Finger an die tatsächlichen Handflächen-/Griffabstände an; leichte
 Oberkörperdrehung, getrennte Stützhandrotation und Schafthaltungen ergänzen die
-erhaltene Ganganimation. Diagonale Tragehaltung, Hüfthaltung bei Bewegung und
+erhaltene Ganganimation. Entspannte Tragehaltung vor der Brust mit diagonal zum
+Boden gerichtetem Lauf, tiefere Hüfthaltung bei Bewegung und
 Anlegen beim tatsächlichen Anvisieren werden weich überblendet. Mit Schaft folgt
 die Schaftkappe einem Schulterkontaktpunkt; schaftlos gilt eine eigene Position.
 Korrekturen werden vor der nächsten Animation/Abwahl

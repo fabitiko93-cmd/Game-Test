@@ -1,5 +1,5 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "64c320f9df592690068f";
+const BUILD_ID = "54b0bcaa9598d73715f6";
 const FILES = [
   "./assets/icon.svg",
   "./assets/quaternius/ANIMATION-LICENSE.txt",
@@ -65,6 +65,7 @@ const FILES = [
   "./assets/quaternius/Houseplant_6-cee67590734a.glb.gz",
   "./assets/quaternius/Houseplant_7-1badb387d5a0.glb.gz",
   "./assets/quaternius/Houseplant_8-18cf31f5a764.glb.gz",
+  "./assets/quaternius/KAYKIT-LICENSE.txt",
   "./assets/quaternius/Kitchen_1Drawers-9ecb1c753eac.glb.gz",
   "./assets/quaternius/Kitchen_2Drawers-65fc9c442a1c.glb.gz",
   "./assets/quaternius/Kitchen_3Drawers-48eda28aebe1.glb.gz",
@@ -152,6 +153,7 @@ const FILES = [
   "./assets/quaternius/models.json",
   "./assets/quaternius/player-animations.json",
   "./assets/quaternius/player-crouch-68cf13051891.glb.gz",
+  "./assets/quaternius/rifle-animations.json",
   "./assets/reference-scale.json",
   "./assets/scale-reference/README.md",
   "./assets/scale-reference/front.png",
@@ -249,7 +251,7 @@ const FILES = [
   "./assets/zombies3d/THREE-LICENSE.txt",
   "./assets/zombies3d/models.json",
   "./build/assets/ak-icon-JY273CYI.svg",
-  "./build/main-SDIVAN7B.js",
+  "./build/main-QWVFD434.js",
   "./build/style-WPEYC5AG.css",
   "./index.html",
   "./manifest.webmanifest"
