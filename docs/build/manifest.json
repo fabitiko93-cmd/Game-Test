@@ -1,6 +1,6 @@
 {
-  "id": "64c320f9df592690068f",
-  "script": "build/main-SDIVAN7B.js",
+  "id": "a6c9cd4956c3e04fbe27",
+  "script": "build/main-PQJKJI34.js",
   "style": "build/style-WPEYC5AG.css",
   "precache": [
     "assets/icon.svg",
@@ -67,6 +67,7 @@
     "assets/quaternius/Houseplant_6-cee67590734a.glb.gz",
     "assets/quaternius/Houseplant_7-1badb387d5a0.glb.gz",
     "assets/quaternius/Houseplant_8-18cf31f5a764.glb.gz",
+    "assets/quaternius/KAYKIT-LICENSE.txt",
     "assets/quaternius/Kitchen_1Drawers-9ecb1c753eac.glb.gz",
     "assets/quaternius/Kitchen_2Drawers-65fc9c442a1c.glb.gz",
     "assets/quaternius/Kitchen_3Drawers-48eda28aebe1.glb.gz",
@@ -154,6 +155,7 @@
     "assets/quaternius/models.json",
     "assets/quaternius/player-animations.json",
     "assets/quaternius/player-crouch-68cf13051891.glb.gz",
+    "assets/quaternius/rifle-animations.json",
     "assets/reference-scale.json",
     "assets/scale-reference/README.md",
     "assets/scale-reference/front.png",
@@ -251,7 +253,7 @@
     "assets/zombies3d/THREE-LICENSE.txt",
     "assets/zombies3d/models.json",
     "build/assets/ak-icon-JY273CYI.svg",
-    "build/main-SDIVAN7B.js",
+    "build/main-PQJKJI34.js",
     "build/style-WPEYC5AG.css",
     "index.html",
     "manifest.webmanifest"

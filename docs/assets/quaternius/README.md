@@ -27,6 +27,16 @@ https://quaternius.itch.io/universal-animation-library (free download, CC0).
 `player-animations.json` records the source hash and original clip names.
 Additional animation credits: Quaternius and Gonzalo Furnier; see `ANIMATION-LICENSE.txt`.
 
+Rifle upper-body motion comes from Kay Lousberg's **KayKit Character Animations
+FREE 1.1**, https://kaylousberg.itch.io/kaykit-character-animations, CC0;
+see `KAYKIT-LICENSE.txt`. Run `node scripts/prepare-rifle-animations.mjs
+/path/to/Animations/gltf/Rig_Medium` to regenerate `rifle-animations.json`.
+The metadata records the two source GLB hashes and original clip names. Both
+existing modular rigs receive separate 30 Hz retargets, including T-pose/A-pose
+arm-direction correction. Only the upper body is transferred. Aiming excludes
+the initial 0.32 s raise; movement keeps the game's existing feet and stride.
+Runtime fitting aligns the real AK grips/stock and retains the finger pose.
+
 GLB containers retain the original character geometry, material colours, separate
 clothing meshes, skeletons and all 24 animation clips without frame reduction.
 Gzip is lossless; output names contain content hashes. No external textures are needed.

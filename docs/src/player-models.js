@@ -95,6 +95,7 @@ export class PlayerModels {
     const action=entity.actions.get(pose.clip);
     if(entity.clip!==pose.clip){action.reset().setEffectiveTimeScale(0).setEffectiveWeight(1).play();if(entity.current)entity.current.crossFadeTo(action,.16,false);entity.current=action;entity.clip=pose.clip;}
     action.time=Math.min(.999999,pose.progress)*action.getClip().duration;entity.mixer.update(pose.delta);
+    entity.poseProgress=pose.progress;
     for(const other of entity.actions.values())if(other!==action&&other.getEffectiveWeight()===0)other.stop();
     entity.root.rotation.y=pose.yaw;entity.root.updateMatrixWorld(true);
   }

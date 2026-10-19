@@ -11,6 +11,7 @@ import { QuaterniusAssets } from "../docs/src/quaternius-assets.js";
 import { playerModelAppearance } from "../docs/src/quaternius-catalog.js";
 import { AK_MODEL } from "../docs/src/weapon-models.js";
 import { applyRiflePose, riflePosture } from "../docs/src/rifle-pose.js";
+import { PlayerMotion } from '../docs/src/player-motion.js';
 
 const cache = new Map();
 async function parse(url) {
@@ -54,7 +55,7 @@ test("both real rigs retain their grip, arm lengths and legs in all three rifle 
           assert.ok(Math.abs(supportPalm.x)<.025&&supportPalm.y>0&&supportPalm.y<.055&&supportPalm.z>.24&&supportPalm.z<.31,'support palm below the supplied wooden handguard');
           const forward = new Vector3(0, 0, 1).applyQuaternion(entity.weapon.getWorldQuaternion(new Quaternion()));
           const horizontal=new Vector3(forward.x,0,forward.z).normalize();
-          if(posture==='carry')assert.ok(forward.y>.65,'carry the barrel diagonally upwards in front of the body');
+          if(posture==='carry')assert.ok(forward.y<-.65,'relaxed carry points the barrel diagonally down, clear of the forward aim line');
           else {
             assert.ok(horizontal.dot(new Vector3(Math.sin(yaw), 0, Math.cos(yaw))) > .999, `${sex} ${clip}: muzzle heading`);
             assert.ok(posture==='hip'?forward.y<-.1:Math.abs(forward.y)<.04,'hip carry and aimed fire have distinct barrel elevations');
@@ -99,4 +100,14 @@ test('rifle corrections do not accumulate or survive unequipping into an unchang
   applyRiflePose(entity,player);bones.forEach((b,i)=>assert.ok(b.getWorldQuaternion(new Quaternion()).normalize().angleTo(first[i])<1e-6,`${names[i]}: reapplying a held pose is stable`));
   player.equipment.mainHand=null;models.equip(entity,player);models.pose(entity,{...pose,delta:0});
   bones.forEach((b,i)=>assert.ok(b.quaternion.clone().normalize().angleTo(original[i].normalize())<1e-6,`${names[i]} returns to the original animation`));
+});
+
+test('an AK shot keeps the walking leg clip and its distance-driven phase',()=>{
+  const player=createPlayer(),weapon=createItem('ak_762');addItem(player,weapon);equipItem(player,weapon.id);
+  Object.assign(player,{moving:true,running:false,stance:'walk'});
+  const motion=new PlayerMotion();motion.sample(player,0);
+  player.x+=.08;const before=motion.sample(player,.1);
+  player.shots++;player.x+=.08;const firing=motion.sample(player,.2);
+  assert.equal(before.clip,'Walk');assert.equal(firing.clip,'Walk');
+  assert.ok(firing.progress>before.progress,'firing does not reset or replace the current step');
 });
