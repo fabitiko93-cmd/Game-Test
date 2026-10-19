@@ -75,7 +75,10 @@ Bind-Pose-Korrektur. Die vorhandene Beinanimation läuft auch beim AK-Schuss wei
 `rifle-pose.js` passt beide
 Arme und Finger an die tatsächlichen Handflächen-/Griffabstände an; leichte
 Oberkörperdrehung, getrennte Stützhandrotation und Schafthaltungen ergänzen die
-erhaltene Ganganimation. Entspannte Tragehaltung vor der Brust mit diagonal zum
+erhaltene Ganganimation. Körperbezogene Ellbogenebenen lassen dem rechten Arm
+seitlich Platz; Beugeebene des Original-Rigs und griffbezogene Unterarmdrehung
+vermeiden verdrehte Ärmel und Handgelenke. Entspannte Tragehaltung körpernah vor
+Brust/Bauch mit diagonal zum
 Boden gerichtetem Lauf, tiefere Hüfthaltung bei Bewegung und
 Anlegen beim tatsächlichen Anvisieren werden weich überblendet. Mit Schaft folgt
 die Schaftkappe einem Schulterkontaktpunkt; schaftlos gilt eine eigene Position.

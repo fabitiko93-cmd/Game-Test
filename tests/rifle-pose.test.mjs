@@ -24,7 +24,7 @@ async function parse(url) {
   return cache.get(name);
 }
 
-test("both real rigs retain their grip, arm lengths and legs in all three rifle postures", async () => {
+test("both real rigs retain their grip, arm lengths, open elbows and legs in all three rifle postures", async () => {
   const library = new QuaterniusAssets({loadAsset: parse}), models = new PlayerModels({}, library);
   models.weapons.loadAsset = parse; await Promise.all([models.ready, models.weapons.request()]);
   for (const sex of ["male", "female"]) for(const stock of [null,'ak_fixed_stock','ak_frame_stock']) {
@@ -46,6 +46,16 @@ test("both real rigs retain their grip, arm lengths and legs in all three rifle 
           const actualLengths = ["L", "R"].flatMap(side => [position(`UpperArm${side}`).distanceTo(position(`LowerArm${side}`)), position(`LowerArm${side}`).distanceTo(position(`Wrist${side}`))]);
           actualLengths.forEach((length, index) => assert.ok(Math.abs(length - armLengths[index]) < 1e-5, `${sex} ${clip} ${progress} arm ${index}: ${length} vs ${armLengths[index]}`));
           ["UpperLegL", "LowerLegL", "UpperLegR", "LowerLegR"].filter(name => bone(name)).map(position).forEach((p, index) => assert.ok(p.distanceTo(legs[index]) < 1e-7));
+          const forearm=position('WristR').sub(position('LowerArmR')).normalize();
+          const palm=position('Middle2R').sub(position('WristR')).normalize();
+          const wristAngle=forearm.angleTo(palm)*180/Math.PI;
+          assert.ok(wristAngle<80,`${sex} ${stock} ${posture} ${clip} ${progress}: firing wrist angle ${wristAngle}`);
+          const shoulderLocal=entity.root.worldToLocal(position('UpperArmR'));
+          const elbowLocal=entity.root.worldToLocal(position('LowerArmR'));
+          assert.ok(elbowLocal.x<shoulderLocal.x-.05,`${sex} ${posture} ${clip} ${progress}: right elbow has room outside the torso`);
+          const wristRest=entity.rifleHands.get('WristR').rotation;
+          const wristBend=bone('WristR').quaternion.clone().multiply(wristRest.clone().invert());
+          assert.ok(Math.abs(wristBend.y)<.001,`${sex} ${posture}: forearm shares the grip roll instead of twisting only at the wrist`);
           const grip = entity.weapon.localToWorld(new Vector3(.145, .03, .255));
           assert.ok(position("WristL").distanceTo(grip) < .015, `${sex} ${clip} ${progress}: support hand`);
           const local=name=>entity.weapon.worldToLocal(position(name));
@@ -65,6 +75,27 @@ test("both real rigs retain their grip, arm lengths and legs in all three rifle 
             assert.ok(contact.distanceTo(entity.rifleShoulderContact)<.025,`${sex} ${stock} ${clip} ${progress}: butt is against shoulder (${contact.distanceTo(entity.rifleShoulderContact)})`);
           }
         }
+      }
+    }
+  }
+});
+
+test('elbow planes stay continuous while changing between every rifle posture',async()=>{
+  const library=new QuaterniusAssets({loadAsset:parse}),models=new PlayerModels({},library);
+  models.weapons.loadAsset=parse;await Promise.all([models.ready,models.weapons.request()]);
+  for(const sex of ['male','female'])for(const stock of [null,'ak_fixed_stock','ak_frame_stock']) {
+    const player=createPlayer({appearance:{sex}}),weapon=createItem('ak_762',1,{mods:stock?{stock:createItem(stock)}:{}});
+    addItem(player,weapon);equipItem(player,weapon.id);
+    const appearance=playerModelAppearance(player);await Promise.all(['head','torso','legs','feet'].map(slot=>library.request(appearance[slot])));
+    const entity=models.entity(player,appearance);models.equip(entity,player);
+    const bones=['LowerArmR','WristR','LowerArmL','WristL'].map(name=>entity.model.getObjectByName(name));
+    const positions=()=>bones.map(bone=>bone.getWorldPosition(new Vector3()));
+    for(const from of ['carry','hip','aim'])for(const to of ['carry','hip','aim']) {
+      const pose={clip:'Idle_Gun',progress:.3,delta:1,yaw:.7};
+      models.pose(entity,pose);applyRiflePose(entity,player,1,from);let previous=positions();
+      for(let frame=0;frame<50;frame++) {
+        models.pose(entity,{...pose,delta:1/60});applyRiflePose(entity,player,1/60,to);
+        const next=positions();next.forEach((p,i)=>assert.ok(p.distanceTo(previous[i])<.065,`${sex} ${stock} ${from}->${to} frame ${frame}: ${bones[i].name} step ${p.distanceTo(previous[i])}`));previous=next;
       }
     }
   }
