@@ -6,8 +6,9 @@ const sample=(clip,phase,index)=>{
   return new Quaternion().fromArray(clip.frames[a],index*4).slerp(new Quaternion().fromArray(clip.frames[b],index*4),frame-a);
 };
 
-// Authored upper-arm rotations provide the elbow planes/twist. Weapon fitting
-// subsequently adjusts the endpoints to this AK, leaving the leg tracks intact.
+// Apply the authored upper-body motion before fitting this AK. The arm solver
+// supplies body-relative elbow planes and grip-aligned forearm roll; the leg
+// tracks remain intact.
 export function applyRifleAnimation(entity,player,blend,delta){
   const clips=MOTIONS.rigs[player.appearance?.sex==='female'?'female':'male'];
   entity.rifleTime=(entity.rifleTime||0)+Math.max(0,delta);
