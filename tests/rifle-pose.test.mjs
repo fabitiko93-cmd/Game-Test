@@ -17,7 +17,7 @@ const cache = new Map();
 async function parse(url) {
   const name = new URL(url).pathname.split("/").at(-1);
   if (!cache.has(name)) cache.set(name, (async () => {
-    const folder = name.startsWith("ak-") ? "weapons" : "quaternius";
+    const folder = /^(ak|vector)-/.test(name) ? "weapons" : "quaternius";
     const bytes = gunzipSync(await readFile(new URL(`../docs/assets/${folder}/${name}`, import.meta.url)));
     return new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), "");
   })());
@@ -53,6 +53,7 @@ test("both real rigs retain their grip, arm lengths, open elbows and legs in all
           const shoulderLocal=entity.root.worldToLocal(position('UpperArmR'));
           const elbowLocal=entity.root.worldToLocal(position('LowerArmR'));
           assert.ok(elbowLocal.x<shoulderLocal.x-.05,`${sex} ${posture} ${clip} ${progress}: right elbow has room outside the torso`);
+          if(posture==='carry')assert.ok(elbowLocal.z>shoulderLocal.z-.065,`${sex} ${clip}: relaxed elbow stays near the shoulder plane instead of far behind the back`);
           const wristRest=entity.rifleHands.get('WristR').rotation;
           const wristBend=bone('WristR').quaternion.clone().multiply(wristRest.clone().invert());
           assert.ok(Math.abs(wristBend.y)<.001,`${sex} ${posture}: forearm shares the grip roll instead of twisting only at the wrist`);
@@ -106,6 +107,8 @@ test('posture follows movement and actual aiming, and transitions keep the weapo
   player.combat.enabled=true;assert.equal(riflePosture(player),'carry','combat mode without a target is not aiming');
   player.combat.targetId='target';player.combat.aim=.1;assert.equal(riflePosture(player),'aim');
   player.moving=true;assert.equal(riflePosture(player),'hip');
+  player.running=true;assert.equal(riflePosture(player),'carry','sprinting uses the relaxed carry even with a selected combat target');
+  player.running=false;assert.equal(riflePosture(player),'hip','walking retains its separate hip posture');
   const library=new QuaterniusAssets({loadAsset:parse}),models=new PlayerModels({},library);
   models.weapons.loadAsset=parse;await Promise.all([models.ready,models.weapons.request()]);
   const weapon=createItem('ak_762',1,{mods:{stock:createItem('ak_fixed_stock')}});addItem(player,weapon);equipItem(player,weapon.id);
@@ -141,4 +144,31 @@ test('an AK shot keeps the walking leg clip and its distance-driven phase',()=>{
   player.shots++;player.x+=.08;const firing=motion.sample(player,.2);
   assert.equal(before.clip,'Walk');assert.equal(firing.clip,'Walk');
   assert.ok(firing.progress>before.progress,'firing does not reset or replace the current step');
+});
+
+test('AK and Vector use the standing carry during a real sprint while preserving the original running legs',async()=>{
+  const library=new QuaterniusAssets({loadAsset:parse}),models=new PlayerModels({},library);
+  models.weapons.loadAsset=parse;await Promise.all([models.ready,models.weapons.request(),models.weapons.request('vector_9mm')]);
+  for(const sex of ['male','female'])for(const [type,stock] of [['ak_762','ak_fixed_stock'],['vector_9mm','vector_stock']]){
+    const player=createPlayer({appearance:{sex}});player.equipment.back=null;
+    const weapon=createItem(type,1,{mods:{stock:createItem(stock)}});addItem(player,weapon);equipItem(player,weapon.id);
+    const appearance=playerModelAppearance(player);await Promise.all(['head','torso','legs','feet'].map(slot=>library.request(appearance[slot])));
+    const entity=models.entity(player,appearance);models.equip(entity,player);
+    const position=name=>entity.model.getObjectByName(name).getWorldPosition(new Vector3());
+    models.pose(entity,{clip:'Idle_Gun',progress:.4,delta:1,yaw:.7});applyRiflePose(entity,player,1);
+    const carryRotation=entity.weapon.getWorldQuaternion(new Quaternion()).normalize();
+    Object.assign(player,{moving:true,running:true});
+    Object.assign(player.combat,{enabled:true,targetId:'selected-target',aim:1});
+    const motion=new PlayerMotion();motion.sample(player,0);player.x+=.1;const run=motion.sample(player,.1);
+    assert.equal(run.clip,'Run');
+    models.pose(entity,{...run,delta:1,yaw:.7});
+    const legs=['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].map(position);
+    applyRiflePose(entity,player,1);
+    assert.equal(entity.riflePosture,'carry');assert.equal(entity.rifleBlend.carry,1);
+    const angle=entity.weapon.getWorldQuaternion(new Quaternion()).normalize().angleTo(carryRotation);
+    assert.ok(angle<1e-6,`sprint uses the same relaxed weapon orientation as standing: ${angle}`);
+    ['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].map(position).forEach((point,i)=>assert.ok(point.distanceTo(legs[i])<1e-7,'original sprint legs stay intact'));
+    const shoulder=entity.root.worldToLocal(position('UpperArmR')),elbow=entity.root.worldToLocal(position('LowerArmR'));
+    assert.ok(elbow.z>shoulder.z-.065,`${sex} ${type}: elbow stays forward during the sprint`);
+  }
 });

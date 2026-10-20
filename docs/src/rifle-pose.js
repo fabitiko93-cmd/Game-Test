@@ -131,7 +131,7 @@ function fitArm(upper, lower, wrist, target, pole, frame) {
 }
 
 export function riflePosture(player) {
-  if(player.moving)return 'hip';
+  if(player.moving)return player.running?'carry':'hip';
   if(player.combat?.enabled&&player.combat?.targetId&&(player.combat.aim>0||player.combat.triggerHeld))return 'aim';
   return 'carry';
 }
@@ -200,7 +200,7 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   }
   // Body-relative elbow planes keep every pose open enough for the firing
   // forearm. Clip-dependent poles can fold it inward as the animation loops.
-  const rightBend=new Vector3(-.12,-.28,-.05).multiplyScalar(blend.carry)
+  const rightBend=new Vector3(-.12,-.28,.12).multiplyScalar(blend.carry)
     .addScaledVector(new Vector3(-.24,-.16,-.11),blend.hip).addScaledVector(new Vector3(-.28,-.10,-.10),blend.aim);
   const rightPole=root.localToWorld(shoulder.clone().add(rightBend));
   const leftShoulder = root.worldToLocal(left[0].getWorldPosition(new Vector3()));

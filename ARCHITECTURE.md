@@ -82,7 +82,8 @@ Arme und Finger an die tatsächlichen Handflächen-/Griffabstände an; leichte
 Oberkörperdrehung, getrennte Stützhandrotation und Schafthaltungen ergänzen die
 erhaltene Ganganimation. Körperbezogene Ellbogenebenen lassen dem rechten Arm
 seitlich Platz; Beugeebene des Original-Rigs und griffbezogene Unterarmdrehung
-vermeiden verdrehte Ärmel und Handgelenke. Entspannte Tragehaltung körpernah vor
+vermeiden verdrehte Ärmel und Handgelenke. Entspannte Tragehaltung im Stand und
+beim Sprinten mit weiter vorn liegendem rechten Ellenbogen, körpernah vor
 Brust/Bauch mit diagonal zum
 Boden gerichtetem Lauf, tiefere Hüfthaltung bei Bewegung und
 Anlegen beim tatsächlichen Anvisieren werden weich überblendet. Mit Schaft folgt

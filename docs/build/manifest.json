@@ -1,6 +1,6 @@
 {
-  "id": "4baca354a30284ca952d",
-  "script": "build/main-MPY2RR74.js",
+  "id": "7fb716d84995b7dea6f6",
+  "script": "build/main-Q5CFWSI4.js",
   "style": "build/style-G66BHY43.css",
   "precache": [
     "assets/icon.svg",
@@ -257,7 +257,7 @@
     "assets/zombies3d/models.json",
     "build/assets/ak-icon-JY273CYI.svg",
     "build/assets/vector-icon-DX6NJN2U.svg",
-    "build/main-MPY2RR74.js",
+    "build/main-Q5CFWSI4.js",
     "build/style-G66BHY43.css",
     "index.html",
     "manifest.webmanifest"
