@@ -82,6 +82,19 @@ export const ITEMS = {
   ak_acog_3x: { name: "Kompaktes ACOG 3×", short: "ACOG 3×", type: "mod", icon: "mod", modSlot: "optic", compatible: ["ak_762"], weight: .3, stack: 1, effects: { rangeAdd: 4, aimTimeMul: 1.1, closePenalty: .12, mobilityMul: .99 }, description: "300 g. Dreifachvisierung für mehr nutzbare Distanz; auf kürzeste Entfernung unhandlicher." },
   ak_suppressor: { name: "AK-Schalldämpfer", short: "AK-Dämpfer", type: "mod", icon: "mod", modSlot: "muzzle", compatible: ["ak_762"], weight: .4, stack: 1, effects: { noiseMul: .48, aimTimeMul: 1.08, mobilityMul: .98 }, description: "400 g. Reduziert den Schussknall, erhöht Länge und Gewicht. Schaden und Durchschlagskraft bleiben unverändert." },
 
+  vector_9mm: firearm("Vector · 9 mm", "Vector", {
+    icon: "vector", weight: 2.2, hands: 2, damage: 40, range: 8.8, aimTime: .8, recovery: .16,
+    accuracy: .75, headshot: .18, noise: 20, feed: "magazine", ammoType: "ammo_9mm",
+    magazineTypes: ["mag_vector_33"], modSlots: ["stock", "optic", "foregrip", "muzzle"],
+    fireModes: ["semi", "auto"], fireInterval: .075, recoilPerShot: .22, recoilRecovery: 2,
+    aimRetention: .55, mobility: 1, penetration: 0,
+    description: "Kompakte 9-mm-MP mit hoher Kadenz und begrenzter Reichweite. Semi: tippen. Auto: SCHUSS halten. Schaft, Leuchtpunktvisier, Vordergriff und Dämpfer sind abnehmbar; 33er-Magazine separat befüllen und einsetzen.",
+  }),
+  mag_vector_33: { name: "Vector-33er-Magazin", short: "Vector-Mag.", type: "magazine", icon: "magazine", ammoType: "ammo_9mm", capacity: 33, compatible: ["vector_9mm"], weight: .15, stack: 1, description: "Eigenständiges 9-mm-Magazin für die Vector. 0–16 Patronen: 150 g; 17–33 Patronen: 200 g. Befüllen und Wechseln sind getrennte Aktionen." },
+  vector_stock: { name: "Vector-Klappschaft", short: "Vector-Schaft", type: "mod", icon: "mod", modSlot: "stock", compatible: ["vector_9mm"], weight: .4, stack: 1, effects: { recoilPerShotMul: .7, recoilRecoveryAdd: .4, aimRetentionAdd: .12, aimTimeMul: 1.08, mobilityMul: .97 }, description: "Abnehmbarer offener Schaft. Stabilisiert Feuerstöße, erhöht Gewicht und Länge und verlangsamt das Anlegen etwas." },
+  vector_foregrip: { name: "Vector-Vordergriff", short: "Vordergriff", type: "mod", icon: "mod", modSlot: "foregrip", compatible: ["vector_9mm"], weight: .15, stack: 1, effects: { recoilPerShotMul: .85, recoilRecoveryAdd: .2, aimTimeMul: 1.03 }, description: "Senkrechter Vordergriff. Verbessert die Kontrolle längerer Feuerstöße; die Stützhand greift sichtbar um den montierten Griff." },
+  vector_suppressor: { name: "Vector-Schalldämpfer", short: "Vector-Dämpfer", type: "mod", icon: "mod", modSlot: "muzzle", compatible: ["vector_9mm"], weight: .25, stack: 1, effects: { noiseMul: .46, aimTimeMul: 1.06, mobilityMul: .98 }, description: "Reduziert den Schussknall und verlängert die Waffe. Schaden und Durchschlag bleiben unverändert." },
+
   pistol_9mm: firearm("9-mm-Pistole", "Pistole", {
     weight: 0.86, hands: 1, damage: 44, range: 9.2, aimTime: 1.35, recovery: 0.48,
     accuracy: 0.72, headshot: 0.2, noise: 18, feed: "magazine",
@@ -106,14 +119,14 @@ export const ITEMS = {
     description: "Präzise und durchschlagskräftig, in Gebäuden jedoch sperrig.",
   }),
 
-  ammo_9mm: { name: "9-mm-Patronen", short: "9 mm", type: "ammo", icon: "ammo", ammoType: "ammo_9mm", weight: 0.012, stack: 30, description: "Lose Pistolenmunition." },
+  ammo_9mm: { name: "9-mm-Patronen", short: "9 mm", type: "ammo", icon: "ammo", ammoType: "ammo_9mm", weight: 0.012, stack: 30, description: "Lose 9-mm-Munition für Pistole und Vector. Passende Wechselmagazine separat befüllen." },
   ammo_38: { name: ".38-Patronen", short: ".38", type: "ammo", icon: "ammo", ammoType: "ammo_38", weight: 0.014, stack: 24, description: "Munition für den Revolver." },
   shell_12g: { name: "Kaliber-12-Schrot", short: "12/70", type: "ammo", icon: "ammo", ammoType: "shell_12g", weight: 0.044, stack: 16, description: "Schrotpatronen für die Flinte." },
   ammo_rifle: { name: "Jagdpatronen", short: "Jagdpatr.", type: "ammo", icon: "ammo", ammoType: "ammo_rifle", weight: 0.026, stack: 20, description: "Büchsenmunition für das Jagdgewehr." },
   mag_9mm_12: { name: "9-mm-Magazin", short: "Magazin", type: "magazine", icon: "magazine", ammoType: "ammo_9mm", capacity: 12, compatible: ["pistol_9mm"], weight: 0.1, stack: 1, description: "Standardmagazin mit zwölf Patronen. Separat befüllen; ab halber Füllung 50 g schwerer." },
   mag_9mm_18: { name: "Verlängertes 9-mm-Magazin", short: "18er-Mag.", type: "magazine", icon: "magazine", ammoType: "ammo_9mm", capacity: 18, compatible: ["pistol_9mm"], weight: 0.15, stack: 1, description: "Separates Magazin mit achtzehn Patronen; ab halber Füllung 50 g schwerer." },
 
-  reflex_sight: { name: "Leuchtpunktvisier", short: "Leuchtpunkt", type: "mod", icon: "mod", modSlot: "optic", compatible: ["pistol_9mm", "shotgun_12g"], effects: { aimTimeMul: 0.78 }, weight: 0.14, stack: 1, description: "Beschleunigt die Zielerfassung auf kurze Distanz." },
+  reflex_sight: { name: "Leuchtpunktvisier", short: "Leuchtpunkt", type: "mod", icon: "mod", modSlot: "optic", compatible: ["pistol_9mm", "shotgun_12g", "vector_9mm"], effects: { aimTimeMul: 0.78 }, weight: 0.14, stack: 1, description: "Beschleunigt die Zielerfassung auf kurze Distanz." },
   hunting_scope: { name: "Jagdzielfernrohr", short: "Zielfernrohr", type: "mod", icon: "mod", modSlot: "optic", compatible: ["hunting_rifle"], effects: { aimTimeMul: 0.82, rangeAdd: 4, closePenalty: 0.16 }, weight: 0.42, stack: 1, description: "Große Reichweite, aber unhandlich auf engstem Raum." },
   pistol_suppressor: { name: "Pistolenschalldämpfer", short: "Dämpfer", type: "mod", icon: "mod", modSlot: "muzzle", compatible: ["pistol_9mm"], effects: { noiseMul: 0.44, aimTimeMul: 1.08 }, weight: 0.27, stack: 1, description: "Reduziert den Knall deutlich, macht ihn jedoch nicht lautlos." },
   shotgun_choke: { name: "Flinten-Choke", short: "Choke", type: "mod", icon: "mod", modSlot: "muzzle", compatible: ["shotgun_12g"], effects: { rangeAdd: 2.2, spreadMul: 0.66 }, weight: 0.09, stack: 1, description: "Bündelt die Streuung auf mittlere Entfernung." },
@@ -171,6 +184,8 @@ export const LOOT_TABLES = {
     ["bread", 0.4, 1, 1], ["apple", 0.48, 1, 2], ["can_opener", 0.22, 1, 1],
   ],
   police: [
+    ["vector_9mm", .035, 1, 1], ["mag_vector_33", .12, 1, 1],
+    ["vector_stock", .04, 1, 1], ["vector_foregrip", .035, 1, 1], ["vector_suppressor", .02, 1, 1],
     ["ak_762", 0.08, 1, 1], ["mag_ak_30", 0.18, 1, 1], ["ammo_762x39", 0.26, 6, 15],
     ["ak_fixed_stock", 0.06, 1, 1], ["ak_frame_stock", 0.04, 1, 1], ["ak_acog_3x", 0.03, 1, 1], ["ak_suppressor", 0.025, 1, 1],
     ["ammo_9mm", 0.62, 4, 14], ["ammo_38", 0.34, 3, 10], ["mag_9mm_12", 0.38, 1, 1],

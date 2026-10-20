@@ -4,6 +4,7 @@ import { playerHeight, playerModelAppearance } from './quaternius-catalog.js';
 import { activeWeapon } from './inventory.js';
 import { weaponModelSignature } from './weapon-models.js';
 import { applyRiflePose } from './rifle-pose.js';
+import { hasWeaponModel } from './weapon-catalog.js';
 
 const ANCHORS={head:'Head',torso:'Chest',legs:'UpperLegL',back:'Chest',mainHand:'WristR',offHand:'WristL'};
 
@@ -22,7 +23,7 @@ export class CharacterInspection {
     if(activeWeapon(this.player)&&!entity.weapon)return null;
     const clip=activeWeapon(this.player)?'Idle_Gun':'Idle_Neutral';
     this.models.pose(entity,{clip,progress:.2,delta:1,yaw});
-    if(activeWeapon(this.player)?.type==='ak_762')applyRiflePose(entity,this.player,1,'carry');
+    if(hasWeaponModel(activeWeapon(this.player)))applyRiflePose(entity,this.player,1,'carry');
     const height=playerHeight(appearance),project=this.pass.drawInspection(canvas,entity.root,{height:height*1.16,center:new Vector3(0,height*.5,0)});
     if(!project)return null;
     this.anchors=Object.fromEntries(Object.entries(ANCHORS).map(([slot,name])=>[slot,project(entity.model.getObjectByName(name).getWorldPosition(new Vector3()))]));

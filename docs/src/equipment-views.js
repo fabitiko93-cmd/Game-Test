@@ -1,6 +1,7 @@
 import { equipmentSummary, itemDefinition, itemWeight } from './inventory.js';
+import { hasWeaponModel } from './weapon-catalog.js';
 
-export const MOD_LABELS={optic:'VISIERUNG',muzzle:'MÜNDUNG',stock:'SCHAFT',utility:'ZUBEHÖR',magazine:'MAGAZIN'};
+export const MOD_LABELS={optic:'VISIERUNG',muzzle:'MÜNDUNG',stock:'SCHAFT',foregrip:'VORDERGRIFF',utility:'ZUBEHÖR',magazine:'MAGAZIN'};
 const weightLabel=item=>`${itemWeight(item).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})} kg`;
 
 // Both inspectors own a single pointer; a second touch cannot steal an orbit or
@@ -96,7 +97,7 @@ export class EquipmentViews {
   renderWeapon(weapon){
     const slot=this.weaponSlot,installed=slot==='magazine'?weapon.magazine:weapon.mods?.[slot],detail=this.el.weapon_slot_detail;
     this.el.weapon_picker_title.textContent=`${MOD_LABELS[slot]||'TEILE'} AUSWÄHLEN`;
-    this.el.weapon_model_stage.classList.toggle('no-model',weapon.type!=='ak_762');
+    this.el.weapon_model_stage.classList.toggle('no-model',!hasWeaponModel(weapon));
     for(const node of this.ui.el.mod_slots.children){node.classList.toggle('selected',node.dataset.slot===slot);node.setAttribute('aria-pressed',String(node.dataset.slot===slot));}
     detail.replaceChildren(element('strong','',`${MOD_LABELS[slot]||'ANBAUTEILE'} · ${installed?itemDefinition(installed).name:'LEER'}`));
     if(installed)detail.append(button('ENTFERNEN',()=>this.ui.callbacks.removeMod?.(weapon.id,slot)));
@@ -112,7 +113,7 @@ export class EquipmentViews {
     }
     if(!this.ui.el.weapon_panel.classList.contains('hidden')){
       const weapon=game.player.inventory.find(item=>item.id===this.ui.weaponId);
-      if(weapon?.type==='ak_762'){
+      if(hasWeaponModel(weapon)){
         const anchors=game.renderer.weaponInspection.draw(this.ui.el.weapon_preview,weapon,this.ui.weaponPreviewYaw,this.ui.weaponPreviewPitch);
         this.drawLinks(this.el.weapon_model_stage,this.el.weapon_links,this.ui.el.mod_slots,anchors,this.ui.el.weapon_preview);
       }else this.el.weapon_links.replaceChildren();

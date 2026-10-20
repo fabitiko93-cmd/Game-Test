@@ -54,8 +54,13 @@ behalten die bisherige Tiefenreihenfolge.
 mit kompatiblen Mods, vollen/leeren Wechselmagazinen und drei Stapeln passender
 Munition. `world.js` platziert die Kiste direkt neben dem frischen Startpunkt;
 entnommene Gegenstände bleiben über die normale Weltobjektspeicherung entnommen.
-`weapon-models.js` lädt die in acht echte Teile zerlegte AK-Geometrie und verwendet
-dieselbe Konfiguration für Hand und drehbare Waffenbank. `equipment-views.js` steuert
+`weapon-catalog.js` beschreibt Modelle, Grundteile, Mod-Zuordnung, Anschlüsse und
+Griffprofile für AK und Vector. `weapon-models.js` lädt und cached jedes Asset
+getrennt; Hand und drehbare Waffenbank verwenden dieselbe Konfiguration. Die Vector
+behält ihre Originalgeometrie in sieben Modulen und ihre Farben als Vertexfarben
+mit einem gemeinsamen Material; `model-pass.js` übernimmt diese Farben auch im
+Canvas-Ersatz. Aufbereitung und CC-BY-Nachweis: `scripts/prepare-vector.py` und
+`docs/assets/weapons/README.md`. `equipment-views.js` steuert
 die Ausrüstungsslots der Charakteransicht, drei Charakterreiter sowie auswählbare
 Waffen-Mod-Slots und ihre Verbindungslinien. Antippen eines Waffen-Slots öffnet
 eine sichtbare Teileauswahl als Dialog mit kompatiblen Mods bzw. Magazinaktionen;

@@ -23,11 +23,13 @@ import { VIEW } from "./config.js";
 import { ObjectChoices } from "./object-selection.js";
 import { tilesToMeters } from "./world-scale.js";
 import { EquipmentViews } from './equipment-views.js';
+import { hasWeaponModel } from './weapon-catalog.js';
 
 const MOD_SLOT_LABELS = {
   optic: "VISIERUNG",
   muzzle: "MÜNDUNG",
   stock: "SCHAFT",
+  foregrip: "VORDERGRIFF",
   utility: "ZUBEHÖR",
   magazine: "MAGAZIN",
 };
@@ -663,7 +665,7 @@ export class GameUI {
     this.el.weapon_ammo.textContent = `MUNITION ${ammoLabel(weapon)}`;
     this.el.weapon_condition.textContent = `ZUSTAND ${Math.round(weapon.condition || 0)} %`;
     const stats = weaponStats(weapon);
-    this.el.weapon_inspection.classList.toggle("hidden", weapon.type !== "ak_762");
+    this.el.weapon_inspection.classList.toggle("hidden", !hasWeaponModel(weapon));
     this.el.weapon_stats.textContent = `${itemWeight(weapon).toLocaleString("de-DE", {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg · ${Math.round(tilesToMeters(stats.range))} m · Anschlag ${stats.aimTime.toFixed(2).replace(".", ",")} s${stats.recoilPerShot ? ` · Rückstoß ${Math.round(stats.recoilPerShot * 100)}` : ""}`;
     this.el.weapon_mode_button.classList.toggle("hidden", !definition.fireModes);
     this.el.weapon_mode_button.textContent = weaponFireMode(weapon) === "auto" ? "AUTO · HALTEN" : "SEMI · TIPPEN";
