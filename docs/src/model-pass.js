@@ -104,7 +104,13 @@ export class ModelPass {
         normal.subVectors(v[1],v[0]).cross(edge.subVectors(v[2],v[0])).normalize();
         if (normal.dot(direction)<0) { if (material.side!==DoubleSide) continue; normal.negate(); }
         const shade = .64+.36*Math.max(0,normal.dot(light));
-        const color = new Color().copy(material.color).multiplyScalar(shade).convertLinearToSRGB();
+        const color = new Color().copy(material.color), vertexColors=geometry.attributes.color;
+        if(material.vertexColors&&vertexColors){
+          const tint=new Color(0,0,0);
+          for(const id of ids)tint.add(new Color(vertexColors.getX(id),vertexColors.getY(id),vertexColors.getZ(id)));
+          color.multiply(tint.multiplyScalar(1/3));
+        }
+        color.multiplyScalar(shade).convertLinearToSRGB();
         faces.push({ points: ids.map(k=>projected[k]), depth: v.reduce((sum,p)=>sum+p.dot(direction),0),
           color: `rgb(${Math.round(color.r*255)},${Math.round(color.g*255)},${Math.round(color.b*255)})` });
       }

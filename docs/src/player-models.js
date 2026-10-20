@@ -5,6 +5,7 @@ import { defaultStyle, playerModelScale, QUATERNIUS_MODELS } from "./quaternius-
 import { PlayerMotion } from "./player-motion.js";
 import { heldEquipment } from "./held-equipment.js";
 import { WeaponModels, weaponModelSignature } from "./weapon-models.js";
+import { hasWeaponModel } from './weapon-catalog.js';
 import { applyRiflePose, captureRifleRig, restoreRiflePose } from "./rifle-pose.js";
 import { createSoleProbes, drawSoleShadows, sampleSoleContacts } from "./character-shadow.js";
 
@@ -69,7 +70,7 @@ export class PlayerModels {
     }
     if(entity.backpack){entity.backpack.parent.remove(entity.backpack);entity.backpack=null;}
     const generated=heldEquipment(item?.type);
-    if(item?.type==='ak_762') {
+    if(hasWeaponModel(item)) {
       const model=this.weapons.create(item);if(!model)return;
       entity.weapon=model;entity.model.getObjectByName("WristR").add(model);
     } else if(generated) {
@@ -103,7 +104,7 @@ export class PlayerModels {
   prepare(player,time) {
     const pose=this.motion.sample(player,time),entity=this.entity(player,pose.appearance);if(!entity)return false;
     this.used.add(player);this.equip(entity,player);this.pose(entity,pose);
-    if(activeWeapon(player)?.type==='ak_762')applyRiflePose(entity,player,pose.delta);
+    if(hasWeaponModel(activeWeapon(player)))applyRiflePose(entity,player,pose.delta);
     this.prepared.set(player,{entity,time});return entity;
   }
 

@@ -79,6 +79,13 @@ Der Dämpfer senkt weder Schaden noch Durchschlag. Neue AK-Gewichte folgen
 Differenz 50 g). Befüllen und Wechseln bleiben getrennte Aktionen. Farbe allein
 definiert keine neue Waffe; AWP und Bullpups bleiben ausgeschlossen.
 
+Freigabe vom 20.10.2026: TastyTonys kostenlose Vector ergänzen. `vector_9mm`
+nutzt eigene 33er-Wechselmagazine mit der vorhandenen 9-mm-Munition und Semi/Auto.
+Schaft, Leuchtpunktvisier, Vordergriff und Dämpfer sind sichtbare, abnehmbare Mods.
+Die ursprüngliche Geometrie bleibt in sieben getrennten Modulen; Handauflagen und
+Menüanschlüsse sind modellabhängig. CC BY 4.0 erfordert TastyTony-Credit,
+Quellen-/Lizenzlink und Änderungshinweis; im Pausenmenü und Asset-README erhalten.
+
 Beauftragte Patches bis zum überprüften Abschluss führen. Fortschrittsmeldungen
 beenden die Arbeit nicht. Bei beauftragter Veröffentlichung gehören Commit,
 Zusammenführung, erfolgreiches Deployment und Prüfung des normalen Spieleinstiegs

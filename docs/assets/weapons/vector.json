@@ -1,0 +1,114 @@
+{
+  "file": "vector-04fbc5190081.glb.gz",
+  "sha256": "04fbc5190081ea611a0a53aa9ba1034b959e01e0e44bf6cbfd0f81f0a89f0739",
+  "author": "TastyTony",
+  "license": "CC BY 4.0",
+  "source": "https://sketchfab.com/3d-models/low-poly-kriss-vector-ec2fb60fecaf4aea94b681a52ec7bc26",
+  "sourceDownload": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-023/ec2fb60fecaf4aea94b681a52ec7bc26.glb",
+  "sourceSha256": "3becb93d03e7a1ea26bca1338047d2f86c883ee8ef232b2752fcbfc970519d34",
+  "sourceTriangles": 7419,
+  "lengthWithStock": 0.62,
+  "parts": {
+    "Receiver": {
+      "triangles": 4810,
+      "source": "TastyTony \u00b7 Low-Poly Kriss Vector"
+    },
+    "Barrel": {
+      "triangles": 492,
+      "source": "TastyTony \u00b7 Low-Poly Kriss Vector",
+      "components": [
+        76
+      ]
+    },
+    "Magazine": {
+      "triangles": 248,
+      "source": "TastyTony \u00b7 Low-Poly Kriss Vector",
+      "components": [
+        41,
+        42
+      ]
+    },
+    "FoldingStock": {
+      "triangles": 925,
+      "source": "TastyTony \u00b7 Low-Poly Kriss Vector",
+      "components": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "Foregrip": {
+      "triangles": 344,
+      "source": "TastyTony \u00b7 Low-Poly Kriss Vector"
+    },
+    "Optic": {
+      "triangles": 600,
+      "source": "TastyTony \u00b7 Low-Poly Kriss Vector"
+    },
+    "Suppressor": {
+      "triangles": 248,
+      "source": "Quaternius Ultimate Guns \u00b7 Silencer_1"
+    }
+  },
+  "anchors": {
+    "stock": [
+      0,
+      0.065,
+      -0.06
+    ],
+    "optic": [
+      0,
+      0.15,
+      0.12
+    ],
+    "muzzle": [
+      0.0,
+      0.06023826180548797,
+      0.3498377839753966
+    ],
+    "magazine": [
+      0,
+      -0.08,
+      0.11
+    ],
+    "foregrip": [
+      0,
+      -0.025,
+      0.245
+    ]
+  },
+  "grips": {
+    "right": [
+      -0.032,
+      0,
+      -0.14
+    ],
+    "left": [
+      0.145,
+      0.055,
+      0.24
+    ],
+    "foregripLeft": [
+      0.145,
+      0.005,
+      0.26
+    ],
+    "foregripThumb": [
+      0.015,
+      0.045,
+      0.24
+    ],
+    "foregripThumbPole": [
+      0.1,
+      0.06,
+      0.25
+    ]
+  }
+}

@@ -29,3 +29,46 @@ an Griff/Magazinschacht, innerhalb ihrer wirklichen Reichweite. Körper, Beine
 und Schritte verwenden weiterhin die Originalanimationen. Waffenbank und Welt
 teilen den vorhandenen WebGL-Pass; statische Ansichten werden nur bei Änderung
 neu gezeichnet. Der Canvas-Ersatz zeichnet dieselben Dreiecke.
+
+## Vector · TastyTony · CC BY 4.0
+
+**„Low-Poly Kriss Vector“ von TastyTony**:
+https://sketchfab.com/3d-models/low-poly-kriss-vector-ec2fb60fecaf4aea94b681a52ec7bc26
+
+Lizenz: **Creative Commons Attribution 4.0 International (CC BY 4.0)**:
+https://creativecommons.org/licenses/by/4.0/
+Namensnennung, Quellen-/Lizenzlink und Änderungshinweis bleiben bei Weitergabe
+erhalten. Der Credit ist zusätzlich im Pausenmenü des Spiels erreichbar.
+
+Die unveränderte GLB-Quelle stammt aus dem öffentlichen Ai2-Objaverse-Datensatz:
+https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-023/ec2fb60fecaf4aea94b681a52ec7bc26.glb
+SHA-256: `3becb93d03e7a1ea26bca1338047d2f86c883ee8ef232b2752fcbfc970519d34`.
+Die eingebetteten Assetdaten nennen TastyTony, Originalquelle und CC BY 4.0.
+Objaverse: Deitke et al., *Objaverse: A Universe of Annotated 3D Objects*, 2022,
+https://arxiv.org/abs/2212.08051. Die Datensammlung steht unter ODC-By 1.0;
+für das einzelne Modell gilt die oben dokumentierte CC-BY-Lizenz.
+
+Änderungen durch SPERRKREIS 98:
+
+- Maßstab auf 62 cm Gesamtlänge mit ausgezogenem Schaft normiert, +Z nach vorn,
+  +Y nach oben; tatsächlicher Pistolengriff als Bezug für das vorhandene Rig.
+- Alle 7.419 Dreiecke der veröffentlichten GLB bleiben erhalten. Gehäuse, Lauf
+  mit Mündungsaufsatz, Magazin inklusive Bodenplatte, Schaft, Vordergriff und
+  Leuchtpunktvisier sind unabhängig adressierbare Module.
+- Originalfarben als Vertexfarben mit einem gemeinsamen Material; flache
+  Dreiecksnormalen und entfernte unbenutzte UV-Daten. Keine externen Texturen.
+- Optionaler Dämpfer: vorhandenes `Silencer_1` von **Quaternius, CC0**,
+  maßstäblich auf die Vector-Mündung gesetzt. Dieser Zubehörteil stammt nicht
+  von TastyTony. Mit Dämpfer enthält das Asset sieben Module.
+- Vereinfachtes eigenes SVG-Inventarsymbol nach der Modell-Seitenansicht.
+
+Reproduzierbar mit Python 3 und numpy:
+`python scripts/prepare-vector.py --source /path/to/original.glb`.
+Die Aufbereitung prüft die Quellrevision vor der Teiletrennung. `vector.json`
+enthält Ergebnis-Hash, Herkunft je Modul, Anschlüsse und beide Stützhandprofile.
+
+`vector_9mm` nutzt vorhandene 9-mm-Munition und eigene 33er-Magazine.
+Das Grundmodell ist leer und schaftlos; die Start-Testkiste enthält alle
+kompatiblen Mods, volle/leere Magazine und Munition. Spielwerte sind vorläufige
+Balancewerte. Lauf und ursprünglicher Mündungsaufsatz wechseln nur gemeinsam;
+eine Klappanimation des abnehmbaren Schafts ist nicht enthalten.

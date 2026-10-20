@@ -1,6 +1,7 @@
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { defaultStyle, playerModelAppearance, playerModelScale, QUATERNIUS_MODELS, PLAYER_ANIMATIONS } from "./quaternius-catalog.js";
 import { WORLD_SCALE } from "./world-scale.js";
+import { hasWeaponModel } from './weapon-catalog.js';
 
 const modulo = value => ((value%1)+1)%1;
 
@@ -16,7 +17,7 @@ export class PlayerMotion {
     const delta=Math.max(0,time-record.time),combat=player.combat||{},weapon=itemDefinition(activeWeapon(player));
     const firearm=weapon?.weaponKind==="firearm";
     if((combat.attackTimer||0)>record.attackTimer+.05){record.attackStart=time;record.attackClip=weapon?"Sword_Slash":"Punch_Right";}
-    if((player.shots||0)>record.shots){record.attackStart=time;record.attackClip=activeWeapon(player)?.type==='ak_762'?null:"Gun_Shoot";}
+    if((player.shots||0)>record.shots){record.attackStart=time;record.attackClip=hasWeaponModel(activeWeapon(player))?null:"Gun_Shoot";}
     const attackAge=time-record.attackStart,attackData=clipData(record.attackClip),crouched=player.stance==='sneak'&&!player.running;
     let clip=player.moving?(player.running?'Run':crouched?'Crouch_Walk':'Walk'):(crouched?'Crouch_Idle':firearm?(combat.enabled?'Idle_Gun_Pointing':'Idle_Gun'):'Idle_Neutral');
     let progress;

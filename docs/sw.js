@@ -1,5 +1,5 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "4e7bfc44e4343af03949";
+const BUILD_ID = "4baca354a30284ca952d";
 const FILES = [
   "./assets/icon.svg",
   "./assets/quaternius/ANIMATION-LICENSE.txt",
@@ -164,6 +164,9 @@ const FILES = [
   "./assets/weapons/ak-31e936899bb1.glb.gz",
   "./assets/weapons/ak-icon.svg",
   "./assets/weapons/ak.json",
+  "./assets/weapons/vector-04fbc5190081.glb.gz",
+  "./assets/weapons/vector-icon.svg",
+  "./assets/weapons/vector.json",
   "./assets/zombies/0-alert-c1618ea0ce.png",
   "./assets/zombies/0-attack_left-559502c9f8.png",
   "./assets/zombies/0-attack_right-ebfcb6b458.png",
@@ -251,8 +254,9 @@ const FILES = [
   "./assets/zombies3d/THREE-LICENSE.txt",
   "./assets/zombies3d/models.json",
   "./build/assets/ak-icon-JY273CYI.svg",
-  "./build/main-63BP4HQT.js",
-  "./build/style-WPEYC5AG.css",
+  "./build/assets/vector-icon-DX6NJN2U.svg",
+  "./build/main-MPY2RR74.js",
+  "./build/style-G66BHY43.css",
   "./index.html",
   "./manifest.webmanifest"
 ];
