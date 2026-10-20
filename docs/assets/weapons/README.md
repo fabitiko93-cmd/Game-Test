@@ -1,4 +1,39 @@
-# AK · Quaternius Ultimate Guns
+# Waffenmodelle
+
+## M4 · Quaternius Ultimate Guns · CC0
+
+Quelle: https://quaternius.itch.io/50-lowpoly-guns und
+https://quaternius.com/packs/ultimategun.html. Originalarchiv:
+`Ultimate Gun Pack by Quaternius.zip`. Autor: Quaternius, CC0 1.0.
+
+Nutzer-Variante 1 = `AssaultRifle2_1.obj`. Alle **913 Polygonflächen** bleiben
+erhalten; mit eingesetztem Magazin entspricht die Grundausführung den originalen
+1.928 nicht entarteten Dreiecken. Unterteil/Griff, Magazin, Schaft, Oberteil und
+abnehmbare hintere Visierung sind einzeln adressierbar. Variante 2 =
+`AssaultRifle2_2.obj`: vollständiges alternatives Oberteil inklusive Lauf,
+Vorderschaft, Korn und Schienen. Die Originalursprünge werden über die identischen
+Pistolengriffe ausgerichtet; keine Verzerrung und kein erfundener Geometrieschnitt.
+Die hintere Visierung wird bei montiertem ACOG ausgeblendet.
+
+Zusätzliches CC0-Zubehör aus demselben Pack: `Accessories/Stock.obj` als
+Duster-Rahmen, `Scope_3.obj` als 3×-Visier und `Silencer_1.obj` als M4-Dämpfer.
+Insgesamt neun Meshknoten mit originalen Materialfarben als Vertexfarben;
+ein gemeinsames Material, keine externen Texturen. Meter, +Y oben, +Z zur Mündung.
+Standardausführung ca. 83 cm, alternatives Oberteil ca. 5,5 cm kürzer.
+
+Reproduzierbar mit Python 3:
+`python scripts/prepare-m4.py --source /pfad/zum/OBJ-Ordner`.
+`m4.json` dokumentiert Quellhashes, Komponenten/Flächen, Ergebnis-Hash, beide
+Stützhandprofile und die laufabhängigen Anschlüsse/Dämpferverschiebungen.
+
+Eine Waffenart `m4_556`, zwei austauschbare `barrel`-Mods; gleiche 5,56×45-Munition
+und 30er-Magazine. Standardlauf und Originalschaft sind ab Werk montierte eigene
+Gegenstände. Lauf ausgebaut: kein Schuss, kein Munitionsverbrauch; zugehöriges
+Visier/Dämpfer werden bis zum Wiedereinbau ausgeblendet. Die Start-Testkiste enthält
+alle kompatiblen Mods sowie volle/leere Magazine und Munition. Gewichte/Kampfwerte
+sind vorläufige Spielbalance. Varianten 3/4 mit MP-Magazinaufnahme bleiben später.
+
+## AK · Quaternius Ultimate Guns
 
 Quelle: https://quaternius.com/packs/ultimategun.html und
 https://quaternius.itch.io/50-lowpoly-guns. Autor: Quaternius. Lizenz: CC0 1.0;

@@ -33,7 +33,7 @@ test("every implemented weapon has loose, usable attachments, magazines and ammu
     const weapon = crate.items.find(item => item.type === type);
     assert.ok(weapon, type);
     assert.equal(types.filter(entry => entry === type).length, 1);
-    assert.deepEqual(weapon.mods, {});
+    assert.deepEqual(Object.fromEntries(Object.entries(weapon.mods).map(([slot,mod])=>[slot,mod.type])), definition.defaultMods || {});
     if (definition.feed === "magazine") assert.equal(weapon.magazine, null);
     if (definition.feed === "internal") assert.equal(weapon.rounds, 0);
     for (const [modType, mod] of Object.entries(ITEMS)) {

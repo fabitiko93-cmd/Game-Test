@@ -10,6 +10,20 @@ v12 und v12.1 sind veröffentlicht; die tatsächlich implementierten Änderungen
 
 ### Waffenplanung und direkter Testzugang · 17.10.2026
 
+- Ergänzung vom 20.10.2026: M4 als eine 5,56×45-Sturmgewehrfamilie umgesetzt.
+  Nutzer-Variante 1 (`AssaultRifle2_1`) mit montiertem Originalschaft und Standard-
+  Laufmodul; Variante 2 (`AssaultRifle2_2`) als wechselbares Oberteil mit anderem
+  Lauf und Schienenvorderschaft. Beide verwenden dasselbe eigene 30er-Gewehrmagazin.
+  Originalschaft, Duster-Rahmen, 3×-ACOG und M4-Dämpfer sind wechselbar. Alle Teile,
+  volle/leere Magazine und Munition stehen in der Start-Testkiste bereit.
+  Vorläufige Spielbalance: 2,8 kg mit Standardschaft/-lauf ohne Magazin; Schienen-
+  Oberteil 100 g leichter, etwas kürzere Reichweite und schneller im Anschlag.
+- M4-Variante 3 bleibt offen: ohne Schaft mit anderem Magazin samt Aufnahme.
+  Variante 4 bleibt ausdrücklich als separate MP, modular für Duster-/Klappschaft,
+  vorgemerkt. Assistentenvorschlag: Varianten 3/4 bei ihrer Umsetzung als gemeinsame
+  MP-Familie prüfen. Lauf und Schaft sind Konfigurationen, keine
+  zusätzlichen Waffenarten. Nutzerziel vom 20.10.: ausreichend Sturmgewehrvariation
+  statt einer übergroßen MP-Auswahl. Die weitere Waffenfamilien-Auswahl bleibt offen.
 - Umgesetzt: Neue Welten enthalten im Eingangsbereich des Unterschlupfs eine
   unmittelbar erreichbare Testkiste. Jede implementierte Waffe erhält sämtliche
   passenden eingeführten Mods, eigene Magazine und Munition. Der Inhalt folgt

@@ -574,6 +574,7 @@ h1 span { color: var(--red-bright); }
 .magazine-row button { min-height: 34px; padding: 4px 6px; font: 600 7px "IBM Plex Mono", monospace; background: #303c32; }
 .item-icon.ak { background: url("./assets/weapons/ak-icon.svg") center / contain no-repeat; width: 36px; }
 .item-icon.vector { background: url("./assets/weapons/vector-icon.svg") center / contain no-repeat; width: 36px; }
+.item-icon.m4 { background: url("./assets/weapons/m4-icon.svg") center / contain no-repeat; width: 36px; }
 .asset-credits { margin-top: 12px; font-size: 10px; line-height: 1.6; color: var(--muted, #9ca69b); }
 .asset-credits summary { cursor: pointer; }
 .asset-credits a { color: inherit; }
@@ -723,6 +724,7 @@ h1 span { color: var(--red-bright); }
 .character-slot[data-slot="offHand"] { right:10px; top:calc(50% - 22px); }
 .character-slot[data-slot="back"], .mod-slot[data-slot="muzzle"] { right:10px; bottom:22px; }
 .mod-slot[data-slot="utility"], .mod-slot[data-slot="foregrip"] { left:10px; top:calc(50% - 22px); }
+.mod-slot[data-slot="barrel"] { right:10px; top:calc(50% - 22px); }
 .orbit-hint { position:absolute; bottom:6px; left:0; width:100%; text-align:center; pointer-events:none; color:#a2ad95; font:500 7px "IBM Plex Mono",monospace; letter-spacing:.1em; }
 .view-reset { position:absolute; left:calc(50% - 20px); bottom:20px; width:40px; height:30px; background:#151e18b8; border:1px solid #8d9a7950; color:#b8c3aa; font-size:20px; }
 .character-inspection .view-reset { left:auto; right:122px; }

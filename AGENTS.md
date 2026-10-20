@@ -89,6 +89,25 @@ Quellen-/Lizenzlink und Änderungshinweis; im Pausenmenü und Asset-README erhal
 Tragehaltung vom 20.10.2026: Rechten Ellenbogen in der lockeren Haltung weiter
 nach vorn nehmen. Dieselbe lockere Waffen-/Armhaltung gilt beim Sprinten, da
 dabei nicht geschossen wird; die Original-Beinanimation des Sprints weiter nutzen.
+Nutzerpräzisierung: vor Brust/Bauch statt seitlich vom Oberkörper weg.
+Weiteres Ellenbogen-Feintuning bleibt zurückgestellt; AK und Vector gefallen.
+
+M4 vom 20.10.2026: Nutzer-Variante 1 = `AssaultRifle2_1` als Grundausführung;
+Variante 2 (`AssaultRifle2_2`) als wechselbares komplettes Lauf-/Vorderschaft-Oberteil.
+Eine gemeinsame 5,56×45-Sturmgewehrwaffe, eigene 30er-Magazine, Semi/Auto.
+Standardlauf und Originalschaft sind ab Werk montierte, abnehmbare Gegenstände;
+ohne Laufmodul kein Schuss. Duster-Rahmen und 3×-ACOG sind mit AK gemeinsam
+nutzbar; eigener M4-Dämpfer folgt dem gewählten Lauf ohne Schaden-/Durchschlagsabzug.
+Variante 4 bleibt ausdrücklich als spätere, modular nutzbare MP vorgemerkt.
+Variante 3: kein Schaft, anderes Magazin inklusive Aufnahme; endgültige Einordnung
+offen. Assistentenvorschlag: Varianten 3/4 als Konfigurationen derselben MP-Familie
+prüfen. Nutzerziel: ausreichend
+Sturmgewehrvariationen statt zu vieler MPs. Lauf-/Schaftwechsel allein ergibt
+keine neue Waffenart. AWP/Bullpups bleiben ausgeschlossen.
+
+Optische Spieltests übernimmt der Nutzer selbst. Für Waffenpatches technische
+Build-/Systemprüfungen ausführen und die veröffentlichte Spielseite bereitstellen;
+keine zeitaufwendigen automatisierten Browser-Sichttests ansetzen.
 
 Beauftragte Patches bis zum überprüften Abschluss führen. Fortschrittsmeldungen
 beenden die Arbeit nicht. Bei beauftragter Veröffentlichung gehören Commit,
