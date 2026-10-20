@@ -11,7 +11,9 @@ export function createItem(type, count = 1, options = {}) {
   if (definition.type === "clothing" && options.modelStyle) item.modelStyle = options.modelStyle;
   if (definition.condition) item.condition = options.condition ?? definition.condition;
   if (definition.type === "weapon") {
-    item.mods = deepCopy(options.mods || {});
+    item.mods = options.mods ? deepCopy(options.mods) : Object.fromEntries(
+      Object.entries(definition.defaultMods || {}).map(([slot, type]) => [slot, createItem(type)]),
+    );
     if (definition.fireModes) item.fireMode = definition.fireModes.includes(options.fireMode) ? options.fireMode : definition.fireModes[0];
     if (definition.feed === "internal") item.rounds = options.rounds ?? 0;
     if (definition.feed === "magazine") {
@@ -360,7 +362,7 @@ export function weaponCapacity(weapon) {
 
 export function consumeShot(weapon) {
   const definition = itemDefinition(weapon);
-  if (!weapon || definition?.weaponKind !== "firearm") return false;
+  if (!weapon || definition?.weaponKind !== "firearm" || missingWeaponPart(weapon)) return false;
   if (definition.feed === "magazine") {
     if (!weapon.magazine?.rounds) return false;
     weapon.magazine.rounds -= 1;
@@ -372,9 +374,15 @@ export function consumeShot(weapon) {
   return true;
 }
 
+export function missingWeaponPart(weapon) {
+  return Object.entries(itemDefinition(weapon)?.requiredMods || {}).find(([slot]) => !weapon.mods?.[slot])?.[1] || null;
+}
+
 export function ammoLabel(weapon) {
   const definition = itemDefinition(weapon);
   if (definition?.weaponKind !== "firearm") return "";
+  const missing = missingWeaponPart(weapon);
+  if (missing) return `${missing} FEHLT`;
   if (definition.feed === "magazine" && !weapon.magazine) return "KEIN MAGAZIN";
   return `${roundsInWeapon(weapon)}/${weaponCapacity(weapon)}`;
 }

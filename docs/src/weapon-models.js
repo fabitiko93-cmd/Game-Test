@@ -1,7 +1,7 @@
 import { Box3, Group, Vector3 } from "three";
 import { loadModelAsset } from "./model-pass.js";
 import { weaponModelDefinition, hasWeaponModel } from './weapon-catalog.js';
-export { AK_MODEL, VECTOR_MODEL } from './weapon-catalog.js';
+export { AK_MODEL, VECTOR_MODEL, M4_MODEL } from './weapon-catalog.js';
 
 export const WEAPON_ANCHORS=Object.freeze({stock:new Vector3(0,.04,-.18),optic:new Vector3(0,.15,.12),muzzle:new Vector3(0,.09,.54),magazine:new Vector3(0,-.08,.18)});
 
@@ -11,15 +11,23 @@ export function weaponModelSignature(weapon) {
 
 export function configureWeaponModel(root, weapon) {
   const definition = weaponModelDefinition(weapon);
-  const visible = new Set([...definition.baseParts, ...Object.values(weapon.mods || {}).map(mod => definition.mods[mod.type])]);
+  const mods=Object.values(weapon.mods || {}),setups=mods.map(mod=>definition.setups?.[mod.type]).filter(Boolean);
+  const parts=mod=>[definition.mods[mod?.type]].flat().filter(Boolean);
+  const visible = new Set([...definition.baseParts, ...mods.flatMap(parts)]);
   if (definition.magazines[weapon.magazine?.type]) visible.add(definition.magazines[weapon.magazine.type]);
-  for (const name of Object.keys(definition.asset.parts)) root.getObjectByName(name).visible = visible.has(name);
+  for(const setup of setups)for(const name of setup.hideParts || [])visible.delete(name);
+  for(const [slot,required] of Object.entries(definition.requires || {}))
+    if(!weapon.mods?.[required])for(const name of parts(weapon.mods?.[slot]))visible.delete(name);
+  const offsets=Object.assign({},...setups.map(setup=>setup.offsets));
+  for (const name of Object.keys(definition.asset.parts)) {
+    const part=root.getObjectByName(name);part.visible=visible.has(name);
+    part.position.fromArray(offsets[name] || [0,0,0]);
+  }
   const stock = root.getObjectByName(definition.mods[weapon.mods?.stock?.type]);
   if(stock?.visible){const bounds=weaponModelBounds(stock);root.userData.stockContact=bounds.getCenter(new Vector3()).setZ(bounds.min.z);}
   else root.userData.stockContact=null;
-  const grips=definition.grips,foregrip=weapon.mods?.foregrip?.type==='vector_foregrip';
-  root.userData.grips=grips?{right:grips.right,left:foregrip?grips.foregripLeft:grips.left,verticalSupport:foregrip,
-    leftThumb:foregrip?grips.foregripThumb:null,leftThumbPole:foregrip?grips.foregripThumbPole:null}:null;
+  root.userData.grips=definition.grips?Object.assign({verticalSupport:false,leftThumb:null,leftThumbPole:null},definition.grips,...setups.map(setup=>setup.grips)):null;
+  root.userData.anchors=Object.assign({},definition.anchors,...setups.map(setup=>setup.anchors));
   return root;
 }
 
@@ -90,7 +98,7 @@ export class WeaponInspection {
     this.root.rotation.set(pitch,yaw,0,'YXZ');
     const height=Math.max(.5,this.length/(rect.width/rect.height*.64));
     const project=this.pass.drawInspection(canvas,this.root,{height,center:new Vector3(),elevation:.05});
-    const anchors=weaponModelDefinition(weapon).anchors;
+    const anchors=this.model.userData.anchors;
     this.anchors=project?Object.fromEntries(Object.entries(anchors).map(([slot,p])=>[slot,project(this.model.localToWorld(new Vector3().fromArray(p)))])):null;
     this.lastDrawKey = drawKey;
     return this.anchors;

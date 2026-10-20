@@ -1,3 +1,17 @@
+# Modulare M4 als Sturmgewehr · 20.10.2026
+
+- Eine M4 in 5,56×45 mit Semi/Auto und eigenen 30er-Wechselmagazinen. Grundausführung
+  aus Quaternius `AssaultRifle2_1`, vollständig erhalten in getrennten Originalteilen.
+- Standard- und Schienen-Oberteil (`AssaultRifle2_2`) sind als komplette Laufmodule
+  austauschbar. Dämpfer, Stützhand und Menüanschlüsse folgen dem montierten Oberteil.
+  Ohne Laufmodul wird weder geschossen noch Munition verbraucht.
+- Originalschaft und Dämpfer abnehmbar; Duster-Rahmen und 3×-ACOG mit AK gemeinsam
+  nutzbar. Alle Teile in Hand und Waffenbank sichtbar. Beide Laufmodule bleiben
+  dieselbe Sturmgewehrwaffe; die späteren M4-MP-Ausführungen werden nicht vorgezogen.
+- Start-Testkiste mit vollständigem Zubehör, vollen/leeren Magazinen und Munition.
+  M4 und passende Teile zusätzlich als seltene Polizeibeute. Technische Prüfungen
+  der Module, Magazinaktionen, Feuerunterbrechung, Speicherung und beider Figurenrigs.
+
 # Weiche Figurenschatten und erster AK-Griff-Fix · 17.10.2026
 
 - Player und alle zehn Zombie-Modelle erhalten weich auslaufende Kontaktschatten

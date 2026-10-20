@@ -78,9 +78,25 @@ export const ITEMS = {
   ammo_762x39: { name: "7,62×39-Patronen", short: "7,62×39", type: "ammo", icon: "ammo", ammoType: "ammo_762x39", weight: .05, roundWeight: .016, weightStep: .05, stack: 30, description: "Lose AK-Munition. Zum Befüllen ein separates 30er-Magazin auswählen. Das Stapelgewicht wird auf 50 g aufgerundet." },
   mag_ak_30: { name: "AK-30er-Magazin", short: "AK-Magazin", type: "magazine", icon: "magazine", ammoType: "ammo_762x39", capacity: 30, compatible: ["ak_762"], weight: .25, stack: 1, description: "Eigenständiges 30er-Magazin: 0–14 Patronen 250 g, ab 15 Patronen 300 g. Befüllen und Einsetzen sind getrennte Aktionen." },
   ak_fixed_stock: { name: "Fester AK-Schaft", short: "Fester Schaft", type: "mod", icon: "mod", modSlot: "stock", compatible: ["ak_762"], weight: .45, stack: 1, effects: { mobilityMul: .94, aimTimeMul: 1.12, recoilPerShotMul: .64, recoilRecoveryAdd: .6, aimRetentionAdd: .2 }, description: "450 g. Deutlich stabilerer Rückstoß; etwas langsamer im Anschlag und weniger beweglich." },
-  ak_frame_stock: { name: "Duster-Rahmenschaft", short: "Duster-Schaft", type: "mod", icon: "mod", modSlot: "stock", compatible: ["ak_762"], weight: .35, stack: 1, effects: { mobilityMul: .97, aimTimeMul: 1.06, recoilPerShotMul: .8, recoilRecoveryAdd: .35, aimRetentionAdd: .12 }, description: "350 g. Offener Rahmenschaft: mittlere Stabilität bei weniger Gewicht und besserer Handhabung als der feste Schaft." },
-  ak_acog_3x: { name: "Kompaktes ACOG 3×", short: "ACOG 3×", type: "mod", icon: "mod", modSlot: "optic", compatible: ["ak_762"], weight: .3, stack: 1, effects: { rangeAdd: 4, aimTimeMul: 1.1, closePenalty: .12, mobilityMul: .99 }, description: "300 g. Dreifachvisierung für mehr nutzbare Distanz; auf kürzeste Entfernung unhandlicher." },
+  ak_frame_stock: { name: "Duster-Rahmenschaft", short: "Duster-Schaft", type: "mod", icon: "mod", modSlot: "stock", compatible: ["ak_762", "m4_556"], weight: .35, stack: 1, effects: { mobilityMul: .97, aimTimeMul: 1.06, recoilPerShotMul: .8, recoilRecoveryAdd: .35, aimRetentionAdd: .12 }, description: "350 g. Offener Rahmenschaft: mittlere Stabilität bei weniger Gewicht und besserer Handhabung als der feste Schaft." },
+  ak_acog_3x: { name: "Kompaktes ACOG 3×", short: "ACOG 3×", type: "mod", icon: "mod", modSlot: "optic", compatible: ["ak_762", "m4_556"], weight: .3, stack: 1, effects: { rangeAdd: 4, aimTimeMul: 1.1, closePenalty: .12, mobilityMul: .99 }, description: "300 g. Dreifachvisierung für mehr nutzbare Distanz; auf kürzeste Entfernung unhandlicher." },
   ak_suppressor: { name: "AK-Schalldämpfer", short: "AK-Dämpfer", type: "mod", icon: "mod", modSlot: "muzzle", compatible: ["ak_762"], weight: .4, stack: 1, effects: { noiseMul: .48, aimTimeMul: 1.08, mobilityMul: .98 }, description: "400 g. Reduziert den Schussknall, erhöht Länge und Gewicht. Schaden und Durchschlagskraft bleiben unverändert." },
+
+  m4_556: firearm("M4 · 5,56×45", "M4", {
+    icon: "m4", weight: 1.65, hands: 2, damage: 54, range: 14, aimTime: 1, recovery: .2,
+    accuracy: .79, headshot: .22, noise: 27, feed: "magazine", ammoType: "ammo_556x45",
+    magazineTypes: ["mag_m4_30"], modSlots: ["stock", "optic", "barrel", "muzzle"],
+    defaultMods: {stock: "m4_stock", barrel: "m4_standard_barrel"}, requiredMods: {barrel: "LAUFMODUL"},
+    fireModes: ["semi", "auto"], fireInterval: .085, recoilPerShot: .28, recoilRecovery: 1.5,
+    aimRetention: .46, mobility: 1.04, penetration: 1, penetrationDamage: .6,
+    description: "Modulares 5,56-Sturmgewehr. Grundausführung mit Schaft und Standardlauf, ohne Magazin. Komplettes Laufmodul austauschbar; beide Ausführungen verwenden dieselben Gewehrmagazine. Semi: tippen. Auto: SCHUSS halten.",
+  }),
+  ammo_556x45: { name: "5,56×45-Patronen", short: "5,56×45", type: "ammo", icon: "ammo", ammoType: "ammo_556x45", weight: .05, roundWeight: .012, weightStep: .05, stack: 30, description: "Lose M4-Gewehrmunition. Separate 30er-Magazine befüllen und anschließend einsetzen. Stapelgewicht in 50-g-Schritten." },
+  mag_m4_30: { name: "M4-30er-Magazin", short: "M4-Magazin", type: "magazine", icon: "magazine", ammoType: "ammo_556x45", capacity: 30, compatible: ["m4_556"], weight: .15, stack: 1, description: "Separates 5,56-Gewehrmagazin. 0–14 Patronen: 150 g; ab 15 Patronen: 200 g. Passt zu beiden M4-Laufmodulen." },
+  m4_standard_barrel: { name: "M4-Standardlaufmodul", short: "Standardlauf", type: "mod", icon: "mod", modSlot: "barrel", compatible: ["m4_556"], weight: .8, stack: 1, effects: {}, description: "800 g. Originales Oberteil der Grundausführung mit Lauf, geripptem Vorderschaft und Korn. Kann als Ganzes gewechselt werden; ohne Laufmodul kann die M4 nicht schießen." },
+  m4_rail_barrel: { name: "M4-Schienenlaufmodul", short: "Schienenlauf", type: "mod", icon: "mod", modSlot: "barrel", compatible: ["m4_556"], weight: .7, stack: 1, effects: { rangeMul: .93, aimTimeMul: .94, mobilityMul: 1.025 }, description: "700 g. Originales Oberteil der zweiten Ausführung mit kürzerem Lauf und Schienenvorderschaft. Handlicher, etwas weniger Reichweite. Kaliber, Magazin, Schaden und Durchschlag bleiben gleich." },
+  m4_stock: { name: "M4-Standardschaft", short: "M4-Schaft", type: "mod", icon: "mod", modSlot: "stock", compatible: ["m4_556"], weight: .35, stack: 1, effects: { recoilPerShotMul: .68, recoilRecoveryAdd: .45, aimRetentionAdd: .14, aimTimeMul: 1.08, mobilityMul: .97 }, description: "350 g. Abnehmbarer Originalschaft der M4. Stabilisiert Feuerstöße und den Anschlag. Alternative: Duster-Rahmenschaft." },
+  m4_suppressor: { name: "M4-Schalldämpfer", short: "M4-Dämpfer", type: "mod", icon: "mod", modSlot: "muzzle", compatible: ["m4_556"], weight: .35, stack: 1, effects: { noiseMul: .48, aimTimeMul: 1.07, mobilityMul: .98 }, description: "350 g. Sitzt an der Mündung des jeweils montierten Laufmoduls. Reduziert den Schussknall; Schaden und Durchschlag bleiben unverändert." },
 
   vector_9mm: firearm("Vector · 9 mm", "Vector", {
     icon: "vector", weight: 2.2, hands: 2, damage: 40, range: 8.8, aimTime: .8, recovery: .16,
@@ -184,6 +200,8 @@ export const LOOT_TABLES = {
     ["bread", 0.4, 1, 1], ["apple", 0.48, 1, 2], ["can_opener", 0.22, 1, 1],
   ],
   police: [
+    ["m4_556", .055, 1, 1], ["mag_m4_30", .15, 1, 1], ["ammo_556x45", .22, 6, 15],
+    ["m4_rail_barrel", .04, 1, 1], ["m4_stock", .04, 1, 1], ["m4_suppressor", .025, 1, 1],
     ["vector_9mm", .035, 1, 1], ["mag_vector_33", .12, 1, 1],
     ["vector_stock", .04, 1, 1], ["vector_foregrip", .035, 1, 1], ["vector_suppressor", .02, 1, 1],
     ["ak_762", 0.08, 1, 1], ["mag_ak_30", 0.18, 1, 1], ["ammo_762x39", 0.26, 6, 15],

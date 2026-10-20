@@ -1,0 +1,226 @@
+{
+  "file": "m4-376c5a4243d9.glb.gz",
+  "sha256": "376c5a4243d97e41e7ef73befa579254c1df9a8130ec80ee7d360af9cdadac17",
+  "author": "Quaternius",
+  "license": "CC0",
+  "source": "https://quaternius.itch.io/50-lowpoly-guns",
+  "userVariant": 1,
+  "sourceBase": "AssaultRifle2_1",
+  "parts": {
+    "Receiver": {
+      "source": "AssaultRifle2_1.obj",
+      "components": [
+        0,
+        1,
+        5,
+        8
+      ],
+      "sourceFaces": 169,
+      "triangles": 370
+    },
+    "RearSight": {
+      "source": "AssaultRifle2_1.obj",
+      "components": [
+        9
+      ],
+      "sourceFaces": 21,
+      "triangles": 42
+    },
+    "StandardUpper": {
+      "source": "AssaultRifle2_1.obj",
+      "components": [
+        2,
+        6,
+        7,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "sourceFaces": 587,
+      "triangles": 1230
+    },
+    "RailUpper": {
+      "source": "AssaultRifle2_2.obj",
+      "components": [
+        1,
+        4,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "sourceFaces": 480,
+      "triangles": 1092
+    },
+    "Magazine": {
+      "source": "AssaultRifle2_1.obj",
+      "components": [
+        3
+      ],
+      "sourceFaces": 62,
+      "triangles": 124
+    },
+    "Stock": {
+      "source": "AssaultRifle2_1.obj",
+      "components": [
+        4
+      ],
+      "sourceFaces": 74,
+      "triangles": 162
+    },
+    "FrameStock": {
+      "source": "Accessories/Stock.obj",
+      "components": [
+        0,
+        1
+      ],
+      "sourceFaces": 84,
+      "triangles": 170
+    },
+    "Optic3x": {
+      "source": "Accessories/Scope_3.obj",
+      "components": [
+        0
+      ],
+      "sourceFaces": 210,
+      "triangles": 428
+    },
+    "Suppressor": {
+      "source": "Accessories/Silencer_1.obj",
+      "components": [
+        0
+      ],
+      "sourceFaces": 121,
+      "triangles": 248
+    }
+  },
+  "railAlignment": [
+    0.0034741250000000015,
+    -0.011933093749999991,
+    0.0012117031249999973
+  ],
+  "sources": {
+    "AssaultRifle2_1.obj": "bddb03e49ea71517865028b1f06cdc8b1c6ffbc854b15369db66599f973a4d2f",
+    "AssaultRifle2_2.obj": "ea405c7c3de98e255bc7c8ca3876ff5e2f2c8bd67e1a0984e185354bbab6c7f2",
+    "Accessories/Stock.obj": "edb4e6e920a67907e1c750007c9268d15c013fef74402434a07c1ab82390fdbc",
+    "Accessories/Scope_3.obj": "0b173d025b15db7d886785b9be8a1e9f43944ac1bdd555dff29e4f30aa89d081",
+    "Accessories/Silencer_1.obj": "ea08e64ceaadb4d5501a363ef5bc664ee4ed6b07e6e2891546d1716ec1a77f18"
+  },
+  "anchors": {
+    "stock": [
+      0,
+      0.065,
+      -0.19
+    ],
+    "optic": [
+      0,
+      0.145,
+      0.1
+    ],
+    "muzzle": [
+      -0.00026607999999999965,
+      0.09409552,
+      0.56466816
+    ],
+    "barrel": [
+      0,
+      0.095,
+      0.29
+    ],
+    "magazine": [
+      0,
+      -0.04,
+      0.145
+    ]
+  },
+  "grips": {
+    "right": [
+      -0.032,
+      0,
+      -0.14
+    ],
+    "left": [
+      0.145,
+      0.075,
+      0.27
+    ],
+    "leftThumb": [
+      0.025,
+      0.12,
+      0.27
+    ],
+    "leftThumbPole": [
+      0.11,
+      0.145,
+      0.29
+    ]
+  },
+  "setups": {
+    "m4_rail_barrel": {
+      "offsets": {
+        "Suppressor": [
+          4.750000000009738e-08,
+          -1.7500000000503224e-07,
+          -0.054783020000000016
+        ]
+      },
+      "anchors": {
+        "muzzle": [
+          -0.00026603249999999955,
+          0.094095345,
+          0.50988514
+        ],
+        "barrel": [
+          0,
+          0.095,
+          0.25
+        ]
+      },
+      "grips": {
+        "left": [
+          0.145,
+          0.075,
+          0.25
+        ],
+        "leftThumb": [
+          0.025,
+          0.12,
+          0.25
+        ],
+        "leftThumbPole": [
+          0.11,
+          0.145,
+          0.27
+        ]
+      }
+    }
+  }
+}

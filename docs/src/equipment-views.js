@@ -1,7 +1,7 @@
 import { equipmentSummary, itemDefinition, itemWeight } from './inventory.js';
 import { hasWeaponModel } from './weapon-catalog.js';
 
-export const MOD_LABELS={optic:'VISIERUNG',muzzle:'MÜNDUNG',stock:'SCHAFT',foregrip:'VORDERGRIFF',utility:'ZUBEHÖR',magazine:'MAGAZIN'};
+export const MOD_LABELS={optic:'VISIERUNG',muzzle:'MÜNDUNG',stock:'SCHAFT',barrel:'LAUFMODUL',foregrip:'VORDERGRIFF',utility:'ZUBEHÖR',magazine:'MAGAZIN'};
 const weightLabel=item=>`${itemWeight(item).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})} kg`;
 
 // Both inspectors own a single pointer; a second touch cannot steal an orbit or

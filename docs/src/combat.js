@@ -1,5 +1,5 @@
 import { gainSkill, skillValue } from "./character.js";
-import { activeWeapon, ammoLabel, consumeShot, itemDefinition, reloadWeapon, weaponFireMode, weaponStats } from "./inventory.js";
+import { activeWeapon, ammoLabel, consumeShot, itemDefinition, missingWeaponPart, reloadWeapon, weaponFireMode, weaponStats } from "./inventory.js";
 import { behindTarget } from "./perception.js";
 import { clamp, distance, vibrate } from "./util.js";
 import { executionBlockReason, STEALTH_RULES } from "./stealth.js";
@@ -203,6 +203,8 @@ export class CombatSystem {
     if (combat.attackCooldown > .000001) return { ok: false, message: "WAFFE NOCH NICHT STABIL" };
     const d = distance(player, target);
     if (d > stats.range || !game.world.hasLineOfSight(player, target)) return { ok: false, message: "KEINE FREIE SCHUSSLINIE" };
+    const missing = missingWeaponPart(weapon);
+    if (missing) return { ok: false, message: `${missing} FEHLT` };
     if (!consumeShot(weapon)) return { ok: false, message: definition.feed === "magazine" && !weapon.magazine ? "KEIN MAGAZIN EINGESETZT" : "WAFFE LEER · NACHLADEN" };
     game.stealth?.onAttack(game);
 
