@@ -86,6 +86,10 @@ Die ursprüngliche Geometrie bleibt in sieben getrennten Modulen; Handauflagen u
 Menüanschlüsse sind modellabhängig. CC BY 4.0 erfordert TastyTony-Credit,
 Quellen-/Lizenzlink und Änderungshinweis; im Pausenmenü und Asset-README erhalten.
 
+Tragehaltung vom 20.10.2026: Rechten Ellenbogen in der lockeren Haltung weiter
+nach vorn nehmen. Dieselbe lockere Waffen-/Armhaltung gilt beim Sprinten, da
+dabei nicht geschossen wird; die Original-Beinanimation des Sprints weiter nutzen.
+
 Beauftragte Patches bis zum überprüften Abschluss führen. Fortschrittsmeldungen
 beenden die Arbeit nicht. Bei beauftragter Veröffentlichung gehören Commit,
 Zusammenführung, erfolgreiches Deployment und Prüfung des normalen Spieleinstiegs
