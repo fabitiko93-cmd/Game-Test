@@ -74,10 +74,10 @@ test('all small room props rest inside real support surfaces and retain support/
  for(const prop of props){const copy=restored.objects.find(o=>o.id===prop.id);assert.equal(copy.supportId,prop.supportId);assert.equal(copy.renderDepth,prop.renderDepth);assert.equal(copy.elevationMeters,prop.elevationMeters);}
 });
 
-test('chosen starting outfits are real transferable clothing and equipping loot changes only the relevant part',()=>{
+test('found outfits are transferable clothing and equipping loot changes only the relevant part',()=>{
  const player=createPlayer({appearance:{sex:'female',style:'Suit'}}),original=playerModelAppearance(player);
- assert.equal(original.torso,'female-Suit');assert.equal(original.legs,'female-Suit');
- const trousers=player.inventory.find(o=>o.id===player.equipment.legs);assert.equal(trousers.modelStyle,'Suit');
+ assert.deepEqual(original.bare,['torso','legs','feet']);assert.equal(player.inventory.length,0);
+ const trousers=createItem('suit_trousers_f');addItem(player,trousers);equipItem(player,trousers.id);
  const jacket=createItem('work_jacket');addItem(player,jacket);equipItem(player,jacket.id);
  assert.equal(playerModelAppearance(player).torso,'female-Worker');assert.equal(playerModelAppearance(player).legs,'female-Suit');
  const jeans=createItem('jeans');addItem(player,jeans);equipItem(player,jeans.id);assert.equal(playerModelAppearance(player).legs,'female-Casual');

@@ -612,7 +612,7 @@ export class Game {
       facingYaw: Math.atan2(this.player.facingX,this.player.facingY),
     });
     this.player.inventory = [];
-    this.player.equipment = { mainHand: null, offHand: null, head: null, torso: null, legs: null, back: null };
+    this.player.equipment = { mainHand: null, offHand: null, head: null, torso: null, legs: null, feet: null, back: null };
     this.input.enabled = false;
     this.ui.closeAllPanels();
     this.ui.showDeath(this.player, this.minutes);

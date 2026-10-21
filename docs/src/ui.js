@@ -19,7 +19,8 @@ import {
 } from "./inventory.js";
 import { backgroundName, skillRank, visibleInfectionState, woundBleeding, woundDisplay, woundTreatmentOptions } from "./character.js";
 import { TargetLayout } from "./target-layout.js";
-import { CHARACTER_STYLES, defaultStyle } from "./quaternius-catalog.js";
+import { defaultStyle } from "./quaternius-catalog.js";
+import { CHARACTER_HEADS } from './clothing-catalog.js';
 import { VIEW } from "./config.js";
 import { ObjectChoices } from "./object-selection.js";
 import { tilesToMeters } from "./world-scale.js";
@@ -133,7 +134,7 @@ export class GameUI {
   renderAppearanceOptions() {
     const sex=this.el.appearance_sex.value;
     this.el.appearance_style.replaceChildren();
-    for(const [id,label] of Object.entries(CHARACTER_STYLES[sex])) {
+    for(const [id,label] of Object.entries(CHARACTER_HEADS[sex])) {
       const option=document.createElement("option");option.value=id;option.textContent=label;
       this.el.appearance_style.append(option);
     }

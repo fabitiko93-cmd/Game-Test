@@ -1,7 +1,7 @@
 import { furnishingDimensions } from "./quaternius-catalog.js";
 
 // Metre-sized furnishings are individual objects, so later loot contents can be
-// attached without rebuilding the rooms. New storage starts empty for now.
+// attached without rebuilding the rooms. Wardrobes and laundry roll clothing.
 const ROOM_FURNITURE = {
   safehouse: [
     ['Kitchen_Sink',.26,1.46,'SPÜLENSCHRANK',Math.PI/2,'storage'],
@@ -24,9 +24,9 @@ const ROOM_FURNITURE = {
     ['Houseplant_3',4.65,2.65,'TOPFPFLANZE',0,'prop','KOMMODE'],
     ['NightStand_1',3.65,.58,'NACHTTISCH',Math.PI,'storage'],
     ['Light_Desk',3.65,.58,'NACHTTISCHLAMPE',0,'prop','NACHTTISCH'],
-    ['Drawer_4',4.65,2.65,'KOMMODE',-Math.PI/2,'storage'],
+    ['Drawer_4',4.65,2.65,'KOMMODE',-Math.PI/2,'clothing'],
     ['Shelf_Large',4.68,3.65,'BÜCHERREGAL',-Math.PI/2,'storage'],
-    ['Bathroom_WashingMachine',.32,4.35,'WASCHMASCHINE',Math.PI/2,'storage'],
+    ['Bathroom_WashingMachine',.32,4.35,'WASCHMASCHINE',Math.PI/2,'clothing'],
     ['Trashcan_Small1',.35,3.25,'KÜCHENEIMER',0,'storage'],
     ['Houseplant_1',2.4,2.25,'TOPFPFLANZE',0,'prop','ESSTISCH'],
   ],
@@ -90,14 +90,14 @@ export function furnishBuildings(world) {
     const rows=ROOM_FURNITURE[building.id]||[],placed=[];
     // Place supports first; small decor inherits the real surface height.
     for(const [modelAsset,x,y,name,yaw=0,role='furniture',elevation=0] of [...rows.filter(row=>row[5]!=='prop'),...rows.filter(row=>row[5]==='prop')]){
-      const storage=role==='storage';
+      const storage=role==='storage'||role==='clothing';
       const support=role==='prop'?placed.filter(object=>object.name===elevation).sort((a,b)=>Math.hypot(a.x-building.x-x,a.y-building.y-y)-Math.hypot(b.x-building.x-x,b.y-building.y-y))[0]:null;
       if(role==='prop'&&!support)throw new Error(`Missing support for ${name}`);
       placed.push(world.addObject('furniture',building.x+x,building.y+y,{modelAsset,name,yaw,building:building.id,
         solid:!['prop','mounted','rug'].includes(role),placementRole:role,
         elevationMeters:support?furnishingDimensions(support).height+.002:Number(elevation||0)+(role==='rug'?.006:0),
         ...(support?{supportId:support.id,renderDepth:support.x+support.y+.025}:{}),
-        modelHeight:role==='table'?.74:undefined,lootable:role!=='rug',interactable:storage,...(storage?{items:[]}:{}),
+        modelHeight:role==='table'?.74:undefined,lootable:role!=='rug',interactable:storage,...(role==='clothing'?{container:'clothing'}:storage?{items:[]}:{}),
       }));
     }
   }

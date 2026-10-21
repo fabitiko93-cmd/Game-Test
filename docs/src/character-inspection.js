@@ -6,7 +6,7 @@ import { weaponModelSignature } from './weapon-models.js';
 import { applyRiflePose } from './rifle-pose.js';
 import { hasWeaponModel } from './weapon-catalog.js';
 
-const ANCHORS={head:'Head',torso:'Chest',legs:'UpperLegL',back:'Chest',mainHand:'WristR',offHand:'WristL'};
+const ANCHORS={head:'Head',torso:'Chest',legs:'UpperLegL',feet:'FootL',back:'Chest',mainHand:'WristR',offHand:'WristL'};
 
 // A separate posed rig keeps menu rotation and inspection poses out of the world.
 // Geometry, outfit assets, weapon parts and the WebGL context remain shared.
