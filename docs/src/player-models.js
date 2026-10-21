@@ -127,13 +127,13 @@ export class PlayerModels {
   }
 
   shotMuzzle(player,time){
+    this.motion.faceShot(player);
     const entity=this.prepare(player,time);if(!entity?.weapon)return null;
     if(hasWeaponModel(activeWeapon(player))){
       // Capture the un-kicked firing pose. The following rendered pose applies
       // the shot impulse, while the projectile retains this exact muzzle point.
-      const time=entity.rifleTime;entity.captureShot=true;
-      try{applyRiflePose(entity,player,1,'aim');}
-      finally{entity.captureShot=false;entity.rifleTime=time;}
+      const phaseTime=entity.rifleTime;
+      applyRiflePose(entity,player,1,'aim');entity.rifleTime=phaseTime;
       entity.weapon.updateMatrixWorld(true);
       const point=entity.weapon.localToWorld(entity.weapon.userData.muzzle.clone());
       const direction=new Vector3(0,0,1).applyQuaternion(entity.weapon.getWorldQuaternion(new Quaternion()));

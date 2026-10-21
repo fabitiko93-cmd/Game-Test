@@ -110,8 +110,13 @@ test('all chosen barrel assemblies and suppressors expose a geometry-derived muz
 test('shots originate at the actual posed muzzle on both characters and retain the captured position after kick and movement',async()=>{
   const model=await models();await Promise.all(['ak_762','vector_9mm','m4_556','revolver_44'].map(t=>model.weapons.request(t)));
   for(const sex of ['male','female'])for(const type of ['ak_762','vector_9mm','m4_556','revolver_44'])for(const yaw of [0,Math.PI/2,Math.PI,-Math.PI/2]){
-    const {player,weapon,game}=fixture(type,sex);player.x=8;player.y=9;player.facingX=Math.sin(yaw);player.facingY=Math.cos(yaw);
+    const {player,weapon,game}=fixture(type,sex);player.x=8;player.y=9;
+    player.facingX=Math.sin(yaw+Math.PI/2);player.facingY=Math.cos(yaw+Math.PI/2);model.prepare(player,.984);
+    player.facingX=Math.sin(yaw);player.facingY=Math.cos(yaw);
     const origin=model.shotMuzzle(player,1),entity=model.entities.get(player);
+    const pos=n=>entity.model.getObjectByName(n).getWorldPosition(new Vector3());
+    const wristAngle=pos('WristR').sub(pos('LowerArmR')).normalize().angleTo(pos('Middle2R').sub(pos('WristR')).normalize())*180/Math.PI;
+    assert.ok(wristAngle<80,`${sex} ${type}: a fast target turn keeps the firing wrist within its real bend range`);
     assert.ok(origin);const actual=entity.weapon.localToWorld(entity.weapon.userData.muzzle.clone());
     near(origin.x,player.x+actual.x/2);near(origin.y,player.y+actual.z/2);near(origin.height,actual.y);
     assert.ok(Math.hypot(origin.x-player.x,origin.y-player.y)>.12);assert.ok(origin.height>1.1&&origin.height<1.8);
