@@ -1,6 +1,6 @@
 {
-  "file": "revolver-2ad705ff21a8.glb.gz",
-  "sha256": "2ad705ff21a8704e13baf578c7ab8b6339eb64731c41e142097671ada47bba5a",
+  "file": "revolver-141a4dfecee5.glb.gz",
+  "sha256": "141a4dfecee55d7a4e81ddb9bc3f436c85ae75533134b221d7ff67c637a3c771",
   "author": "Quaternius / TastyTony (reflex)",
   "license": "CC0 + CC BY 4.0",
   "sheetSources": {
@@ -12,15 +12,31 @@
     "Receiver": {
       "source": "Revolver_2.obj",
       "components": [
-        2,
-        3,
         4,
         5,
         12
       ],
-      "sourceFaces": 339,
+      "sourceFaces": 133,
       "license": "CC0",
-      "triangles": 672
+      "triangles": 268
+    },
+    "Cylinder": {
+      "source": "Revolver_2.obj",
+      "components": [
+        2
+      ],
+      "sourceFaces": 188,
+      "license": "CC0",
+      "triangles": 368
+    },
+    "Hammer": {
+      "source": "Revolver_2.obj",
+      "components": [
+        3
+      ],
+      "sourceFaces": 18,
+      "license": "CC0",
+      "triangles": 36
     },
     "ShortBarrel": {
       "source": "Revolver_4.obj",
@@ -153,6 +169,13 @@
       0.11,
       0.075,
       -0.03
+    ]
+  },
+  "reload": {
+    "cylinderPivot": [
+      0,
+      0.04195417000000001,
+      0.05444767620689656
     ]
   },
   "alignment": {

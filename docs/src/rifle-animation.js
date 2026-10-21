@@ -13,11 +13,12 @@ export function applyRifleAnimation(entity,player,blend,delta){
   const clips=MOTIONS.rigs[player.appearance?.sex==='female'?'female':'male'];
   entity.rifleTime=(entity.rifleTime||0)+Math.max(0,delta);
   const travelPhase=entity.poseProgress??0;
-  const firing=Math.min(1,Math.max(0,player.combat?.recoil||0)*3);
+  const impulse=player.combat?.shotImpulse;
+  const firing=impulse&&impulse.age<.3?Math.exp(-impulse.age*14):0;
   for(let i=0;i<MOTIONS.bones.length;i++){
     const bone=entity.model.getObjectByName(MOTIONS.bones[i]);if(!bone)continue;
     const carry=sample(clips.hip,.5,i),hip=sample(clips.hip,travelPhase,i),aim=sample(clips.aim,entity.rifleTime/clips.aim.duration,i);
-    if(firing>0)aim.slerp(sample(clips.shoot,entity.rifleTime/clips.shoot.duration,i),firing);
+    if(firing>0)aim.slerp(sample(clips.shoot,impulse.age/clips.shoot.duration,i),firing);
     const moving=blend.hip+blend.aim;
     if(moving>0){hip.slerp(aim,blend.aim/moving);carry.slerp(hip,moving);}
     bone.quaternion.copy(carry);

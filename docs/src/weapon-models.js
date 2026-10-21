@@ -29,7 +29,25 @@ export function configureWeaponModel(root, weapon) {
   else root.userData.stockContact=null;
   root.userData.grips=definition.grips?Object.assign({verticalSupport:false,leftThumb:null,leftThumbPole:null},definition.grips,...setups.map(setup=>setup.grips)):null;
   root.userData.anchors=Object.assign({},definition.anchors,...setups.map(setup=>setup.anchors));
+  root.userData.weaponId=weapon.id;root.userData.weaponType=weapon.type;
+  root.userData.magazinePart=definition.magazines[weapon.magazine?.type]||Object.values(definition.magazines)[0]||null;
+  const suppressor=root.getObjectByName('Suppressor');
+  const muzzlePart=suppressor?.visible?suppressor:definition.muzzleParts.map(n=>root.getObjectByName(n)).find(p=>p?.visible);
+  root.userData.muzzle=muzzlePart?weaponTip(root,muzzlePart):new Vector3().fromArray(root.userData.anchors.muzzle||[0,.06,.25]);
+  root.userData.partPose=new Map(Object.keys(definition.asset.parts).map(name=>{const part=root.getObjectByName(name);return [name,{position:part.position.clone(),rotation:part.quaternion.clone(),visible:part.visible}];}));
   return root;
+}
+
+// Measure the actual front face, including the selected barrel/upper and any
+// suppressor offset. Its centre is the effect socket, not the character origin.
+export function weaponTip(root,part=root){
+  root.updateMatrixWorld(true);
+  const inverse=root.matrixWorld.clone().invert(),points=[];
+  part.traverseVisible(mesh=>{if(!mesh.isMesh)return;const positions=mesh.geometry.attributes.position;
+    for(let i=0;i<positions.count;i++)points.push(mesh.getVertexPosition(i,new Vector3()).applyMatrix4(mesh.matrixWorld).applyMatrix4(inverse));});
+  if(!points.length)return new Vector3(0,0,.25);
+  const z=Math.max(...points.map(p=>p.z)),front=points.filter(p=>p.z>=z-.0001),bounds=new Box3().setFromPoints(front);
+  return bounds.getCenter(new Vector3()).setZ(z);
 }
 
 export function weaponModelBounds(root) {

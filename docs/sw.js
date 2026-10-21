@@ -1,5 +1,5 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "c9aef4559ab4c703c219";
+const BUILD_ID = "3b20152d36c2e5d6719f";
 const FILES = [
   "./assets/icon.svg",
   "./assets/quaternius/ANIMATION-LICENSE.txt",
@@ -105,6 +105,7 @@ const FILES = [
   "./assets/quaternius/Plate_2-4c9838eae2bf.glb.gz",
   "./assets/quaternius/Plate_3-a9a564511dd8.glb.gz",
   "./assets/quaternius/README.md",
+  "./assets/quaternius/REVOLVER-ANIMATION-LICENSE.txt",
   "./assets/quaternius/Shelf_1-3b30b394e1c6.glb.gz",
   "./assets/quaternius/Shelf_2-818c9541f5e0.glb.gz",
   "./assets/quaternius/Shelf_Large-b763aaec93d8.glb.gz",
@@ -154,6 +155,7 @@ const FILES = [
   "./assets/quaternius/player-animations.json",
   "./assets/quaternius/player-crouch-68cf13051891.glb.gz",
   "./assets/quaternius/rifle-animations.json",
+  "./assets/quaternius/weapon-animations.json",
   "./assets/reference-scale.json",
   "./assets/scale-reference/README.md",
   "./assets/scale-reference/front.png",
@@ -167,7 +169,7 @@ const FILES = [
   "./assets/weapons/m4-376c5a4243d9.glb.gz",
   "./assets/weapons/m4-icon.svg",
   "./assets/weapons/m4.json",
-  "./assets/weapons/revolver-2ad705ff21a8.glb.gz",
+  "./assets/weapons/revolver-141a4dfecee5.glb.gz",
   "./assets/weapons/revolver-icon.svg",
   "./assets/weapons/revolver.json",
   "./assets/weapons/vector-04fbc5190081.glb.gz",
@@ -261,10 +263,10 @@ const FILES = [
   "./assets/zombies3d/models.json",
   "./build/assets/ak-icon-JY273CYI.svg",
   "./build/assets/m4-icon-IDY2OEW6.svg",
-  "./build/assets/revolver-icon-JRUCUJKS.svg",
+  "./build/assets/revolver-icon-XLHMVYDZ.svg",
   "./build/assets/vector-icon-DX6NJN2U.svg",
-  "./build/main-44UEPNNX.js",
-  "./build/style-L7BTA77W.css",
+  "./build/main-5D3BUVYY.js",
+  "./build/style-UUBE233Y.css",
   "./index.html",
   "./manifest.webmanifest"
 ];

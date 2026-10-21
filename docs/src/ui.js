@@ -229,6 +229,10 @@ export class GameUI {
     const weapon = activeWeapon(player);
     const firearm = itemDefinition(weapon)?.weaponKind === "firearm";
     this.el.reload_button.classList.toggle("hidden", !firearm);
+    const reload=player.combat.reload;
+    this.el.reload_button.querySelector('small').textContent=reload?`${Math.max(0,reload.duration-reload.elapsed).toFixed(1).replace('.',',')} S`:'NACHLADEN';
+    this.el.reload_button.classList.toggle('active',Boolean(reload));
+    this.el.reload_button.disabled=Boolean(reload);
     const switchable = (itemDefinition(weapon)?.fireModes?.length || 0) > 1;
     this.el.fire_mode_button.classList.toggle("hidden", !switchable);
     this.el.fire_mode_button.textContent = weaponFireMode(weapon) === "auto" ? "AUTO" : "SEMI";

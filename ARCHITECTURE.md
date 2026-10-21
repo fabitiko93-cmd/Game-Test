@@ -35,6 +35,18 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Veröffentlichung und Offlinecache | `scripts/build.mjs`, `web/index.html`, `web/service-worker.js` | Generiert Einstieg, Hashdateien, Cache-ID und vollständige Cacheliste |
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
+
+`weapon-reload.js` hält den gemeinsamen Nachladetakt für Animation, Munitions-
+übertragung und Schusssperre. Magazine werden am Einsetzereignis atomar getauscht;
+Revolverpatronen pro Ladeschleife. Abbruch und Save erhalten bereits übertragene
+Munition ohne Doppelübertragung. `weapon-animation.js` verwendet die getrennt für
+beide Rigs aufbereiteten KayKit-/ZenXChaos-Clips; `weapon-reload-pose.js` bewegt
+Magazin/Trommel und passt die Stützhand an. `weapon-recoil.js` trennt den sichtbaren
+kurzen Schussimpuls von der Zielerholung. `gunshot-effects.js` zeichnet kurzes
+Mündungsfeuer und schwache, wandernde Schussspuren. `PlayerModels.shotMuzzle`
+transformiert den echten Lauf-/Dämpferabschluss in Weltkoordinaten; keine Effekte
+aus dem Player-Mittelpunkt. Revolver nutzt eigene Ziel-/Schussclips, einhändige
+abgesenkte Tragehaltung im Stand/Gehen/Sprint und beidhändiges Anvisieren.
 Ein Patch erfordert nicht automatisch das Lesen jeder Datei in seiner Tabellenzeile.
 
 `interior-layout.js` ergänzt die vier Gebäude um einzeln adressierbare Möbel,

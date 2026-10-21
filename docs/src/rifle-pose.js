@@ -1,5 +1,8 @@
 import { Euler, Matrix4, Quaternion, Vector3 } from "three";
 import { applyRifleAnimation } from './rifle-animation.js';
+import {applyWeaponClip,WEAPON_MOTIONS} from './weapon-animation.js';
+import {recoilPose} from './weapon-recoil.js';
+import {activeWeapon} from './inventory.js';
 
 // The authored wrist's +Y follows the fingers; a rifle asset's +Z follows its
 // barrel. Keep the original body/leg animation and fit both arms to this grip.
@@ -44,9 +47,10 @@ export function restoreRiflePose(entity) {
   entity.rifleRestore=null;
 }
 
-function poseFingers(entity) {
+function poseFingers(entity,freeLeft=false) {
   const hands=entity.rifleHands;
   for(const side of ["L","R"]) {
+    if(side==='L'&&freeLeft)continue;
     for(const finger of ["Index","Middle","Ring","Pinky"]) {
       for(let i=1;i<=4;i++) {
         const entry=hands.get(`${finger}${i}${side}`);if(!entry)continue;
@@ -131,6 +135,10 @@ function fitArm(upper, lower, wrist, target, pole, frame) {
 }
 
 export function riflePosture(player) {
+  const weapon=activeWeapon(player),handgun=['revolver_44','pistol_9mm'].includes(weapon?.type);
+  const impulse=player.combat?.shotImpulse;
+  if(impulse&&impulse.weaponId===weapon?.id&&impulse.age<.35&&!player.moving)return 'aim';
+  if(handgun&&player.moving&&!player.combat?.enabled)return 'carry';
   if(player.moving)return player.running?'carry':'hip';
   if(player.combat?.enabled&&player.combat?.targetId&&(player.combat.aim>0||player.combat.triggerHeld))return 'aim';
   return 'carry';
@@ -140,6 +148,7 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   const model = entity.model, root = entity.root, weapon = entity.weapon;
   if (!weapon || player.dead) return;
   const grips=weapon.userData.grips;
+  const handgun=Boolean(grips?.handgun),kick=recoilPose(player,weapon.userData.weaponId,handgun);
   const rightOffset=grips?new Vector3().fromArray(grips.right):RIFLE_HANDS.right;
   const leftOffset=grips?new Vector3().fromArray(grips.left):RIFLE_HANDS.left;
   const bone = name => model.getObjectByName(name);
@@ -149,6 +158,7 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   restoreRiflePose(entity);
   const torso=bone('Torso'),chest=bone('Chest'),head=bone('Head');
   entity.rifleRestore=new Map([...right,...left,torso,chest,head,...[...entity.rifleHands.values()].map(e=>e.bone)].filter(Boolean).map(b=>[b,b.quaternion.clone()]));
+  const freeLeftPoint=left[2].getWorldPosition(new Vector3()),freeLeftRotation=left[2].getWorldQuaternion(new Quaternion());
   for(const side of ['L','R'])for(const part of ['Shoulder','UpperArm','LowerArm','Wrist']) {
     const entry=entity.rifleHands.get(part+side);if(entry)entry.bone.quaternion.copy(entry.rotation);
   }
@@ -166,33 +176,43 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   }
   entity.riflePosture=posture;
   const headRotation=head?.getWorldQuaternion(new Quaternion());
-  applyRifleAnimation(entity,player,blend,delta);
+  if(handgun){
+    const amount=blend.hip+blend.aim;
+    if(amount>0)applyWeaponClip(entity,player,'revolverAim',((entity.rifleTime||0)/WEAPON_MOTIONS.clips.revolverAim.duration)%1,amount);
+    entity.rifleTime=(entity.rifleTime||0)+Math.max(0,delta);
+    const impulse=player.combat?.shotImpulse;
+    if(impulse?.age<.3)applyWeaponClip(entity,player,'revolverShoot',impulse.age/WEAPON_MOTIONS.clips.revolverShoot.duration,Math.exp(-impulse.age*14)*amount);
+  }else applyRifleAnimation(entity,player,blend,delta);
   const stockContact=weapon.userData.stockContact;
   // Keep the imported torso motion while fitting the arms to the real weapon.
   // Turn the support shoulder forward so reaching the fore-end does not push
   // the hip-held rifle back through the firing wrist.
   if(chest) {
-    const turn=-.05*blend.carry-.50*blend.hip-.78*blend.aim;
+    const turn=handgun?-.08*blend.hip-.10*blend.aim:-.05*blend.carry-.50*blend.hip-.78*blend.aim;
     orientWorld(chest,new Quaternion().setFromAxisAngle(new Vector3(0,1,0),turn).multiply(chest.getWorldQuaternion(new Quaternion())));
     if(head)orientWorld(head,headRotation);
     root.updateMatrixWorld(true);
   }
-  const handgun=Boolean(grips?.handgun);
-  const pitch = .80*blend.carry+.22*blend.hip+.015*blend.aim-(player.combat?.recoil || 0)*(handgun ? .18 : .035);
-  const gunRotation = root.getWorldQuaternion(new Quaternion()).multiply(new Quaternion().setFromEuler(new Euler(pitch,1.25*blend.carry,0,'YXZ')));
+  const pitch=(handgun?1.22:.80)*blend.carry+(handgun?.30:.22)*blend.hip+.015*blend.aim-kick.pitch;
+  const yaw=root.getWorldQuaternion(new Quaternion());
+  if(entity.captureShot)yaw.copy(new Quaternion().setFromAxisAngle(new Vector3(0,1,0),Math.atan2(player.facingX??0,player.facingY??1)));
+  else if(player.combat?.shotImpulse&&player.combat.shotImpulse.weaponId===weapon.userData.weaponId&&player.combat.shotImpulse.age<.35&&blend.aim>.9)
+    yaw.copy(new Quaternion().setFromAxisAngle(new Vector3(0,1,0),player.combat.shotImpulse.yaw));
+  const gunRotation=yaw.multiply(new Quaternion().setFromEuler(new Euler(pitch,(handgun?0:1.25)*blend.carry,kick.roll,'YXZ')));
   const shoulder = root.worldToLocal(right[0].getWorldPosition(new Vector3()));
   const scaled=point=>point.clone().multiply(root.getWorldScale(new Vector3())).applyQuaternion(gunRotation);
-  const carryGoal=root.localToWorld(shoulder.clone().add(new Vector3(.14,-.30,.11)));
-  const hipGoal=root.localToWorld(shoulder.clone().add(handgun?new Vector3(.04,-.18,.38):new Vector3(.015,-.25,.24)));
+  const carryGoal=root.localToWorld(shoulder.clone().add(handgun?new Vector3(-.015,-.48,.015):new Vector3(.14,-.30,.11)));
+  const hipGoal=root.localToWorld(handgun?new Vector3(0,shoulder.y-.24,shoulder.z+.38):shoulder.clone().add(new Vector3(.015,-.25,.24)));
   const shoulderContact=root.localToWorld(shoulder.clone().add(new Vector3(-.012,.015,.055)));
-  const aimGoal=stockContact?shoulderContact.clone().sub(scaled(stockContact)):root.localToWorld(shoulder.clone().add(handgun?new Vector3(.08,-.08,.44):new Vector3(.03,-.10,.25)));
+  const aimGoal=stockContact?shoulderContact.clone().sub(scaled(stockContact)):root.localToWorld(handgun?new Vector3(0,shoulder.y+.025,shoulder.z+.50):shoulder.clone().add(new Vector3(.03,-.10,.25)));
   const gunGoal=carryGoal.multiplyScalar(blend.carry).addScaledVector(hipGoal,blend.hip).addScaledVector(aimGoal,blend.aim);
+  gunGoal.addScaledVector(new Vector3(0,0,1).applyQuaternion(gunRotation),-kick.back);
   entity.rifleShoulderContact=shoulderContact;
   const offsets=[scaled(rightOffset),scaled(leftOffset)];
   // Walking/running twists the shoulders. Keep the chosen grip inside both
   // arms' actual reach rather than stretching a sleeve or detaching a hand.
   for (let iteration = 0; iteration < 10; iteration++) {
-    for (const [arm, offset] of [[right,offsets[0]],[left,offsets[1]]]) {
+    for (const [arm, offset] of (handgun&&blend.carry>.99?[[right,offsets[0]]]:[[right,offsets[0]],[left,offsets[1]]])) {
       const start = arm[0].getWorldPosition(new Vector3()), elbow = arm[1].getWorldPosition(new Vector3()), hand = arm[2].getWorldPosition(new Vector3());
       const reach = elbow.distanceTo(start) + hand.distanceTo(elbow) - .01;
       const delta = gunGoal.clone().add(offset).sub(start);
@@ -216,7 +236,17 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   weapon.position.copy(rightOffset).negate().applyQuaternion(RIFLE_GRIP_ROTATION);
   weapon.updateMatrixWorld(true);
   const leftGoal = weapon.localToWorld(leftOffset.clone());
+  if(handgun)leftGoal.lerp(freeLeftPoint,blend.carry);
   fitArm(...left, leftGoal, leftPole,frame('L'));
-  orientWorld(left[2], leftHand);
-  poseFingers(entity);root.updateMatrixWorld(true);
+  orientWorld(left[2], handgun?leftHand.slerp(freeLeftRotation,blend.carry):leftHand);
+  poseFingers(entity,handgun&&blend.carry>.5);root.updateMatrixWorld(true);
+}
+
+export function fitSupportHand(entity,target,rotation){
+  const bone=n=>entity.model.getObjectByName(n),arm=['UpperArmL','LowerArmL','WristL'].map(bone);
+  const shoulder=arm[0].getWorldPosition(new Vector3());
+  const pole=entity.root.localToWorld(new Vector3(.30,shoulder.y/entity.root.scale.y-.22,.10));
+  fitArm(...arm,target,pole);
+  if(rotation)orientWorld(arm[2],rotation);
+  entity.root.updateMatrixWorld(true);
 }

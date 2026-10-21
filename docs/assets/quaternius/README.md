@@ -37,6 +37,30 @@ arm-direction correction. Only the upper body is transferred. Aiming excludes
 the initial 0.32 s raise; movement keeps the game's existing feet and stride.
 Runtime fitting aligns the real AK grips/stock and retains the finger pose.
 
+## Weapon reloads and revolver motion
+
+`weapon-animations.json` contains separate 30 Hz retargets for both modular rigs.
+KayKit FREE 1.1 supplies `Ranged_1H_Reload` / `Ranged_2H_Reload` (CC0).
+ZenXChaos's original ThirdPersonShooter-AnimationSets supplies the revolver's
+aiming, shooting, reload start, per-cartridge loop and reload end:
+https://github.com/ZenXChaos/ThirdPersonShooter-AnimationSets.
+These files are released under the Unlicense, including commercial use; the
+original text is preserved in `REVOLVER-ANIMATION-LICENSE.txt`.
+
+The old FBX 6000 format is sampled using `scripts/sample-revolver-fbx.c` and
+ufbx v0.20.1 (offline tooling only). Pass each original FBX through that sampler,
+then run `node scripts/prepare-weapon-animations.mjs /path/to/Rig_Medium_CombatRanged.glb
+/path/to/sampled-revolver-directory`. Source SHA-256 hashes and original clip
+names accompany the baked data. Source meshes are not distributed or substituted
+for our chosen Quaternius characters or revolver. Only upper-body motion is
+transferred; the original legs, scale and clothing remain intact.
+
+`weapon-reload.js` owns the animation clock and matching ammunition events.
+Magazine insertion commits at 68% of the gesture; a revolver cartridge commits
+at 70% of its individual loop. Interruption preserves already committed rounds
+and magazine identities. Save snapshots omit unfinished gestures. Model-part
+motion and support-hand fitting use that same clock, not an independent timer.
+
 GLB containers retain the original character geometry, material colours, separate
 clothing meshes, skeletons and all 24 animation clips without frame reduction.
 Gzip is lossless; output names contain content hashes. No external textures are needed.

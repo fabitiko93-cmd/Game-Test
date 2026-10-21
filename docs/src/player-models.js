@@ -1,4 +1,4 @@
-import { AnimationMixer, Box3, Group, LoopOnce, Skeleton, Vector3 } from "three";
+import { AnimationMixer, Box3, Group, LoopOnce, Quaternion, Skeleton, Vector3 } from "three";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { defaultStyle, playerModelScale, QUATERNIUS_MODELS } from "./quaternius-catalog.js";
@@ -8,6 +8,11 @@ import { WeaponModels, weaponModelSignature } from "./weapon-models.js";
 import { hasWeaponModel } from './weapon-catalog.js';
 import { applyRiflePose, captureRifleRig, restoreRiflePose } from "./rifle-pose.js";
 import { createSoleProbes, drawSoleShadows, sampleSoleContacts } from "./character-shadow.js";
+import {applyReloadPose,resetWeaponParts} from './weapon-reload-pose.js';
+import {applyWeaponClip} from './weapon-animation.js';
+import {reloadPhase} from './weapon-reload.js';
+import {recoilPose} from './weapon-recoil.js';
+import {metersToTiles} from './world-scale.js';
 
 const PARTS=["head","torso","legs","feet"];
 
@@ -88,6 +93,7 @@ export class PlayerModels {
       const original=asset.scene.getObjectByName("Backpack");
       if(original){entity.backpack=rebindPart(original,entity.model);entity.model.getObjectByName("CharacterArmature").add(entity.backpack);}
     }
+    if(entity.weapon){entity.weapon.userData.weaponId=item?.id;entity.weapon.userData.weaponType=item?.type;}
     entity.weaponKind=key;
   }
 
@@ -104,8 +110,42 @@ export class PlayerModels {
   prepare(player,time) {
     const pose=this.motion.sample(player,time),entity=this.entity(player,pose.appearance);if(!entity)return false;
     this.used.add(player);this.equip(entity,player);this.pose(entity,pose);
-    if(hasWeaponModel(activeWeapon(player)))applyRiflePose(entity,player,pose.delta);
+    resetWeaponParts(entity.weapon);
+    if(hasWeaponModel(activeWeapon(player))){applyRiflePose(entity,player,pose.delta);applyReloadPose(entity,player);}
+    else if(itemDefinition(activeWeapon(player))?.weaponKind==='firearm'){
+      const phase=reloadPhase(player.combat?.reload);
+      const affected=['Torso','Chest','ShoulderL','ShoulderR','UpperArmL','UpperArmR','LowerArmL','LowerArmR','WristL','WristR'].map(n=>entity.model.getObjectByName(n)).filter(Boolean);
+      entity.rifleRestore=new Map(affected.map(b=>[b,b.quaternion.clone()]));
+      if(phase)applyWeaponClip(entity,player,phase.clip,phase.progress);
+      else {
+        const kick=recoilPose(player,activeWeapon(player)?.id,activeWeapon(player)?.type==='pistol_9mm');
+        const arm=entity.model.getObjectByName('UpperArmR'),wrist=entity.model.getObjectByName('WristR');
+        arm.rotateZ(kick.pitch*.35);wrist.rotateX(-kick.pitch*.65);entity.root.updateMatrixWorld(true);
+      }
+    }
     this.prepared.set(player,{entity,time});return entity;
+  }
+
+  shotMuzzle(player,time){
+    const entity=this.prepare(player,time);if(!entity?.weapon)return null;
+    if(hasWeaponModel(activeWeapon(player))){
+      // Capture the un-kicked firing pose. The following rendered pose applies
+      // the shot impulse, while the projectile retains this exact muzzle point.
+      const time=entity.rifleTime;entity.captureShot=true;
+      try{applyRiflePose(entity,player,1,'aim');}
+      finally{entity.captureShot=false;entity.rifleTime=time;}
+      entity.weapon.updateMatrixWorld(true);
+      const point=entity.weapon.localToWorld(entity.weapon.userData.muzzle.clone());
+      const direction=new Vector3(0,0,1).applyQuaternion(entity.weapon.getWorldQuaternion(new Quaternion()));
+      return {x:player.x+metersToTiles(point.x),y:player.y+metersToTiles(point.z),height:point.y,direction:{x:direction.x,y:direction.z,height:direction.y}};
+    }
+    const direction=new Vector3(player.facingX||0,0,player.facingY??1).normalize(),points=[];
+    entity.weapon.traverseVisible(mesh=>{if(!mesh.isMesh)return;mesh.skeleton?.update();const positions=mesh.geometry.attributes.position;
+      for(let i=0;i<positions.count;i++)points.push(mesh.getVertexPosition(i,new Vector3()).applyMatrix4(mesh.matrixWorld));});
+    if(!points.length)return null;
+    const furthest=Math.max(...points.map(p=>p.dot(direction))),front=points.filter(p=>p.dot(direction)>furthest-.002);
+    const point=front.reduce((sum,p)=>sum.add(p),new Vector3()).multiplyScalar(1/front.length);
+    return {x:player.x+metersToTiles(point.x),y:player.y+metersToTiles(point.z),height:point.y};
   }
 
   drawShadow(ctx,player,time,point) {

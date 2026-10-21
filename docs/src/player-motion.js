@@ -20,6 +20,7 @@ export class PlayerMotion {
     if((player.shots||0)>record.shots){record.attackStart=time;record.attackClip=hasWeaponModel(activeWeapon(player))?null:"Gun_Shoot";}
     const attackAge=time-record.attackStart,attackData=clipData(record.attackClip),crouched=player.stance==='sneak'&&!player.running;
     let clip=player.moving?(player.running?'Run':crouched?'Crouch_Walk':'Walk'):(crouched?'Crouch_Idle':firearm?(combat.enabled?'Idle_Gun_Pointing':'Idle_Gun'):'Idle_Neutral');
+    if(!player.moving&&!crouched&&!combat.enabled&&['revolver_44','pistol_9mm'].includes(activeWeapon(player)?.type))clip='Idle_Neutral';
     let progress;
     if(player.dead){clip="Death";progress=1;}
     else if(attackData&&attackAge<attackData.duration-.1){clip=record.attackClip;progress=Math.min(1,(attackAge+.1)/attackData.duration);}

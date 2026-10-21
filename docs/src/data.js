@@ -120,7 +120,7 @@ export const ITEMS = {
   revolver_44: firearm(".44-Magnum-Revolver", ".44 Magnum", {
     icon: "revolver", weight: .8, hands: 1, damage: 92, range: 8.4, aimTime: 1.5, recovery: .9,
     accuracy: .74, headshot: .24, noise: 32, shotSound: "magnum", feed: "internal", capacity: 6, ammoType: "ammo_44",
-    recoilPerShot: 1, recoilRecovery: .7, aimRetention: .12, reload: 5, mobility: 1,
+    recoilPerShot: 1, recoilRecovery: .7, aimRetention: .12, reloadSpeed: 1, mobility: 1,
     modSlots: ["barrel", "grip", "optic", "utility"],
     defaultMods: {barrel: "revolver_short_barrel", grip: "revolver_wood_grip"},
     requiredMods: {barrel: "LAUFMODUL", grip: "GRIFF"},
