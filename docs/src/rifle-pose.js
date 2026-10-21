@@ -93,6 +93,14 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
     for(const state of ['carry','hip','aim'])blend[state]=transition.from[state]+(Number(state===posture)-transition.from[state])*amount;
   }
   entity.riflePosture=posture;
+  const crouched=handgun&&player.stance==='sneak'&&!player.running;
+  // Hold the front carry until the torso has finished standing up, then lower
+  // it. Mixing in the neutral arm while the chest still leans twists the wrist.
+  entity.handgunCrouchHold=crouched?.16:delta>=.5?0:Math.max(0,(entity.handgunCrouchHold||0)-delta);
+  const crouchTarget=Number(crouched||entity.handgunCrouchHold>0),crouchDuration=crouchTarget?.12:.24;
+  entity.handgunCrouchBlend??=crouchTarget;
+  entity.handgunCrouchBlend=delta>=.5?crouchTarget:entity.handgunCrouchBlend+Math.max(-delta/crouchDuration,Math.min(delta/crouchDuration,crouchTarget-entity.handgunCrouchBlend));
+  const crouchCarry=entity.handgunCrouchBlend;
   const headRotation=head?.getWorldQuaternion(new Quaternion());
   if(handgun){
     const amount=blend.hip+blend.aim;
@@ -126,6 +134,12 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
     carryGoal=right[2].getWorldPosition(new Vector3()).sub(rightOffset.clone().multiply(root.getWorldScale(new Vector3())).applyQuaternion(carryRotation));
     for(const[b,q]of previous)b.quaternion.copy(q);
     root.updateMatrixWorld(true);
+    // The standing arm follows a forward-leaning crouch torso backwards. Keep
+    // the one-handed low ready in front of the chest, in the body's yaw frame.
+    const crouchRotation=root.getWorldQuaternion(new Quaternion()).multiply(new Quaternion().setFromEuler(new Euler(.70,.55,0,'YXZ')));
+    carryRotation.slerp(crouchRotation,crouchCarry);
+    carryGoal.lerp(root.localToWorld(shoulder.clone().add(new Vector3(.10,-.13,.26))),crouchCarry);
+    carryElbow.lerp(root.localToWorld(shoulder.clone().add(new Vector3(-.12,-.20,.12))),crouchCarry);
     gunRotation.slerp(carryRotation,blend.carry);
   }
   gunRotation.multiply(new Quaternion().setFromEuler(new Euler(-kick.pitch,0,kick.roll)));
@@ -164,7 +178,7 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   if(delta<.5&&entity.supportElbow)entity.weaponPoles.left=root.localToWorld(entity.supportElbow.clone()).lerp(leftPole,Math.min(1,delta*8));
   fitArm(...right, gunGoal.clone().add(offsets[0]), rightPole,frame('R'));
   orientWorld(right[2], rightHand);
-  if(handgun&&entity.handgunCarry&&kick.pitch===0)for(const[b,q]of entity.handgunCarry)b.quaternion.slerp(q,blend.carry**4);
+  if(handgun&&entity.handgunCarry&&kick.pitch===0&&crouchCarry===0)for(const[b,q]of entity.handgunCarry)b.quaternion.slerp(q,blend.carry**4);
   root.updateMatrixWorld(true);
   if(handgun)entity.weaponPoles.right.copy(right[1].getWorldPosition(new Vector3()));
   weapon.quaternion.copy(RIFLE_GRIP_ROTATION);

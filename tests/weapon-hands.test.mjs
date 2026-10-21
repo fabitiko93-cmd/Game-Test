@@ -92,6 +92,44 @@ test('the equipment preview uses the original relaxed revolver arm from every si
  }
 });
 
+test('stationary crouched revolvers stay one-handed in front of the body with a forward/downward barrel on both rigs',async()=>{
+ for(const sex of ['male','female'])for(const barrel of ['revolver_short_barrel','revolver_long_barrel','revolver_rail_barrel'])for(const grip of ['revolver_wood_grip','revolver_comfort_grip']){
+  const f=await fixture('revolver_44',sex,{barrel,grip});f.player.stance='sneak';
+  for(const yaw of [0,Math.PI/2,Math.PI,-Math.PI/2])for(const progress of [0,.25,.5,.75]){
+   models.pose(f.entity,{clip:'Crouch_Idle',progress,delta:1,yaw});
+   const legs=['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].map(n=>pos(f,n));
+   const free=['ShoulderL','UpperArmL','LowerArmL','WristL'].map(n=>f.entity.model.getObjectByName(n)).map(b=>[b,b.quaternion.clone()]);
+   assert.equal(riflePosture(f.player),'carry');applyRiflePose(f.entity,f.player,1);
+   const local=n=>f.entity.root.worldToLocal(pos(f,n)),wrist=local('WristR'),shoulder=local('UpperArmR');
+   assert.ok(wrist.z>shoulder.z+.12,`${sex} ${barrel}: firing hand stays in front of the shoulder`);
+   const axis=new Vector3(0,0,1).applyQuaternion(f.entity.weapon.getWorldQuaternion(new Quaternion())).applyQuaternion(f.entity.root.getWorldQuaternion(new Quaternion()).invert());
+   assert.ok(axis.z>.6&&axis.y<-.6,'barrel points forward/down instead of behind the body');
+   assert.ok(bends(f)[1]<78);const[fore,roll]=rolls(f.entity,'R');assert.ok(fore<60.01&&roll<30,`${sex}: forearm/wrist roll ${fore}/${roll}`);
+   for(const[b,q]of free)assert.ok(b.quaternion.clone().normalize().angleTo(q.normalize())<1e-6,'left arm remains free');
+   ['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].forEach((n,i)=>assert.ok(pos(f,n).distanceTo(legs[i])<1e-7));
+  }
+ }
+});
+
+test('crouched revolver carry blends continuously through walking, aiming and standing',async()=>{
+ for(const sex of ['male','female'])for(const hz of [30,60]){
+  const f=await fixture('revolver_44',sex);f.player.stance='walk';models.prepare(f.player,0);for(let frame=1;frame<=hz*.5;frame++)models.prepare(f.player,frame/hz);
+  let previous=f.entity.weapon.getWorldQuaternion(new Quaternion()),time=.5;
+  for(const[stance,moving,aim]of [['sneak',false,false],['sneak',true,false],['sneak',false,false],['sneak',false,true],['sneak',false,false],['walk',false,false]]){
+   Object.assign(f.player,{stance,moving});Object.assign(f.player.combat,{enabled:aim,targetId:aim?'target':null,aim:aim?1:0});
+   for(let frame=0;frame<hz*.7;frame++){
+    time+=1/hz;if(moving)f.player.y+=.3/hz;models.prepare(f.player,time);
+    const q=f.entity.weapon.getWorldQuaternion(new Quaternion());assert.ok(q.angleTo(previous)<.6,`${sex} ${hz} Hz ${stance} ${moving}/${aim} frame ${frame}: weapon rotation jumped ${q.angleTo(previous)}`);previous=q;
+    if(f.entity.handgunCrouchBlend>0){const[fore,roll]=rolls(f.entity,'R');assert.ok(fore<60.01&&roll<40,`${sex} ${hz} Hz ${stance} ${moving}/${aim} frame ${frame}: forearm/wrist roll ${fore}/${roll}`);}
+   }
+   const axis=new Vector3(0,0,1).applyQuaternion(previous);
+   if(stance==='sneak'&&!moving&&!aim)assert.ok(axis.z>.6&&axis.y<-.6);
+   if(moving||aim)assert.ok(axis.z>.95&&Math.abs(axis.y)<.04);
+   if(stance==='walk')assert.ok(axis.y<-.95,'standing still retains its relaxed lowered carry');
+  }
+ }
+});
+
 test('the complete revolver reload bounds forearm and wrist roll as well as bend, with continuous hand rotation',async()=>{
  for(const sex of ['male','female'])for(const clip of ['Idle_Neutral','Crouch_Idle']){
   const f=await fixture('revolver_44',sex);pose(f,'carry',clip);beginReload(f.game);const s=f.player.combat.reload;let previous;

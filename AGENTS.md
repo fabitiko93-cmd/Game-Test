@@ -132,6 +132,11 @@ Neigung; abgesenkte Waffen leuchten entsprechend auf den nahen Boden. Revolver-
 Tragearm aus der neutralen Originalpose, Reload ohne verdrehte Unterarme oder
 Handgelenke; Magnum-Rückstoß als deutlich sichtbarer, kurz gehaltener Hochschlag.
 
+Revolver-Schleichstillstand vom 22.10.2026: einhändige Tragehaltung vor dem
+Oberkörper, ähnlich der abgesenkten Langwaffenhaltung; der Lauf zeigt nach vorn
+unten. Die neutrale stehende Armstellung wird beim Ducken nicht unverändert
+übernommen. Linke Hand frei; Anlegen bei Bewegung/aktivem Zielen bleibt erhalten.
+
 Beauftragte Patches bis zum überprüften Abschluss führen. Fortschrittsmeldungen
 beenden die Arbeit nicht. Bei beauftragter Veröffentlichung gehören Commit,
 Zusammenführung, erfolgreiches Deployment und Prüfung des normalen Spieleinstiegs
