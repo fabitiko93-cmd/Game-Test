@@ -73,7 +73,7 @@ export class PlayerModels {
     const item=activeWeapon(player),definition=itemDefinition(item),kind=definition?.weaponKind||null;
     const bag=Boolean(player.equipment?.back),key=`${kind}-${weaponModelSignature(item)}-${bag}`;
     if(entity.weaponKind===key)return;
-    entity.reloadLast=null;entity.supportElbow=null;entity.supportTwist=null;
+    entity.reloadLast=null;entity.supportElbow=null;entity.supportTwist=null;entity.handgunCrouchBlend=null;entity.handgunCrouchHold=0;
     if(entity.weapon){
       entity.weapon.parent.remove(entity.weapon);
       if(entity.weapon.userData.generated)entity.weapon.traverse(o=>o.geometry?.dispose());

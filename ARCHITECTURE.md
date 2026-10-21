@@ -48,7 +48,10 @@ transformiert den echten Lauf-/Dämpferabschluss in Weltkoordinaten; keine Effek
 aus dem Player-Mittelpunkt. Revolver nutzt eigene Ziel-/Schussclips, einhändige
 abgesenkte Tragehaltung im Stand/Sprint und beidhändiges Anlegen beim Gehen
 oder tatsächlichen Anvisieren. Die entspannte Revolverhaltung folgt dem
-Original-Neutralclip; `weapon-ik.js` und der Kontaktfit begrenzen Unterarm- und
+Original-Neutralclip. Im Schleichstillstand hält ein eigener, weich überblendeter
+einhändiger Kontaktfit den Revolver vor dem Oberkörper und den Lauf nach vorn
+unten, unabhängig von der Vorneigung des Rumpfes; die linke Hand bleibt frei.
+`weapon-ik.js` und der Kontaktfit begrenzen Unterarm- und
 Handgelenkdrehung beim Reload getrennt von der Handgelenkbeugung.
 Ein Patch erfordert nicht automatisch das Lesen jeder Datei in seiner Tabellenzeile.
 
