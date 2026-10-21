@@ -109,8 +109,8 @@ test('both rigs keep their M4 grips and original legs for both uppers, three sto
       const legs=['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].map(position);
       const lengths=['L','R'].flatMap(s=>[position('UpperArm'+s).distanceTo(position('LowerArm'+s)),position('LowerArm'+s).distanceTo(position('Wrist'+s))]);
       applyRiflePose(entity,player,1,posture);
-      const target=entity.weapon.localToWorld(new Vector3().fromArray(entity.weapon.userData.grips.left));
-      assert.ok(position('WristL').distanceTo(target)<.015,`${sex} ${barrel} ${stock} ${clip} ${posture}: support wrist`);
+      const bend=position('WristL').sub(position('LowerArmL')).angleTo(position('Middle2L').sub(position('WristL')));
+      assert.ok(bend<68*Math.PI/180,`${sex} ${clip} ${posture}: support wrist`);
       ['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].map(position).forEach((p,i)=>assert.ok(p.distanceTo(legs[i])<1e-7));
       const actual=['L','R'].flatMap(s=>[position('UpperArm'+s).distanceTo(position('LowerArm'+s)),position('LowerArm'+s).distanceTo(position('Wrist'+s))]);
       actual.forEach((length,i)=>near(length,lengths[i],1e-5));

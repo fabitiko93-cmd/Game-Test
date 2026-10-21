@@ -68,6 +68,7 @@ export class PlayerModels {
     const item=activeWeapon(player),definition=itemDefinition(item),kind=definition?.weaponKind||null;
     const bag=Boolean(player.equipment?.back),key=`${kind}-${weaponModelSignature(item)}-${bag}`;
     if(entity.weaponKind===key)return;
+    entity.reloadLast=null;entity.supportElbow=null;
     if(entity.weapon){
       entity.weapon.parent.remove(entity.weapon);
       if(entity.weapon.userData.generated)entity.weapon.traverse(o=>o.geometry?.dispose());
@@ -111,7 +112,7 @@ export class PlayerModels {
     const pose=this.motion.sample(player,time),entity=this.entity(player,pose.appearance);if(!entity)return false;
     this.used.add(player);this.equip(entity,player);this.pose(entity,pose);
     resetWeaponParts(entity.weapon);
-    if(hasWeaponModel(activeWeapon(player))){applyRiflePose(entity,player,pose.delta);applyReloadPose(entity,player);}
+    if(hasWeaponModel(activeWeapon(player))){applyRiflePose(entity,player,pose.delta);applyReloadPose(entity,player,pose.delta);}
     else if(itemDefinition(activeWeapon(player))?.weaponKind==='firearm'){
       const phase=reloadPhase(player.combat?.reload);
       const affected=['Torso','Chest','ShoulderL','ShoulderR','UpperArmL','UpperArmR','LowerArmL','LowerArmR','WristL','WristR'].map(n=>entity.model.getObjectByName(n)).filter(Boolean);
@@ -130,10 +131,8 @@ export class PlayerModels {
     this.motion.faceShot(player);
     const entity=this.prepare(player,time);if(!entity?.weapon)return null;
     if(hasWeaponModel(activeWeapon(player))){
-      // Capture the un-kicked firing pose. The following rendered pose applies
-      // the shot impulse, while the projectile retains this exact muzzle point.
-      const phaseTime=entity.rifleTime;
-      applyRiflePose(entity,player,1,'aim');entity.rifleTime=phaseTime;
+      // Sample the currently visible grip without changing its posture or blend.
+      // The following shot impulse acts on that same pose, including hip fire.
       entity.weapon.updateMatrixWorld(true);
       const point=entity.weapon.localToWorld(entity.weapon.userData.muzzle.clone());
       const direction=new Vector3(0,0,1).applyQuaternion(entity.weapon.getWorldQuaternion(new Quaternion()));

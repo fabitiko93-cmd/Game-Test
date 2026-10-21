@@ -17,7 +17,7 @@ const MODELS = {
     magazines: {mag_vector_33: 'Magazine'},
     mods: {vector_stock: 'FoldingStock', vector_foregrip: 'Foregrip', reflex_sight: 'Optic', vector_suppressor: 'Suppressor'},
     anchors: VECTOR.anchors, grips: VECTOR.grips,
-    setups: {vector_foregrip: {grips: {left: VECTOR.grips.foregripLeft, verticalSupport: true,
+    setups: {vector_foregrip: {grips: {left: [.16,-.005,.273], verticalSupport: true,
       leftThumb: VECTOR.grips.foregripThumb, leftThumbPole: VECTOR.grips.foregripThumbPole}}},
   },
   m4_556: {
@@ -34,7 +34,8 @@ const MODELS = {
     muzzleParts:['ShortBarrel','LongBarrel','RailBarrel'],
     mods:{revolver_short_barrel:'ShortBarrel',revolver_long_barrel:'LongBarrel',revolver_rail_barrel:'RailBarrel',
       revolver_wood_grip:'WoodGrip',revolver_comfort_grip:'ComfortGrip',reflex_sight:'Reflex',revolver_flashlight:'Flashlight'},
-    anchors:REVOLVER.anchors,grips:REVOLVER.grips,
+    anchors:REVOLVER.anchors,grips:{...REVOLVER.grips,left:[.16,-.015,.025],leftThumb:[.025,.035,-.045],leftThumbPole:[.10,.09,-.025]},
+    setups:{revolver_comfort_grip:{grips:{left:[.165,-.020,.025]}}},
   },
 };
 

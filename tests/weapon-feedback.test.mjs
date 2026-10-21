@@ -111,6 +111,7 @@ test('shots originate at the actual posed muzzle on both characters and retain t
   const model=await models();await Promise.all(['ak_762','vector_9mm','m4_556','revolver_44'].map(t=>model.weapons.request(t)));
   for(const sex of ['male','female'])for(const type of ['ak_762','vector_9mm','m4_556','revolver_44'])for(const yaw of [0,Math.PI/2,Math.PI,-Math.PI/2]){
     const {player,weapon,game}=fixture(type,sex);player.x=8;player.y=9;
+    Object.assign(player.combat,{enabled:true,targetId:'target',aim:1});
     player.facingX=Math.sin(yaw+Math.PI/2);player.facingY=Math.cos(yaw+Math.PI/2);model.prepare(player,.984);
     player.facingX=Math.sin(yaw);player.facingY=Math.cos(yaw);
     const origin=model.shotMuzzle(player,1),entity=model.entities.get(player);
@@ -128,7 +129,7 @@ test('shots originate at the actual posed muzzle on both characters and retain t
   }
 });
 
-test('authored reload motion preserves the legs; magazines detach and revolver cylinders open and reset without accumulating transforms',async()=>{
+test('contact-fitted reload motion preserves the legs; magazines detach and revolver cylinders open and reset without accumulating transforms',async()=>{
   const model=await models();
   for(const sex of ['male','female'])for(const type of ['ak_762','vector_9mm','m4_556','revolver_44']){
     await model.weapons.request(type);const {player,weapon,game}=fixture(type,sex);

@@ -57,8 +57,8 @@ test("both real rigs retain their grip, arm lengths, open elbows and legs in all
           const wristRest=entity.rifleHands.get('WristR').rotation;
           const wristBend=bone('WristR').quaternion.clone().multiply(wristRest.clone().invert());
           assert.ok(Math.abs(wristBend.y)<.001,`${sex} ${posture}: forearm shares the grip roll instead of twisting only at the wrist`);
-          const grip = entity.weapon.localToWorld(new Vector3(.145, .03, .255));
-          assert.ok(position("WristL").distanceTo(grip) < .015, `${sex} ${clip} ${progress}: support hand`);
+          const leftBend=position("WristL").sub(position("LowerArmL")).angleTo(position("Middle2L").sub(position("WristL")));
+          assert.ok(leftBend<68*Math.PI/180,`${sex} ${clip} ${progress}: support wrist stays within its bend range`);
           const local=name=>entity.weapon.worldToLocal(position(name));
           const triggerKnuckle=local('Index2R'),gripTip=local('Middle4R'),supportPalm=local('Middle2L');
           assert.ok(Math.abs(triggerKnuckle.x)<.055&&triggerKnuckle.y>-.02&&triggerKnuckle.y<.065&&triggerKnuckle.z>-.02&&triggerKnuckle.z<.05,'index knuckle at the real trigger/grip, not 15 cm along the receiver');

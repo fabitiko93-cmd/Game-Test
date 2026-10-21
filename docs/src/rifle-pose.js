@@ -1,17 +1,17 @@
-import { Euler, Matrix4, Quaternion, Vector3 } from "three";
+import { Euler, Quaternion, Vector3 } from "three";
 import { applyRifleAnimation } from './rifle-animation.js';
 import {applyWeaponClip,WEAPON_MOTIONS} from './weapon-animation.js';
 import {recoilPose} from './weapon-recoil.js';
 import {activeWeapon} from './inventory.js';
+import {fitArm,orientWorld} from './weapon-ik.js';
+import {contactWrist,poseThumb,poseWeaponHands,supportHandRotation} from './weapon-hands.js';
 
 // The authored wrist's +Y follows the fingers; a rifle asset's +Z follows its
 // barrel. Keep the original body/leg animation and fit both arms to this grip.
 export const RIFLE_GRIP_ROTATION = new Quaternion().setFromEuler(new Euler(-Math.PI / 2, 0, Math.PI / 2));
 const inverseGrip = RIFLE_GRIP_ROTATION.clone().invert();
-const supportRotation = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(
-  new Vector3(0,0,1), new Vector3(-1,0,0), new Vector3(0,-1,0)));
-const verticalSupportRotation = new Quaternion().setFromAxisAngle(new Vector3(1,0,0),Math.PI/2).multiply(supportRotation);
-const clampUnit=value=>Math.max(-1,Math.min(1,value));
+
+
 
 // Wrist offsets are measured from the AK, not mistaken for palm/grip centers.
 // The long authored palm reaches from the wrist to the metacarpal knuckles.
@@ -35,6 +35,7 @@ export function captureRifleRig(model) {
     const upper=hands.get('UpperArm'+side),lower=hands.get('LowerArm'+side),wrist=hands.get('Wrist'+side);
     if(!upper||!lower||!wrist)continue;
     const start=upper.bone.getWorldPosition(new Vector3()),elbow=lower.bone.getWorldPosition(new Vector3());
+    wrist.palm=model.getObjectByName('Middle2'+side).getWorldPosition(new Vector3()).sub(wrist.bone.getWorldPosition(new Vector3())).applyQuaternion(wrist.bone.getWorldQuaternion(new Quaternion()).invert()).normalize();
     upper.hinge=elbow.clone().sub(start).cross(wrist.bone.getWorldPosition(new Vector3()).sub(elbow)).normalize()
       .applyQuaternion(upper.bone.getWorldQuaternion(new Quaternion()).invert());
   }
@@ -47,92 +48,6 @@ export function restoreRiflePose(entity) {
   entity.rifleRestore=null;
 }
 
-function poseFingers(entity,freeLeft=false) {
-  const hands=entity.rifleHands;
-  for(const side of ["L","R"]) {
-    if(side==='L'&&freeLeft)continue;
-    for(const finger of ["Index","Middle","Ring","Pinky"]) {
-      for(let i=1;i<=4;i++) {
-        const entry=hands.get(`${finger}${i}${side}`);if(!entry)continue;
-        if(i===1){entry.bone.quaternion.copy(entry.rotation);continue;}
-        const angles=side==="L"?[.55,.95,.8]:finger==="Index"?[.35,1.05,.35]:[.90,1.20,.45];
-        const rotation=new Euler().setFromQuaternion(entry.rotation);
-        rotation.x=-angles[i-2];entry.bone.quaternion.setFromEuler(rotation);
-      }
-    }
-    const thumb=[1,2,3].map(i=>hands.get(`Thumb${i}${side}`));
-    if(thumb.every(Boolean)) {
-      for(const entry of thumb)entry.bone.quaternion.copy(entry.rotation);
-      entity.root.updateMatrixWorld(true);
-      const grips=entity.weapon.userData.grips;
-      const target=side==="R"?new Vector3(.015,.025,-.015):grips?.leftThumb?new Vector3().fromArray(grips.leftThumb):new Vector3(.025,.105,.245);
-      const pole=side==="R"?new Vector3(-.01,.085,-.05):grips?.leftThumbPole?new Vector3().fromArray(grips.leftThumbPole):new Vector3(.11,.13,.27);
-      fitArm(...thumb.map(e=>e.bone),entity.weapon.localToWorld(target),entity.weapon.localToWorld(pole));
-    }
-  }
-}
-
-function orientWorld(bone, rotation) {
-  const parent = bone.parent.getWorldQuaternion(new Quaternion()).invert();
-  bone.quaternion.copy(parent.multiply(rotation)); bone.updateMatrixWorld(true);
-}
-
-function pointBone(bone, child, target) {
-  const start = bone.getWorldPosition(new Vector3());
-  const from = child.getWorldPosition(new Vector3()).sub(start).normalize();
-  const to = target.clone().sub(start).normalize();
-  const turn = new Quaternion().setFromUnitVectors(from, to);
-  orientWorld(bone, turn.multiply(bone.getWorldQuaternion(new Quaternion())));
-}
-
-function fitArm(upper, lower, wrist, target, pole, frame) {
-  const start = upper.getWorldPosition(new Vector3()), elbow = lower.getWorldPosition(new Vector3()), hand = wrist.getWorldPosition(new Vector3());
-  const a = elbow.distanceTo(start), b = hand.distanceTo(elbow);
-  const direction = target.clone().sub(start), distance = Math.max(.001, Math.min(direction.length(), a + b - .001));
-  direction.normalize();
-  const bend = pole.clone().sub(start); bend.addScaledVector(direction, -bend.dot(direction)).normalize();
-  const along = (a * a - b * b + distance * distance) / (2 * distance);
-  const height = Math.sqrt(Math.max(0, a * a - along * along));
-  if(frame?.maxBend) {
-    // The elbow can rotate around the shoulder-to-wrist line. Move its plane
-    // only as far as needed to keep the firing wrist from folding backwards
-    // when a step turns the shoulders away from the weapon.
-    const handAxis=wrist.position.clone().normalize().applyQuaternion(frame.hand.clone().multiply(frame.rest.clone().invert()));
-    const ideal=direction.clone().multiplyScalar(direction.dot(handAxis)).sub(handAxis);
-    const projected=ideal.length();
-    if(height*projected>1e-6) {
-      ideal.normalize();
-      const angle=Math.acos(clampUnit(bend.dot(ideal)));
-      const maximum=Math.acos(clampUnit((b*Math.cos(frame.maxBend)-(distance-along)*direction.dot(handAxis))/(height*projected)));
-      if(angle>maximum) {
-        const signed=Math.atan2(direction.dot(bend.clone().cross(ideal)),bend.dot(ideal));
-        bend.applyAxisAngle(direction,Math.sign(signed)*(angle-maximum));
-      }
-    }
-  }
-  const nextElbow = start.clone().addScaledVector(direction, along).addScaledVector(bend, height);
-  const nextHand = start.clone().addScaledVector(direction, distance);
-  pointBone(upper, lower, nextElbow);
-  if(frame) {
-    // Put the sleeve/elbow crease in the actual bend plane instead of carrying
-    // the donor clip's upper-arm roll into a different hand target.
-    const axis=nextElbow.clone().sub(start).normalize();
-    const normal=axis.clone().cross(nextHand.clone().sub(nextElbow)).normalize();
-    const current=frame.hinge.clone().applyQuaternion(upper.getWorldQuaternion(new Quaternion()));
-    current.addScaledVector(axis,-current.dot(axis)).normalize();
-    const angle=Math.atan2(axis.dot(current.clone().cross(normal)),current.dot(normal));
-    orientWorld(upper,new Quaternion().setFromAxisAngle(axis,angle).multiply(upper.getWorldQuaternion(new Quaternion())));
-  }
-  pointBone(lower, wrist, nextHand);
-  if(frame) {
-    // Share the grip's roll with the forearm. Rotating only the wrist leaves a
-    // corkscrew at the cuff even when the hand is in the correct position.
-    const rotation=frame.hand.clone().multiply(frame.rest.clone().invert());
-    const from=wrist.position.clone().normalize().applyQuaternion(rotation);
-    const to=nextHand.clone().sub(nextElbow).normalize();
-    orientWorld(lower,new Quaternion().setFromUnitVectors(from,to).multiply(rotation));
-  }
-}
 
 export function riflePosture(player) {
   const weapon=activeWeapon(player),handgun=['revolver_44','pistol_9mm'].includes(weapon?.type);
@@ -159,6 +74,8 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   const torso=bone('Torso'),chest=bone('Chest'),head=bone('Head');
   entity.rifleRestore=new Map([...right,...left,torso,chest,head,...[...entity.rifleHands.values()].map(e=>e.bone)].filter(Boolean).map(b=>[b,b.quaternion.clone()]));
   const freeLeftPoint=left[2].getWorldPosition(new Vector3()),freeLeftRotation=left[2].getWorldQuaternion(new Quaternion());
+  const freeLeftArm=new Map([...left,bone('ShoulderL')].map(b=>[b,b.quaternion.clone()]));
+  const freeLeftFingers=new Map([...entity.rifleHands.values()].filter(e=>/^(Index|Middle|Ring|Pinky|Thumb).*L$/.test(e.bone.name)).map(e=>[e.bone,e.bone.quaternion.clone()]));
   for(const side of ['L','R'])for(const part of ['Shoulder','UpperArm','LowerArm','Wrist']) {
     const entry=entity.rifleHands.get(part+side);if(entry)entry.bone.quaternion.copy(entry.rotation);
   }
@@ -178,8 +95,8 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   const headRotation=head?.getWorldQuaternion(new Quaternion());
   if(handgun){
     const amount=blend.hip+blend.aim;
-    if(amount>0)applyWeaponClip(entity,player,'revolverAim',((entity.rifleTime||0)/WEAPON_MOTIONS.clips.revolverAim.duration)%1,amount);
     entity.rifleTime=(entity.rifleTime||0)+Math.max(0,delta);
+    if(amount>0)applyWeaponClip(entity,player,'revolverAim',((entity.rifleTime||0)/WEAPON_MOTIONS.clips.revolverAim.duration)%1,amount);
     const impulse=player.combat?.shotImpulse;
     if(impulse?.age<.3)applyWeaponClip(entity,player,'revolverShoot',impulse.age/WEAPON_MOTIONS.clips.revolverShoot.duration,Math.exp(-impulse.age*14)*amount);
   }else applyRifleAnimation(entity,player,blend,delta);
@@ -225,8 +142,11 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   const leftBend=new Vector3(.07,-.28,-.05).multiplyScalar(blend.carry)
     .addScaledVector(new Vector3(.10,-.24,.12),blend.hip).addScaledVector(new Vector3(.10,-.18,.15),blend.aim);
   const leftPole=root.localToWorld(leftShoulder.clone().add(leftBend));
-  const rightHand=gunRotation.clone().multiply(inverseGrip),leftHand=gunRotation.clone().multiply(grips?.verticalSupport?verticalSupportRotation:supportRotation);
-  const frame=side=>({hand:side==='R'?rightHand:leftHand,rest:entity.rifleHands.get('Wrist'+side).rotation,hinge:entity.rifleHands.get('UpperArm'+side).hinge,maxBend:side==='R'?75*Math.PI/180:0});
+  const rightHand=gunRotation.clone().multiply(inverseGrip),leftHand=gunRotation.clone().multiply(supportHandRotation(weapon));
+  if(handgun)leftHand.slerp(freeLeftRotation,blend.carry);
+  const frame=side=>({hand:side==='R'?rightHand:leftHand,axis:entity.rifleHands.get('Wrist'+side).palm,rest:entity.rifleHands.get('Wrist'+side).rotation,hinge:entity.rifleHands.get('UpperArm'+side).hinge,maxBend:(side==='R'?75:60)*Math.PI/180});
+  entity.weaponPoles={right:rightPole.clone(),left:leftPole.clone()};
+  if(delta<.5&&entity.supportElbow)entity.weaponPoles.left=root.localToWorld(entity.supportElbow.clone()).lerp(leftPole,Math.min(1,delta*8));
   fitArm(...right, gunGoal.clone().add(offsets[0]), rightPole,frame('R'));
   orientWorld(right[2], rightHand);
   weapon.quaternion.copy(RIFLE_GRIP_ROTATION);
@@ -234,16 +154,55 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   weapon.updateMatrixWorld(true);
   const leftGoal = weapon.localToWorld(leftOffset.clone());
   if(handgun)leftGoal.lerp(freeLeftPoint,blend.carry);
-  fitArm(...left, leftGoal, leftPole,frame('L'));
-  orientWorld(left[2], handgun?leftHand.slerp(freeLeftRotation,blend.carry):leftHand);
-  poseFingers(entity,handgun&&blend.carry>.5);root.updateMatrixWorld(true);
+  poseWeaponHands(entity,player,{freeLeft:handgun?blend.carry:0,freeLeftFingers});
+  const offset=left[2].getWorldPosition(new Vector3()).sub(bone('Middle2L').getWorldPosition(new Vector3())).applyQuaternion(left[2].getWorldQuaternion(new Quaternion()).invert()).applyQuaternion(leftHand);
+  const palmGoal=leftGoal.clone().sub(offset);
+  if(handgun&&blend.carry>.999){for(const[b,q]of freeLeftArm)b.quaternion.copy(q);}
+  else fitSupportContact(entity,palmGoal,leftHand);
+  if(!handgun||blend.carry<.999){
+    poseThumb(entity,'L',handgun?'revolver':grips?.verticalSupport?'vertical':'support');
+    if(handgun)for(const[b,q]of freeLeftFingers)if(b.name.startsWith('Thumb'))b.quaternion.slerp(q,blend.carry);
+  }
+  root.updateMatrixWorld(true);
 }
 
+// All action poses use the same bend plane and forearm roll as the grip fit.
 export function fitSupportHand(entity,target,rotation){
   const bone=n=>entity.model.getObjectByName(n),arm=['UpperArmL','LowerArmL','WristL'].map(bone);
-  const shoulder=arm[0].getWorldPosition(new Vector3());
-  const pole=entity.root.localToWorld(new Vector3(.30,shoulder.y/entity.root.scale.y-.22,.10));
-  fitArm(...arm,target,pole);
-  if(rotation)orientWorld(arm[2],rotation);
-  entity.root.updateMatrixWorld(true);
+  const shoulder=entity.root.worldToLocal(arm[0].getWorldPosition(new Vector3()));
+  const pole=entity.weaponPoles?.left||entity.root.localToWorld(shoulder.add(new Vector3(.18,-.22,.13)));
+  const hand=rotation||arm[2].getWorldQuaternion(new Quaternion());
+  fitArm(...arm,target,pole,{hand,axis:entity.rifleHands.get('WristL').palm,rest:entity.rifleHands.get('WristL').rotation,hinge:entity.rifleHands.get('UpperArmL').hinge,maxBend:0});
+  orientWorld(arm[2],hand);entity.root.updateMatrixWorld(true);
+}
+
+export function fitWeaponPose(entity,point,rotation){
+  const bone=n=>entity.model.getObjectByName(n),arm=['UpperArmR','LowerArmR','WristR'].map(bone),weapon=entity.weapon;
+  const offset=new Vector3().fromArray(weapon.userData.grips?.right||RIFLE_HANDS.right.toArray());
+  entity.weaponPoles={left:entity.root.localToWorld(entity.root.worldToLocal(bone('UpperArmL').getWorldPosition(new Vector3())).add(new Vector3(.18,-.22,.13)))};
+  const hand=rotation.clone().multiply(inverseGrip);
+  const target=offset.clone().multiply(entity.root.getWorldScale(new Vector3())).applyQuaternion(rotation).add(point);
+  const shoulder=entity.root.worldToLocal(arm[0].getWorldPosition(new Vector3()));
+  const pole=entity.root.localToWorld(shoulder.add(new Vector3(-.22,-.22,.09)));
+  fitArm(...arm,target,pole,{hand,axis:entity.rifleHands.get('WristR').palm,rest:entity.rifleHands.get('WristR').rotation,hinge:entity.rifleHands.get('UpperArmR').hinge,maxBend:75*Math.PI/180});
+  orientWorld(arm[2],hand);weapon.quaternion.copy(RIFLE_GRIP_ROTATION);
+  weapon.position.copy(offset).negate().applyQuaternion(RIFLE_GRIP_ROTATION);entity.root.updateMatrixWorld(true);
+}
+
+// Keep the contact fixed while finding an attainable hand orientation. A fixed
+// wrist marker alone can demand a 90° bend in carry/crouch even with perfect IK.
+export function fitSupportContact(entity,point,rotation,contact='Middle2'){
+  const wrist=entity.model.getObjectByName('WristL'),lower=entity.model.getObjectByName('LowerArmL'),middle=entity.model.getObjectByName('Middle2L');
+  const hand=rotation.clone();
+  for(let iteration=0;iteration<8;iteration++){
+    fitSupportHand(entity,contactWrist(entity,'L',point,hand,contact),hand);
+    const start=wrist.getWorldPosition(new Vector3());
+    const fore=start.clone().sub(lower.getWorldPosition(new Vector3())).normalize();
+    const palm=middle.getWorldPosition(new Vector3()).sub(start).normalize(),angle=palm.angleTo(fore);
+    if(angle<64*Math.PI/180)break;
+    const axis=palm.clone().cross(fore).normalize();
+    hand.premultiply(new Quaternion().setFromAxisAngle(axis,Math.min(.35,angle-58*Math.PI/180)));
+  }
+  entity.supportElbow=entity.root.worldToLocal(lower.getWorldPosition(new Vector3()));
+  return wrist.getWorldQuaternion(new Quaternion());
 }
