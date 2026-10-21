@@ -7,6 +7,13 @@ const modulo = value => ((value%1)+1)%1;
 
 export class PlayerMotion {
   constructor() { this.entities=new WeakMap(); }
+  faceShot(player){
+    // A committed shot uses the character's actual firing direction. Turning
+    // only the gun here can fold the wrist backwards during a fast target swap.
+    // Ordinary path changes retain the existing interpolated body turn.
+    const record=this.entities.get(player);
+    if(record)record.yaw=Math.atan2(player.facingX??0,player.facingY??1);
+  }
   sample(player,time) {
     const appearance=playerModelAppearance(player),scale=playerModelScale(appearance);
     const definition=QUATERNIUS_MODELS.characters[`${appearance.sex}-${defaultStyle(appearance.sex)}`];

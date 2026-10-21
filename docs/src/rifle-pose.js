@@ -195,9 +195,6 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   }
   const pitch=(handgun?1.22:.80)*blend.carry+(handgun?.30:.22)*blend.hip+.015*blend.aim-kick.pitch;
   const yaw=root.getWorldQuaternion(new Quaternion());
-  if(entity.captureShot)yaw.copy(new Quaternion().setFromAxisAngle(new Vector3(0,1,0),Math.atan2(player.facingX??0,player.facingY??1)));
-  else if(player.combat?.shotImpulse&&player.combat.shotImpulse.weaponId===weapon.userData.weaponId&&player.combat.shotImpulse.age<.35&&blend.aim>.9)
-    yaw.copy(new Quaternion().setFromAxisAngle(new Vector3(0,1,0),player.combat.shotImpulse.yaw));
   const gunRotation=yaw.multiply(new Quaternion().setFromEuler(new Euler(pitch,(handgun?0:1.25)*blend.carry,kick.roll,'YXZ')));
   const shoulder = root.worldToLocal(right[0].getWorldPosition(new Vector3()));
   const scaled=point=>point.clone().multiply(root.getWorldScale(new Vector3())).applyQuaternion(gunRotation);

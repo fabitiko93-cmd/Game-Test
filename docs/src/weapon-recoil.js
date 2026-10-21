@@ -6,7 +6,7 @@ export function kickWeapon(player,weapon){
   const stats=weaponStats(weapon),previous=player.combat.shotImpulse;
   const remaining=previous?Math.exp(-previous.age*20)*previous.power:0;
   player.combat.shotImpulse={weaponId:weapon.id,age:0,power:Math.min(1.5,(stats.recoilPerShot||.55)+remaining*.3),
-    yaw:Math.atan2(player.facingX??0,player.facingY??1),side:((player.shots||0)%2?1:-1)};
+    side:((player.shots||0)%2?1:-1)};
 }
 
 export function recoilPose(player,weaponId,handgun=false){
