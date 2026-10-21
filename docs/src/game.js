@@ -601,6 +601,7 @@ export class Game {
     if (this.dead) return;
     this.dead = true;
     this.player.dead = true;
+    this.combat?.end(this);
     this.player.deathCause = cause;
     this.clearNavigation();
     const belongings = deepCopy(this.player.inventory);

@@ -3,6 +3,7 @@ import { ITEMS } from "./data.js";
 import { activeWeapon, addItem, compatibleMods, cycleFireMode, emptyMagazine, ejectMagazine, equipItem, fillMagazine, findItem, insertMagazine, installMod, itemDefinition, removeItem, removeMod, toggleWeaponLight, unequipSlot } from "./inventory.js";
 import { clamp } from "./util.js";
 import { canInteract } from "./interaction.js";
+import {cancelReload} from './weapon-reload.js';
 
 export function takeItem(game, container, itemId) {
   if(!canInteract(game.world,game.player,container)){game.ui.showToast("NÄHER AN DEN BEHÄLTER HERANGEHEN");return;}
@@ -57,6 +58,7 @@ export function useItem(game, id) {
   let message = "";
 
   if (definition.type === "weapon" || definition.equipSlot) {
+    cancelReload(game);
     game.combat.stopFiring?.(game);
     const result = equipItem(game.player, id);
     message = result.message;
@@ -97,6 +99,7 @@ export function useItem(game, id) {
       return;
     }
   } else if (definition.type === "mod") {
+    cancelReload(game);
     const weapon = activeWeapon(game.player);
     if (!weapon || !compatibleMods(game.player, weapon).some(mod => mod.id === item.id)) {
       game.ui.showToast("KEINE PASSENDE WAFFE AUSGERÜSTET");
@@ -125,6 +128,7 @@ export function useItem(game, id) {
 }
 
 export function dropItem(game, id) {
+  cancelReload(game);
   const item = findItem(game.player, id);
   if (!item) return;
   const dropped = removeItem(game.player, id);
@@ -143,6 +147,7 @@ export function dropItem(game, id) {
 }
 
 export function unequip(game, slot) {
+  cancelReload(game);
   const item = unequipSlot(game.player, slot);
   if (!item) return;
   game.ui.refreshAll(game.player, game);
@@ -158,6 +163,7 @@ export function openWeaponPanel(game, id) {
 
 export function mountMod(game, weaponId, modId) {
   if (!game.canAct(true)) return;
+  cancelReload(game);
   game.combat.stopFiring(game);
   const result = installMod(game.player, weaponId, modId);
   game.ui.showToast(result.message);
@@ -170,6 +176,7 @@ export function mountMod(game, weaponId, modId) {
 
 export function unmountMod(game, weaponId, slot) {
   if (!game.canAct(true)) return;
+  cancelReload(game);
   game.combat.stopFiring(game);
   const result = slot === "magazine" ? ejectMagazine(game.player, weaponId) : removeMod(game.player, weaponId, slot);
   game.ui.showToast(result.message);
@@ -197,6 +204,11 @@ function finishWeaponAction(game, result) {
 
 export function changeMagazine(game, weaponId, magazineId) {
   if (!game.canAct(true)) return;
+  if(magazineId&&activeWeapon(game.player)?.id===weaponId){
+    const result=game.combat.reload(game,activeWeapon(game.player),magazineId);
+    game.ui.showToast(result.message);game.ui.refreshAll(game.player,game);game.save();return;
+  }
+  cancelReload(game);
   const result = magazineId ? insertMagazine(game.player, weaponId, magazineId) : ejectMagazine(game.player, weaponId);
   if (result.ok) { game.player.combat.aim = 0; game.player.combat.attackCooldown = .55; }
   finishWeaponAction(game, result);

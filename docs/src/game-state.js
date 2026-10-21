@@ -13,6 +13,11 @@ export function serialize(game) {
   player.combat.triggerHeld = false;
   player.combat.triggerWeaponId = null;
   player.combat.triggerTargetId = null;
+  // A reload is interrupted on leaving the session. Only rounds/magazines
+  // already transferred at animation events belong in the saved inventory.
+  if(player.combat.reload)player.combat.attackCooldown=Math.min(player.combat.attackCooldown||0,.12);
+  delete player.combat.reload;
+  delete player.combat.shotImpulse;
   player.navigation = {
     path: [],
     destination: null,

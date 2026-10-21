@@ -22,11 +22,17 @@ Das kombinierte Asset enthält damit CC0- und CC-BY-Teile; `revolver.json` nennt
 die Lizenz pro Modul sowie Quell-/Ergebnishashes. Keine Schalldämpfergeometrie.
 
 Aufbereitung: `python scripts/prepare-revolver.py --source /pfad/zum/OBJ-Ordner`.
-Ein Material mit Vertexfarben, acht Meshknoten, Meter/+Z zur Mündung. R1-Konfiguration
+Ein Material mit Vertexfarben, zehn Meshknoten, Meter/+Z zur Mündung. Trommel und
+Hahn sind separate Originalteile für Animationen; sämtliche Flächen bleiben erhalten.
+R1-Konfiguration
 ca. 25 cm, lange Ausführungen ca. 34 cm. Ein gemeinsamer Ingame-Revolver mit sechs
 direkt geladenen .44-Patronen; keine herausnehmbaren Magazine. Kaliber und Werte
 sind Spieldefinitionen, keine ballistische oder konkrete Herstellerzuordnung.
 Rotpunkt/Lampe benötigen den R4-Lauf. Schaltzustand der Lampe wird gespeichert.
+Der Lauf-/Dämpferabschluss wird direkt aus der sichtbaren Geometrie gemessen.
+Mündungsfeuer und kurze Schussspuren beginnen am transformierten Abschluss des
+tatsächlich gehaltenen Modells. Nachladen öffnet die Trommel; Patronen werden
+mit dem Einsetzereignis der wiederholten Ladeanimation einzeln übertragen.
 
 ## M4 · Quaternius Ultimate Guns · CC0
 

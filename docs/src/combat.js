@@ -1,5 +1,7 @@
 import { gainSkill, skillValue } from "./character.js";
-import { activeWeapon, ammoLabel, consumeShot, itemDefinition, missingWeaponPart, reloadWeapon, weaponFireMode, weaponStats } from "./inventory.js";
+import { activeWeapon, ammoLabel, consumeShot, itemDefinition, missingWeaponPart, weaponFireMode, weaponStats } from "./inventory.js";
+import {beginReload,cancelReload,updateReload} from './weapon-reload.js';
+import {kickWeapon} from './weapon-recoil.js';
 import { behindTarget } from "./perception.js";
 import { clamp, distance, vibrate } from "./util.js";
 import { executionBlockReason, STEALTH_RULES } from "./stealth.js";
@@ -37,6 +39,7 @@ export class CombatSystem {
 
   end(game, { keepTarget = false } = {}) {
     this.stopFiring(game);
+    if(game.player.dead||game.dead)cancelReload(game);
     const combat = game.player.combat, targetId = combat.targetId;
     combat.enabled = false;
     combat.pendingTargetId = null; combat.pendingAttack = 0;
@@ -55,6 +58,8 @@ export class CombatSystem {
     combat.attackCooldown = combat.triggerHeld ? combat.attackCooldown - delta : Math.max(0, combat.attackCooldown - delta);
     combat.attackTimer = Math.max(0, combat.attackTimer - delta);
     combat.recoil = Math.max(0, combat.recoil - delta * (weaponStats(activeWeapon(player))?.recoilRecovery || 1.5));
+    if(combat.shotImpulse)combat.shotImpulse.age+=delta;
+    if(updateReload(game,delta)){this.stopFiring(game);combat.aim=0;return;}
 
     const manualMovement = game.player.navigation?.source === "manual"
       && (game.player.navigation.path.length || player.moving || game.player.navigation.manualUntil > game.elapsed);
@@ -197,6 +202,8 @@ export class CombatSystem {
     const weapon = activeWeapon(player);
     const definition = itemDefinition(weapon);
     const stats = weaponStats(weapon);
+    if(combat.reload)return {ok:false,message:'WAFFE WIRD NACHGELADEN'};
+    if(player.running)return {ok:false,message:'IM SPRINT KEIN SCHUSS'};
     if (!combat.enabled || !target || definition?.weaponKind !== "firearm") {
       return { ok: false, message: "KEIN SCHUSSZIEL" };
     }
@@ -224,7 +231,8 @@ export class CombatSystem {
       x: target.x + (game.random() - 0.5) * (2.2 - combat.aim),
       y: target.y + (game.random() - 0.5) * (2.2 - combat.aim),
     };
-    game.renderer.trace(player, endPoint, hit);
+    if(game.renderer.firearmShot)game.renderer.firearmShot(game,weapon,endPoint,hit);
+    else game.renderer.trace(player, endPoint, hit);
     game.world.emitNoise(player.x, player.y, stats.noise, "gunshot", 5.2, 1.3);
     game.attractMigration(Math.min(18, stats.noise * 0.42));
     player.noisePulse = 1;
@@ -248,6 +256,7 @@ export class CombatSystem {
     }
     combat.attackCooldown = stats.fireInterval ? stats.fireInterval + Math.min(0, combat.attackCooldown) : stats.recovery;
     combat.recoil = stats.recoilPerShot ? Math.min(1.5, combat.recoil + stats.recoilPerShot) : 1;
+    kickWeapon(player,weapon);
     combat.aim = Math.max(0.04, combat.aim * (stats.aimRetention || .18));
     return { ok: true, message: `${ammoLabel(weapon)} · ${Math.round(hitChance * 100)} %` };
   }
@@ -278,17 +287,9 @@ export class CombatSystem {
     }
   }
 
-  reload(game, weapon = activeWeapon(game.player)) {
+  reload(game, weapon = activeWeapon(game.player), magazineId = null) {
     this.stopFiring(game);
-    const stats = weaponStats(weapon);
-    const result = reloadWeapon(game.player, weapon);
-    if (result.ok) {
-      game.player.combat.aim = 0;
-      game.player.combat.attackCooldown = 0.55 * (stats?.reload || 1);
-      game.world.emitNoise(game.player.x, game.player.y, 1.2, "reload", 1.5, 0.45);
-      game.sound("reload");
-    }
-    return result;
+    return beginReload(game,weapon,magazineId);
   }
 
   damageZombie(game, target, damage, callout, options = {}) {

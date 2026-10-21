@@ -124,7 +124,8 @@ function fixture() {
   const equipped = activeWeapon(g.player);
   addItem(g.player, createItem("ammo_9mm", 20)); addItem(g.player, createItem("mag_9mm_12"));
   g.useItem(g.player.inventory.find(item => item.type === "mag_9mm_12").id);
-  g.reload(); assert.ok(roundsInWeapon(equipped) > 0);
+  g.reload(); assert.equal(roundsInWeapon(equipped),0);
+  g.combat.update(g,g.player.combat.reload.duration+.001);assert.ok(roundsInWeapon(equipped)>0);
   const mod = createItem("reflex_sight"); addItem(g.player, mod); g.useItem(mod.id);
   assert.equal(equipped.mods.optic.type, "reflex_sight");
   g.unmountMod(weapon.id, "optic"); assert.equal(equipped.mods.optic, undefined);

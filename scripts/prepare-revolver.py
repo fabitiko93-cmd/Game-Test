@@ -49,7 +49,9 @@ def main():
     grip_offset = [max(p[i] for p in a) - max(p[i] for p in b) for i in range(3)]
     top = gun([0, max(p[1] for p in vertices(models['rail'], 4)) + rail_offset[1], 0])[1]
     specs = [
-        ('Receiver', 'base', [2, 3, 4, 5, 12], gun),
+        ('Receiver', 'base', [4, 5, 12], gun),
+        ('Cylinder', 'base', [2], gun),
+        ('Hammer', 'base', [3], gun),
         ('ShortBarrel', 'short', [2, 3, 5, 6, 7], shifted(short_offset)),
         ('LongBarrel', 'base', [6, 7, 8, 9, 10], gun),
         ('RailBarrel', 'rail', [*range(4, 15), 16, 17, 18, 19, 20], shifted(rail_offset)),
@@ -97,7 +99,7 @@ def main():
                 if length < 1e-10:
                     continue
                 positions.extend([*a, *b, *c]);normals.extend([n/length for n in normal] * 3);colors.extend(color * 3)
-            if name in ['Receiver', 'ShortBarrel', 'WoodGrip']:
+            if name in ['Receiver', 'Cylinder', 'Hammer', 'ShortBarrel', 'WoodGrip']:
                 icon.append((face, color))
         add(name, positions, normals, colors, {'source': paths[source], 'components': islands, 'sourceFaces': len(face_ids), 'license': 'CC0'})
     # Reuse the existing licensed red-dot geometry without fetching another asset.
@@ -126,11 +128,13 @@ def main():
     glb += struct.pack('<I4s', len(document), b'JSON') + document + struct.pack('<I4s', len(binary), b'BIN\0') + binary
     compressed = gzip.compress(glb, mtime=0);digest = hashlib.sha256(compressed).hexdigest()
     out = ROOT / 'docs/assets/weapons';filename = f'revolver-{digest[:12]}.glb.gz';(out / filename).write_bytes(compressed)
+    cylinder = [gun(p) for p in vertices(models['base'], 2)]
     metadata = {'file': filename, 'sha256': digest, 'author': 'Quaternius / TastyTony (reflex)', 'license': 'CC0 + CC BY 4.0',
                 'sheetSources': {'R1': paths['short'], 'R2': paths['base'], 'R4': paths['rail']}, 'parts': provenance,
                 'anchors': {'barrel': [0, .095, .17], 'grip': [0, -.015, -.045], 'optic': [0, top, .102], 'utility': [0, top, .185]},
                 'grips': {'handgun': True, 'right': [-.032, 0, -.14], 'left': [.135, -.015, -.02],
                           'leftThumb': [.035, .045, -.035], 'leftThumbPole': [.11, .075, -.03]},
+                'reload': {'cylinderPivot': [0, min(p[1] for p in cylinder) - .005, sum(p[2] for p in cylinder)/len(cylinder)]},
                 'alignment': {'shortBarrel': short_offset, 'shortGrip': grip_offset, 'rail': rail_offset},
                 'sources': {path: hashlib.sha256((args.source / path).read_bytes()).hexdigest() for path in paths.values()}}
     (out / 'revolver.json').write_text(json.dumps(metadata, indent=2) + '\n')

@@ -21,6 +21,7 @@ import {serialize,load} from '../docs/src/game-state.js';
 import {Navigator} from '../docs/src/navigation.js';
 import {StealthSystem} from '../docs/src/stealth.js';
 import {PlayerVisibility} from '../docs/src/player-visibility.js';
+import {kickWeapon} from '../docs/src/weapon-recoil.js';
 
 const near=(a,b,t=1e-7)=>assert.ok(Math.abs(a-b)<t,`${a} != ${b}`),cache=new Map();
 async function parse(url){
@@ -99,14 +100,15 @@ test('both real rigs support the handgun at its grips with intact legs, six modu
       player.moving=clip!=='Idle_Gun';player.running=clip==='Run';models.pose(entity,{clip,progress:.4,delta:1,yaw:.7});
       const legs=['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].map(pos),lengths=['L','R'].flatMap(s=>[pos('UpperArm'+s).distanceTo(pos('LowerArm'+s)),pos('LowerArm'+s).distanceTo(pos('Wrist'+s))]);
       applyRiflePose(entity,player,1,posture);
-      assert.ok(pos('WristL').distanceTo(entity.weapon.localToWorld(new Vector3().fromArray(entity.weapon.userData.grips.left)))<.015);
+      const leftDistance=pos('WristL').distanceTo(entity.weapon.localToWorld(new Vector3().fromArray(entity.weapon.userData.grips.left)));
+      assert.ok(posture==='carry'?leftDistance>.10:leftDistance<.015,'free support hand while carrying; both hands on the aimed revolver');
       ['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].map(pos).forEach((p,i)=>assert.ok(p.distanceTo(legs[i])<1e-7));
       ['L','R'].flatMap(s=>[pos('UpperArm'+s).distanceTo(pos('LowerArm'+s)),pos('LowerArm'+s).distanceTo(pos('Wrist'+s))]).forEach((l,i)=>near(l,lengths[i],1e-5));
       const index=entity.weapon.worldToLocal(pos('Index3R'));assert.ok(index.z>.025&&index.z<.055&&index.y>-.01&&index.y<.04,`${sex} ${barrel} ${grip} ${clip} ${posture}: index finger reaches the trigger ${index.toArray()}`);
     }
     player.moving=false;player.running=false;models.pose(entity,{clip:'Idle_Gun',progress:.4,delta:1,yaw:0});
-    player.combat.recoil=0;applyRiflePose(entity,player,1,'aim');const before=new Vector3(0,0,1).applyQuaternion(entity.weapon.getWorldQuaternion(new Quaternion()));
-    player.combat.recoil=1;applyRiflePose(entity,player,1,'aim');const after=new Vector3(0,0,1).applyQuaternion(entity.weapon.getWorldQuaternion(new Quaternion()));assert.ok(after.y-before.y>.15);
+    player.combat.recoil=0;delete player.combat.shotImpulse;applyRiflePose(entity,player,1,'aim');const before=new Vector3(0,0,1).applyQuaternion(entity.weapon.getWorldQuaternion(new Quaternion()));
+    player.combat.recoil=1;kickWeapon(player,weapon);applyRiflePose(entity,player,1,'aim');const after=new Vector3(0,0,1).applyQuaternion(entity.weapon.getWorldQuaternion(new Quaternion()));assert.ok(after.y-before.y>.15);
   }
 });
 
@@ -128,7 +130,9 @@ test('six powerful shots empty the cylinder, recoil slows follow-ups, .44 reload
   player.combat.attackCooldown=0;assert.equal(combat.beginFiring(game).ok,false);assert.equal(player.shots,6);assert.equal(weapon.rounds,0);
   assert.equal(sounds.filter(s=>s==='magnum').length,6);assert.equal(noises.filter(n=>n[3]==='gunshot').length,6);
   addItem(player,createItem('ammo_9mm',6));assert.equal(combat.reload(game,weapon).ok,false);
-  addItem(player,createItem('ammo_44',12));assert.equal(combat.reload(game,weapon).ok,true);assert.equal(weapon.rounds,6);near(player.combat.attackCooldown,2.75);
+  addItem(player,createItem('ammo_44',12));assert.equal(combat.reload(game,weapon).ok,true);assert.equal(weapon.rounds,0);
+  const duration=player.combat.reload.duration;assert.ok(duration>6);near(player.combat.attackCooldown,duration);
+  combat.update(game,duration+.001);assert.equal(weapon.rounds,6);assert.equal(player.combat.reload,undefined);
 });
 
 test('the switchable weapon light follows facing, stops at walls, saves its state and never illuminates from a backpack weapon',()=>{

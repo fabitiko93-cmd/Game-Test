@@ -22,6 +22,7 @@ import { drawFallbackShadow } from "./character-shadow.js";
 import { playerHeight } from "./quaternius-catalog.js";
 import { CharacterInspection } from './character-inspection.js';
 import {drawWeaponLight} from './weapon-light.js';
+import {createTracer,drawMuzzleFlashes,drawShotTrails,shotEnd,updateShotEffects} from './gunshot-effects.js';
 
 export class Renderer {
   constructor(canvas) {
@@ -38,6 +39,7 @@ export class Renderer {
     this.hotspots = [];
     this.particles = [];
     this.tracers = [];
+    this.gunshots = [];
     this.selectedId = null;
     this.destination = null;
     this.destinationRun = false;
@@ -254,9 +256,10 @@ export class Renderer {
     this.zombieModels?.endFrame();
     this.playerModels?.endFrame();
 
+    drawMuzzleFlashes(this);
+    this.drawTracers();
     this.drawRoofs(game);
     this.drawParticles();
-    this.drawTracers();
     this.drawNoiseHints(game.world);
     this.drawLighting(game);
     return drawables;
@@ -915,39 +918,25 @@ export class Renderer {
   }
 
   trace(start, end, hit = false) {
-    this.tracers.push({
-      x1: start.x,
-      y1: start.y,
-      x2: end.x,
-      y2: end.y,
-      life: .12,
-      maxLife: .12,
-      color: hit ? "#f0d68b" : "#d7c990",
-    });
+    this.tracers.push(createTracer(start,end));
+  }
+
+  firearmShot(game,weapon,end){
+    const start=this.playerModels.shotMuzzle(game.player,game.elapsed);
+    if(!start)return; // Models still loading: never invent a shot from the hitbox.
+    const impact=shotEnd(game.world,start,end),dx=impact.x-start.x,dy=impact.y-start.y,length=Math.max(.001,Math.hypot(dx,dy));
+    const suppressed=weapon.mods?.muzzle?.type.includes('suppressor'),magnum=weapon.type==='revolver_44';
+    this.gunshots.push({start,age:0,fresh:true,direction:{x:dx/length,y:dy/length,height:0},
+      size:(magnum?.24:.18)*(suppressed?.22:1),strength:suppressed?.35:1,flare:.65+Math.abs(Math.sin((game.player.shots+1)*12.9898))*.8});
+    this.trace(start,impact);
   }
 
   updateTracers(delta) {
-    for (const tracer of this.tracers) tracer.life -= delta;
-    this.tracers = this.tracers.filter(tracer => tracer.life > 0);
+    updateShotEffects(this,delta);
   }
 
   drawTracers() {
-    const ctx = this.ctx;
-    for (const tracer of this.tracers) {
-      if (this.playerVisibility && (!this.playerVisibility.canSee({ x: tracer.x1, y: tracer.y1 }, this.viewPlayer)
-        || !this.playerVisibility.canSee({ x: tracer.x2, y: tracer.y2 }, this.viewPlayer))) continue;
-      const from = this.iso(tracer.x1, tracer.y1, 23);
-      const to = this.iso(tracer.x2, tracer.y2, 20);
-      ctx.save();
-      ctx.globalAlpha = clamp(tracer.life / tracer.maxLife, 0, 1);
-      ctx.strokeStyle = tracer.color;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(from.x, from.y);
-      ctx.lineTo(to.x, to.y);
-      ctx.stroke();
-      ctx.restore();
-    }
+    drawShotTrails(this);
   }
 
   drawRoofs(game) {
