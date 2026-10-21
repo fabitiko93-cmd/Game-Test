@@ -1,5 +1,33 @@
 # Waffenmodelle
 
+## Revolver · R1/R2/R4 · .44 Magnum
+
+Originale aus Quaternius Ultimate Guns, CC0:
+https://quaternius.itch.io/50-lowpoly-guns.
+Die **Bildreihenfolge** lautet R1=`Revolver_4.obj`, R2=`Revolver_2.obj`,
+R4=`Revolver_3.obj`. R3/R5 werden nicht verwendet. Ein gemeinsamer R2-Grundkörper
+mit Trommel, Rahmen, Hahn und Abzug erhält drei komplette Lauf-/Visierungsmodule
+und zwei Griffe. Die 621 Polygonflächen der R2-Ausführung bleiben vollständig
+erhalten. Kleine Ursprungs-/Anschlussabweichungen von R1 werden je Modul durch
+Translation ausgeglichen; die Originalteile werden weder verzerrt noch vereinfacht.
+R2 und R4 teilen sich denselben Griff samt beiden seitlichen Griffschalen.
+
+Zusätzlich: `Accessories/Flashlight.obj` von Quaternius, CC0. Rotpunktgeometrie
+aus TastyTonys **bereits eingebundener und kreditierter Vector**, CC BY 4.0;
+Originalquelle und Lizenz sind im Vector-Abschnitt unten und im Pausenmenü
+verlinkt. Änderung: Optik als einzelnes Modul übernommen, um 25 % verkleinert,
+auf die hintere Position der Revolverschiene verschoben, originale Farben erhalten.
+Lampe sitzt weiter vorne; beide Module haben getrennte Montagepositionen.
+Das kombinierte Asset enthält damit CC0- und CC-BY-Teile; `revolver.json` nennt
+die Lizenz pro Modul sowie Quell-/Ergebnishashes. Keine Schalldämpfergeometrie.
+
+Aufbereitung: `python scripts/prepare-revolver.py --source /pfad/zum/OBJ-Ordner`.
+Ein Material mit Vertexfarben, acht Meshknoten, Meter/+Z zur Mündung. R1-Konfiguration
+ca. 25 cm, lange Ausführungen ca. 34 cm. Ein gemeinsamer Ingame-Revolver mit sechs
+direkt geladenen .44-Patronen; keine herausnehmbaren Magazine. Kaliber und Werte
+sind Spieldefinitionen, keine ballistische oder konkrete Herstellerzuordnung.
+Rotpunkt/Lampe benötigen den R4-Lauf. Schaltzustand der Lampe wird gespeichert.
+
 ## M4 · Quaternius Ultimate Guns · CC0
 
 Quelle: https://quaternius.itch.io/50-lowpoly-guns und

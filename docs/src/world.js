@@ -145,8 +145,8 @@ export class World {
       createItem("pistol_9mm", 1, { loadedRounds: 5 }),
       createItem("mag_9mm_12", 1, { rounds: 8 }),
       createItem("ammo_9mm", 10),
-      createItem("revolver_38", 1, { rounds: 3 }),
-      createItem("ammo_38", 6),
+      createItem("revolver_44", 1, { rounds: 3 }),
+      createItem("ammo_44", 6),
       createItem("reflex_sight"),
     );
     const policeCorpse = this.addObject("corpse", 21.2, 9.2, { interactable: true, solid: false, container: "corpse", name: "POLIZIST" });

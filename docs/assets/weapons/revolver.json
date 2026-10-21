@@ -1,0 +1,181 @@
+{
+  "file": "revolver-2ad705ff21a8.glb.gz",
+  "sha256": "2ad705ff21a8704e13baf578c7ab8b6339eb64731c41e142097671ada47bba5a",
+  "author": "Quaternius / TastyTony (reflex)",
+  "license": "CC0 + CC BY 4.0",
+  "sheetSources": {
+    "R1": "Revolver_4.obj",
+    "R2": "Revolver_2.obj",
+    "R4": "Revolver_3.obj"
+  },
+  "parts": {
+    "Receiver": {
+      "source": "Revolver_2.obj",
+      "components": [
+        2,
+        3,
+        4,
+        5,
+        12
+      ],
+      "sourceFaces": 339,
+      "license": "CC0",
+      "triangles": 672
+    },
+    "ShortBarrel": {
+      "source": "Revolver_4.obj",
+      "components": [
+        2,
+        3,
+        5,
+        6,
+        7
+      ],
+      "sourceFaces": 97,
+      "license": "CC0",
+      "triangles": 208
+    },
+    "LongBarrel": {
+      "source": "Revolver_2.obj",
+      "components": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "sourceFaces": 97,
+      "license": "CC0",
+      "triangles": 208
+    },
+    "RailBarrel": {
+      "source": "Revolver_3.obj",
+      "components": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "sourceFaces": 167,
+      "license": "CC0",
+      "triangles": 394
+    },
+    "WoodGrip": {
+      "source": "Revolver_4.obj",
+      "components": [
+        10
+      ],
+      "sourceFaces": 49,
+      "license": "CC0",
+      "triangles": 100
+    },
+    "ComfortGrip": {
+      "source": "Revolver_2.obj",
+      "components": [
+        0,
+        1,
+        11
+      ],
+      "sourceFaces": 185,
+      "license": "CC0",
+      "triangles": 372
+    },
+    "Flashlight": {
+      "source": "Accessories/Flashlight.obj",
+      "components": [
+        0,
+        1,
+        2
+      ],
+      "sourceFaces": 71,
+      "license": "CC0",
+      "triangles": 156
+    },
+    "Reflex": {
+      "source": "TastyTony \u00b7 Low-Poly Kriss Vector \u00b7 Optic",
+      "license": "CC BY 4.0",
+      "sourceAssetSha256": "04fbc5190081ea611a0a53aa9ba1034b959e01e0e44bf6cbfd0f81f0a89f0739",
+      "triangles": 600
+    }
+  },
+  "anchors": {
+    "barrel": [
+      0,
+      0.095,
+      0.17
+    ],
+    "grip": [
+      0,
+      -0.015,
+      -0.045
+    ],
+    "optic": [
+      0,
+      0.11388197413793104,
+      0.102
+    ],
+    "utility": [
+      0,
+      0.11388197413793104,
+      0.185
+    ]
+  },
+  "grips": {
+    "handgun": true,
+    "right": [
+      -0.032,
+      0,
+      -0.14
+    ],
+    "left": [
+      0.135,
+      -0.015,
+      -0.02
+    ],
+    "leftThumb": [
+      0.035,
+      0.045,
+      -0.035
+    ],
+    "leftThumbPole": [
+      0.11,
+      0.075,
+      -0.03
+    ]
+  },
+  "alignment": {
+    "shortBarrel": [
+      0.03757999999999995,
+      0.06513799999999997,
+      0.0
+    ],
+    "shortGrip": [
+      0.04745699999999997,
+      0.065137,
+      0.0
+    ],
+    "rail": [
+      0.016749000000000014,
+      0.05676296551724136,
+      0.0
+    ]
+  },
+  "sources": {
+    "Revolver_2.obj": "54b28916648ad8f4c577aab4167843ae36041deb07f46025f28745b6e612f95d",
+    "Revolver_4.obj": "35e217c5d62d160673984f1d7aa17c224d43b1a2ca9942b7c7e7d9bf0c94b6c2",
+    "Revolver_3.obj": "443699ca1c54d2d014df254a095e8d37cd063eddbe825f767b1cce58dd815349",
+    "Accessories/Flashlight.obj": "4822bf3fe96e5a18083d7dfffd33996e45f0705c54d0a8f2308c3dadadb37b75"
+  }
+}

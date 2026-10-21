@@ -229,8 +229,8 @@ export class CombatSystem {
     game.attractMigration(Math.min(18, stats.noise * 0.42));
     player.noisePulse = 1;
     player.shots += 1;
-    game.sound("gunshot");
-    vibrate(weapon.type === "shotgun_12g" ? [28, 18, 24] : 22);
+    game.sound(stats.shotSound || "gunshot");
+    vibrate(stats.shotSound === 'magnum' ? [36, 16, 24] : weapon.type === "shotgun_12g" ? [28, 18, 24] : 22);
 
     if (hit) {
       const impact = { x: target.x, y: target.y };

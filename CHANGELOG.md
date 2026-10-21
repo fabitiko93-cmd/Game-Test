@@ -1,3 +1,17 @@
+# Modularer .44-Magnum-Revolver · 21.10.2026
+
+- Der .38-Platzhalter wird durch eine .44-Magnum-Familie aus Quaternius R1/R2/R4
+  ersetzt: sechs Schuss, hoher Einzelschaden, kräftiger Hochschlag und langsame
+  Rückstoßerholung. Eigener kräftiger Schussklang; keine Schalldämpfer-Kompatibilität.
+- Drei wechselbare Laufmodule, zwei kombinierbare Griffe und echte 3D-Teile in
+  Hand/Waffenbank. R1-Lauf und Kompaktgriff montiert; Griffprofil für beide Rigs.
+- Erst R4 ermöglicht Rotpunkt und Waffenlampe. Beim Wechsel auf R1/R2 gehen
+  Aufsätze automatisch und ohne Gewichts-/Identitätsverlust in den Rucksack zurück.
+- Waffenlampe im Zubehördialog schaltbar, nur in der aktiven Hand wirksam. Kegel
+  folgt der Figurendrehung; Wände und geschlossene Türen blockieren das Licht.
+- Revolver, alle Mods und eigene Munition in der Start-Testkiste. Bestehender
+  Polizeischrank verwendet ebenfalls die neue Waffe. Spielwerte sind Startbalance.
+
 # Modulare M4 als Sturmgewehr · 20.10.2026
 
 - Eine M4 in 5,56×45 mit Semi/Auto und eigenen 30er-Wechselmagazinen. Grundausführung

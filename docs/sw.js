@@ -1,5 +1,5 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "46929458ca1b5e45ff19";
+const BUILD_ID = "c9aef4559ab4c703c219";
 const FILES = [
   "./assets/icon.svg",
   "./assets/quaternius/ANIMATION-LICENSE.txt",
@@ -167,6 +167,9 @@ const FILES = [
   "./assets/weapons/m4-376c5a4243d9.glb.gz",
   "./assets/weapons/m4-icon.svg",
   "./assets/weapons/m4.json",
+  "./assets/weapons/revolver-2ad705ff21a8.glb.gz",
+  "./assets/weapons/revolver-icon.svg",
+  "./assets/weapons/revolver.json",
   "./assets/weapons/vector-04fbc5190081.glb.gz",
   "./assets/weapons/vector-icon.svg",
   "./assets/weapons/vector.json",
@@ -258,9 +261,10 @@ const FILES = [
   "./assets/zombies3d/models.json",
   "./build/assets/ak-icon-JY273CYI.svg",
   "./build/assets/m4-icon-IDY2OEW6.svg",
+  "./build/assets/revolver-icon-JRUCUJKS.svg",
   "./build/assets/vector-icon-DX6NJN2U.svg",
-  "./build/main-QNZ2TTLX.js",
-  "./build/style-Q5LMGC5B.css",
+  "./build/main-44UEPNNX.js",
+  "./build/style-L7BTA77W.css",
   "./index.html",
   "./manifest.webmanifest"
 ];

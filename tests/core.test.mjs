@@ -130,7 +130,7 @@ assert.equal(saves.has(), false);
 const policeLocker = world.objects.find(object => object.name === "GESICHERTER WAFFENSCHRANK");
 const clubLocker = world.objects.find(object => object.name === "JAGDLAGER");
 assert.ok(policeLocker.items.some(item => item.type === "pistol_9mm"));
-assert.ok(policeLocker.items.some(item => item.type === "revolver_38"));
+assert.ok(policeLocker.items.some(item => item.type === "revolver_44"));
 assert.ok(clubLocker.items.some(item => item.type === "shotgun_12g"));
 assert.ok(clubLocker.items.some(item => item.type === "hunting_rifle"));
 

@@ -14,6 +14,7 @@ import {
   roundsInWeapon,
   weaponCapacity,
   weaponFireMode,
+  weaponModSlots,
   weaponStats,
 } from "./inventory.js";
 import { backgroundName, skillRank, visibleInfectionState, woundBleeding, woundDisplay, woundTreatmentOptions } from "./character.js";
@@ -671,7 +672,7 @@ export class GameUI {
     this.el.weapon_mode_button.textContent = weaponFireMode(weapon) === "auto" ? "AUTO · HALTEN" : "SEMI · TIPPEN";
     this.el.weapon_reload_button.textContent = definition.feed === "magazine" ? "MAGAZIN WECHSELN" : "NACHLADEN";
     this.el.mod_slots.replaceChildren();
-    for (const slot of [...(definition.feed === "magazine" ? ["magazine"] : []), ...(definition.modSlots || [])]) {
+    for (const slot of [...(definition.feed === "magazine" ? ["magazine"] : []), ...weaponModSlots(weapon)]) {
       const installed = slot === "magazine" ? weapon.magazine : weapon.mods?.[slot];
       const button = document.createElement("button");
       button.className = "mod-slot";

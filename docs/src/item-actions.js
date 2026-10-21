@@ -1,6 +1,6 @@
 import { gainSkill, totalBleeding, treatWound as treatWoundWithItem, treatWithItem } from "./character.js";
 import { ITEMS } from "./data.js";
-import { activeWeapon, addItem, compatibleMods, cycleFireMode, emptyMagazine, ejectMagazine, equipItem, fillMagazine, findItem, insertMagazine, installMod, itemDefinition, removeItem, removeMod, unequipSlot } from "./inventory.js";
+import { activeWeapon, addItem, compatibleMods, cycleFireMode, emptyMagazine, ejectMagazine, equipItem, fillMagazine, findItem, insertMagazine, installMod, itemDefinition, removeItem, removeMod, toggleWeaponLight, unequipSlot } from "./inventory.js";
 import { clamp } from "./util.js";
 import { canInteract } from "./interaction.js";
 
@@ -215,4 +215,11 @@ export function unloadMagazine(game, magazineId) {
 export function toggleFireMode(game, weaponId) {
   if (!game.canAct(true)) return;
   finishWeaponAction(game, cycleFireMode(weaponId ? findItem(game.player, weaponId) : activeWeapon(game.player)));
+}
+
+export function toggleLight(game,weaponId) {
+  if(!game.canAct(true))return;
+  const weapon=findItem(game.player,weaponId);
+  finishWeaponAction(game,toggleWeaponLight(weapon));
+  if(weapon)game.ui.openWeaponPanel(weapon,game.player);
 }

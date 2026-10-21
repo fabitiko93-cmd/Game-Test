@@ -107,6 +107,7 @@ export class Game {
       emptyMagazine: magazineId => ItemActions.unloadMagazine(this, magazineId),
       fillMagazine: magazineId => ItemActions.loadMagazine(this, magazineId),
       fireMode: weaponId => ItemActions.toggleFireMode(this, weaponId),
+      toggleWeaponLight: weaponId => ItemActions.toggleLight(this, weaponId),
       newSurvivor: () => this.requestSuccessor(),
       diagnostics: () => this.toggleDiagnostics(),
       panelClosed: () => {},

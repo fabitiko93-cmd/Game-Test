@@ -55,7 +55,7 @@ mit kompatiblen Mods, vollen/leeren Wechselmagazinen und drei Stapeln passender
 Munition. `world.js` platziert die Kiste direkt neben dem frischen Startpunkt;
 entnommene Gegenstände bleiben über die normale Weltobjektspeicherung entnommen.
 `weapon-catalog.js` beschreibt Modelle, Grundteile, Mod-Zuordnung, Anschlüsse und
-Griffprofile für AK, M4 und Vector. `weapon-models.js` lädt und cached jedes Asset
+Griffprofile für AK, M4, Vector und Revolver. `weapon-models.js` lädt und cached jedes Asset
 getrennt; Hand und drehbare Waffenbank verwenden dieselbe Konfiguration. M4-Setups
 wechseln vollständige Oberteile, verschieben Dämpfer/Anschlüsse und passen die
 Stützhand an. `inventory.js` erzeugt ab Werk montierte Teile aus `defaultMods`;
@@ -104,6 +104,18 @@ gehaltenes Auto-Feuer mit sicheren Abbrüchen, Rückstoß und geraden Durchschü
 aus. Der HUD-Abzug in `input.js` beendet Feuer auch bei Pointer-Abbruch/Blur.
 Startoberteil/-hose speichern den gewählten Modellstil als Gegenstand; angelegte
 Lootkleidung ersetzt weiterhin nur den zugehörigen sichtbaren Kleidungsteil.
+
+`scripts/prepare-revolver.py` vereinheitlicht die Anschlüsse von R1/R2/R4 auf
+einem gemeinsamen Grundkörper; drei Laufmodule, zwei Griffe, Rotpunkt und Lampe
+bleiben getrennt. `inventory.js` prüft `modRequirements` über `weaponModSlots`:
+erst der R4-Lauf macht Optik-/Zubehörplätze nutzbar. Beim Teilewechsel gehen nicht
+mehr unterstützte Aufsätze samt Identität zurück in den Rucksack. Waffenbank und
+Handmodell verwenden dieselben Platzregeln. `rifle-pose.js` nutzt für den Revolver
+ein Handfeuerwaffen-Griffprofil mit Stützhand am Griff und stärkerem Hochschlag.
+`weapon-light.js` zeichnet den schaltbaren Kegel der aktiven Handwaffe, folgt der
+Figurendrehung und verwendet `World.hasLineOfSight` für Wände/Türen. Geometrie wird
+im Stand bis zur nächsten Sichtrevision zwischengespeichert; Erkundung und KI-
+Entdeckungsregeln bleiben unverändert. Schaltzustand liegt am Waffenobjekt.
 
 ## Bestehende Kopplungen
 
