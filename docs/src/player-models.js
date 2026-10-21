@@ -60,6 +60,11 @@ export class PlayerModels {
     root.position.y=QUATERNIUS_MODELS.characters[appearance.feet].groundOffset*root.scale.y;
     entity={root,model,mixer,actions,signature,current:null,clip:null,weapon:null,weaponKind:null};
     entity.rifleHands=captureRifleRig(model);
+    const neutral=actions.get('Idle_Neutral').getClip();
+    entity.handgunCarry=new Map(['ShoulderR','UpperArmR','LowerArmR','WristR'].map(name=>{
+      const bone=model.getObjectByName(name),track=neutral.tracks.find(t=>t.name===`${name}.quaternion`);
+      return [bone,track?new Quaternion().fromArray(track.createInterpolant().evaluate(neutral.duration*.2)):bone.quaternion.clone()];
+    }));
     entity.soles=createSoleProbes(root,clothing.feet);
     this.entities.set(player,entity);return entity;
   }
@@ -68,7 +73,7 @@ export class PlayerModels {
     const item=activeWeapon(player),definition=itemDefinition(item),kind=definition?.weaponKind||null;
     const bag=Boolean(player.equipment?.back),key=`${kind}-${weaponModelSignature(item)}-${bag}`;
     if(entity.weaponKind===key)return;
-    entity.reloadLast=null;entity.supportElbow=null;
+    entity.reloadLast=null;entity.supportElbow=null;entity.supportTwist=null;
     if(entity.weapon){
       entity.weapon.parent.remove(entity.weapon);
       if(entity.weapon.userData.generated)entity.weapon.traverse(o=>o.geometry?.dispose());
@@ -148,6 +153,9 @@ export class PlayerModels {
   }
 
   drawShadow(ctx,player,time,point) {
+    // Preserve a shot's full kick until its first visible frame, even when the
+    // update had a long delta. Gameplay cooldowns continue to tick normally.
+    if(player.combat?.shotImpulse?.fresh){player.combat.shotImpulse.age=0;player.combat.shotImpulse.fresh=false;}
     const entity=this.prepare(player,time);if(!entity)return false;
     entity.root.updateMatrixWorld(true);
     drawSoleShadows(ctx,sampleSoleContacts(entity.soles),point,entity.root.scale.y);return true;

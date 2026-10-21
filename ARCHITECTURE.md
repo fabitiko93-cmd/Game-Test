@@ -46,7 +46,10 @@ kurzen Schussimpuls von der Zielerholung. `gunshot-effects.js` zeichnet kurzes
 Mündungsfeuer und schwache, wandernde Schussspuren. `PlayerModels.shotMuzzle`
 transformiert den echten Lauf-/Dämpferabschluss in Weltkoordinaten; keine Effekte
 aus dem Player-Mittelpunkt. Revolver nutzt eigene Ziel-/Schussclips, einhändige
-abgesenkte Tragehaltung im Stand/Gehen/Sprint und beidhändiges Anvisieren.
+abgesenkte Tragehaltung im Stand/Sprint und beidhändiges Anlegen beim Gehen
+oder tatsächlichen Anvisieren. Die entspannte Revolverhaltung folgt dem
+Original-Neutralclip; `weapon-ik.js` und der Kontaktfit begrenzen Unterarm- und
+Handgelenkdrehung beim Reload getrennt von der Handgelenkbeugung.
 Ein Patch erfordert nicht automatisch das Lesen jeder Datei in seiner Tabellenzeile.
 
 `interior-layout.js` ergänzt die vier Gebäude um einzeln adressierbare Möbel,
@@ -101,8 +104,8 @@ seitlich Platz; Beugeebene des Original-Rigs und griffbezogene Unterarmdrehung
 vermeiden verdrehte Ärmel und Handgelenke. Entspannte Tragehaltung im Stand und
 beim Sprinten mit weiter vorn liegendem rechten Ellenbogen, körpernah vor
 Brust/Bauch mit diagonal zum
-Boden gerichtetem Lauf, tiefere Hüfthaltung bei Bewegung und
-Anlegen beim tatsächlichen Anvisieren werden weich überblendet. Mit Schaft folgt
+Boden gerichtetem Lauf und Anlegen beim Gehen bzw. tatsächlichen Anvisieren
+werden weich überblendet. Mit Schaft folgt
 die Schaftkappe einem Schulterkontaktpunkt; schaftlos gilt eine eigene Position.
 Korrekturen werden vor der nächsten Animation/Abwahl
 zurückgenommen; Armlängen bleiben erhalten. `character-shadow.js` gewinnt je Fuß
@@ -124,9 +127,10 @@ erst der R4-Lauf macht Optik-/Zubehörplätze nutzbar. Beim Teilewechsel gehen n
 mehr unterstützte Aufsätze samt Identität zurück in den Rucksack. Waffenbank und
 Handmodell verwenden dieselben Platzregeln. `rifle-pose.js` nutzt für den Revolver
 ein Handfeuerwaffen-Griffprofil mit Stützhand am Griff und stärkerem Hochschlag.
-`weapon-light.js` zeichnet den schaltbaren Kegel der aktiven Handwaffe, folgt der
-Figurendrehung und verwendet `World.hasLineOfSight` für Wände/Türen. Geometrie wird
-im Stand bis zur nächsten Sichtrevision zwischengespeichert; Erkundung und KI-
+`weapon-light.js` liest Position und volle 3D-Ausrichtung der tatsächlichen
+Waffenlampenlinse aus der gezeichneten Pose, begrenzt Strahlen am Boden und
+verwendet `World.hasLineOfSight` für Wände/Türen. Die Projektion erhält die
+Linsenhöhe; der Cache berücksichtigt Waffenpose und Sichtrevision. Erkundung und KI-
 Entdeckungsregeln bleiben unverändert. Schaltzustand liegt am Waffenobjekt.
 
 ## Bestehende Kopplungen

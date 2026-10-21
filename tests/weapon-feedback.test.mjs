@@ -84,7 +84,8 @@ test('revolver start/load/end clips share the gameplay clock; partial loading an
 test('visual kick responds to every shot and to recoil-reducing parts while staying independent of accuracy recovery',()=>{
   const {player,weapon}=fixture('revolver_44');player.combat.recoil=0;kickWeapon(player,weapon);
   const first=recoilPose(player,weapon.id,true);assert.ok(first.pitch>.25);assert.ok(first.back>.04);
-  player.combat.shotImpulse.age=.1;assert.ok(recoilPose(player,weapon.id,true).pitch<first.pitch*.4);
+  player.combat.shotImpulse.age=.1;assert.ok(recoilPose(player,weapon.id,true).pitch>first.pitch*.45,'Magnum kick remains visible after 100 ms');
+  player.combat.shotImpulse.age=.3;assert.ok(recoilPose(player,weapon.id,true).pitch<first.pitch*.1);
   player.combat.recoil=1.5;player.combat.shotImpulse.age=.6;assert.equal(recoilPose(player,weapon.id,true).pitch,0);
   const ak=fixture();kickWeapon(ak.player,ak.weapon);const bare=recoilPose(ak.player,ak.weapon.id);
   ak.weapon.mods.stock=createItem('ak_fixed_stock');delete ak.player.combat.shotImpulse;kickWeapon(ak.player,ak.weapon);

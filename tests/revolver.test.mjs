@@ -136,12 +136,13 @@ test('six powerful shots empty the cylinder, recoil slows follow-ups, .44 reload
   combat.update(game,duration+.001);assert.equal(weapon.rounds,6);assert.equal(player.combat.reload,undefined);
 });
 
-test('the switchable weapon light follows facing, stops at walls, saves its state and never illuminates from a backpack weapon',()=>{
+test('the switchable weapon light follows its three-dimensional source, stops at walls and saves its active state',()=>{
   const {player,weapon,mount}=kit();mount('revolver_rail_barrel');mount('revolver_flashlight');assert.ok(weaponLight(weapon));
   Object.assign(player,{x:10,y:10,facingX:1,facingY:0});const light=weaponLight(weapon);
-  const wall={hasLineOfSight:(_a,b)=>b.x<=12};const points=weaponLightCone(wall,player,light);
-  assert.ok(points.every(p=>p.x<=12&&p.x>11.98));const clear=weaponLightCone({hasLineOfSight:()=>true},player,light);
-  near(clear[12].x,14.5);near(clear[12].y,10);
+  const source={x:10,y:10,height:1.2,direction:{x:1,y:0,height:0}};
+  const wall={hasLineOfSight:(_a,b)=>b.x<=12};const points=weaponLightCone(wall,source,light);
+  assert.ok(points.every(p=>p.x<=12&&(p.x>11.998||p.height<1e-6)),'rays stop at the wall or reach the floor first');const clear=weaponLightCone({hasLineOfSight:()=>true},source,light);
+  near(clear.at(-1).x,14.5);near(clear.at(-1).y,10);near(clear.at(-1).height,1.2);
   assert.equal(toggleWeaponLight(weapon).ok,true);assert.equal(weaponLight(weapon),null);toggleWeaponLight(weapon);
   player.equipment.mainHand=null;
   const renderer={ctx:{save(){throw Error('backpack light must not render');}}};drawWeaponLight(renderer,{player,world:wall},0);

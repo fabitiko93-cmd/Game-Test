@@ -1,5 +1,10 @@
 import {Quaternion,Vector3} from "three";
 const clampUnit=value=>Math.max(-1,Math.min(1,value));
+const signedAngle=value=>((value+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;
+
+export function axialAngle(rotation,axis){
+  return signedAngle(2*Math.atan2(new Vector3(rotation.x,rotation.y,rotation.z).dot(axis),rotation.w));
+}
 
 export function orientWorld(bone, rotation) {
   const parent = bone.parent.getWorldQuaternion(new Quaternion()).invert();
@@ -52,14 +57,24 @@ export function fitArm(upper, lower, wrist, target, pole, frame) {
     const angle=Math.atan2(axis.dot(current.clone().cross(normal)),current.dot(normal));
     orientWorld(upper,new Quaternion().setFromAxisAngle(axis,angle).multiply(upper.getWorldQuaternion(new Quaternion())));
   }
+  // The elbow has one bending hinge. Start from its bind rotation each time:
+  // retaining the previous grip's roll makes repeated IK fits accumulate twist.
+  if(frame?.lowerRest){lower.quaternion.copy(frame.lowerRest);lower.updateMatrixWorld(true);}
   pointBone(lower, wrist, nextHand);
   if(frame) {
-    // Share the grip's roll with the forearm. Rotating only the wrist leaves a
-    // corkscrew at the cuff even when the hand is in the correct position.
+    const neutral=lower.getWorldQuaternion(new Quaternion());
     const rotation=frame.hand.clone().multiply(frame.rest.clone().invert());
     const from=wrist.position.clone().normalize().applyQuaternion(rotation);
-    const to=nextHand.clone().sub(nextElbow).normalize();
-    orientWorld(lower,new Quaternion().setFromUnitVectors(from,to).multiply(rotation));
+    const axis=nextHand.clone().sub(nextElbow).normalize();
+    const desired=new Quaternion().setFromUnitVectors(from,axis).multiply(rotation);
+    let twist=axialAngle(desired.multiply(neutral.clone().invert()),axis);
+    if(Math.abs(twist)>Math.PI*2/3&&frame.twistPreference&&Math.sign(twist)!==Math.sign(frame.twistPreference))twist-=Math.sign(twist)*Math.PI*2;
+    const limit=frame.maxTwist??Math.PI/3,actual=Math.max(-limit,Math.min(limit,twist));
+    orientWorld(lower,new Quaternion().setFromAxisAngle(axis,actual).multiply(neutral));
+    // The support-hand contact solver can turn a free hand instead of hiding
+    // an impossible grip in a 150–180 degree forearm rotation.
+    frame.wristTwist=twist-actual;
+    frame.forearmTwist=actual;
   }
 }
 

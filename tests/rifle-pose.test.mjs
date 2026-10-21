@@ -106,9 +106,9 @@ test('posture follows movement and actual aiming, and transitions keep the weapo
   const player=createPlayer();assert.equal(riflePosture(player),'carry');
   player.combat.enabled=true;assert.equal(riflePosture(player),'carry','combat mode without a target is not aiming');
   player.combat.targetId='target';player.combat.aim=.1;assert.equal(riflePosture(player),'aim');
-  player.moving=true;assert.equal(riflePosture(player),'hip');
+  player.moving=true;assert.equal(riflePosture(player),'aim');
   player.running=true;assert.equal(riflePosture(player),'carry','sprinting uses the relaxed carry even with a selected combat target');
-  player.running=false;assert.equal(riflePosture(player),'hip','walking retains its separate hip posture');
+  player.running=false;assert.equal(riflePosture(player),'aim','walking keeps the light and barrel directed forward');
   const library=new QuaterniusAssets({loadAsset:parse}),models=new PlayerModels({},library);
   models.weapons.loadAsset=parse;await Promise.all([models.ready,models.weapons.request()]);
   const weapon=createItem('ak_762',1,{mods:{stock:createItem('ak_fixed_stock')}});addItem(player,weapon);equipItem(player,weapon.id);

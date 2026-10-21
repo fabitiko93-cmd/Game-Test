@@ -33,6 +33,7 @@ function gripPoint(part){
 }
 function placeLeft(entity,base,point,rotation,profile,weight,contact='Middle2',thumbPoint=null){
   const before=fingers(entity),q=base.rotation.clone().slerp(rotation,weight);
+  if(base.previous)q.copy(base.previous.clone().rotateTowards(q,base.step*10));
   poseHand(entity,'L',profile,{thumbPoint});blendFingers(before,weight);
   const baseContact=contactWrist(entity,'L',point,q,contact).sub(point).negate().add(base.point);
   const goal=baseContact.lerp(point,weight);
@@ -45,7 +46,7 @@ function placeLeft(entity,base,point,rotation,profile,weight,contact='Middle2',t
 }
 function remember(entity,state,weight){
   const weapon=entity.weapon,wrist=entity.model.getObjectByName('WristL');
-  entity.reloadLast={id:state.weaponId,weight,elapsed:0,point:weapon.getWorldPosition(new Vector3()),rotation:weapon.getWorldQuaternion(new Quaternion()),
+  entity.reloadLast={id:state.weaponId,weight,elapsed:0,phaseTime:state.elapsed,point:weapon.getWorldPosition(new Vector3()),rotation:weapon.getWorldQuaternion(new Quaternion()),
     left:wrist.getWorldPosition(new Vector3()),palm:entity.model.getObjectByName('Middle2L').getWorldPosition(new Vector3()),leftRotation:wrist.getWorldQuaternion(new Quaternion()),fingers:fingers(entity),
     parts:new Map([...weapon.userData.partPose].map(([name])=>{const part=weapon.getObjectByName(name);return[name,{point:part.position.clone(),rotation:part.quaternion.clone()}];}))};
 }
@@ -55,7 +56,7 @@ function finishInterrupted(entity,delta){
   const point=weapon.getWorldPosition(new Vector3()).lerp(last.point,t),rotation=weapon.getWorldQuaternion(new Quaternion()).slerp(last.rotation,t);
   const wrist=entity.model.getObjectByName('WristL'),q=wrist.getWorldQuaternion(new Quaternion()).slerp(last.leftRotation,t);
   const palm=entity.model.getObjectByName('Middle2L').getWorldPosition(new Vector3()).lerp(last.palm,t);
-  fitWeaponPose(entity,point,rotation);
+  fitWeaponPose(entity,point,rotation,t);
   for(const [bone,old]of last.fingers)bone.quaternion.slerp(old,t);
   fitSupportContact(entity,palm,q);
   for(const[name,pose]of last.parts){const part=weapon.getObjectByName(name);part.position.lerp(pose.point,t);part.quaternion.slerp(pose.rotation,t);}
@@ -67,7 +68,10 @@ export function applyReloadPose(entity,player,delta=1/60){
   if(player.dead){entity.reloadLast=null;return;}
   if(!state||state.weaponId!==weapon.userData.weaponId){finishInterrupted(entity,delta);return;}
   const phase=reloadPhase(state),weight=Math.min(ease(state.elapsed/.30),ease((state.duration-state.elapsed)/.28));
+  if(weight===0){entity.reloadLast=null;return;}
   const bone=n=>entity.model.getObjectByName(n),wrist=bone('WristL'),base={point:wrist.getWorldPosition(new Vector3()),rotation:wrist.getWorldQuaternion(new Quaternion())};
+  const last=entity.reloadLast,step=state.elapsed-(last?.phaseTime??-1);
+  if(state.kind==='cylinder'&&last?.id===state.weaponId&&step>0&&step<.1){base.previous=last.leftRotation;base.step=step;}
   const shoulder=entity.root.worldToLocal(bone('UpperArmR').getWorldPosition(new Vector3()));
   const hips=entity.root.worldToLocal(bone('UpperLegL').getWorldPosition(new Vector3()).lerp(bone('UpperLegR').getWorldPosition(new Vector3()),.5));
   const waist=entity.root.localToWorld(hips.add(v(.24,.04,.14)));
@@ -75,7 +79,7 @@ export function applyReloadPose(entity,player,delta=1/60){
   const goal=entity.root.localToWorld(v(handgun?.015:-.055,shoulder.y-(handgun?.27:.25)+motion,shoulder.z+(handgun?.29:.34)));
   const q=entity.root.getWorldQuaternion(new Quaternion()).multiply(new Quaternion().setFromEuler(new Euler(handgun?.48:.10,handgun?-.10:0,handgun?-.14:-.09,'YXZ')));
   const point=weapon.getWorldPosition(new Vector3()).lerp(goal,weight),rotation=weapon.getWorldQuaternion(new Quaternion()).slerp(q,weight);
-  fitWeaponPose(entity,point,rotation);poseHand(entity,'R','support',{trigger:0});
+  fitWeaponPose(entity,point,rotation,weight,true);poseHand(entity,'R','support',{trigger:0});
   const gunQ=weapon.getWorldQuaternion(new Quaternion());
   if(handgun)revolver(entity,state,phase,base,waist,gunQ,weight);
   else magazine(entity,state,phase,base,waist,gunQ,weight);

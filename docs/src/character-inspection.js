@@ -21,7 +21,7 @@ export class CharacterInspection {
     if(!entity)return null;
     this.models.equip(entity,this.player);
     if(activeWeapon(this.player)&&!entity.weapon)return null;
-    const clip=activeWeapon(this.player)?'Idle_Gun':'Idle_Neutral';
+    const clip=activeWeapon(this.player)&&!entity.weapon?.userData.grips?.handgun?'Idle_Gun':'Idle_Neutral';
     this.models.pose(entity,{clip,progress:.2,delta:1,yaw});
     if(hasWeaponModel(activeWeapon(this.player)))applyRiflePose(entity,this.player,1,'carry');
     const height=playerHeight(appearance),project=this.pass.drawInspection(canvas,entity.root,{height:height*1.16,center:new Vector3(0,height*.5,0)});

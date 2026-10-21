@@ -34,6 +34,8 @@ export function configureWeaponModel(root, weapon) {
   const suppressor=root.getObjectByName('Suppressor');
   const muzzlePart=suppressor?.visible?suppressor:definition.muzzleParts.map(n=>root.getObjectByName(n)).find(p=>p?.visible);
   root.userData.muzzle=muzzlePart?weaponTip(root,muzzlePart):new Vector3().fromArray(root.userData.anchors.muzzle||[0,.06,.25]);
+  const flashlight=root.getObjectByName('Flashlight');
+  root.userData.lightOrigin=flashlight?.visible?weaponTip(root,flashlight):null;
   root.userData.partPose=new Map(Object.keys(definition.asset.parts).map(name=>{const part=root.getObjectByName(name);return [name,{position:part.position.clone(),rotation:part.quaternion.clone(),visible:part.visible}];}));
   return root;
 }
