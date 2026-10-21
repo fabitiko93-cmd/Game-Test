@@ -1,7 +1,8 @@
 import { Box3, Group, Vector3 } from "three";
 import { loadModelAsset } from "./model-pass.js";
 import { weaponModelDefinition, hasWeaponModel } from './weapon-catalog.js';
-export { AK_MODEL, VECTOR_MODEL, M4_MODEL } from './weapon-catalog.js';
+import {weaponModSlots} from './inventory.js';
+export { AK_MODEL, VECTOR_MODEL, M4_MODEL, REVOLVER_MODEL } from './weapon-catalog.js';
 
 export const WEAPON_ANCHORS=Object.freeze({stock:new Vector3(0,.04,-.18),optic:new Vector3(0,.15,.12),muzzle:new Vector3(0,.09,.54),magazine:new Vector3(0,-.08,.18)});
 
@@ -11,7 +12,7 @@ export function weaponModelSignature(weapon) {
 
 export function configureWeaponModel(root, weapon) {
   const definition = weaponModelDefinition(weapon);
-  const mods=Object.values(weapon.mods || {}),setups=mods.map(mod=>definition.setups?.[mod.type]).filter(Boolean);
+  const slots=weaponModSlots(weapon),mods=Object.entries(weapon.mods || {}).filter(([slot])=>slots.includes(slot)).map(([,mod])=>mod),setups=mods.map(mod=>definition.setups?.[mod.type]).filter(Boolean);
   const parts=mod=>[definition.mods[mod?.type]].flat().filter(Boolean);
   const visible = new Set([...definition.baseParts, ...mods.flatMap(parts)]);
   if (definition.magazines[weapon.magazine?.type]) visible.add(definition.magazines[weapon.magazine.type]);

@@ -21,6 +21,7 @@ import { WeaponInspection } from "./weapon-models.js";
 import { drawFallbackShadow } from "./character-shadow.js";
 import { playerHeight } from "./quaternius-catalog.js";
 import { CharacterInspection } from './character-inspection.js';
+import {drawWeaponLight} from './weapon-light.js';
 
 export class Renderer {
   constructor(canvas) {
@@ -978,6 +979,7 @@ export class Renderer {
     for(const o of game.world.objectsInBounds(bounds.minX,bounds.minY,bounds.maxX,bounds.maxY)){if(o.removed||!o.light||(game.playerVisibility&&!playerCanSee(game,o)&&!game.playerVisibility.hasExplored(o)))continue;const p=this.iso(o.x,o.y,42);ctx.drawImage(this.streetlightGlow,p.x-70,p.y-70);}
     ctx.globalCompositeOperation="source-over";
     if(sun<.35){const p=this.iso(game.player.x,game.player.y,12);ctx.globalCompositeOperation="screen";ctx.drawImage(this.playerGlow,p.x-130,p.y-130);ctx.globalCompositeOperation="source-over";}
+    drawWeaponLight(this,game,sun);
   }
 
   drawVignette(){const ctx=this.ctx;ctx.fillStyle=this.vignetteGradient||"rgba(0,0,0,.2)";ctx.fillRect(0,0,this.width,this.height);}

@@ -15,7 +15,7 @@ export function createItem(type, count = 1, options = {}) {
       Object.entries(definition.defaultMods || {}).map(([slot, type]) => [slot, createItem(type)]),
     );
     if (definition.fireModes) item.fireMode = definition.fireModes.includes(options.fireMode) ? options.fireMode : definition.fireModes[0];
-    if (definition.feed === "internal") item.rounds = options.rounds ?? 0;
+    if (definition.feed === "internal") item.rounds = clamp(options.rounds ?? 0, 0, definition.capacity);
     if (definition.feed === "magazine") {
       item.magazine = options.magazine ? deepCopy(options.magazine) : null;
       if (!item.magazine && Number.isFinite(options.loadedRounds)) {
@@ -48,7 +48,8 @@ export function itemWeight(item) {
   if (definition.roundWeight) weight = Math.ceil((definition.roundWeight * Math.max(1, item.count || 1) - 1e-9) / definition.weightStep) * definition.weightStep;
   if (item.magazine) weight += itemWeight(item.magazine);
   if (definition.feed === "internal" && item.rounds) {
-    weight += (ITEMS[definition.ammoType]?.weight || 0) * item.rounds;
+    const ammo=ITEMS[definition.ammoType];
+    weight += ammo?.roundWeight ? Math.ceil((ammo.roundWeight*item.rounds-1e-9)/ammo.weightStep)*ammo.weightStep : (ammo?.weight || 0)*item.rounds;
   }
   if (definition.type === "magazine" && (item.rounds || 0) >= Math.ceil(definition.capacity / 2)) weight += .05;
   for (const mod of Object.values(item.mods || {})) weight += itemWeight(mod);
@@ -242,8 +243,36 @@ export function compatibleMods(player, weapon) {
   if (!definition?.modSlots) return [];
   return player.inventory.filter(item => {
     const mod = itemDefinition(item);
-    return mod?.type === "mod" && mod.compatible?.includes(weapon.type) && definition.modSlots.includes(mod.modSlot);
+    return mod?.type === "mod" && mod.compatible?.includes(weapon.type) && weaponModSlots(weapon).includes(mod.modSlot);
   });
+}
+
+export function weaponModSlots(weapon) {
+  const definition=itemDefinition(weapon);
+  return (definition?.modSlots || []).filter(slot=>Object.entries(definition.modRequirements?.[slot] || {})
+    .every(([required,types])=>types.includes(weapon.mods?.[required]?.type)));
+}
+
+function returnUnsupportedMods(player,weapon) {
+  const slots=weaponModSlots(weapon),returned=[];
+  for(const [slot,mod] of Object.entries(weapon.mods || {}))if(!slots.includes(slot)) {
+    delete weapon.mods[slot];player.inventory.push(mod);returned.push(mod);
+  }
+  if(weapon.lightOn&&!Object.values(weapon.mods || {}).some(mod=>itemDefinition(mod)?.light))weapon.lightOn=false;
+  return returned;
+}
+
+export function weaponLight(weapon) {
+  if(!weapon?.lightOn)return null;
+  return Object.entries(weapon.mods || {}).filter(([slot])=>weaponModSlots(weapon).includes(slot))
+    .map(([,mod])=>itemDefinition(mod)?.light).find(Boolean) || null;
+}
+
+export function toggleWeaponLight(weapon) {
+  if(!Object.entries(weapon?.mods || {}).some(([slot,mod])=>weaponModSlots(weapon).includes(slot)&&itemDefinition(mod)?.light))
+    return {ok:false,message:'KEINE WAFFENLAMPE MONTIERT'};
+  weapon.lightOn=!weapon.lightOn;
+  return {ok:true,message:weapon.lightOn?'WAFFENLAMPE AN':'WAFFENLAMPE AUS'};
 }
 
 export function installMod(player, weaponId, modId) {
@@ -257,12 +286,15 @@ export function installMod(player, weaponId, modId) {
   if (!modDefinition.compatible?.includes(weapon.type) || !weaponDefinition.modSlots?.includes(modDefinition.modSlot)) {
     return { ok: false, message: "Der Umbau passt nicht an diese Waffe." };
   }
+  if(!weaponModSlots(weapon).includes(modDefinition.modSlot))return {ok:false,message:'R4-SCHIENENLAUF ERFORDERLICH'};
   const removed = removeItem(player, mod.id);
   const previous = weapon.mods?.[modDefinition.modSlot] || null;
   weapon.mods ||= {};
   weapon.mods[modDefinition.modSlot] = removed;
-  if (previous) addItem(player, previous);
-  return { ok: true, message: `${modDefinition.name.toUpperCase()} MONTIERT` };
+  if (previous) player.inventory.push(previous);
+  if(modDefinition.light)weapon.lightOn=true;
+  const returned=returnUnsupportedMods(player,weapon);
+  return { ok: true, message: `${modDefinition.name.toUpperCase()} MONTIERT${returned.length?' · AUFSÄTZE IM RUCKSACK':''}` };
 }
 
 export function removeMod(player, weaponId, slot) {
@@ -271,7 +303,8 @@ export function removeMod(player, weaponId, slot) {
   if (!weapon || !mod) return { ok: false, message: "Dieser Platz ist leer." };
   if (itemDefinition(mod)?.permanent) return { ok: false, message: "Dieser Umbau ist dauerhaft." };
   delete weapon.mods[slot];
-  addItem(player, mod);
+  player.inventory.push(mod);
+  returnUnsupportedMods(player,weapon);
   return { ok: true, message: `${itemDefinition(mod).name.toUpperCase()} ENTFERNT` };
 }
 

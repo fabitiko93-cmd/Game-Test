@@ -1,6 +1,7 @@
 import AK from '../assets/weapons/ak.json' with { type: 'json' };
 import VECTOR from '../assets/weapons/vector.json' with { type: 'json' };
 import M4 from '../assets/weapons/m4.json' with { type: 'json' };
+import REVOLVER from '../assets/weapons/revolver.json' with { type: 'json' };
 
 // One catalogue drives the held model, weapon bench, UI and upper-body motion.
 // Item compatibility and game values remain in data.js.
@@ -28,8 +29,14 @@ const MODELS = {
     setups: {...M4.setups, ak_acog_3x: {hideParts: ['RearSight']}},
     requires: {optic: 'barrel', muzzle: 'barrel'},
   },
+  revolver_44: {
+    name:'Revolver',asset:REVOLVER,baseParts:['Receiver'],magazines:{},
+    mods:{revolver_short_barrel:'ShortBarrel',revolver_long_barrel:'LongBarrel',revolver_rail_barrel:'RailBarrel',
+      revolver_wood_grip:'WoodGrip',revolver_comfort_grip:'ComfortGrip',reflex_sight:'Reflex',revolver_flashlight:'Flashlight'},
+    anchors:REVOLVER.anchors,grips:REVOLVER.grips,
+  },
 };
 
 export function weaponModelDefinition(weapon) { return MODELS[typeof weapon === 'string' ? weapon : weapon?.type]; }
 export function hasWeaponModel(weapon) { return Boolean(weaponModelDefinition(weapon)); }
-export { AK as AK_MODEL, VECTOR as VECTOR_MODEL, M4 as M4_MODEL };
+export { AK as AK_MODEL, VECTOR as VECTOR_MODEL, M4 as M4_MODEL, REVOLVER as REVOLVER_MODEL };

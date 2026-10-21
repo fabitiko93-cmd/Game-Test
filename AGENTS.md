@@ -109,6 +109,22 @@ Optische Spieltests übernimmt der Nutzer selbst. Für Waffenpatches technische
 Build-/Systemprüfungen ausführen und die veröffentlichte Spielseite bereitstellen;
 keine zeitaufwendigen automatisierten Browser-Sichttests ansetzen.
 
+Revolver vom 21.10.2026: R1/R2/R4 aus der Übersicht bilden eine modulare Familie;
+R3/R5 ausgeschlossen. Bildnummern sind nicht Dateinummern: R1=`Revolver_4`,
+R2=`Revolver_2`, R4=`Revolver_3`. Drei Laufmodule und zwei Griffe; R2/R4 haben
+identische Griffe. R4 kombiniert kräftigeres Laufprofil, Schiene und angepasste
+Visierung. Nur dieses Modul ermöglicht Rotpunkt/Waffenlampe; beim Laufwechsel
+werden davon abhängige Aufsätze ohne Verlust in den Rucksack zurückgegeben.
+Nutzer verlangt sechs Schuss, großes starkes Kaliber, starken Rückstoß und keine
+Schalldämpfer. Umsetzung als `revolver_44` mit `.44 Magnum` statt altem .38-
+Platzhalter; vorläufige Balance: 92 Schaden, 0,9 s Schussabstand, Rückstoß 1,
+Erholung 0,7/s, sechs Patronen direkt in die Trommel. R1-Lauf/Kompaktgriff montiert.
+Die Waffenlampe ist nach Montage an und im Zubehördialog schaltbar; nur die aktive
+Handwaffe leuchtet, Wände/geschlossene Türen blockieren den Kegel. Keine Batterien-
+oder zusätzliche Entdeckungsmechanik. Lampe und Rotpunkt haben getrennte Positionen.
+Waffenkörper/Lampe Quaternius CC0; Rotpunktgeometrie aus der bereits kreditierten
+TastyTony-Vector (CC BY 4.0). Lizenznachweise und Änderungshinweise erhalten.
+
 Beauftragte Patches bis zum überprüften Abschluss führen. Fortschrittsmeldungen
 beenden die Arbeit nicht. Bei beauftragter Veröffentlichung gehören Commit,
 Zusammenführung, erfolgreiches Deployment und Prüfung des normalen Spieleinstiegs

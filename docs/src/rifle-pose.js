@@ -177,14 +177,15 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
     if(head)orientWorld(head,headRotation);
     root.updateMatrixWorld(true);
   }
-  const pitch = .80*blend.carry+.22*blend.hip+.015*blend.aim-(player.combat?.recoil || 0)*.035;
+  const handgun=Boolean(grips?.handgun);
+  const pitch = .80*blend.carry+.22*blend.hip+.015*blend.aim-(player.combat?.recoil || 0)*(handgun ? .18 : .035);
   const gunRotation = root.getWorldQuaternion(new Quaternion()).multiply(new Quaternion().setFromEuler(new Euler(pitch,1.25*blend.carry,0,'YXZ')));
   const shoulder = root.worldToLocal(right[0].getWorldPosition(new Vector3()));
   const scaled=point=>point.clone().multiply(root.getWorldScale(new Vector3())).applyQuaternion(gunRotation);
   const carryGoal=root.localToWorld(shoulder.clone().add(new Vector3(.14,-.30,.11)));
-  const hipGoal=root.localToWorld(shoulder.clone().add(new Vector3(.015,-.25,.24)));
+  const hipGoal=root.localToWorld(shoulder.clone().add(handgun?new Vector3(.04,-.18,.38):new Vector3(.015,-.25,.24)));
   const shoulderContact=root.localToWorld(shoulder.clone().add(new Vector3(-.012,.015,.055)));
-  const aimGoal=stockContact?shoulderContact.clone().sub(scaled(stockContact)):root.localToWorld(shoulder.clone().add(new Vector3(.03,-.10,.25)));
+  const aimGoal=stockContact?shoulderContact.clone().sub(scaled(stockContact)):root.localToWorld(shoulder.clone().add(handgun?new Vector3(.08,-.08,.44):new Vector3(.03,-.10,.25)));
   const gunGoal=carryGoal.multiplyScalar(blend.carry).addScaledVector(hipGoal,blend.hip).addScaledVector(aimGoal,blend.aim);
   entity.rifleShoulderContact=shoulderContact;
   const offsets=[scaled(rightOffset),scaled(leftOffset)];

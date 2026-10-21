@@ -42,6 +42,10 @@ test("every implemented weapon has loose, usable attachments, magazines and ammu
       assert.ok(attachment, `${type}: ${modType}`);
       const player = createPlayer();
       assert.equal(addItem(player, weapon), true);
+      for(const types of Object.values(definition.modRequirements?.[mod.modSlot] || {})) {
+        const required=createItem(types[0]);assert.equal(addItem(player,required),true);
+        assert.equal(installMod(player,weapon.id,required.id).ok,true);
+      }
       assert.equal(addItem(player, attachment), true);
       assert.equal(installMod(player, weapon.id, attachment.id).ok, true, `${type}: ${modType}`);
     }
