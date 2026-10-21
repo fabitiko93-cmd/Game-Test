@@ -125,6 +125,13 @@ oder zusätzliche Entdeckungsmechanik. Lampe und Rotpunkt haben getrennte Positi
 Waffenkörper/Lampe Quaternius CC0; Rotpunktgeometrie aus der bereits kreditierten
 TastyTony-Vector (CC BY 4.0). Lizenznachweise und Änderungshinweise erhalten.
 
+Haltungskorrektur vom 21.10.2026: Entspanntes Tragen im Stand, beim normalen
+Gehen/Schleichen automatisch anlegen und beim Sprint wieder absenken. Die Lampe
+folgt ihrer tatsächlichen Linse und der vollständigen Waffenausrichtung inklusive
+Neigung; abgesenkte Waffen leuchten entsprechend auf den nahen Boden. Revolver-
+Tragearm aus der neutralen Originalpose, Reload ohne verdrehte Unterarme oder
+Handgelenke; Magnum-Rückstoß als deutlich sichtbarer, kurz gehaltener Hochschlag.
+
 Beauftragte Patches bis zum überprüften Abschluss führen. Fortschrittsmeldungen
 beenden die Arbeit nicht. Bei beauftragter Veröffentlichung gehören Commit,
 Zusammenführung, erfolgreiches Deployment und Prüfung des normalen Spieleinstiegs
