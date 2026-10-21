@@ -101,7 +101,8 @@ test('both real rigs support the handgun at its grips with intact legs, six modu
       const legs=['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].map(pos),lengths=['L','R'].flatMap(s=>[pos('UpperArm'+s).distanceTo(pos('LowerArm'+s)),pos('LowerArm'+s).distanceTo(pos('Wrist'+s))]);
       applyRiflePose(entity,player,1,posture);
       const leftDistance=pos('WristL').distanceTo(entity.weapon.localToWorld(new Vector3().fromArray(entity.weapon.userData.grips.left)));
-      assert.ok(posture==='carry'?leftDistance>.10:leftDistance<.015,'free support hand while carrying; both hands on the aimed revolver');
+      const palm=entity.weapon.worldToLocal(pos('Middle2L'));
+      assert.ok(posture==='carry'?leftDistance>.10:(Math.abs(palm.x)<.035&&palm.y>-.06&&palm.y<.02&&palm.z>-.01&&palm.z<.06),'free support hand while carrying; palm wraps the firing hand when aiming');
       ['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].map(pos).forEach((p,i)=>assert.ok(p.distanceTo(legs[i])<1e-7));
       ['L','R'].flatMap(s=>[pos('UpperArm'+s).distanceTo(pos('LowerArm'+s)),pos('LowerArm'+s).distanceTo(pos('Wrist'+s))]).forEach((l,i)=>near(l,lengths[i],1e-5));
       const index=entity.weapon.worldToLocal(pos('Index3R'));assert.ok(index.z>.025&&index.z<.055&&index.y>-.01&&index.y<.04,`${sex} ${barrel} ${grip} ${clip} ${posture}: index finger reaches the trigger ${index.toArray()}`);

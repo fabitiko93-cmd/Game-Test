@@ -231,3 +231,19 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
   der Korrekturen beim Ablegen. `character-shadow.test.mjs`: echte Sohlenproben
   beider Rigs beim Gehen/Schleichen, identische 3D-/Bodenprojektion, schwächere
   Schatten angehobener Füße und eine gemeinsame Pose für Schatten/Körper.
+
+`weapon-ik.js` löst die Armketten mit bindeposenbezogener Unterarmdrehung.
+`weapon-hands.js` enthält getrennte Finger-/Daumenstellungen und Handflächenrahmen
+für Vorderschaft, aufrechten Vector-Griff, Revolver, Magazine und Patronengriff.
+`rifle-pose.js` hält den Handflächenkontakt fest und korrigiert erreichbare
+Handgelenkwinkel statt einen starren Handgelenkpunkt zu erzwingen. Körperbezogene
+Ellbogenführung bleibt beim Wechsel der Haltung kontinuierlich. Die Schussabfrage
+in `player-models.js` misst die gerade sichtbare Mündung ohne Haltungswechsel.
+`weapon-reload-pose.js` führt Waffen-/Handkontakte nach derselben Nachladeuhr:
+Geometrieschnitt am Magazin, gemeinsames Tragen, geradliniges Einsetzen; Revolver
+mit zur Stützhand geöffneter Trommel und sichtbar zwischen Daumen/Zeigefinger
+gehaltener Einzelpatrone. Taschenpunkte folgen der Hüfte auch beim Ducken.
+Unterbrechungen kehren weich zur laufenden Haltung zurück; Ausrüstungswechsel
+verwerfen die alte Übergangspose. Platzhalterwaffen bleiben im bisherigen Ablauf.
+`weapon-hands.test.mjs` prüft echte Griffoberflächen, beide Handgelenke, Patronen-
+kontakt/Übergabe, kontinuierliche vollständige Abläufe und unveränderte Hüftschüsse.
