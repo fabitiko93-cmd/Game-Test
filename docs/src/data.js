@@ -67,9 +67,6 @@ const firearm = (name, short, options) => ({
 export const ITEMS = {
   ...CLOTHING_ITEMS,
   kitchen_knife: melee("Küchenmesser", "Messer", "blades", 20, 1.13, 0.95, 0.84, 1.8, 0.35, 1, "Schnell und leise, aber ohne große Reichweite.", { execution: true }),
-  hammer: melee("Schlosserhammer", "Hammer", "blunt", 27, 1.04, 1.28, 0.8, 3.4, 0.75, 1, "Kurze Reichweite, kräftiger Taumelschlag."),
-  baseball_bat: melee("Baseballschläger", "Schläger", "blunt", 25, 1.55, 1.42, 0.85, 4.1, 1.15, 2, "Reichweite und Kontrolle gegen einzelne Infizierte."),
-  axe: melee("Spaltaxt", "Axt", "blades", 42, 1.34, 1.75, 0.78, 5.2, 1.65, 2, "Langsam und anstrengend, dafür verheerend."),
 
   ak_762: firearm("AK · 7,62×39", "AK", {
     icon: "ak", weight: 3, hands: 2, damage: 62, range: 13, aimTime: 1.15, recovery: .24,
@@ -118,7 +115,7 @@ export const ITEMS = {
   pistol_9mm: firearm("9-mm-Pistole", "Pistole", {
     weight: 0.86, hands: 1, damage: 44, range: 9.2, aimTime: 1.35, recovery: 0.48,
     accuracy: 0.72, headshot: 0.2, noise: 18, feed: "magazine",
-    magazineTypes: ["mag_9mm_12", "mag_9mm_18"], modSlots: ["optic", "muzzle", "utility"],
+    magazineTypes: ["mag_9mm_12", "mag_9mm_18"], modSlots: [],
     description: "Handlich und schnell im Anschlag. Benötigt ein geladenes Magazin.",
   }),
   revolver_44: firearm(".44-Magnum-Revolver", ".44 Magnum", {
@@ -137,34 +134,12 @@ export const ITEMS = {
   revolver_wood_grip: { name: "Kompakter Revolvergriff", short: "Kompaktgriff", type: "mod", icon: "mod", modSlot: "grip", compatible: ["revolver_44"], weight: .15, stack: 1, effects: {}, description: "150 g. Einfacher kompakter Originalgriff aus R1. Mit allen drei Laufmodulen kombinierbar." },
   revolver_comfort_grip: { name: "Revolvergriff mit Griffschalen", short: "Schalengriff", type: "mod", icon: "mod", modSlot: "grip", compatible: ["revolver_44"], weight: .2, stack: 1, effects: { recoilPerShotMul: .85, recoilRecoveryAdd: .1 }, description: "200 g. Gemeinsamer Griff von R2/R4 samt seitlichen Griffschalen. Verbessert die Kontrolle; der kräftige Magnum-Rückstoß bleibt erhalten." },
   revolver_flashlight: { name: "Revolver-Waffenlampe", short: "Waffenlampe", type: "mod", icon: "mod", modSlot: "utility", compatible: ["revolver_44"], weight: .15, stack: 1, effects: {}, light: {range: 4.5, halfAngle: .32}, description: "150 g. Benötigt den R4-Schienenlauf. Leuchtet entlang der Waffe; beim Absenken auf den nahen Boden. Wände und geschlossene Türen begrenzen den Kegel. Im Zubehörmenü ein-/ausschaltbar; beim Montieren eingeschaltet." },
-  shotgun_12g: firearm("Doppelläufige Flinte", "Flinte", {
-    weight: 3.05, hands: 2, damage: 82, range: 7.1, aimTime: 1.7, recovery: 1.08,
-    accuracy: 0.88, headshot: 0.12, noise: 29, feed: "internal", capacity: 2, ammoType: "shell_12g",
-    spread: 1.25, modSlots: ["optic", "muzzle", "stock", "utility"],
-    description: "Auf kurze Distanz brutal. Der Schuss ist im ganzen Viertel zu hören.",
-  }),
-  hunting_rifle: firearm("Jagdgewehr", "Gewehr", {
-    weight: 3.55, hands: 2, damage: 72, range: 14, aimTime: 2.35, recovery: 1.18,
-    accuracy: 0.83, headshot: 0.34, noise: 32, feed: "internal", capacity: 4, ammoType: "ammo_rifle",
-    modSlots: ["optic", "muzzle", "stock", "utility"],
-    description: "Präzise und durchschlagskräftig, in Gebäuden jedoch sperrig.",
-  }),
-
   ammo_9mm: { name: "9-mm-Patronen", short: "9 mm", type: "ammo", icon: "ammo", ammoType: "ammo_9mm", weight: 0.012, stack: 30, description: "Lose 9-mm-Munition für Pistole und Vector. Passende Wechselmagazine separat befüllen." },
   ammo_44: { name: ".44-Magnum-Patronen", short: ".44 Magnum", type: "ammo", icon: "ammo", ammoType: "ammo_44", weight: .05, roundWeight: .025, weightStep: .05, stack: 24, description: "Großkalibrige Revolvermunition. Bis zu sechs Patronen direkt in die Trommel nachladen. Lose Stapel werden in 50-g-Schritten gewogen." },
-  shell_12g: { name: "Kaliber-12-Schrot", short: "12/70", type: "ammo", icon: "ammo", ammoType: "shell_12g", weight: 0.044, stack: 16, description: "Schrotpatronen für die Flinte." },
-  ammo_rifle: { name: "Jagdpatronen", short: "Jagdpatr.", type: "ammo", icon: "ammo", ammoType: "ammo_rifle", weight: 0.026, stack: 20, description: "Büchsenmunition für das Jagdgewehr." },
   mag_9mm_12: { name: "9-mm-Magazin", short: "Magazin", type: "magazine", icon: "magazine", ammoType: "ammo_9mm", capacity: 12, compatible: ["pistol_9mm"], weight: 0.1, stack: 1, description: "Standardmagazin mit zwölf Patronen. Separat befüllen; ab halber Füllung 50 g schwerer." },
   mag_9mm_18: { name: "Verlängertes 9-mm-Magazin", short: "18er-Mag.", type: "magazine", icon: "magazine", ammoType: "ammo_9mm", capacity: 18, compatible: ["pistol_9mm"], weight: 0.15, stack: 1, description: "Separates Magazin mit achtzehn Patronen; ab halber Füllung 50 g schwerer." },
 
-  reflex_sight: { name: "Leuchtpunktvisier", short: "Leuchtpunkt", type: "mod", icon: "mod", modSlot: "optic", compatible: ["pistol_9mm", "shotgun_12g", "vector_9mm", "revolver_44"], effects: { aimTimeMul: 0.78 }, weight: 0.14, stack: 1, description: "Beschleunigt die Zielerfassung auf kurze Distanz. Am Revolver nur mit R4-Schienenlauf montierbar." },
-  hunting_scope: { name: "Jagdzielfernrohr", short: "Zielfernrohr", type: "mod", icon: "mod", modSlot: "optic", compatible: ["hunting_rifle"], effects: { aimTimeMul: 0.82, rangeAdd: 4, closePenalty: 0.16 }, weight: 0.42, stack: 1, description: "Große Reichweite, aber unhandlich auf engstem Raum." },
-  pistol_suppressor: { name: "Pistolenschalldämpfer", short: "Dämpfer", type: "mod", icon: "mod", modSlot: "muzzle", compatible: ["pistol_9mm"], effects: { noiseMul: 0.44, aimTimeMul: 1.08 }, weight: 0.27, stack: 1, description: "Reduziert den Knall deutlich, macht ihn jedoch nicht lautlos." },
-  shotgun_choke: { name: "Flinten-Choke", short: "Choke", type: "mod", icon: "mod", modSlot: "muzzle", compatible: ["shotgun_12g"], effects: { rangeAdd: 2.2, spreadMul: 0.66 }, weight: 0.09, stack: 1, description: "Bündelt die Streuung auf mittlere Entfernung." },
-  recoil_pad: { name: "Rückstoßpolster", short: "Polster", type: "mod", icon: "mod", modSlot: "stock", compatible: ["shotgun_12g", "hunting_rifle"], effects: { recoveryMul: 0.76, aimTimeMul: 1.04 }, weight: 0.18, stack: 1, description: "Schnellere Stabilisierung nach dem Schuss." },
-  short_stock: { name: "Verkürzter Schaft", short: "Kurzschaft", type: "mod", icon: "mod", modSlot: "stock", compatible: ["shotgun_12g"], effects: { aimTimeMul: 0.72, rangeMul: 0.74, noiseMul: 1.06 }, weight: 0.22, stack: 1, permanent: true, description: "Schnell in Räumen, schwach auf Entfernung." },
-  weapon_sling: { name: "Gewehrriemen", short: "Riemen", type: "mod", icon: "mod", modSlot: "utility", compatible: ["shotgun_12g", "hunting_rifle"], effects: { carriedWeightMul: 0.72 }, weight: 0.13, stack: 1, description: "Verringert die Belastung einer getragenen Langwaffe." },
-  shell_holder: { name: "Schaft-Patronenhalter", short: "Patronenhalt.", type: "mod", icon: "mod", modSlot: "utility", compatible: ["shotgun_12g"], effects: { reloadMul: 0.68 }, weight: 0.16, stack: 1, description: "Beschleunigt das Nachladen der Flinte." },
+  reflex_sight: { name: "Leuchtpunktvisier", short: "Leuchtpunkt", type: "mod", icon: "mod", modSlot: "optic", compatible: ["vector_9mm", "revolver_44"], effects: { aimTimeMul: 0.78 }, weight: 0.14, stack: 1, description: "Beschleunigt die Zielerfassung auf kurze Distanz. Am Revolver nur mit R4-Schienenlauf montierbar." },
 
   bandage: { name: "Verbandspäckchen", short: "Verband", type: "medical", icon: "medical", medical: "bandage", weight: 0.12, stack: 3, description: "Stoppt die stärkste unversorgte Blutung." },
   disinfectant: { name: "Wunddesinfektion", short: "Desinfektion", type: "medical", icon: "medical", medical: "disinfect", weight: 0.18, stack: 2, description: "Senkt das Risiko einer gewöhnlichen Wundinfektion." },
@@ -178,18 +153,11 @@ export const ITEMS = {
   bread: { name: "Halbes Graubrot", short: "Graubrot", type: "food", icon: "food", weight: 0.4, stack: 2, effect: { hunger: 32 }, description: "Trocken, aber ohne sichtbaren Schimmel." },
   canned_beans: { name: "Bohnendose", short: "Bohnen", type: "food", icon: "food", weight: 0.48, stack: 3, effect: { hunger: 45, thirst: 3 }, needs: "can_opener", description: "Nahrhaft, falls du sie aufbekommst." },
 
-  outfit_top: { name: "Oberbekleidung", short: "Oberteil", type: "clothing", icon: "clothing", equipSlot: "torso", protection: 0.12, weight: 1.05, stack: 1, condition: 80, description: "Das bei Spielbeginn gewählte Oberteil. Begrenzter Bissschutz." },
-  outfit_trousers: { name: "Hose", short: "Hose", type: "clothing", icon: "clothing", equipSlot: "legs", protection: 0.1, weight: 0.72, stack: 1, condition: 85, description: "Die bei Spielbeginn gewählte Beinkleidung." },
   work_jacket: { name: "Warnweste", short: "Warnweste", type: "clothing", icon: "clothing", equipSlot: "torso", protection: 0.12, weight: 1.05, stack: 1, condition: 80, description: "Orange Warnweste mit Reflexstreifen über einem Arbeitsshirt. Begrenzter Bissschutz." },
-  leather_jacket: { name: "Lederjacke", short: "Lederjacke", type: "clothing", icon: "clothing", equipSlot: "torso", protection: 0.28, weight: 1.65, stack: 1, condition: 90, description: "Schwer, aber deutlich widerstandsfähiger." },
-  jeans: { name: "Jeans", short: "Jeans", type: "clothing", icon: "clothing", equipSlot: "legs", protection: 0.1, weight: 0.72, stack: 1, condition: 85, description: "Alltäglicher Schutz für die Beine." },
-  motorcycle_helmet: { name: "Motorradhelm", short: "Helm", type: "clothing", icon: "clothing", equipSlot: "head", clothingModel: "male-Swat", protection: 0.42, weight: 1.45, stack: 1, condition: 88, description: "Starker Kopfschutz auf Kosten des Gewichts." },
-  canvas_bag: { name: "Stoffrucksack", short: "Rucksack", type: "bag", icon: "bag", equipSlot: "back", capacityBonus: 6, weight: 0.55, stack: 1, condition: 75, description: "Ein einfacher Rucksack mit begrenztem Volumen." },
   hiking_pack: { name: "Wanderrucksack", short: "Wanderrucksack", type: "bag", icon: "bag", equipSlot: "back", capacityBonus: 12, weight: 1.25, stack: 1, condition: 90, description: "Geräumig, robust und entsprechend begehrt." },
 
   can_opener: { name: "Dosenöffner", short: "Öffner", type: "tool", icon: "tool", weight: 0.12, stack: 1, description: "Unscheinbar, bis man ihn braucht." },
   lockpick: { name: "Dietrichsatz", short: "Dietriche", type: "tool", icon: "tool", weight: 0.1, stack: 1, uses: 8, description: "Öffnet Schlösser leise, wenn die Hände ruhig bleiben." },
-  crowbar: { name: "Brecheisen", short: "Brecheisen", type: "weapon", icon: "weapon", weaponKind: "melee", skill: "blunt", damage: 29, range: 1.3, cooldown: 1.42, accuracy: 0.81, noise: 4.6, weight: 1.8, hands: 2, stack: 1, condition: 100, tool: "breach", description: "Waffe und lauter Universalschlüssel." },
   pharmacy_key: { name: "Apothekenschlüssel", short: "APO-Schlüssel", type: "key", icon: "key", keyId: "pharmacy", weight: 0.08, stack: 1, description: "Mit verblasstem Etikett: APOTHEKE." },
   police_key: { name: "Dienstschlüssel", short: "Dienstschl.", type: "key", icon: "key", keyId: "police", weight: 0.09, stack: 1, description: "Kleiner Schlüssel für gesicherte Polizeischränke." },
   batteries: { name: "Mignon-Batterien", short: "Batterien", type: "misc", icon: "misc", weight: 0.1, stack: 4, description: "Zwei Stück, teilweise angelaufen." },
@@ -203,7 +171,6 @@ export const LOOT_TABLES = {
   ],
   fridge: [["water", 0.78, 1, 2], ["soda", 0.62, 1, 2], ["apple", 0.58, 1, 2], ["bread", 0.35, 1, 1]],
   tools: [
-    ["hammer", 0.45, 1, 1], ["axe", 0.2, 1, 1], ["crowbar", 0.2, 1, 1],
     ["lockpick", 0.2, 1, 1], ["batteries", 0.55, 1, 2], ["cloth", 0.45, 1, 2],
   ],
   pharmacy: [
@@ -223,23 +190,23 @@ export const LOOT_TABLES = {
     ["ak_762", 0.08, 1, 1], ["mag_ak_30", 0.18, 1, 1], ["ammo_762x39", 0.26, 6, 15],
     ["ak_fixed_stock", 0.06, 1, 1], ["ak_frame_stock", 0.04, 1, 1], ["ak_acog_3x", 0.03, 1, 1], ["ak_suppressor", 0.025, 1, 1],
     ["ammo_9mm", 0.62, 4, 14], ["ammo_44", 0.34, 3, 10], ["mag_9mm_12", 0.38, 1, 1],
-    ["bandage", 0.38, 1, 1], ["motorcycle_helmet", 0.18, 1, 1], ["pistol_suppressor", 0.08, 1, 1],
+    ["bandage", 0.38, 1, 1], ["tactical_helmet", 0.18, 1, 1],
   ],
   hunting: [
-    ["shell_12g", 0.62, 2, 7], ["ammo_rifle", 0.5, 2, 7], ["hunting_scope", 0.24, 1, 1],
-    ["shotgun_choke", 0.2, 1, 1], ["recoil_pad", 0.24, 1, 1], ["weapon_sling", 0.32, 1, 1],
+    ["kitchen_knife", .3, 1, 1], ["hiking_pack", .18, 1, 1],
+    ["outdoor_shirt", .22, 1, 1], ["hiking_boots_m", .22, 1, 1],
   ],
   vehicle: [
     ["water", 0.3, 1, 1], ["soda", 0.34, 1, 2], ["canned_beans", 0.24, 1, 1],
     ["bread", 0.18, 1, 1], ["bandage", 0.14, 1, 1], ["painkillers", 0.08, 1, 1],
     ["cloth", 0.22, 1, 2], ["batteries", 0.2, 1, 2], ["can_opener", 0.08, 1, 1],
     ["ammo_9mm", 0.08, 2, 5], ["ammo_44", 0.05, 2, 4], ["lockpick", 0.05, 1, 1],
-    ["work_jacket", 0.1, 1, 1], ["crowbar", 0.035, 1, 1], ["pistol_suppressor", 0.025, 1, 1],
+    ["work_jacket", 0.1, 1, 1],
   ],
   clothing: [
     ...CLOTHING_LOOT,
-    ["work_jacket", 0.42, 1, 1], ["leather_jacket", 0.16, 1, 1], ["jeans", 0.42, 1, 1],
-    ["canvas_bag", 0.22, 1, 1], ["hiking_pack", 0.08, 1, 1],
+    ["work_jacket", 0.42, 1, 1],
+    ["hiking_pack", 0.08, 1, 1],
   ],
   corpse: [
     ["bandage", 0.2, 1, 1], ["painkillers", 0.14, 1, 1], ["batteries", 0.2, 1, 1],

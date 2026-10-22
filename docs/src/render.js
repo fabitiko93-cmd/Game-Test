@@ -23,6 +23,7 @@ import { playerHeight } from "./quaternius-catalog.js";
 import { CharacterInspection } from './character-inspection.js';
 import {drawWeaponLight} from './weapon-light.js';
 import {createTracer,drawMuzzleFlashes,drawShotTrails,shotEnd,updateShotEffects} from './gunshot-effects.js';
+import {humanCorpseMetadata} from './corpse-appearance.js';
 
 export class Renderer {
   constructor(canvas) {
@@ -570,13 +571,13 @@ export class Renderer {
 
   drawCorpse(o) {
     const p=this.iso(o.x,o.y),ctx=this.ctx;
-    if(o.playerAppearance&&this.playerModels?.drawCorpse(ctx,o,p))return;
     if (o.zombieAppearance) {
       // Infected corpses stay in the same model family as their living bodies.
       if (!this.zombieModels?.drawCorpse(ctx, o, p)) this.zombieSprites.drawCorpse(ctx, o, p);
       return;
     }
-    ctx.save();ctx.translate(p.x,p.y-3);ctx.rotate(-.43);ctx.fillStyle="#38473d";ctx.fillRect(-16,-5,25,10);ctx.fillStyle="#b18a6e";ctx.beginPath();ctx.arc(13,0,6,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#262b27";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-9,2);ctx.lineTo(-18,10);ctx.moveTo(-7,-2);ctx.lineTo(-17,-10);ctx.stroke();ctx.restore();
+    if(!o.playerAppearance)Object.assign(o,humanCorpseMetadata(o));
+    this.playerModels?.drawCorpse(ctx,o,p);
   }
 
   drawGroundLoot(o) {

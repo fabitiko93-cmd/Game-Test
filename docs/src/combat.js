@@ -238,7 +238,7 @@ export class CombatSystem {
     player.noisePulse = 1;
     player.shots += 1;
     game.sound(stats.shotSound || "gunshot");
-    vibrate(stats.shotSound === 'magnum' ? [36, 16, 24] : weapon.type === "shotgun_12g" ? [28, 18, 24] : 22);
+    vibrate(stats.shotSound === 'magnum' ? [36, 16, 24] : 22);
 
     if (hit) {
       const impact = { x: target.x, y: target.y };

@@ -67,21 +67,21 @@ const beforeSkill = hunter.skills.stealth;
 gainSkill(hunter, "stealth", 1);
 assert.ok(hunter.skills.stealth > beforeSkill);
 
-const pistol = createItem("pistol_9mm", 1, { loadedRounds: 0 });
-const suppressor = createItem("pistol_suppressor");
+const vector = createItem("vector_9mm", 1, { loadedRounds: 0 });
+const suppressor = createItem("vector_suppressor");
 const ammo = createItem("ammo_9mm", 14);
-assert.equal(addItem(hunter, pistol), true);
+assert.equal(addItem(hunter, vector), true);
 assert.equal(addItem(hunter, suppressor), true);
 assert.equal(addItem(hunter, ammo), true);
-assert.equal(equipItem(hunter, pistol.id).ok, true);
-assert.equal(installMod(hunter, pistol.id, suppressor.id).ok, true);
-const livePistol = findItem(hunter, pistol.id);
-assert.ok(weaponStats(livePistol).noise < ITEMS.pistol_9mm.noise);
-const detachedMagazineId = livePistol.magazine.id;
-assert.equal(ejectMagazine(hunter, livePistol.id).ok, true);
+assert.equal(equipItem(hunter, vector.id).ok, true);
+assert.equal(installMod(hunter, vector.id, suppressor.id).ok, true);
+const liveVector = findItem(hunter, vector.id);
+assert.ok(weaponStats(liveVector).noise < ITEMS.vector_9mm.noise);
+const detachedMagazineId = liveVector.magazine.id;
+assert.equal(ejectMagazine(hunter, liveVector.id).ok, true);
 assert.equal(fillMagazine(hunter, detachedMagazineId).ok, true);
-assert.equal(reloadWeapon(hunter, livePistol).ok, true);
-assert.equal(ammoLabel(livePistol), "12/12");
+assert.equal(reloadWeapon(hunter, liveVector).ok, true);
+assert.equal(ammoLabel(liveVector), "14/33");
 
 const combat = new CombatSystem();
 const target = { id: "test-zombie", x: hunter.x + 2, y: hunter.y, hp: 200, maxHp: 200, removed: false, path: [] };
@@ -101,7 +101,7 @@ const shot = combat.fire({
   killZombie: zombie => { zombie.removed = true; },
 });
 assert.equal(shot.ok, true);
-assert.equal(ammoLabel(livePistol), "11/12");
+assert.equal(ammoLabel(liveVector), "13/33");
 assert.ok(target.hp < target.maxHp);
 assert.ok(traced && attracted > 0);
 
@@ -131,8 +131,8 @@ const policeLocker = world.objects.find(object => object.name === "GESICHERTER W
 const clubLocker = world.objects.find(object => object.name === "JAGDLAGER");
 assert.ok(policeLocker.items.some(item => item.type === "pistol_9mm"));
 assert.ok(policeLocker.items.some(item => item.type === "revolver_44"));
-assert.ok(clubLocker.items.some(item => item.type === "shotgun_12g"));
-assert.ok(clubLocker.items.some(item => item.type === "hunting_rifle"));
+assert.ok(clubLocker.items.some(item => item.type === "kitchen_knife"));
+assert.ok(clubLocker.items.some(item => item.type === "hiking_pack"));
 
 const html = readFileSync(new URL("../docs/index.html", import.meta.url), "utf8");
 const uiSource = readFileSync(new URL("../docs/src/ui.js", import.meta.url), "utf8");

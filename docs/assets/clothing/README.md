@@ -14,12 +14,12 @@ No raster dependency, generated concept art or traced substitute silhouettes.
 
 `icons.json` records the source model, source file hash, slot, material names and
 visible triangle count for every symbol. Identical rendered parts share a symbol:
-for example the older generic Warnweste and the named worker outfit, or the two
-backpack items currently using the same Adventurer backpack mesh. The old
-motorcycle-helmet item now uses the available SWAT helmet as its visible stand-in,
-so its picture and equipped appearance agree. Stats and item identity are retained.
+for example the retained Warnweste and the named worker outfit. The hiking pack
+uses the original Adventurer backpack. The former generic clothing items with
+borrowed substitutes (including the leather jacket and motorcycle helmet) have
+been removed; the actual separately named garments and headwear remain.
 
 `item-icons.js` selects the symbol from the same clothing-model mapping as the
-world renderer, including generic outfit items with `modelStyle`. Pictures are
+world renderer. Pictures are
 shared by inventory, container and equipment views. The normal release build
 fingerprints and precaches the atlas automatically.

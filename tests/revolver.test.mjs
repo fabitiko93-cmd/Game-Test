@@ -33,7 +33,7 @@ async function parse(url){
 function kit(){
   const player=createPlayer();player.baseCapacity=40;
   const weapon=createItem('revolver_44');addItem(player,weapon);equipItem(player,weapon.id);
-  for(const type of ['revolver_short_barrel','revolver_long_barrel','revolver_rail_barrel','revolver_wood_grip','revolver_comfort_grip','reflex_sight','revolver_flashlight','pistol_suppressor'])addItem(player,createItem(type));
+  for(const type of ['revolver_short_barrel','revolver_long_barrel','revolver_rail_barrel','revolver_wood_grip','revolver_comfort_grip','reflex_sight','revolver_flashlight','vector_suppressor'])addItem(player,createItem(type));
   const mount=type=>installMod(player,weapon.id,player.inventory.find(i=>i.type===type).id);
   return {player,weapon:activeWeapon(player),mount};
 }
@@ -45,13 +45,13 @@ test('one six-shot .44 family replaces the old placeholder and its complete modu
   assert.equal(weapon.mods.grip.type,'revolver_wood_grip');assert.equal(ITEMS.revolver_44.capacity,6);
   for(const type of ['revolver_short_barrel','revolver_long_barrel','revolver_rail_barrel','revolver_wood_grip','revolver_comfort_grip','reflex_sight','revolver_flashlight','ammo_44'])assert.ok(crate.items.some(i=>i.type===type),type);
   assert.equal(createItem('revolver_44',1,{rounds:99}).rounds,6);
-  assert.ok(weaponStats(weapon).damage>ITEMS.hunting_rifle.damage);assert.ok(weaponStats(weapon).recoilPerShot>2*ITEMS.ak_762.recoilPerShot);
+  assert.ok(weaponStats(weapon).damage>ITEMS.ak_762.damage);assert.ok(weaponStats(weapon).recoilPerShot>2*ITEMS.ak_762.recoilPerShot);
 });
 
 test('R4 alone enables optics and lights; barrel swaps return dependent attachments without losing mass or identity at full capacity',()=>{
   const {player,weapon,mount}=kit();
   assert.deepEqual(weaponModSlots(weapon),['barrel','grip']);assert.equal(mount('reflex_sight').ok,false);assert.equal(mount('revolver_flashlight').ok,false);
-  assert.equal(mount('pistol_suppressor').ok,false);assert.equal(weapon.mods.muzzle,undefined);
+  assert.equal(mount('vector_suppressor').ok,false);assert.equal(weapon.mods.muzzle,undefined);
   assert.equal(mount('revolver_rail_barrel').ok,true);assert.ok(weaponModSlots(weapon).includes('optic'));
   assert.equal(mount('reflex_sight').ok,true);assert.equal(mount('revolver_flashlight').ok,true);
   const optic=weapon.mods.optic,lamp=weapon.mods.utility,weight=inventoryWeight(player);assert.ok(weaponLight(weapon));

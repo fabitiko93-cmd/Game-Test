@@ -80,7 +80,7 @@ test('capturing a hip-fired muzzle does not raise the weapon or change its stanc
 
 test('the equipment preview uses the original relaxed revolver arm from every side, including with a backpack',async()=>{
  for(const sex of ['male','female']){
-  const f=await fixture('revolver_44',sex),bag=createItem('canvas_bag');addItem(f.player,bag);equipItem(f.player,bag.id);
+  const f=await fixture('revolver_44',sex),bag=createItem('hiking_pack');addItem(f.player,bag);equipItem(f.player,bag.id);
   const inspection=new CharacterInspection({status:'test',drawInspection:()=>p=>({x:p.x,y:p.y})},library,models.weapons);
   for(const yaw of [0,Math.PI/2,Math.PI,-Math.PI/2]){
    inspection.draw({getBoundingClientRect:()=>({width:440,height:370})},f.player,yaw);

@@ -7,7 +7,7 @@ import {ITEMS} from '../docs/src/data.js';
 import {createPlayer} from '../docs/src/character.js';
 import {createItem,equipItem} from '../docs/src/inventory.js';
 import {clothingIconKey,createItemIcon} from '../docs/src/item-icons.js';
-import {playerModelAppearance,CHARACTER_STYLES} from '../docs/src/quaternius-catalog.js';
+import {playerModelAppearance} from '../docs/src/quaternius-catalog.js';
 import {GameUI} from '../docs/src/ui.js';
 import {buildClothingIcons} from '../scripts/prepare-clothing-icons.mjs';
 
@@ -21,9 +21,6 @@ test('every clothing and backpack item has the icon of its actual worn part on e
     const appearance=playerModelAppearance(player),slot=ITEMS[type].equipSlot;
     if(slot!=='back')assert.equal(entry.model,slot==='head'?appearance.headwear:appearance[slot],`${type}: image matches equipped mesh`);
     assert.equal(entry.slot,slot);assert.ok(entry.triangles>0);assert.ok(!entry.materials.includes('Skin'),'no floating body parts');
-  }
-  for(const [sex,styles] of Object.entries(CHARACTER_STYLES))for(const modelStyle of Object.keys(styles))for(const type of ['outfit_top','outfit_trousers']){
-    assert.ok(clothingIconKey(createItem(type,1,{modelStyle}),sex),`${sex} ${modelStyle} ${type}`);
   }
   assert.equal(ITEMS.work_jacket.name,'Warnweste');assert.equal(ITEMS.work_jacket.short,'Warnweste');
 });

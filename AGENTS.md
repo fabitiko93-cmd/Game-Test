@@ -153,6 +153,16 @@ mit passenden Materialfarben und ohne sichtbare Haut-/Körperteile. Inventar,
 Behälter und Ausrüstung verwenden dieselben Modellzuordnungen. Die ehemalige
 „Arbeitsjacke“/„Jacke“ (`work_jacket`) heißt korrekt „Warnweste“; Item-ID erhalten.
 
+Platzhalterbereinigung vom 22.10.2026: Nur Waffen und Ausrüstung bereinigen;
+Nahrung, Medizin, Werkzeuge und Missions-/Schlüsselgegenstände bleiben erhalten.
+Keine einfachen Ersatzgeometrien oder unpassenden Kleidungsmodelle mehr anbieten.
+Alte Flinte/Jagdgewehr, primitive Nahkampfwaffen, nur dazu passende Munition/Mods
+und generische Kleidungsduplikate sind entfernt. Die Original-Pistole aus dem
+SWAT-Modell und das Originalmesser bleiben; die Pistole hat keine modelllosen Mods.
+Bereits platzierte Leichen (Polizist, Apothekerin, Zivilperson) verwenden passende modulare
+Charaktere in der Original-Todespose, mit Bodenkontakt und Modell-Antippmaßen.
+Getötete Infizierte behalten weiterhin ihre eigenen Zombie-Modelle.
+
 ## Effizient entwickeln
 
 - Modell, Denkstufe und Geschwindigkeit nach der aktuellen Nutzerwahl verwenden.
