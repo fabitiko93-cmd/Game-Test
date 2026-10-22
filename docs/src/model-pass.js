@@ -62,14 +62,14 @@ export class ModelPass {
 
   // Menus share the renderer, but have their own eye-level camera. Invalidate
   // the size cache afterwards so the next world pass restores its resolution.
-  drawInspection(canvas, root, { height = 2.15, center = new Vector3(0,.9,0), elevation = 0 } = {}) {
+  drawInspection(canvas, root, { height = 2.15, center = new Vector3(0,.9,0), elevation = 0, azimuth = 0 } = {}) {
     const rect=canvas.getBoundingClientRect(), ratio=Math.min(2,globalThis.devicePixelRatio||1);
     if(rect.width<1||rect.height<1)return null;
     const width=Math.round(rect.width*ratio),pixelsHeight=Math.round(rect.height*ratio);
     if(canvas.width!==width||canvas.height!==pixelsHeight){canvas.width=width;canvas.height=pixelsHeight;}
     const ctx=canvas.getContext('2d'),camera=this.inspectionCamera,half=height/2,aspect=width/pixelsHeight;
     Object.assign(camera,{left:-half*aspect,right:half*aspect,top:half,bottom:-half});
-    camera.position.copy(center).add(new Vector3(0,Math.sin(elevation)*10,Math.cos(elevation)*10));
+    camera.position.copy(center).add(new Vector3(Math.sin(azimuth)*Math.cos(elevation)*10,Math.sin(elevation)*10,Math.cos(azimuth)*Math.cos(elevation)*10));
     camera.lookAt(center);camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
     ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,width,pixelsHeight);
     root.updateMatrixWorld(true);

@@ -61,7 +61,7 @@ export class GameUI {
       "character-panel", "character-background", "character-title", "skill-list", "condition-summary", "wound-list",
       "weapon-panel", "weapon-title", "weapon-ammo", "weapon-condition", "mod-slots", "available-mods", "weapon-reload-button",
       "weapon-inspection", "weapon-preview", "weapon-stats", "weapon-mode-button", "weapon-magazines", "magazine-list",
-      "pause-panel", "continue-button", "diagnostics-button", "reset-button", "death-panel", "survived-time", "death-cause",
+      "pause-panel", "continue-button", "diagnostics-button", "animation-workshop-button", "reset-button", "death-panel", "survived-time", "death-cause",
       "new-survivor-button", "toast",
     ];
     this.el = Object.fromEntries(ids.map(id => [id.replaceAll("-", "_"), document.getElementById(id)]));
@@ -105,6 +105,7 @@ export class GameUI {
     this.el.weapon_reload_button.addEventListener("click", () => this.callbacks.reloadWeapon?.(this.weaponId));
     this.el.weapon_mode_button.addEventListener("click", () => this.callbacks.fireMode?.(this.weaponId));
     this.el.diagnostics_button.addEventListener("click", () => this.callbacks.diagnostics?.());
+    this.el.animation_workshop_button.addEventListener('click',()=>this.callbacks.animationWorkshop?.());
   }
 
   renderBackgroundOptions() {

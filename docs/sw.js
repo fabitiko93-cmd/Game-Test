@@ -1,5 +1,5 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "78bab2b6f02d67d317b4";
+const BUILD_ID = "9a1e073f253c454a955f";
 const FILES = [
   "./assets/clothing/README.md",
   "./assets/clothing/icons-8e58abe2f658.svg",
@@ -284,8 +284,10 @@ const FILES = [
   "./build/assets/scorpion-icon-YGG7V2DW.svg",
   "./build/assets/usp-icon-S7RTUW46.svg",
   "./build/assets/vector-icon-DX6NJN2U.svg",
-  "./build/main-JU5KO6JH.js",
-  "./build/style-HJJSUITS.css",
+  "./build/chunks/animation-workshop-53HRSFE4.js",
+  "./build/chunks/chunk-B6VVV77T.js",
+  "./build/main-TZ24LK7H.js",
+  "./build/style-XG5UMVMC.css",
   "./index.html",
   "./manifest.webmanifest"
 ];

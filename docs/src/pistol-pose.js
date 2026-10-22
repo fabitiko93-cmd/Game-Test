@@ -2,6 +2,8 @@ import {Box3,Euler,Quaternion,Vector3} from 'three';
 import {fitArm,orientWorld} from './weapon-ik.js';
 import {contactWrist,poseHand,poseThumb} from './weapon-hands.js';
 import {recoilPose} from './weapon-recoil.js';
+import {resolveAnimationEdits,editTarget,editBone} from './animation-targets.js';
+import {PISTOL_POSES as POSES} from './weapon-poses.js';
 
 const v=(x=0,y=0,z=0)=>new Vector3(x,y,z);
 const BASE_HAND=new Quaternion().setFromEuler(new Euler(-Math.PI/2,0,Math.PI/2)).invert();
@@ -23,7 +25,7 @@ function blendPostures(entity,posture,delta){
   if(delta>=.5){for(const state of ['carry','hip','aim'])blend[state]=Number(state===posture);entity.rifleTransition=null;}
   else{
     if(entity.rifleTransition?.posture!==posture)entity.rifleTransition={posture,from:{...blend},elapsed:0};
-    const t=Math.min(1,(entity.rifleTransition.elapsed+=Math.max(0,delta))/.72),amount=t*t*(3-2*t);
+    const t=Math.min(1,(entity.rifleTransition.elapsed+=Math.max(0,delta))/POSES.transition),amount=t*t*(3-2*t);
     for(const state of ['carry','hip','aim'])blend[state]=entity.rifleTransition.from[state]+(Number(state===posture)-entity.rifleTransition.from[state])*amount;
   }
   entity.riflePosture=posture;return blend;
@@ -150,16 +152,21 @@ function fitRight(entity,origin,rotation,pole,maxBend=22){
 
 export function fitPistolWeaponPose(entity,origin,rotation,amount=1){
   const weapon=entity.weapon,from=weapon.getWorldPosition(v()),q=weapon.getWorldQuaternion(new Quaternion());
+  origin=origin.clone();rotation=rotation.clone();editTarget(entity,'weapon',origin,rotation,'reload');
   const shoulder=entity.root.worldToLocal(point(entity,'UpperArmR'));
   const pole=entity.root.localToWorld(shoulder.add(v(-.12,-.20,.12)));
+  editTarget(entity,'elbowR',pole,null,'reload');
   fitRight(entity,from.lerp(origin,amount),q.slerp(rotation,amount),pole,48);
 }
 
 export function fitPistolSupportContact(entity,palm,rotation,contact='Middle2',options={}){
   const hand=rotation.clone(),shoulder=entity.root.worldToLocal(point(entity,'UpperArmL'));
+  palm=palm.clone();if(options.stage==='reload')editTarget(entity,'support',palm,hand,'reload');
   palm=frontPoint(entity,palm,options.clearance??1);
   if(options.delta!==undefined){const target=guide(entity,options.key||'pistolContactPose','L',palm,hand,options.delta);palm=target.point;hand.copy(target.rotation);}
-  const pole=options.pole||(entity.pistolContactPole?entity.root.localToWorld(entity.pistolContactPole.clone()):entity.root.localToWorld(shoulder.add(v(.12,-.20,.12))));
+  const editedPole=options.stage==='reload'&&entity.animationEdits?.elbowL.some(Boolean);
+  const pole=options.pole?.clone()||(!editedPole&&entity.pistolContactPole?entity.root.localToWorld(entity.pistolContactPole.clone()):entity.root.localToWorld(shoulder.add(v(.12,-.20,.12))));
+  if(options.stage==='reload')editTarget(entity,'elbowL',pole,null,'reload');
   const maxBend=options.maxBend??48;
   fitHand(entity,'L',palm,hand,pole,maxBend,contact,options.delta??entity.pistolStep??1);
   entity.pistolContactPole=entity.root.worldToLocal(point(entity,'LowerArmL'));
@@ -199,6 +206,7 @@ export function applyPistolPose(entity,player,delta,posture){
   const freeLeft=new Map(saved.filter(b=>/(Shoulder|UpperArm|LowerArm|Wrist|Index|Middle|Ring|Pinky|Thumb).*L$/.test(b.name)).map(b=>[b,b.quaternion.clone()]));
   eyeLocal(entity,player);
   const blend=blendPostures(entity,posture,delta),active=blend.aim+blend.hip;
+  resolveAnimationEdits(entity,player,blend);
   entity.pistolBodyPose||=new Map();
   const bodyYaw=root.getWorldQuaternion(new Quaternion()),bodyTargets=new Map(['Torso','Chest'].map(name=>[name,bodyYaw.clone().invert().multiply(bone(entity,name).getWorldQuaternion(new Quaternion()))]));
   for(const name of ['Torso','Chest']){
@@ -209,12 +217,14 @@ export function applyPistolPose(entity,player,delta,posture){
   for(const side of ['R','L'])for(const part of ['Shoulder','UpperArm','LowerArm','Wrist']){const e=rig.get(part+side);e.bone.quaternion.copy(e.rotation);}
   root.updateMatrixWorld(true);
   const yaw=root.getWorldQuaternion(new Quaternion()),chest=bone(entity,'Chest'),head=bone(entity,'Head'),headQ=head.getWorldQuaternion(new Quaternion());
-  const worldTurn=yaw.clone().multiply(new Quaternion().setFromAxisAngle(v(0,1,0),-.20*active)).multiply(yaw.clone().invert());
+  const worldTurn=yaw.clone().multiply(new Quaternion().setFromAxisAngle(v(0,1,0),POSES.chestTurn*active)).multiply(yaw.clone().invert());
   orientWorld(chest,worldTurn.multiply(chest.getWorldQuaternion(new Quaternion())));
-  const lift=yaw.clone().multiply(new Quaternion().setFromAxisAngle(v(0,0,1),-.25*active)).multiply(yaw.clone().invert());
+  editBone(entity,'Chest','chest');
+  const lift=yaw.clone().multiply(new Quaternion().setFromAxisAngle(v(0,0,1),POSES.shoulderLift*active)).multiply(yaw.clone().invert());
   orientWorld(bone(entity,'ShoulderR'),lift.multiply(bone(entity,'ShoulderR').getWorldQuaternion(new Quaternion())));
-  const headAim=yaw.clone().multiply(new Quaternion().setFromEuler(new Euler(.16,-.02,-.08,'YXZ')));
+  const headAim=yaw.clone().multiply(new Quaternion().setFromEuler(new Euler(...POSES.head,'YXZ')));
   orientWorld(head,headQ.slerp(headAim,blend.aim));root.updateMatrixWorld(true);
+  editBone(entity,'Head','head');
   // Use the same metacarpal pose for reach calculation and final attachment.
   // Locomotion clips contain small finger rotations of their own.
   poseHand(entity,'R','pistol');poseHand(entity,'L','pistol');
@@ -225,21 +235,24 @@ export function applyPistolPose(entity,player,delta,posture){
   entity.pistolCrouch=delta>=.5?crouch:before+Math.max(-delta/.24,Math.min(delta/.12,crouch-before));
   const shoulder=root.worldToLocal(point(entity,'UpperArmR')),hipAmount=active>0?blend.hip/active:0;
   const aimRotation=yaw.clone().multiply(new Quaternion().setFromEuler(new Euler(.23*hipAmount,0,0)));
-  const aimOrigin=aimPoint(entity,yaw).lerp(root.localToWorld(shoulder.clone().add(v(.07,-.16,.42))),hipAmount);
+  const aimOrigin=aimPoint(entity,yaw).lerp(root.localToWorld(shoulder.clone().add(v(...POSES.hipPoint))),hipAmount);
   const aimShoulder=bone(entity,'ShoulderR').quaternion.clone();
   for(const[b,q]of entity.handgunCarry)b.quaternion.copy(q);root.updateMatrixWorld(true);
   attachPistol(entity);
   const carryElbow=point(entity,'LowerArmR');
   const carryOrigin=weapon.getWorldPosition(v()),carryRotation=weapon.getWorldQuaternion(new Quaternion());
-  carryOrigin.lerp(root.localToWorld(shoulder.clone().add(v(.10,-.16,.36))),entity.pistolCrouch);
-  carryRotation.slerp(yaw.clone().multiply(new Quaternion().setFromEuler(new Euler(.65,.75,0,'YXZ'))),entity.pistolCrouch);
-  const held=guide(entity,'pistolWeaponPose','R',carryOrigin.lerp(aimOrigin,active),carryRotation.slerp(aimRotation,active),delta);
+  carryOrigin.lerp(root.localToWorld(shoulder.clone().add(v(...POSES.crouchCarryPoint))),entity.pistolCrouch);
+  carryRotation.slerp(yaw.clone().multiply(new Quaternion().setFromEuler(new Euler(...POSES.crouchCarryRotation,'YXZ'))),entity.pistolCrouch);
+  const targetPoint=carryOrigin.lerp(aimOrigin,active),targetRotation=carryRotation.slerp(aimRotation,active);
+  editTarget(entity,'weapon',targetPoint,targetRotation);
+  const held=guide(entity,'pistolWeaponPose','R',targetPoint,targetRotation,delta);
   const kick=recoilPose(player,weapon.userData.weaponId,true),pivot=held.point.clone().add(handOffset(entity,'R',held.rotation));
   held.rotation.multiply(new Quaternion().setFromEuler(new Euler(-kick.pitch*active,0,kick.roll*active)));
   held.point.copy(pivot).sub(handOffset(entity,'R',held.rotation)).addScaledVector(v(0,0,1).applyQuaternion(held.rotation),-kick.back*active);
-  bone(entity,'ShoulderR').quaternion.slerp(aimShoulder,active);root.updateMatrixWorld(true);
-  const rightPole=carryElbow.lerp(root.localToWorld(shoulder.clone().add(v(-.12,-.20,.12))),entity.pistolCrouch)
-    .lerp(root.localToWorld(shoulder.clone().add(v(-.035,-.08,.20))),active);
+  bone(entity,'ShoulderR').quaternion.slerp(aimShoulder,active);editBone(entity,'ShoulderR','shoulderR');root.updateMatrixWorld(true);
+  const rightPole=carryElbow.lerp(root.localToWorld(shoulder.clone().add(v(...POSES.carryElbow))),entity.pistolCrouch)
+    .lerp(root.localToWorld(shoulder.clone().add(v(...POSES.aimElbow))),active);
+  editTarget(entity,'elbowR',rightPole);
   fitRight(entity,held.point,held.rotation,rightPole);
 
   // Read the authored free hand in world space before putting the clavicle
@@ -249,6 +262,7 @@ export function applyPistolPose(entity,player,delta,posture){
   for(const[b,q]of freeLeft)b.quaternion.copy(q);root.updateMatrixWorld(true);
   const palm=point(entity,'Middle2L'),hand=bone(entity,'WristL').getWorldQuaternion(new Quaternion()),elbow=point(entity,'LowerArmL');
   for(const b of joints(entity,'L'))b.quaternion.copy(rig.get(b.name).rotation);root.updateMatrixWorld(true);
+  editBone(entity,'ShoulderL','shoulderL');
   poseHand(entity,'L','pistol');
   for(const[b,q]of freeLeft)if(/^(Index|Middle|Ring|Pinky|Thumb)/.test(b.name))b.quaternion.copy(q.clone().slerp(b.quaternion,active));
   root.updateMatrixWorld(true);
@@ -257,8 +271,10 @@ export function applyPistolPose(entity,player,delta,posture){
   // Keep a joining/releasing hand in front of the chest. A straight blend
   // through the torso can put its wrist inside the unequal arm links' minimum
   // reach during a crouch/stand interruption, forcing a folded elbow to flip.
-  const supportPose=guide(entity,'pistolSupportPose','L',frontPoint(entity,palm.lerp(contact,active),active),hand.slerp(support,active),delta);
-  const pole=elbow.lerp(leftShoulder.clone().add(v(.035,-.10,.20).applyQuaternion(yaw)),active);
+  palm.lerp(contact,active);hand.slerp(support,active);editTarget(entity,'support',palm,hand);
+  const supportPose=guide(entity,'pistolSupportPose','L',frontPoint(entity,palm,active),hand,delta);
+  const pole=elbow.lerp(leftShoulder.clone().add(v(...POSES.supportElbow).applyQuaternion(yaw)),active);
+  editTarget(entity,'elbowL',pole);
   fitPistolSupportContact(entity,supportPose.point,supportPose.rotation,'Middle2',{pole,maxBend:32-4*active,clearance:0});
   entity.weaponPoles={right:rightPole,left:pole};
   const impulse=player.combat?.shotImpulse,trigger=Boolean(player.combat?.triggerHeld)||impulse?.weaponId===weapon.userData.weaponId&&impulse.age<.25;

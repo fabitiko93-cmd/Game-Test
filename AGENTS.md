@@ -190,6 +190,16 @@ BH mit einem geschlossenen Stoffband einschließlich Seiten unter den Armen erg�
 
 ## Effizient entwickeln
 
+Animationswerkstatt vom 23.10.2026: gemeinsamer Controller, benannte Grundposen,
+reproduzierbarer Tester und speicherbarer Editor für alle vorhandenen modellierten
+Schusswaffen auf beiden Rigs sind beauftragt. Dieselbe Poseauswertung im Spiel
+und in der Werkstatt verwenden. Darstellung/Kamera verändern keinen Spielzustand;
+Zeitleiste einschließlich Nachladeabbruch aus isoliertem Zustand reproduzieren.
+Entwürfe und aktivierte Geräteprofile getrennt speichern; Export/Import erhalten.
+Haltungen und Übergänge bearbeiten, vorhandene Waffenregeln und Originalassets
+beibehalten. G17 auf beiden Rigs ist erste Prüfreferenz, keine Einschränkung des
+Gesamtumfangs auf diese Waffe.
+
 - Modell, Denkstufe und Geschwindigkeit nach der aktuellen Nutzerwahl verwenden.
 - Pro Patch einen zusammenhängenden Schwerpunkt mit überprüfbarem Ergebnis wählen.
 - Zuerst die zuständigen Module und direkten Aufrufer bestimmen. Mit `rg` und

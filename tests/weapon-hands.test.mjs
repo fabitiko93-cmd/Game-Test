@@ -171,10 +171,10 @@ test('a real Magnum shot visibly raises the barrel on its first drawn frame at 1
   const axis=()=>new Vector3(0,0,1).applyQuaternion(f.entity.weapon.getWorldQuaternion(new Quaternion()));const before=axis();
   assert.equal(combat.fire(f.game).ok,true);combat.update(f.game,1/hz);f.game.elapsed+=1/hz;
   const ctx={save(){},restore(){},transform(){},createRadialGradient(){return{addColorStop(){}};},fillRect(){}};
-  models.drawShadow(ctx,f.player,f.game.elapsed,{x:0,y:0});
+  models.update(f.player,f.game.elapsed);models.drawShadow(ctx,f.player,f.game.elapsed,{x:0,y:0});
   assert.ok(axis().angleTo(before)>.45,`${hz} Hz: first visible muzzle rise`);assert.ok(axis().y>before.y+.4);assert.equal(f.player.combat.shotImpulse.age,0);
   assert.equal(f.player.combat.shotImpulse.fresh,false);const peak=axis().y;
-  for(let i=0;i<Math.ceil(.3*hz);i++){combat.update(f.game,1/hz);f.game.elapsed+=1/hz;models.drawShadow(ctx,f.player,f.game.elapsed,{x:0,y:0});}
+  for(let i=0;i<Math.ceil(.3*hz);i++){combat.update(f.game,1/hz);f.game.elapsed+=1/hz;models.update(f.player,f.game.elapsed);models.drawShadow(ctx,f.player,f.game.elapsed,{x:0,y:0});}
   assert.ok(axis().y<peak*.2,'barrel returns while gameplay recoil can still recover');assert.equal(f.weapon.rounds,5);
  }
 });

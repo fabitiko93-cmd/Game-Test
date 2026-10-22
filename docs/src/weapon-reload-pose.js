@@ -43,7 +43,7 @@ function placeLeft(entity,base,point,rotation,profile,weight,contact='Middle2',t
     const before=fingers(entity),palm=entity.model.getObjectByName(contact+'L').getWorldPosition(new Vector3()).lerp(point,weight);
     const q=base.rotation.clone().slerp(rotation,weight);
     poseHand(entity,'L',profile,{thumbPoint});
-    blendFingers(before,weight);fitPistolSupportContact(entity,palm,q,contact,{delta:base.step,key:'pistolReloadPose',clearance:weight});
+    blendFingers(before,weight);fitPistolSupportContact(entity,palm,q,contact,{delta:base.step,key:'pistolReloadPose',clearance:weight,stage:'reload'});
     entity.root.updateMatrixWorld(true);
     poseThumb(entity,'L',profile,{thumbPoint,weight});return;
   }
@@ -82,7 +82,7 @@ function finishInterrupted(entity,delta){
     const hand=entity.model.getObjectByName('WristL').getWorldQuaternion(new Quaternion()).slerp(yaw.clone().multiply(last.held.hand),t);
     for(const[b,q]of last.fingers)b.quaternion.slerp(q,t);
     fitWeaponPose(entity,at('R',last.held.point),yaw.clone().multiply(last.held.rotation),t);
-    fitPistolSupportContact(entity,palm,hand,'Middle2',{clearance:t*last.held.clearance});
+    fitPistolSupportContact(entity,palm,hand,'Middle2',{clearance:t*last.held.clearance,stage:'reload'});
     for(const[name,pose]of last.parts){const part=weapon.getObjectByName(name);part.position.lerp(pose.point,t);part.quaternion.slerp(pose.rotation,t);}
     entity.root.updateMatrixWorld(true);return;
   }

@@ -110,6 +110,7 @@ export class Game {
       toggleWeaponLight: weaponId => ItemActions.toggleLight(this, weaponId),
       newSurvivor: () => this.requestSuccessor(),
       diagnostics: () => this.toggleDiagnostics(),
+      animationWorkshop:()=>this.openAnimationWorkshop(),
       panelClosed: () => {},
     };
     window.addEventListener("visibilitychange", () => {
@@ -229,7 +230,9 @@ export class Game {
     }
     const delta = Math.min(0.05, Math.max(0, frameMilliseconds / 1000));
     this.lastFrame = now;
+    if(this.animationWorkshop?.isOpen){this.animationWorkshop.frame(delta);requestAnimationFrame(time=>this.loop(time));return;}
     if (!this.paused && !this.dead) this.update(delta);
+    if(this.player)this.renderer.playerModels?.update(this.player,this.elapsed);
     this.renderer.render(this, delta);
     this.ui.drawWeaponPreview?.(this);
     this.uiTick -= delta;
@@ -713,6 +716,18 @@ export class Game {
   toggleDiagnostics() {
     const enabled = this.renderer.toggleDiagnostics();
     this.ui.setDiagnostics(enabled, this.renderer.diagnosticsText());
+  }
+
+  async openAnimationWorkshop(){
+    if(!this.started||this.dead)return;
+    this.setPaused(true);
+    if(this.workshopLoading)return;
+    this.workshopLoading=true;
+    try{
+      if(!this.animationWorkshop){const {AnimationWorkshop}=await import('./animation-workshop.js');this.animationWorkshop=new AnimationWorkshop(this);}
+      await this.animationWorkshop.open();
+    }catch(error){this.ui.showToast('Animationswerkstatt: '+error.message);}
+    finally{this.workshopLoading=false;}
   }
 
   togglePause() {

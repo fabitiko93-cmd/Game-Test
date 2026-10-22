@@ -33,6 +33,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Start, Laufzeitparameter, Hilfsfunktionen | `main.js`, `config.js`, `util.js` | `main.js` verbindet Welt, Renderer, Eingabe, UI und Game |
 | Audio | `game-audio.js` | Bestehende Web-Audio-Presets; `Game.sound` bleibt als Aufruf erhalten |
 | Veröffentlichung und Offlinecache | `scripts/build.mjs`, `web/index.html`, `web/service-worker.js` | Generiert Einstieg, Hashdateien, Cache-ID und vollständige Cacheliste |
+| Animationssteuerung und Werkstatt | `animation-controller.js`, `animation-document.js`, `animation-targets.js`, `animation-library.js`, `animation-replay.js`, `animation-workshop.js`, `weapon-poses.js` | Gemeinsame geordnete Poseauswertung und wiederverwendete Ergebnisse für Körper/Schatten/Waffensockel. Benannte Referenzposen plus versionierte, körper-/waffenbezogene Korrekturspuren vor der IK; separate Übergangsspuren. Isolierte Wiederholung bei 30/60 Hz, Zeitlupe, Einzelschritte, Kamera, Hand-/Gelenkprüfung. Pausenmenü öffnet Editor; Entwurf, lokal aktiviertes Profil und exportierter Prüfablauf bleiben getrennt. Werkstatt wird bei Bedarf als Build-Chunk geladen. |
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
 
