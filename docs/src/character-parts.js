@@ -1,7 +1,7 @@
 import { BufferGeometry, Float32BufferAttribute, Skeleton, Uint16BufferAttribute, Vector3 } from 'three';
 
 const SKIN='Skin',UNDERWEAR=0x343945;
-const headwearMaterial=(name,source)=>source?.endsWith('Worker')?name==='Worker_Yellow':source?.endsWith('Swat')?/^(Swat.*|Visor)$/.test(name):['Beige','Red'].includes(name);
+export const headwearMaterial=(name,source)=>source?.endsWith('Worker')?name==='Worker_Yellow':source?.endsWith('Swat')?/^(Swat.*|Visor)$/.test(name):['Beige','Red'].includes(name);
 
 function material(mesh,color,name) {
   const result=mesh.material.clone();

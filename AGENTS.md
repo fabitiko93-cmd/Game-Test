@@ -148,6 +148,11 @@ barfuß und ohne Rucksack. Die bisherigen Startkleider sind einzelne auffindbare
 Gegenstände inklusive Schuhe und Kopfbedeckungen; Gesicht/Haare bleiben unabhängig.
 Leere Slots zeigen den Grundkörper. Kleiderloot auch in Kommode/Waschmaschine.
 
+Kleidungsicons vom 22.10.2026: Aus den jeweiligen Original-Modellteilen rendern,
+mit passenden Materialfarben und ohne sichtbare Haut-/Körperteile. Inventar,
+Behälter und Ausrüstung verwenden dieselben Modellzuordnungen. Die ehemalige
+„Arbeitsjacke“/„Jacke“ (`work_jacket`) heißt korrekt „Warnweste“; Item-ID erhalten.
+
 ## Effizient entwickeln
 
 - Modell, Denkstufe und Geschwindigkeit nach der aktuellen Nutzerwahl verwenden.

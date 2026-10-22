@@ -1,6 +1,9 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "4a3317743d9291af22b7";
+const BUILD_ID = "1110c8310057b1894520";
 const FILES = [
+  "./assets/clothing/README.md",
+  "./assets/clothing/icons-8e58abe2f658.svg",
+  "./assets/clothing/icons.json",
   "./assets/icon.svg",
   "./assets/quaternius/ANIMATION-LICENSE.txt",
   "./assets/quaternius/Bathroom_Bathtub-72efe624dac0.glb.gz",
@@ -265,8 +268,8 @@ const FILES = [
   "./build/assets/m4-icon-IDY2OEW6.svg",
   "./build/assets/revolver-icon-XLHMVYDZ.svg",
   "./build/assets/vector-icon-DX6NJN2U.svg",
-  "./build/main-MSLDUGLM.js",
-  "./build/style-SAK7IILI.css",
+  "./build/main-2XPKMEKY.js",
+  "./build/style-TJLZNFIF.css",
   "./index.html",
   "./manifest.webmanifest"
 ];

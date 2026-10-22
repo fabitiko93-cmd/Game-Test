@@ -1,0 +1,541 @@
+{
+  "file": "icons-8e58abe2f658.svg",
+  "viewBox": "0 0 96 96",
+  "license": "CC0-1.0",
+  "generator": "scripts/prepare-clothing-icons.mjs",
+  "icons": {
+    "female-Adventurer-feet": {
+      "model": "female-Adventurer",
+      "slot": "feet",
+      "source": "female-Adventurer-9aea8fc24192.glb.gz",
+      "sourceSha256": "9aea8fc2419253db9760f846e9af04b9093b322a2d6ca6ac5968befb860de019",
+      "materials": [
+        "Brown2",
+        "Brown_02"
+      ],
+      "triangles": 772
+    },
+    "female-Adventurer-legs": {
+      "model": "female-Adventurer",
+      "slot": "legs",
+      "source": "female-Adventurer-9aea8fc24192.glb.gz",
+      "sourceSha256": "9aea8fc2419253db9760f846e9af04b9093b322a2d6ca6ac5968befb860de019",
+      "materials": [
+        "Brown2",
+        "Brown_02",
+        "Gold",
+        "LightGreen",
+        "White"
+      ],
+      "triangles": 1112
+    },
+    "female-Adventurer-torso": {
+      "model": "female-Adventurer",
+      "slot": "torso",
+      "source": "female-Adventurer-9aea8fc24192.glb.gz",
+      "sourceSha256": "9aea8fc2419253db9760f846e9af04b9093b322a2d6ca6ac5968befb860de019",
+      "materials": [
+        "Brown2",
+        "Gold",
+        "Green",
+        "LightGreen",
+        "White"
+      ],
+      "triangles": 2134
+    },
+    "female-Casual-feet": {
+      "model": "female-Casual",
+      "slot": "feet",
+      "source": "female-Casual-db685c4aaaef.glb.gz",
+      "sourceSha256": "db685c4aaaef5a5f3a7c57f90c75020bb43ca48d6545a82002b6a861b5a9d246",
+      "materials": [
+        "Grey"
+      ],
+      "triangles": 428
+    },
+    "female-Casual-legs": {
+      "model": "female-Casual",
+      "slot": "legs",
+      "source": "female-Casual-db685c4aaaef.glb.gz",
+      "sourceSha256": "db685c4aaaef5a5f3a7c57f90c75020bb43ca48d6545a82002b6a861b5a9d246",
+      "materials": [
+        "Orange"
+      ],
+      "triangles": 706
+    },
+    "female-Casual-torso": {
+      "model": "female-Casual",
+      "slot": "torso",
+      "source": "female-Casual-db685c4aaaef.glb.gz",
+      "sourceSha256": "db685c4aaaef5a5f3a7c57f90c75020bb43ca48d6545a82002b6a861b5a9d246",
+      "materials": [
+        "White"
+      ],
+      "triangles": 488
+    },
+    "female-Formal-feet": {
+      "model": "female-Formal",
+      "slot": "feet",
+      "source": "female-Formal-64474b688b01.glb.gz",
+      "sourceSha256": "64474b688b013e48526d4c06c715e8dbb04af7b642eb527c35edb2608298442e",
+      "materials": [
+        "Red"
+      ],
+      "triangles": 240
+    },
+    "female-Formal-legs": {
+      "model": "female-Formal",
+      "slot": "legs",
+      "source": "female-Formal-64474b688b01.glb.gz",
+      "sourceSha256": "64474b688b013e48526d4c06c715e8dbb04af7b642eb527c35edb2608298442e",
+      "materials": [
+        "LimeGreen"
+      ],
+      "triangles": 134
+    },
+    "female-Formal-torso": {
+      "model": "female-Formal",
+      "slot": "torso",
+      "source": "female-Formal-64474b688b01.glb.gz",
+      "sourceSha256": "64474b688b013e48526d4c06c715e8dbb04af7b642eb527c35edb2608298442e",
+      "materials": [
+        "Gold",
+        "LimeGreen"
+      ],
+      "triangles": 284
+    },
+    "female-Punk-feet": {
+      "model": "female-Punk",
+      "slot": "feet",
+      "source": "female-Punk-881d64db68fa.glb.gz",
+      "sourceSha256": "881d64db68fadfa012353331ed156d7b9df3eb0512f39fb492ef9a3f863ada2a",
+      "materials": [
+        "Black",
+        "Grey"
+      ],
+      "triangles": 720
+    },
+    "female-Punk-legs": {
+      "model": "female-Punk",
+      "slot": "legs",
+      "source": "female-Punk-881d64db68fa.glb.gz",
+      "sourceSha256": "881d64db68fadfa012353331ed156d7b9df3eb0512f39fb492ef9a3f863ada2a",
+      "materials": [
+        "Black"
+      ],
+      "triangles": 662
+    },
+    "female-Punk-torso": {
+      "model": "female-Punk",
+      "slot": "torso",
+      "source": "female-Punk-881d64db68fa.glb.gz",
+      "sourceSha256": "881d64db68fadfa012353331ed156d7b9df3eb0512f39fb492ef9a3f863ada2a",
+      "materials": [
+        "Black",
+        "Pink"
+      ],
+      "triangles": 720
+    },
+    "female-Soldier-feet": {
+      "model": "female-Soldier",
+      "slot": "feet",
+      "source": "female-Soldier-c4c8be302a05.glb.gz",
+      "sourceSha256": "c4c8be302a053aedaab88962090c431173a5e52e5eaeb845e1184f7afd86f076",
+      "materials": [
+        "Black",
+        "Grey"
+      ],
+      "triangles": 1036
+    },
+    "female-Soldier-legs": {
+      "model": "female-Soldier",
+      "slot": "legs",
+      "source": "female-Soldier-c4c8be302a05.glb.gz",
+      "sourceSha256": "c4c8be302a053aedaab88962090c431173a5e52e5eaeb845e1184f7afd86f076",
+      "materials": [
+        "Black",
+        "Grey",
+        "Swat"
+      ],
+      "triangles": 1308
+    },
+    "female-Soldier-torso": {
+      "model": "female-Soldier",
+      "slot": "torso",
+      "source": "female-Soldier-c4c8be302a05.glb.gz",
+      "sourceSha256": "c4c8be302a053aedaab88962090c431173a5e52e5eaeb845e1184f7afd86f076",
+      "materials": [
+        "Black",
+        "Swat"
+      ],
+      "triangles": 640
+    },
+    "female-Suit-feet": {
+      "model": "female-Suit",
+      "slot": "feet",
+      "source": "female-Suit-d077a2e47d14.glb.gz",
+      "sourceSha256": "d077a2e47d140a376d08ea8211ca5cd9d81aa73863b3e8d6c137160ad683733b",
+      "materials": [
+        "Black"
+      ],
+      "triangles": 408
+    },
+    "female-Suit-legs": {
+      "model": "female-Suit",
+      "slot": "legs",
+      "source": "female-Suit-d077a2e47d14.glb.gz",
+      "sourceSha256": "d077a2e47d140a376d08ea8211ca5cd9d81aa73863b3e8d6c137160ad683733b",
+      "materials": [
+        "Black"
+      ],
+      "triangles": 696
+    },
+    "female-Suit-torso": {
+      "model": "female-Suit",
+      "slot": "torso",
+      "source": "female-Suit-d077a2e47d14.glb.gz",
+      "sourceSha256": "d077a2e47d140a376d08ea8211ca5cd9d81aa73863b3e8d6c137160ad683733b",
+      "materials": [
+        "Black",
+        "White"
+      ],
+      "triangles": 880
+    },
+    "female-Worker-feet": {
+      "model": "female-Worker",
+      "slot": "feet",
+      "source": "female-Worker-05308efeeda4.glb.gz",
+      "sourceSha256": "05308efeeda4aa788db71b65d0ca500b8ebc6bb012325ed7a3ca4c6e45160bfe",
+      "materials": [
+        "Black"
+      ],
+      "triangles": 408
+    },
+    "female-Worker-legs": {
+      "model": "female-Worker",
+      "slot": "legs",
+      "source": "female-Worker-05308efeeda4.glb.gz",
+      "sourceSha256": "05308efeeda4aa788db71b65d0ca500b8ebc6bb012325ed7a3ca4c6e45160bfe",
+      "materials": [
+        "Brown2",
+        "Brown_02"
+      ],
+      "triangles": 832
+    },
+    "female-Worker-torso": {
+      "model": "female-Worker",
+      "slot": "torso",
+      "source": "female-Worker-05308efeeda4.glb.gz",
+      "sourceSha256": "05308efeeda4aa788db71b65d0ca500b8ebc6bb012325ed7a3ca4c6e45160bfe",
+      "materials": [
+        "White",
+        "Worker_Vest",
+        "Worker_Yellow"
+      ],
+      "triangles": 542
+    },
+    "male-Adventurer-back": {
+      "model": "male-Adventurer",
+      "slot": "back",
+      "source": "male-Adventurer-2a70333d41e7.glb.gz",
+      "sourceSha256": "2a70333d41e72a3587528a6aafa15c41a237e99b449020944f7d99666429e781",
+      "materials": [
+        "Brown",
+        "Gold",
+        "Green",
+        "LightGreen"
+      ],
+      "triangles": 1752
+    },
+    "male-Adventurer-feet": {
+      "model": "male-Adventurer",
+      "slot": "feet",
+      "source": "male-Adventurer-2a70333d41e7.glb.gz",
+      "sourceSha256": "2a70333d41e72a3587528a6aafa15c41a237e99b449020944f7d99666429e781",
+      "materials": [
+        "Black",
+        "Grey"
+      ],
+      "triangles": 480
+    },
+    "male-Adventurer-legs": {
+      "model": "male-Adventurer",
+      "slot": "legs",
+      "source": "male-Adventurer-2a70333d41e7.glb.gz",
+      "sourceSha256": "2a70333d41e72a3587528a6aafa15c41a237e99b449020944f7d99666429e781",
+      "materials": [
+        "Brown",
+        "Brown2"
+      ],
+      "triangles": 822
+    },
+    "male-Adventurer-torso": {
+      "model": "male-Adventurer",
+      "slot": "torso",
+      "source": "male-Adventurer-2a70333d41e7.glb.gz",
+      "sourceSha256": "2a70333d41e72a3587528a6aafa15c41a237e99b449020944f7d99666429e781",
+      "materials": [
+        "Green",
+        "LightGreen"
+      ],
+      "triangles": 1442
+    },
+    "male-Casual_2-feet": {
+      "model": "male-Casual_2",
+      "slot": "feet",
+      "source": "male-Casual_2-2de97af1861b.glb.gz",
+      "sourceSha256": "2de97af1861bd55cb138ddff3022c9721a545625501ddd1583f0c1a22b43dbad",
+      "materials": [
+        "Red_Dark",
+        "White"
+      ],
+      "triangles": 552
+    },
+    "male-Casual_2-legs": {
+      "model": "male-Casual_2",
+      "slot": "legs",
+      "source": "male-Casual_2-2de97af1861b.glb.gz",
+      "sourceSha256": "2de97af1861bd55cb138ddff3022c9721a545625501ddd1583f0c1a22b43dbad",
+      "materials": [
+        "LightBlue"
+      ],
+      "triangles": 734
+    },
+    "male-Casual_2-torso": {
+      "model": "male-Casual_2",
+      "slot": "torso",
+      "source": "male-Casual_2-2de97af1861b.glb.gz",
+      "sourceSha256": "2de97af1861bd55cb138ddff3022c9721a545625501ddd1583f0c1a22b43dbad",
+      "materials": [
+        "LightBrown"
+      ],
+      "triangles": 742
+    },
+    "male-Casual_Hoodie-feet": {
+      "model": "male-Casual_Hoodie",
+      "slot": "feet",
+      "source": "male-Casual_Hoodie-29d5cdfc6eee.glb.gz",
+      "sourceSha256": "29d5cdfc6eeef5995fab195bc8066b571b175682f7156ab3d52bbbd1b7bef5ac",
+      "materials": [
+        "Purple",
+        "White"
+      ],
+      "triangles": 512
+    },
+    "male-Casual_Hoodie-legs": {
+      "model": "male-Casual_Hoodie",
+      "slot": "legs",
+      "source": "male-Casual_Hoodie-29d5cdfc6eee.glb.gz",
+      "sourceSha256": "29d5cdfc6eeef5995fab195bc8066b571b175682f7156ab3d52bbbd1b7bef5ac",
+      "materials": [
+        "LightBlue"
+      ],
+      "triangles": 482
+    },
+    "male-Casual_Hoodie-torso": {
+      "model": "male-Casual_Hoodie",
+      "slot": "torso",
+      "source": "male-Casual_Hoodie-29d5cdfc6eee.glb.gz",
+      "sourceSha256": "29d5cdfc6eeef5995fab195bc8066b571b175682f7156ab3d52bbbd1b7bef5ac",
+      "materials": [
+        "Purple"
+      ],
+      "triangles": 1258
+    },
+    "male-Farmer-feet": {
+      "model": "male-Farmer",
+      "slot": "feet",
+      "source": "male-Farmer-4c76b9506a19.glb.gz",
+      "sourceSha256": "4c76b9506a191d9ca93051ff0359b05a9c609a8a27de87deef8465717b116548",
+      "materials": [
+        "Brown",
+        "Brown2"
+      ],
+      "triangles": 384
+    },
+    "male-Farmer-head": {
+      "model": "male-Farmer",
+      "slot": "head",
+      "source": "male-Farmer-4c76b9506a19.glb.gz",
+      "sourceSha256": "4c76b9506a191d9ca93051ff0359b05a9c609a8a27de87deef8465717b116548",
+      "materials": [
+        "Beige",
+        "Red"
+      ],
+      "triangles": 320
+    },
+    "male-Farmer-legs": {
+      "model": "male-Farmer",
+      "slot": "legs",
+      "source": "male-Farmer-4c76b9506a19.glb.gz",
+      "sourceSha256": "4c76b9506a191d9ca93051ff0359b05a9c609a8a27de87deef8465717b116548",
+      "materials": [
+        "LightBlue"
+      ],
+      "triangles": 918
+    },
+    "male-Farmer-torso": {
+      "model": "male-Farmer",
+      "slot": "torso",
+      "source": "male-Farmer-4c76b9506a19.glb.gz",
+      "sourceSha256": "4c76b9506a191d9ca93051ff0359b05a9c609a8a27de87deef8465717b116548",
+      "materials": [
+        "Beige",
+        "Brown",
+        "LightBlue"
+      ],
+      "triangles": 3070
+    },
+    "male-Punk-feet": {
+      "model": "male-Punk",
+      "slot": "feet",
+      "source": "male-Punk-9e6fb63e5c8d.glb.gz",
+      "sourceSha256": "9e6fb63e5c8d8f1689aa46a532778d17f2652f41c284f11730e34c78e003626f",
+      "materials": [
+        "Black"
+      ],
+      "triangles": 408
+    },
+    "male-Punk-legs": {
+      "model": "male-Punk",
+      "slot": "legs",
+      "source": "male-Punk-9e6fb63e5c8d.glb.gz",
+      "sourceSha256": "9e6fb63e5c8d8f1689aa46a532778d17f2652f41c284f11730e34c78e003626f",
+      "materials": [
+        "LightBlue"
+      ],
+      "triangles": 722
+    },
+    "male-Punk-torso": {
+      "model": "male-Punk",
+      "slot": "torso",
+      "source": "male-Punk-9e6fb63e5c8d.glb.gz",
+      "sourceSha256": "9e6fb63e5c8d8f1689aa46a532778d17f2652f41c284f11730e34c78e003626f",
+      "materials": [
+        "Black",
+        "White"
+      ],
+      "triangles": 726
+    },
+    "male-Suit-feet": {
+      "model": "male-Suit",
+      "slot": "feet",
+      "source": "male-Suit-b7f32ba9f50b.glb.gz",
+      "sourceSha256": "b7f32ba9f50baca57acb85612c5c76376dec3f0a688092bb3bc6f20883201004",
+      "materials": [
+        "Black"
+      ],
+      "triangles": 528
+    },
+    "male-Suit-legs": {
+      "model": "male-Suit",
+      "slot": "legs",
+      "source": "male-Suit-b7f32ba9f50b.glb.gz",
+      "sourceSha256": "b7f32ba9f50baca57acb85612c5c76376dec3f0a688092bb3bc6f20883201004",
+      "materials": [
+        "Suit"
+      ],
+      "triangles": 734
+    },
+    "male-Suit-torso": {
+      "model": "male-Suit",
+      "slot": "torso",
+      "source": "male-Suit-b7f32ba9f50b.glb.gz",
+      "sourceSha256": "b7f32ba9f50baca57acb85612c5c76376dec3f0a688092bb3bc6f20883201004",
+      "materials": [
+        "Suit",
+        "Tie",
+        "White"
+      ],
+      "triangles": 1090
+    },
+    "male-Swat-feet": {
+      "model": "male-Swat",
+      "slot": "feet",
+      "source": "male-Swat-52089d8b90c8.glb.gz",
+      "sourceSha256": "52089d8b90c8c15e60279df83ad840b90ac460b3151c3325340939a8d2ef7e2d",
+      "materials": [
+        "Swat_Black"
+      ],
+      "triangles": 560
+    },
+    "male-Swat-head": {
+      "model": "male-Swat",
+      "slot": "head",
+      "source": "male-Swat-52089d8b90c8.glb.gz",
+      "sourceSha256": "52089d8b90c8c15e60279df83ad840b90ac460b3151c3325340939a8d2ef7e2d",
+      "materials": [
+        "Swat",
+        "Swat_Black",
+        "Visor"
+      ],
+      "triangles": 2308
+    },
+    "male-Swat-legs": {
+      "model": "male-Swat",
+      "slot": "legs",
+      "source": "male-Swat-52089d8b90c8.glb.gz",
+      "sourceSha256": "52089d8b90c8c15e60279df83ad840b90ac460b3151c3325340939a8d2ef7e2d",
+      "materials": [
+        "Swat",
+        "Swat_Black"
+      ],
+      "triangles": 1780
+    },
+    "male-Swat-torso": {
+      "model": "male-Swat",
+      "slot": "torso",
+      "source": "male-Swat-52089d8b90c8.glb.gz",
+      "sourceSha256": "52089d8b90c8c15e60279df83ad840b90ac460b3151c3325340939a8d2ef7e2d",
+      "materials": [
+        "Swat",
+        "Swat_Black"
+      ],
+      "triangles": 2064
+    },
+    "male-Worker-feet": {
+      "model": "male-Worker",
+      "slot": "feet",
+      "source": "male-Worker-d9f9756de423.glb.gz",
+      "sourceSha256": "d9f9756de4233390d4ee4bd47f9e8af7ea94cf2f97ae56dcb08f9628cb89e433",
+      "materials": [
+        "Black",
+        "Grey"
+      ],
+      "triangles": 464
+    },
+    "male-Worker-head": {
+      "model": "male-Worker",
+      "slot": "head",
+      "source": "male-Worker-d9f9756de423.glb.gz",
+      "sourceSha256": "d9f9756de4233390d4ee4bd47f9e8af7ea94cf2f97ae56dcb08f9628cb89e433",
+      "materials": [
+        "Worker_Yellow"
+      ],
+      "triangles": 320
+    },
+    "male-Worker-legs": {
+      "model": "male-Worker",
+      "slot": "legs",
+      "source": "male-Worker-d9f9756de423.glb.gz",
+      "sourceSha256": "d9f9756de4233390d4ee4bd47f9e8af7ea94cf2f97ae56dcb08f9628cb89e433",
+      "materials": [
+        "Brown",
+        "Brown2"
+      ],
+      "triangles": 822
+    },
+    "male-Worker-torso": {
+      "model": "male-Worker",
+      "slot": "torso",
+      "source": "male-Worker-d9f9756de423.glb.gz",
+      "sourceSha256": "d9f9756de4233390d4ee4bd47f9e8af7ea94cf2f97ae56dcb08f9628cb89e433",
+      "materials": [
+        "LightBrown",
+        "Worker_Vest",
+        "Worker_Yellow"
+      ],
+      "triangles": 954
+    }
+  }
+}

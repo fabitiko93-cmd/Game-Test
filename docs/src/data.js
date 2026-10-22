@@ -180,10 +180,10 @@ export const ITEMS = {
 
   outfit_top: { name: "Oberbekleidung", short: "Oberteil", type: "clothing", icon: "clothing", equipSlot: "torso", protection: 0.12, weight: 1.05, stack: 1, condition: 80, description: "Das bei Spielbeginn gewählte Oberteil. Begrenzter Bissschutz." },
   outfit_trousers: { name: "Hose", short: "Hose", type: "clothing", icon: "clothing", equipSlot: "legs", protection: 0.1, weight: 0.72, stack: 1, condition: 85, description: "Die bei Spielbeginn gewählte Beinkleidung." },
-  work_jacket: { name: "Arbeitsjacke", short: "Jacke", type: "clothing", icon: "clothing", equipSlot: "torso", protection: 0.12, weight: 1.05, stack: 1, condition: 80, description: "Robuster Stoff mit begrenztem Bissschutz." },
+  work_jacket: { name: "Warnweste", short: "Warnweste", type: "clothing", icon: "clothing", equipSlot: "torso", protection: 0.12, weight: 1.05, stack: 1, condition: 80, description: "Orange Warnweste mit Reflexstreifen über einem Arbeitsshirt. Begrenzter Bissschutz." },
   leather_jacket: { name: "Lederjacke", short: "Lederjacke", type: "clothing", icon: "clothing", equipSlot: "torso", protection: 0.28, weight: 1.65, stack: 1, condition: 90, description: "Schwer, aber deutlich widerstandsfähiger." },
   jeans: { name: "Jeans", short: "Jeans", type: "clothing", icon: "clothing", equipSlot: "legs", protection: 0.1, weight: 0.72, stack: 1, condition: 85, description: "Alltäglicher Schutz für die Beine." },
-  motorcycle_helmet: { name: "Motorradhelm", short: "Helm", type: "clothing", icon: "clothing", equipSlot: "head", protection: 0.42, weight: 1.45, stack: 1, condition: 88, description: "Starker Kopfschutz auf Kosten des Gewichts." },
+  motorcycle_helmet: { name: "Motorradhelm", short: "Helm", type: "clothing", icon: "clothing", equipSlot: "head", clothingModel: "male-Swat", protection: 0.42, weight: 1.45, stack: 1, condition: 88, description: "Starker Kopfschutz auf Kosten des Gewichts." },
   canvas_bag: { name: "Stoffrucksack", short: "Rucksack", type: "bag", icon: "bag", equipSlot: "back", capacityBonus: 6, weight: 0.55, stack: 1, condition: 75, description: "Ein einfacher Rucksack mit begrenztem Volumen." },
   hiking_pack: { name: "Wanderrucksack", short: "Wanderrucksack", type: "bag", icon: "bag", equipSlot: "back", capacityBonus: 12, weight: 1.25, stack: 1, condition: 90, description: "Geräumig, robust und entsprechend begehrt." },
 
