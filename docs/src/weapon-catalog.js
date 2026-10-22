@@ -1,3 +1,7 @@
+import G17 from '../assets/weapons/g17.json' with {type:'json'};
+import USP from '../assets/weapons/usp.json' with {type:'json'};
+import SCORPION from '../assets/weapons/scorpion.json' with {type:'json'};
+import DEAGLE from '../assets/weapons/deagle.json' with {type:'json'};
 import AK from '../assets/weapons/ak.json' with { type: 'json' };
 import VECTOR from '../assets/weapons/vector.json' with { type: 'json' };
 import M4 from '../assets/weapons/m4.json' with { type: 'json' };
@@ -5,7 +9,16 @@ import REVOLVER from '../assets/weapons/revolver.json' with { type: 'json' };
 
 // One catalogue drives the held model, weapon bench, UI and upper-body motion.
 // Item compatibility and game values remain in data.js.
+function pistol(name,asset,magazines,mods=true){
+  return{name,asset,baseParts:['Receiver','Slide','Barrel','Hammer','Trigger','Safety','SlideRelease'],muzzleParts:['Barrel','Receiver'],magazines,
+    mods:mods?{pistol_optic_mount:'OpticMount',reflex_sight:'Reflex',pistol_flashlight:'Flashlight',sidearm_suppressor:'Suppressor'}:{},
+    anchors:asset.anchors,grips:asset.grips,mechanism:asset.mechanism,requires:mods?{optic:'mount'}:{}};
+}
 const MODELS = {
+  pistol_9mm:pistol('G17',G17,{mag_9mm_12:'Magazine',mag_9mm_18:'ExtendedMagazine'}),
+  usp_9mm:pistol('USP',USP,{mag_usp_15:'Magazine',mag_usp_22:'ExtendedMagazine'}),
+  scorpion_45:pistol('SIG Scorpion',SCORPION,{mag_scorpion_8:'Magazine',mag_scorpion_12:'ExtendedMagazine'}),
+  desert_eagle_50:pistol('Desert Eagle',DEAGLE,{mag_deagle_7:'Magazine'},false),
   ak_762: {
     name: 'AK', asset: AK, baseParts: ['Receiver', 'Handguard', 'Barrel'], muzzleParts:['Barrel'],
     magazines: {mag_ak_30: 'Magazine'},

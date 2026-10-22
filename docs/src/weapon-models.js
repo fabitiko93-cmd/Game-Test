@@ -29,7 +29,7 @@ export function configureWeaponModel(root, weapon) {
   else root.userData.stockContact=null;
   root.userData.grips=definition.grips?Object.assign({verticalSupport:false,leftThumb:null,leftThumbPole:null},definition.grips,...setups.map(setup=>setup.grips)):null;
   root.userData.anchors=Object.assign({},definition.anchors,...setups.map(setup=>setup.anchors));
-  root.userData.weaponId=weapon.id;root.userData.weaponType=weapon.type;
+  root.userData.weaponId=weapon.id;root.userData.weaponType=weapon.type;root.userData.mechanism=definition.mechanism||null;
   root.userData.magazinePart=definition.magazines[weapon.magazine?.type]||Object.values(definition.magazines)[0]||null;
   const suppressor=root.getObjectByName('Suppressor');
   const muzzlePart=suppressor?.visible?suppressor:definition.muzzleParts.map(n=>root.getObjectByName(n)).find(p=>p?.visible);

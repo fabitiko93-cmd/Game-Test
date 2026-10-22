@@ -251,6 +251,7 @@ export class Game {
     this.updateMovement(delta);
     this.playerVisibility.update(this.player);
     this.combat.update(this, delta);
+    this.renderer.updateCasings?.(this,delta);
     this.stealth.update(this, delta);
     this.aiAccumulator += delta;
     if (this.aiAccumulator >= GAME.aiStep) {

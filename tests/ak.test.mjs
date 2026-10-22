@@ -115,10 +115,10 @@ test("rounded ammo stacks merge at their real extra weight and failed magazine a
   assert.equal(countType(player, "ammo_762x39"), 3); near(inventoryWeight(player), .05);
   assert.equal(addItem(player, createItem("ammo_762x39", 1)), false);
   player.inventory = []; player.baseCapacity = .12;
-  const magazine = createItem("mag_9mm_12", 1, {rounds: 5});
+  const magazine = createItem("mag_9mm_12", 1, {rounds: 8});
   addItem(player, magazine); addItem(player, createItem("ammo_9mm", 1));
   assert.equal(fillMagazine(player, magazine.id).ok, false);
-  assert.equal(findItem(player, magazine.id).rounds, 5); assert.equal(countType(player, "ammo_9mm"), 1);
+  assert.equal(findItem(player, magazine.id).rounds, 8); assert.equal(countType(player, "ammo_9mm"), 1);
   player.inventory = []; player.baseCapacity = .35;
   const full = createItem("mag_ak_30", 1, {rounds: 30}); addItem(player, full);
   assert.equal(emptyMagazine(player, full.id).ok, false);
@@ -171,7 +171,7 @@ test("auto stops on an empty magazine, blocked line, a menu, movement, pause, ta
   assert.equal(f.player.shots, 2); assert.equal(f.player.combat.triggerHeld, false); assert.equal(f.weapon.magazine.rounds, 0);
 });
 
-test("AK penetration hits one aligned body behind the target, respecting range, offset and walls", () => {
+test("AK penetration follows aligned bodies with cumulative damage loss, respecting range, offset and walls", () => {
   for (const suppressed of [false, true]) {
     const f = combatFixture(); f.game.random = () => .5;
     if (suppressed) f.weapon.mods.muzzle = createItem("ak_suppressor");
@@ -180,7 +180,7 @@ test("AK penetration hits one aligned body behind the target, respecting range, 
     const offset = {id: "offset", x: f.target.x + .5, y: f.target.y + .3, hp: 1000};
     f.game.zombies.push(behind, third, offset);
     assert.equal(f.combat.fire(f.game).ok, true);
-    near(behind.hp, 1000 - 62 * .6); assert.equal(third.hp, 1000); assert.equal(offset.hp, 1000);
+    near(behind.hp, 1000 - 62 * .65); near(third.hp, 1000 - 62 * .65 ** 2); assert.equal(offset.hp, 1000);
   }
   const f = combatFixture(); f.game.random = () => .5;
   const blocked = {id: "blocked", x: f.target.x + 1, y: f.target.y, hp: 1000};

@@ -163,6 +163,17 @@ Bereits platzierte Leichen (Polizist, Apothekerin, Zivilperson) verwenden passen
 Charaktere in der Original-Todespose, mit Bodenkontakt und Modell-Antippmaßen.
 Getötete Infizierte behalten weiterhin ihre eigenen Zombie-Modelle.
 
+Pistolen-/Hülsenpatch vom 22.10.2026: G17, USP, SIG Emperor Scorpion und Desert Eagle
+von TastyTony. Walther Q5 ausgeschlossen. G17/USP 9 mm, SIG .45 ACP, Desert Eagle
+.50 AE als vorläufige Spielprofile. Die Desert Eagle bleibt ohne Aufsätze.
+Die übrigen Pistolen erlauben Lampen/Dämpfer und Rotpunkt auf eigener Montage.
+Mechanische Schussanimation, letzter Schuss offen, echte kaliberbezogene Hülsen
+mit Weltflug, Bodenkontakt, gedämpftem Nachspringen, leisem materialabhängigem
+Klang und kleinen lokalen Geräuschkreisen sind beauftragt. Kein Möbel-/Wandkontakt
+der Hülsen; gedeckelte Anzahl und Lebensdauer für iPhone. Revolver behält Hülsen
+bis zum Entladen. Gemeinsamer Körperdurchschuss für alle Kaliber, kumulativer
+Schadensverlust; Materialdurchschlag bleibt später. Originale behalten und kreditieren.
+
 ## Effizient entwickeln
 
 - Modell, Denkstufe und Geschwindigkeit nach der aktuellen Nutzerwahl verwenden.

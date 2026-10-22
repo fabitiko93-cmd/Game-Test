@@ -1,0 +1,133 @@
+{
+  "file": "g17-f1c187192998.glb.gz",
+  "sha256": "f1c187192998adf9b5ee1cd08882a9f91067dfcd04a4c379881d3b69dfc08cdf",
+  "author": "TastyTony",
+  "license": "CC BY 4.0",
+  "source": "https://sketchfab.com/3d-models/low-poly-g17-60efc54ac59e47d18bdff94b2f5144ff",
+  "sourceDownload": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-058/60efc54ac59e47d18bdff94b2f5144ff.glb",
+  "sourceSha256": "fa28b051644ceea0328082eed600a3945dfa6417e42262ecef728ced5b3f4e6f",
+  "sourceTriangles": 2317,
+  "length": 0.202,
+  "parts": {
+    "Receiver": {
+      "triangles": 1094,
+      "source": "https://sketchfab.com/3d-models/low-poly-g17-60efc54ac59e47d18bdff94b2f5144ff",
+      "license": "CC BY 4.0"
+    },
+    "Slide": {
+      "triangles": 835,
+      "source": "https://sketchfab.com/3d-models/low-poly-g17-60efc54ac59e47d18bdff94b2f5144ff",
+      "license": "CC BY 4.0"
+    },
+    "SlideRelease": {
+      "triangles": 28,
+      "source": "https://sketchfab.com/3d-models/low-poly-g17-60efc54ac59e47d18bdff94b2f5144ff",
+      "license": "CC BY 4.0"
+    },
+    "Magazine": {
+      "triangles": 184,
+      "source": "https://sketchfab.com/3d-models/low-poly-g17-60efc54ac59e47d18bdff94b2f5144ff",
+      "license": "CC BY 4.0"
+    },
+    "FeedRound": {
+      "triangles": 176,
+      "source": "https://sketchfab.com/3d-models/low-poly-g17-60efc54ac59e47d18bdff94b2f5144ff",
+      "license": "CC BY 4.0"
+    },
+    "Suppressor": {
+      "triangles": 248,
+      "source": "Existing ak/Suppressor",
+      "license": "CC0"
+    },
+    "Flashlight": {
+      "triangles": 156,
+      "source": "Existing revolver/Flashlight",
+      "license": "CC0"
+    },
+    "Reflex": {
+      "triangles": 600,
+      "source": "Existing vector/Optic",
+      "license": "CC BY 4.0"
+    },
+    "OpticMount": {
+      "triangles": 72,
+      "source": "SPERRKREIS authored pistol saddle plate",
+      "license": "CC0"
+    },
+    "ExtendedMagazine": {
+      "triangles": 184,
+      "source": "Original magazine, lower section extended 25 mm",
+      "license": "CC BY 4.0"
+    }
+  },
+  "anchors": {
+    "magazine": [
+      0,
+      -0.08,
+      -0.035
+    ],
+    "muzzle": [
+      0,
+      0.027106807273987045,
+      0.12001183238227295
+    ],
+    "optic": [
+      0,
+      0.06239211260010573,
+      -0.03216305234297215
+    ],
+    "utility": [
+      0,
+      -0.010893192726012954,
+      0.08201183238227294
+    ]
+  },
+  "grips": {
+    "handgun": true,
+    "right": [
+      -0.032,
+      0,
+      -0.14
+    ],
+    "left": [
+      0.16,
+      -0.015,
+      -0.025
+    ],
+    "leftThumb": [
+      0.027,
+      0.025,
+      -0.035
+    ],
+    "leftThumbPole": [
+      0.1,
+      0.08,
+      -0.025
+    ]
+  },
+  "mechanism": {
+    "slideTravel": 0.033,
+    "cycle": 0.085,
+    "ejection": [
+      0.012704169617819904,
+      0.027106807273987045,
+      0.01893739463064059
+    ],
+    "barrelTilt": 0,
+    "barrelPivot": [
+      0,
+      0.027106807273987045,
+      -0.03216305234297215
+    ],
+    "hammerPivot": [
+      0,
+      0.017106807273987043,
+      -0.05916305234297215
+    ]
+  },
+  "muzzle": [
+    0,
+    0.027106807273987045,
+    0.12001183238227295
+  ]
+}

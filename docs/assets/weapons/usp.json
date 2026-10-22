@@ -1,0 +1,158 @@
+{
+  "file": "usp-056f0a47e7de.glb.gz",
+  "sha256": "056f0a47e7de429d5004921b3e04a4677805aaf4295bb2dace40b6e077af3bd7",
+  "author": "TastyTony",
+  "license": "CC BY 4.0",
+  "source": "https://sketchfab.com/3d-models/low-poly-hk-usp-fea998682de9465087c108ae6bee56fc",
+  "sourceDownload": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-068/fea998682de9465087c108ae6bee56fc.glb",
+  "sourceSha256": "caf1e28e756314c6291134d4d73ba6f1303bccf1579dbd3c49a1f47f72dcf22b",
+  "sourceTriangles": 2772,
+  "length": 0.225,
+  "parts": {
+    "SlideRelease": {
+      "triangles": 80,
+      "source": "https://sketchfab.com/3d-models/low-poly-hk-usp-fea998682de9465087c108ae6bee56fc",
+      "license": "CC BY 4.0"
+    },
+    "Receiver": {
+      "triangles": 790,
+      "source": "https://sketchfab.com/3d-models/low-poly-hk-usp-fea998682de9465087c108ae6bee56fc",
+      "license": "CC BY 4.0"
+    },
+    "Magazine": {
+      "triangles": 264,
+      "source": "https://sketchfab.com/3d-models/low-poly-hk-usp-fea998682de9465087c108ae6bee56fc",
+      "license": "CC BY 4.0"
+    },
+    "Safety": {
+      "triangles": 48,
+      "source": "https://sketchfab.com/3d-models/low-poly-hk-usp-fea998682de9465087c108ae6bee56fc",
+      "license": "CC BY 4.0"
+    },
+    "Slide": {
+      "triangles": 933,
+      "source": "https://sketchfab.com/3d-models/low-poly-hk-usp-fea998682de9465087c108ae6bee56fc",
+      "license": "CC BY 4.0"
+    },
+    "Barrel": {
+      "triangles": 171,
+      "source": "https://sketchfab.com/3d-models/low-poly-hk-usp-fea998682de9465087c108ae6bee56fc",
+      "license": "CC BY 4.0"
+    },
+    "FeedRound": {
+      "triangles": 188,
+      "source": "https://sketchfab.com/3d-models/low-poly-hk-usp-fea998682de9465087c108ae6bee56fc",
+      "license": "CC BY 4.0"
+    },
+    "MagazineRounds": {
+      "triangles": 190,
+      "source": "https://sketchfab.com/3d-models/low-poly-hk-usp-fea998682de9465087c108ae6bee56fc",
+      "license": "CC BY 4.0"
+    },
+    "Trigger": {
+      "triangles": 52,
+      "source": "https://sketchfab.com/3d-models/low-poly-hk-usp-fea998682de9465087c108ae6bee56fc",
+      "license": "CC BY 4.0"
+    },
+    "Hammer": {
+      "triangles": 56,
+      "source": "https://sketchfab.com/3d-models/low-poly-hk-usp-fea998682de9465087c108ae6bee56fc",
+      "license": "CC BY 4.0"
+    },
+    "Suppressor": {
+      "triangles": 248,
+      "source": "Existing ak/Suppressor",
+      "license": "CC0"
+    },
+    "Flashlight": {
+      "triangles": 156,
+      "source": "Existing revolver/Flashlight",
+      "license": "CC0"
+    },
+    "Reflex": {
+      "triangles": 600,
+      "source": "Existing vector/Optic",
+      "license": "CC BY 4.0"
+    },
+    "OpticMount": {
+      "triangles": 72,
+      "source": "SPERRKREIS authored pistol saddle plate",
+      "license": "CC0"
+    },
+    "ExtendedMagazine": {
+      "triangles": 264,
+      "source": "Original magazine, lower section extended 25 mm",
+      "license": "CC BY 4.0"
+    }
+  },
+  "anchors": {
+    "magazine": [
+      0,
+      -0.08,
+      -0.035
+    ],
+    "muzzle": [
+      0,
+      0.029334292532612917,
+      0.1421386120691111
+    ],
+    "optic": [
+      0,
+      0.07018863044592537,
+      -0.040942000887219526
+    ],
+    "utility": [
+      0,
+      -0.008665707467387082,
+      0.1041386120691111
+    ]
+  },
+  "grips": {
+    "handgun": true,
+    "right": [
+      -0.032,
+      0,
+      -0.14
+    ],
+    "left": [
+      0.16,
+      -0.015,
+      -0.025
+    ],
+    "leftThumb": [
+      0.027,
+      0.025,
+      -0.035
+    ],
+    "leftThumbPole": [
+      0.1,
+      0.08,
+      -0.025
+    ]
+  },
+  "mechanism": {
+    "slideTravel": 0.033,
+    "cycle": 0.085,
+    "ejection": [
+      0.010305737034008956,
+      0.029334292532612917,
+      0.024375081072692567
+    ],
+    "barrelTilt": 0.045,
+    "barrelPivot": [
+      0,
+      0.029334292532612917,
+      -0.040942000887219526
+    ],
+    "hammerPivot": [
+      0,
+      0.019334292532612915,
+      -0.06794200088721952
+    ]
+  },
+  "muzzle": [
+    0,
+    0.029334292532612917,
+    0.1421386120691111
+  ]
+}

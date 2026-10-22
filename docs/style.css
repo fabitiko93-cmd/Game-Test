@@ -787,3 +787,8 @@ h1 span { color: var(--red-bright); }
   .character-equipment { grid-template-columns:1fr; grid-template-rows:minmax(260px,1.3fr) minmax(120px,1fr); overflow-y:auto; }
   .loadout-detail { border-left:0; border-top:1px solid var(--line); }
 }
+
+.item-icon.g17 { background: url("./assets/weapons/g17-icon.svg") center / contain no-repeat; width: 36px; }
+.item-icon.usp { background: url("./assets/weapons/usp-icon.svg") center / contain no-repeat; width: 36px; }
+.item-icon.scorpion { background: url("./assets/weapons/scorpion-icon.svg") center / contain no-repeat; width: 36px; }
+.item-icon.deagle { background: url("./assets/weapons/deagle-icon.svg") center / contain no-repeat; width: 36px; }
