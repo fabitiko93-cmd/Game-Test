@@ -9,6 +9,7 @@ import { PLAYER_BODY_RADIUS, ZOMBIE_WORLD_RADIUS, metersToTiles, WORLD_SCALE } f
 import { furnishingDimensions, furnishingFootprint } from "./quaternius-catalog.js";
 import { furnishBuildings } from "./interior-layout.js";
 import { createWeaponTestItems } from "./weapon-test-crate.js";
+import { humanCorpseMetadata } from './corpse-appearance.js';
 
 export const BUILDINGS = [
   { id: "police", name: "POLIZEIPOSTEN", x: 16, y: 5, w: 8, h: 8, floor: "policeFloor", door: { x: 20, y: 12 }, wall: "#68726d", roof: "#34423d" },
@@ -149,7 +150,7 @@ export class World {
       createItem("ammo_44", 6),
       createItem("reflex_sight"),
     );
-    const policeCorpse = this.addObject("corpse", 21.2, 9.2, { interactable: true, solid: false, container: "corpse", name: "POLIZIST" });
+    const policeCorpse = this.addObject("corpse", 21.2, 9.2, { interactable: true, solid: false, container: "corpse", name: "POLIZIST", corpseRole:'police' });
     this.ensureItem(policeCorpse, createItem("police_key"));
 
     for (const [x, y] of [[37.8,5.8],[40.5,5.8],[43.2,5.8],[37.8,8.8],[40.5,8.8],[43.2,8.8],[37.8,11.1],[43.2,11.1]]) {
@@ -163,7 +164,7 @@ export class World {
     this.addObject("shelf", 38, 39.6, { interactable: true, solid: true, container: "pharmacy", name: "VERBANDSSCHRANK" });
     this.addObject("shelf", 43, 36.2, { interactable: true, solid: true, container: "pharmacy", name: "APOTHEKENREGAL" });
     this.addObject("counter", 41, 41.6, { solid: true, name: "TRESEN" });
-    this.addObject("corpse", 42.6, 40.3, { interactable: true, solid: false, container: "corpse", name: "APOTHEKERIN" });
+    this.addObject("corpse", 42.6, 40.3, { interactable: true, solid: false, container: "corpse", name: "APOTHEKERIN", corpseRole:'pharmacist' });
   }
 
   addStreetDetails() {
@@ -202,7 +203,7 @@ export class World {
       interactable: true, solid: false, container: "tools", name: "GARTENWERKZEUGTASCHE",
     });
     this.addObject("corpse", 8.8, 11.1, {
-      interactable: true, solid: false, container: "corpse", name: "REGLOSE PERSON",
+      interactable: true, solid: false, container: "corpse", name: "REGLOSE PERSON", corpseRole:'civilian',
     });
     this.addObject("fence", 3.2, 14.3, { orientation: "x", color: "#5b5343" });
     this.addObject("fence", 7.0, 14.3, { orientation: "x", color: "#5b5343" });
@@ -214,14 +215,8 @@ export class World {
       name: "JAGDLAGER", color: "#6d6047",
     });
     huntingCache.items.push(
-      createItem("shotgun_12g", 1, { rounds: 1 }),
-      createItem("shell_12g", 6),
-      createItem("hunting_rifle", 1, { rounds: 1 }),
-      createItem("ammo_rifle", 5),
-      createItem("shotgun_choke"),
-      createItem("recoil_pad"),
-      createItem("weapon_sling"),
-      createItem("shell_holder"),
+      createItem("kitchen_knife"),
+      createItem("hiking_pack"),
     );
     this.addObject("toolbox", 23.5, 37.4, {
       interactable: true, solid: true, container: "tools", name: "WERKBANK",
@@ -290,6 +285,7 @@ export class World {
       ...(type==='toolbox'&&!options.footprint?{footprint:{x:.31,y:.23}}:{}),
       ...(furnishing ? { footprint: furnishingFootprint({type,...options}), heightMeters: furnishing.height } : {}),
     };
+    if(type==='corpse')Object.assign(object,humanCorpseMetadata(object));
     if (options.container && !options.items) object.items = this.rollLoot(options.container);
     this.objects.push(object);
     if (object.solid || object.cover > 0) this.touchSight();
@@ -543,6 +539,7 @@ export class World {
         deathCause: object.deathCause,
         zombieAppearance: object.zombieAppearance,
         playerAppearance: object.playerAppearance,
+        corpseRole: object.corpseRole,
         facingYaw: object.facingYaw,
         placementRole:object.placementRole,supportId:object.supportId,renderDepth:object.renderDepth,
         modelAsset:object.modelAsset,modelHeight:object.modelHeight,elevationMeters:object.elevationMeters,yaw:object.yaw,lootable:object.lootable,

@@ -104,7 +104,7 @@ test("AK mods change their agreed handling, retain old stocks, and the suppresso
   mount("ak_suppressor"); const suppressed = weaponStats(live);
   assert.ok(suppressed.noise < base.noise); assert.equal(suppressed.damage, base.damage); assert.equal(suppressed.penetration, base.penetration);
   near(itemWeight(live), originalWeight + .3 + .4);
-  const wrong = createItem("pistol_suppressor"); addItem(player, wrong);
+  const wrong = createItem("vector_suppressor"); addItem(player, wrong);
   assert.equal(installMod(player, live.id, wrong.id).ok, false); assert.ok(findItem(player, wrong.id));
 });
 

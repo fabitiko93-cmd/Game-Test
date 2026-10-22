@@ -80,7 +80,7 @@ test('found outfits are transferable clothing and equipping loot changes only th
  const trousers=createItem('suit_trousers_f');addItem(player,trousers);equipItem(player,trousers.id);
  const jacket=createItem('work_jacket');addItem(player,jacket);equipItem(player,jacket.id);
  assert.equal(playerModelAppearance(player).torso,'female-Worker');assert.equal(playerModelAppearance(player).legs,'female-Suit');
- const jeans=createItem('jeans');addItem(player,jeans);equipItem(player,jeans.id);assert.equal(playerModelAppearance(player).legs,'female-Casual');
+ const jeans=createItem('ripped_jeans_f');addItem(player,jeans);equipItem(player,jeans.id);assert.equal(playerModelAppearance(player).legs,'female-Punk');
  const suit=removeItem(player,trousers.id);addItem(player,suit);equipItem(player,suit.id);assert.equal(playerModelAppearance(player).legs,'female-Suit');
  assert.deepEqual(playerModelAppearance(JSON.parse(JSON.stringify(player))),playerModelAppearance(player));
 });

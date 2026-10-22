@@ -3,7 +3,6 @@ import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { defaultStyle, playerModelScale, QUATERNIUS_MODELS } from "./quaternius-catalog.js";
 import { PlayerMotion } from "./player-motion.js";
-import { heldEquipment } from "./held-equipment.js";
 import { WeaponModels, weaponModelSignature } from "./weapon-models.js";
 import { hasWeaponModel } from './weapon-catalog.js';
 import { applyRiflePose, captureRifleRig, restoreRiflePose } from "./rifle-pose.js";
@@ -20,7 +19,7 @@ const PARTS=["head","torso","legs","feet"];
 export class PlayerModels {
   constructor(pass,library) {
     this.pass=pass;this.library=library;this.entities=new Map();this.used=new Set();this.prepared=new Map();this.motion=new PlayerMotion();this.weapons=new WeaponModels();
-    this.ready=Promise.all(["male-Casual_2","female-Casual","male-Beach","female-Formal","male-Worker","female-Worker","male-Swat","male-Adventurer","Knife","player-motion"].map(key=>library.request(key)));
+    this.ready=Promise.all(["male-Casual_2","male-Casual_Hoodie","female-Casual","female-Suit","male-Beach","female-Formal","male-Worker","female-Worker","male-Swat","male-Adventurer","Knife","player-motion"].map(key=>library.request(key)));
   }
   beginFrame(){this.used.clear();this.prepared.clear();}
 
@@ -78,16 +77,13 @@ export class PlayerModels {
       entity.weapon=null;
     }
     if(entity.backpack){entity.backpack.parent.remove(entity.backpack);entity.backpack=null;}
-    const generated=heldEquipment(item?.type);
     if(hasWeaponModel(item)) {
       const model=this.weapons.create(item);if(!model)return;
       entity.weapon=model;entity.model.getObjectByName("WristR").add(model);
-    } else if(generated) {
-      entity.weapon=generated;generated.userData.generated=true;entity.model.getObjectByName("WristR").add(generated);
-    } else if(kind==="firearm") {
+    } else if(item?.type==='pistol_9mm') {
       const gun=this.library.get("male-Swat");if(!gun)return;
       entity.weapon=rebindPart(gun.scene.getObjectByName("Pistol"),entity.model);entity.model.getObjectByName("CharacterArmature").add(entity.weapon);
-    } else if(item) {
+    } else if(item?.type==='kitchen_knife') {
       const knife=this.library.get("Knife");if(!knife)return;
       entity.weapon=clone(knife.scene);entity.weapon.position.set(0,.035,.08);
       entity.model.getObjectByName("WristR").add(entity.weapon);
@@ -169,9 +165,14 @@ export class PlayerModels {
   drawCorpse(ctx,corpse,point) {
     const appearance=corpse.playerAppearance,entity=this.entity(corpse,appearance);if(!entity)return false;this.used.add(corpse);
     if(!entity.corpse){
+      entity.root.position.set(0,0,0);
       this.pose(entity,{clip:"Death",progress:1,delta:1,yaw:corpse.facingYaw||0,crouched:false});
-      entity.root.updateMatrixWorld(true);const bounds=new Box3().setFromObject(entity.root,true);
+      entity.root.updateMatrixWorld(true);const bounds=new Box3();
+      entity.root.traverseVisible(mesh=>{if(mesh.isMesh)bounds.union(new Box3().setFromObject(mesh,true));});
       entity.root.position.add(new Vector3(-(bounds.min.x+bounds.max.x)/2,-bounds.min.y,-(bounds.min.z+bounds.max.z)/2));
+      const size=bounds.getSize(new Vector3());
+      corpse.footprint={x:metersToTiles(size.x/2),y:metersToTiles(size.z/2)};
+      corpse.heightMeters=size.y;
       entity.corpse=true;
     }
     return this.pass.draw(ctx,entity.root,point,{software:true});

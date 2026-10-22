@@ -8,7 +8,6 @@ export function createItem(type, count = 1, options = {}) {
   if (!definition) throw new Error(`Unknown item type: ${type}`);
   const item = { id: options.id || uid("item"), type, count };
 
-  if (definition.type === "clothing" && options.modelStyle) item.modelStyle = options.modelStyle;
   if (definition.condition) item.condition = options.condition ?? definition.condition;
   if (definition.type === "weapon") {
     item.mods = options.mods ? deepCopy(options.mods) : Object.fromEntries(

@@ -118,12 +118,12 @@ function fixture() {
 
 {
   const { g } = fixture();
-  const weapon = createItem("pistol_9mm"); addItem(g.player, weapon);
+  const weapon = createItem("vector_9mm"); addItem(g.player, weapon);
   g.useItem(weapon.id);
   assert.equal(activeWeapon(g.player).id, weapon.id);
   const equipped = activeWeapon(g.player);
-  addItem(g.player, createItem("ammo_9mm", 20)); addItem(g.player, createItem("mag_9mm_12"));
-  g.useItem(g.player.inventory.find(item => item.type === "mag_9mm_12").id);
+  addItem(g.player, createItem("ammo_9mm", 20)); addItem(g.player, createItem("mag_vector_33"));
+  g.useItem(g.player.inventory.find(item => item.type === "mag_vector_33").id);
   g.reload(); assert.equal(roundsInWeapon(equipped),0);
   g.combat.update(g,g.player.combat.reload.duration+.001);assert.ok(roundsInWeapon(equipped)>0);
   const mod = createItem("reflex_sight"); addItem(g.player, mod); g.useItem(mod.id);

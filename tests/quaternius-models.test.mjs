@@ -65,7 +65,7 @@ test("actual modular clothing uses one posed rig and stable male/female metre sc
   }
   const player=createPlayer(),first=playerModelAppearance(player);
   assert.equal(first.torso,'male-Beach');assert.equal(first.legs,'male-Beach');assert.deepEqual(first.bare,['torso','legs','feet']);
-  const jacket=createItem('leather_jacket');addItem(player,jacket);equipItem(player,jacket.id);
+  const jacket=createItem('punk_vest');addItem(player,jacket);equipItem(player,jacket.id);
   assert.equal(playerModelAppearance(player).torso,'male-Punk');
   const saved=JSON.parse(JSON.stringify(player));assert.deepEqual(playerModelAppearance(saved),playerModelAppearance(player));
   const female=createPlayerAppearance({sex:'female',head:'male-Casual_2',style:'Worker'});
@@ -157,4 +157,33 @@ test("a new player corpse keeps the chosen modular appearance and uses the autho
   assert.equal(models.drawCorpse(context(),corpse,{x:50,y:50}),true);
   const entity=models.entities.get(corpse),bounds=visibleBounds(entity.root);
   assert.equal(entity.clip,'Death');assert.ok(bounds.max.y<.8&&bounds.min.y>-.02,'the chosen player lies on the ground');
+});
+
+test('the three placed human corpses have matching people and clothes, frozen grounded original meshes and matching selection dimensions',async()=>{
+  const world=new World(),corpses=world.objects.filter(o=>o.type==='corpse');assert.equal(corpses.length,3);
+  const police=corpses.find(o=>o.name==='POLIZIST'),pharmacist=corpses.find(o=>o.name==='APOTHEKERIN'),civilian=corpses.find(o=>o.name==='REGLOSE PERSON');
+  assert.equal(police.playerAppearance.torso,'male-Swat');assert.equal(police.playerAppearance.sex,'male');
+  assert.equal(pharmacist.playerAppearance.sex,'female');assert.equal(pharmacist.playerAppearance.torso,'female-Casual');assert.equal(pharmacist.playerAppearance.legs,'female-Suit');
+  assert.equal(civilian.playerAppearance.torso,'male-Casual_2');
+  assert.equal(new Set(corpses.map(o=>o.facingYaw)).size,3);
+  const restored=new World();restored.restore(JSON.parse(JSON.stringify(world.serialize())));
+  for(const corpse of corpses)assert.deepEqual(restored.objects.find(o=>o.id===corpse.id).playerAppearance,corpse.playerAppearance);
+  const pass=new ModelPass({createRenderer:()=>{throw Error('No WebGL');}});pass.beginFrame(2);
+  const library=new QuaterniusAssets({loadAsset:load}),models=new PlayerModels(pass,library);await models.ready;
+  let triangles=0;const ctx={save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},closePath(){},fill(){triangles++;}};
+  for(const corpse of corpses)for(const yaw of [corpse.facingYaw,0,Math.PI/2,Math.PI,-Math.PI/2]){
+    const body={...corpse,facingYaw:yaw};models.beginFrame();
+    const before=triangles;assert.equal(models.drawCorpse(ctx,body,{x:100,y:100}),true);assert.ok(triangles-before>500,'draw original model triangles without WebGL');
+    const entity=models.entities.get(body),bounds=visibleBounds(entity.root),size=bounds.getSize(new Vector3());
+    assert.equal(entity.clip,'Death');assert.ok(size.y<.8&&Math.max(size.x,size.z)>1.2,'a metre-sized prone person');
+    assert.ok(Math.abs(bounds.min.y)<1e-6,'visible body touches the ground');
+    assert.ok(Math.abs(bounds.min.x+bounds.max.x)<1e-6&&Math.abs(bounds.min.z+bounds.max.z)<1e-6,'body centre equals interaction anchor');
+    assert.ok(Math.abs(body.footprint.x-size.x/4)<1e-6&&Math.abs(body.footprint.y-size.z/4)<1e-6);
+    assert.ok(Math.abs(body.heightMeters-size.y)<1e-6);
+    const frozen=entity.model.getObjectByName('WristR').getWorldPosition(new Vector3());
+    models.drawCorpse(ctx,body,{x:100,y:100});assert.ok(entity.model.getObjectByName('WristR').getWorldPosition(new Vector3()).distanceTo(frozen)<1e-10);
+    models.endFrame();
+  }
+  const pistol=(await library.request('male-Swat')).scene.getObjectByName('Pistol');assert.ok(pistol,'the retained 9-mm pistol is an authored model');
+  const knife=(await library.request('Knife')).scene;assert.ok(visibleBounds(knife).getSize(new Vector3()).length()>.1,'the retained knife is an authored model');
 });

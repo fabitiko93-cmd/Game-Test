@@ -1,6 +1,6 @@
 {
-  "id": "1110c8310057b1894520",
-  "script": "build/main-2XPKMEKY.js",
+  "id": "ad0d2f194fed3d038acb",
+  "script": "build/main-SMPH5P3A.js",
   "style": "build/style-TJLZNFIF.css",
   "precache": [
     "assets/clothing/README.md",
@@ -270,7 +270,7 @@
     "build/assets/m4-icon-IDY2OEW6.svg",
     "build/assets/revolver-icon-XLHMVYDZ.svg",
     "build/assets/vector-icon-DX6NJN2U.svg",
-    "build/main-2XPKMEKY.js",
+    "build/main-SMPH5P3A.js",
     "build/style-TJLZNFIF.css",
     "index.html",
     "manifest.webmanifest"
