@@ -12,7 +12,8 @@ export class PlayerMotion {
     // only the gun here can fold the wrist backwards during a fast target swap.
     // Ordinary path changes retain the existing interpolated body turn.
     const record=this.entities.get(player);
-    if(record)record.yaw=Math.atan2(player.facingX??0,player.facingY??1);
+    if(record){const yaw=Math.atan2(player.facingX??0,player.facingY??1),changed=Math.abs(yaw-record.yaw)>1e-9;record.yaw=yaw;return changed;}
+    return false;
   }
   sample(player,time) {
     const appearance=playerModelAppearance(player),scale=playerModelScale(appearance);

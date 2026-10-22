@@ -6,7 +6,7 @@ const weightLabel=item=>`${itemWeight(item).toLocaleString('de-DE',{minimumFract
 
 // Both inspectors own a single pointer; a second touch cannot steal an orbit or
 // reach the world underneath. Keyboard rotation uses the same angle state.
-export function bindModelOrbit(canvas,read,write,{tilt=false}={}){
+export function bindModelOrbit(canvas,read,write,{tilt=false,tiltLimit=.75}={}){
   let pointer=null,x=0,y=0;
   const stop=event=>{if(event&&event.pointerId!==pointer)return;const old=pointer;pointer=null;if(old!==null&&canvas.hasPointerCapture?.(old))canvas.releasePointerCapture(old);};
   canvas.addEventListener('pointerdown',event=>{
@@ -16,14 +16,14 @@ export function bindModelOrbit(canvas,read,write,{tilt=false}={}){
   });
   canvas.addEventListener('pointermove',event=>{
     if(event.pointerId!==pointer)return;event.preventDefault();event.stopPropagation();
-    const state=read();write({yaw:state.yaw+(event.clientX-x)*.012,pitch:tilt?Math.max(-.75,Math.min(.75,(state.pitch||0)+(event.clientY-y)*.009)):0});
+    const state=read();write({yaw:state.yaw+(event.clientX-x)*.012,pitch:tilt?Math.max(-tiltLimit,Math.min(tiltLimit,(state.pitch||0)+(event.clientY-y)*.009)):0});
     x=event.clientX;y=event.clientY;
   });
   for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,stop);
   canvas.addEventListener('keydown',event=>{
     if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;
     event.preventDefault();event.stopPropagation();const state=read();
-    write({yaw:state.yaw+(event.key==='ArrowLeft'?-.15:event.key==='ArrowRight'?.15:0),pitch:tilt?Math.max(-.75,Math.min(.75,(state.pitch||0)+(event.key==='ArrowUp'?-.1:event.key==='ArrowDown'?.1:0))):0});
+    write({yaw:state.yaw+(event.key==='ArrowLeft'?-.15:event.key==='ArrowRight'?.15:0),pitch:tilt?Math.max(-tiltLimit,Math.min(tiltLimit,(state.pitch||0)+(event.key==='ArrowUp'?-.1:event.key==='ArrowDown'?.1:0))):0});
   });
   return ()=>stop();
 }

@@ -1,4 +1,5 @@
-import {applyWeaponCycle} from './weapon-cycle.js';
+import {AnimationController,animationInputKey,presentFreshShot} from './animation-controller.js';
+import {appliedAnimation} from './animation-library.js';
 import { AnimationMixer, Box3, Group, LoopOnce, Quaternion, Vector3 } from "three";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
@@ -8,10 +9,6 @@ import { WeaponModels, weaponModelSignature } from "./weapon-models.js";
 import { hasWeaponModel } from './weapon-catalog.js';
 import { applyRiflePose, captureRifleRig, restoreRiflePose } from "./rifle-pose.js";
 import { createSoleProbes, drawSoleShadows, sampleSoleContacts } from "./character-shadow.js";
-import {applyReloadPose,resetWeaponParts} from './weapon-reload-pose.js';
-import {applyWeaponClip} from './weapon-animation.js';
-import {reloadPhase} from './weapon-reload.js';
-import {recoilPose} from './weapon-recoil.js';
 import {metersToTiles} from './world-scale.js';
 import { rebindPart, disposeClothing } from './character-parts.js';
 
@@ -20,9 +17,10 @@ const PARTS=["head","torso","legs","feet"];
 export class PlayerModels {
   constructor(pass,library) {
     this.pass=pass;this.library=library;this.entities=new Map();this.used=new Set();this.prepared=new Map();this.motion=new PlayerMotion();this.weapons=new WeaponModels();
+    this.controller=new AnimationController();
     this.ready=Promise.all(["male-Casual_2","male-Casual_Hoodie","female-Casual","female-Suit","male-Beach","female-Formal","male-Worker","female-Worker","male-Swat","male-Adventurer","Knife","player-motion"].map(key=>library.request(key)));
   }
-  beginFrame(){this.used.clear();this.prepared.clear();}
+  beginFrame(){this.used.clear();this.prepared.clear();if(this.updatedPlayer){this.used.add(this.updatedPlayer);this.updatedPlayer=null;}}
 
   entity(player,appearance) {
     const baseKey=`${appearance.sex}-${defaultStyle(appearance.sex)}`,base=this.library.get(baseKey);
@@ -71,6 +69,7 @@ export class PlayerModels {
     const item=activeWeapon(player),definition=itemDefinition(item),kind=definition?.weaponKind||null;
     const bag=Boolean(player.equipment?.back),key=`${kind}-${weaponModelSignature(item)}-${bag}`;
     if(entity.weaponKind===key)return;
+    entity.animationEvaluationKey=null;
     entity.reloadLast=null;entity.supportElbow=null;entity.supportTwist=null;entity.handgunCrouchBlend=null;entity.handgunCrouchHold=0;
     entity.pistolCrouch=null;entity.pistolCrouchHold=0;entity.pistolWeaponPose=null;entity.pistolSupportPose=null;entity.pistolBodyPose=null;entity.pistolContactPole=null;entity.pistolReloadPose=null;
     entity.pistolFits=null;entity.pistolPreviousFit=null;entity.pistolReloadClearance=0;
@@ -107,28 +106,33 @@ export class PlayerModels {
     entity.root.rotation.y=pose.yaw;entity.root.updateMatrixWorld(true);
   }
 
-  prepare(player,time) {
-    const pose=this.motion.sample(player,time),entity=this.entity(player,pose.appearance);if(!entity)return false;
+  update(player,time){presentFreshShot(player);this.updatedPlayer=player;return this.prepare(player,time);}
+
+  prepare(player,time,options={}) {
+    const library=appliedAnimation(),revision=options.revision??library.revision;
+    const key=animationInputKey(player,time,revision)+JSON.stringify([options.posture,options.preview,options.pose,options.document===null]);
+    const existing=this.entities.get(player);
+    if(existing?.animationEvaluationKey===key){this.used.add(player);this.prepared.set(player,{entity:existing,time});return existing;}
+    const pose=options.pose||this.motion.sample(player,time),entity=this.entity(player,pose.appearance);if(!entity)return false;
     this.used.add(player);this.equip(entity,player);this.pose(entity,pose);
-    resetWeaponParts(entity.weapon);
-    if(hasWeaponModel(activeWeapon(player))){applyRiflePose(entity,player,pose.delta);applyReloadPose(entity,player,pose.delta);applyWeaponCycle(entity,player);}
-    else if(itemDefinition(activeWeapon(player))?.weaponKind==='firearm'){
-      const phase=reloadPhase(player.combat?.reload);
-      const affected=['Torso','Chest','ShoulderL','ShoulderR','UpperArmL','UpperArmR','LowerArmL','LowerArmR','WristL','WristR'].map(n=>entity.model.getObjectByName(n)).filter(Boolean);
-      entity.rifleRestore=new Map(affected.map(b=>[b,b.quaternion.clone()]));
-      if(phase)applyWeaponClip(entity,player,phase.clip,phase.progress);
-      else {
-        const kick=recoilPose(player,activeWeapon(player)?.id,activeWeapon(player)?.type==='pistol_9mm');
-        const arm=entity.model.getObjectByName('UpperArmR'),wrist=entity.model.getObjectByName('WristR');
-        arm.rotateZ(kick.pitch*.35);wrist.rotateX(-kick.pitch*.65);entity.root.updateMatrixWorld(true);
-      }
-    }
+    entity.animationDocument=options.document===undefined?library.document:options.document;
+    entity.animationPreview=options.preview;
+    this.controller.evaluate(entity,player,pose,options.posture);
+    entity.animationEvaluationKey=key;
+    entity.animationRevision=revision;entity.animationTime=time;entity.animationStateKey=animationInputKey(player,time,revision);
     this.prepared.set(player,{entity,time});return entity;
   }
 
+  faceShot(player){if(this.motion.faceShot(player)){const entity=this.entities.get(player);if(entity){entity.animationEvaluationKey=null;entity.animationStateKey=null;}}}
+
+  socketEntity(player,time){
+    const entity=this.entities.get(player);
+    if(entity?.animationTime===time&&entity.animationStateKey===animationInputKey(player,time,entity.animationRevision))return entity;
+    return this.prepare(player,time);
+  }
+
   shotMuzzle(player,time){
-    this.motion.faceShot(player);
-    const entity=this.prepare(player,time);if(!entity?.weapon)return null;
+    const entity=this.socketEntity(player,time);if(!entity?.weapon)return null;
     if(hasWeaponModel(activeWeapon(player))){
       // Sample the currently visible grip without changing its posture or blend.
       // The following shot impulse acts on that same pose, including hip fire.
@@ -147,7 +151,7 @@ export class PlayerModels {
   }
 
   ejectionSocket(player,time,cylinder=false){
-    const entity=this.prepare(player,time),weapon=entity?.weapon;if(!weapon)return null;
+    const entity=this.socketEntity(player,time),weapon=entity?.weapon;if(!weapon)return null;
     let at=weapon.userData.mechanism?.ejection;
     if(cylinder){
       const part=weapon.getObjectByName('Cylinder');if(!part)return null;
@@ -162,9 +166,6 @@ export class PlayerModels {
   }
 
   drawShadow(ctx,player,time,point) {
-    // Preserve a shot's full kick until its first visible frame, even when the
-    // update had a long delta. Gameplay cooldowns continue to tick normally.
-    if(player.combat?.shotImpulse?.fresh){player.combat.shotImpulse.age=0;player.combat.shotImpulse.fresh=false;}
     const entity=this.prepare(player,time);if(!entity)return false;
     entity.root.updateMatrixWorld(true);
     drawSoleShadows(ctx,sampleSoleContacts(entity.soles),point,entity.root.scale.y);return true;

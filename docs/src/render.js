@@ -928,6 +928,7 @@ export class Renderer {
   }
 
   firearmShot(game,weapon,end){
+    this.playerModels.faceShot(game.player);
     const start=this.playerModels.shotMuzzle(game.player,game.elapsed);
     if(!start)return; // Models still loading: never invent a shot from the hitbox.
     const impact=shotEnd(game.world,start,end),dx=impact.x-start.x,dy=impact.y-start.y,length=Math.max(.001,Math.hypot(dx,dy));

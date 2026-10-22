@@ -792,3 +792,59 @@ h1 span { color: var(--red-bright); }
 .item-icon.usp { background: url("./assets/weapons/usp-icon.svg") center / contain no-repeat; width: 36px; }
 .item-icon.scorpion { background: url("./assets/weapons/scorpion-icon.svg") center / contain no-repeat; width: 36px; }
 .item-icon.deagle { background: url("./assets/weapons/deagle-icon.svg") center / contain no-repeat; width: 36px; }
+
+/* The workshop shares the original renderer and assets, with its own camera
+   and isolated animation state. All editing controls work without a keyboard. */
+.animation-workshop { position:fixed; inset:0; z-index:1000; background:#101916; color:#e3eadd; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; padding:env(safe-area-inset-top) max(12px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); }
+.animation-workshop.hidden { display:none; }
+.animation-workshop * { box-sizing:border-box; }
+.aw-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid #35463c; }
+.aw-header h2 { font-size:clamp(14px,3.7vw,22px); margin:3px 0; letter-spacing:.06em; }
+.aw-header small { color:#acbc9d; font-size:10px; }
+.aw-layout { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(310px,1fr); gap:18px; max-width:1440px; margin:14px auto; }
+.aw-view,.aw-edit { min-width:0; }
+.aw-view { align-self:start; position:sticky; top:8px; }
+.aw-edit { background:#17221c; border:1px solid #34473b; padding:14px; border-radius:9px; }
+.animation-workshop label { display:flex; flex-direction:column; gap:6px; font-size:12px; color:#d0dcc8; }
+.animation-workshop select,.animation-workshop input[type=number] { width:100%; min-height:44px; background:#0e1813; color:#f0f3e9; border:1px solid #57705a; border-radius:5px; padding:9px; font:inherit; font-size:16px; }
+.animation-workshop button { min-height:44px; padding:8px 12px; font-size:11px; border-radius:5px; white-space:normal; }
+.animation-workshop button:disabled { opacity:.4; }
+.animation-workshop input[type=checkbox] { width:20px; height:20px; accent-color:#bad894; }
+.animation-workshop input[type=range] { width:100%; min-height:36px; accent-color:#c3d992; touch-action:pan-x; }
+.aw-bar { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:10px 0; }
+.aw-bar label { flex-direction:row; align-items:center; gap:6px; }
+.aw-stage { position:relative; height:clamp(260px,48vh,520px); background:radial-gradient(ellipse at 50% 70%,#3c5040 0,#1e3026 45%,#102018 90%); border:1px solid #3b5240; border-radius:9px; overflow:hidden; }
+.aw-stage canvas { display:block; width:100%; height:100%; touch-action:none; }
+.aw-stage canvas[data-aw=overlay] { position:absolute; inset:0; pointer-events:none; }
+.aw-loading { position:absolute; inset:45% 12px auto; text-align:center; padding:14px; background:#101916dd; border-radius:6px; }
+.aw-loading[hidden] { display:none; }
+.aw-zoom { display:flex; align-items:center; gap:12px; justify-content:space-between; font-size:11px; color:#bacdb4; padding:6px 0; }
+.aw-zoom label { flex-direction:row; align-items:center; min-width:120px; max-width:40%; }
+.aw-playback { display:grid; grid-template-columns:44px 1fr 1.3fr 1fr 44px; gap:5px; margin-top:8px; }
+.aw-timeline { margin-top:12px; }
+.aw-timeline output { font-variant-numeric:tabular-nums; }
+.aw-config { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.aw-config label:last-child:nth-child(odd) { grid-column:1/-1; }
+.animation-workshop details { border:1px solid #34473b; border-radius:6px; margin:12px 0; padding:10px; }
+.animation-workshop summary { min-height:30px; font-size:12px; padding:4px 0; cursor:pointer; }
+.animation-workshop details .aw-config { margin-top:12px; }
+.aw-section-title { display:flex; gap:10px; justify-content:space-between; align-items:center; margin-top:18px; }
+.aw-section-title h3 { font-size:12px; letter-spacing:.06em; }
+.aw-section-title span { font-size:10px; color:#b4c89f; text-align:right; }
+.aw-hint { font-size:12px; line-height:1.6; color:#bccab5; }
+.aw-axis { display:grid!important; grid-template-columns:minmax(70px,1fr) 44px minmax(65px,.8fr) 44px; align-items:center; gap:6px; margin:8px 0; }
+.aw-axis span { font-size:11px; }
+.aw-axis button { font-size:20px; padding:4px; }
+.aw-axis input { text-align:center; }
+.aw-status { padding:10px 12px; border-left:3px solid #a4cb91; background:#203027; color:#d2e8c5; font-size:12px; line-height:1.5; min-height:44px; }
+.aw-status.aw-error { border-color:#e3ad77; color:#ffe1bd; }
+.aw-diagnostics { font-size:11px; line-height:1.6; }
+.aw-frames { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+.aw-frames button.selected { border-color:#e6c287; color:#ffe3ad; }
+@media (max-width:820px) {
+  .aw-layout { grid-template-columns:minmax(0,1fr); gap:12px; }
+  .aw-view { position:static; }
+  .aw-stage { height:clamp(260px,43vh,410px); }
+  .aw-header { gap:6px; }
+  .aw-header button { font-size:10px; padding:6px 8px; }
+}
