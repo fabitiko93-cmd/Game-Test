@@ -174,6 +174,13 @@ der Hülsen; gedeckelte Anzahl und Lebensdauer für iPhone. Revolver behält Hü
 bis zum Entladen. Gemeinsamer Körperdurchschuss für alle Kaliber, kumulativer
 Schadensverlust; Materialdurchschlag bleibt später. Originale behalten und kreditieren.
 
+Pistolenhaltung vom 22.10.2026: G17/USP/SIG/Desert Eagle erhalten eigene,
+modellbezogene Handkontakte und eine vom Figurenmaßstab unabhängige Größe.
+Angelegt: weitgehend gestreckter Waffenarm, begrenzte Handgelenk-/Unterarmdrehung,
+Schulter-/Brustkorbanpassung und Auge auf der Visierlinie. Haltungswechsel,
+Schleichstillstand, Rückstoß und Magazinwechsel einschließlich Abbruch auf beiden
+Rigs prüfen. Keine Änderung der bereits abgestimmten Revolver-/Langwaffenhaltungen.
+
 ## Effizient entwickeln
 
 - Modell, Denkstufe und Geschwindigkeit nach der aktuellen Nutzerwahl verwenden.

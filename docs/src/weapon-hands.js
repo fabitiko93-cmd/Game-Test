@@ -6,7 +6,7 @@ const cradle=new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(new 
 // inverted this relationship and curled the fingers toward the muzzle.
 export const VERTICAL_HAND=new Quaternion().setFromAxisAngle(new Vector3(1,0,0),-Math.PI/2).multiply(cradle);
 export const supportHandRotation=weapon=>(weapon.userData.grips?.verticalSupport||weapon.userData.grips?.handgun?VERTICAL_HAND:cradle).clone();
-const profiles={support:[.72,1.20,.55],vertical:[.98,1.40,.62],revolver:[1.04,1.35,.65],magazine:[.96,1.38,.62],pinch:[1.28,1.62,.50],open:[.12,.14,.10]};
+const profiles={support:[.72,1.20,.55],pistol:[1.10,1.38,.60],vertical:[.98,1.40,.62],revolver:[1.04,1.35,.65],magazine:[.96,1.38,.62],pinch:[1.28,1.62,.50],open:[.12,.14,.10]};
 
 function curl(entity,side,finger,angles,weight=1){
   for(let i=1;i<=4;i++){
@@ -20,7 +20,7 @@ export function poseHand(entity,side,profile,{weight=1,trigger=0,thumbPoint=null
   const angles=profiles[profile]||profiles.support;
   for(const finger of ['Index','Middle','Ring','Pinky']){
     let a=angles;
-    if(side==='R')a=finger==='Index'?[.03+( .35-.03)*trigger,.07+(1.05-.07)*trigger,.04+(.35-.04)*trigger]:[.90,1.20,.45];
+    if(side==='R')a=finger==='Index'?[.03+( .35-.03)*trigger,.07+(1.05-.07)*trigger,.04+(.35-.04)*trigger]:profile==='pistol'?profiles.pistol:[.90,1.20,.45];
     if(profile==='pinch'&&finger!=='Index')a=[1.06,1.35,.65];
     curl(entity,side,finger,a,weight);
   }
@@ -37,7 +37,7 @@ export function poseThumb(entity,side,profile,{weight=1,thumbPoint=null}={}){
     const index=entity.model.getObjectByName('Index4'+side).getWorldPosition(new Vector3());
     target=index.add(new Vector3(0,0,.011).applyQuaternion(entity.model.getObjectByName('Wrist'+side).getWorldQuaternion(new Quaternion())));
   }
-  target ||= weapon.localToWorld(side==='R'?new Vector3(.015,.025,-.015):new Vector3().fromArray(grips?.leftThumb||[.025,.105,.245]));
+  target ||= weapon.localToWorld(new Vector3().fromArray(side==='R'?(grips?.rightThumb||[.015,.025,-.015]):grips?.leftThumb||[.025,.105,.245]));
   const pole=weapon.localToWorld(side==='R'?new Vector3(-.01,.085,-.05):new Vector3().fromArray(grips?.leftThumbPole||[.11,.13,.27]));
   fitArm(...thumb.map(e=>e.bone),target,pole);
   if(weight<1)thumb.forEach((e,i)=>e.bone.quaternion.copy(before[i].slerp(e.bone.quaternion,weight)));

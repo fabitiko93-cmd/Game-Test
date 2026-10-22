@@ -4,12 +4,14 @@ import {reloadPhase} from './weapon-reload.js';
 import {fitSupportContact,fitWeaponPose} from './rifle-pose.js';
 import {contactWrist,pinchPoint,poseHand,poseThumb,VERTICAL_HAND} from './weapon-hands.js';
 import {REVOLVER_MODEL} from './weapon-catalog.js';
+import {attachPistol,blendPistolJoints,PISTOL_SUPPORT_ROTATION} from './pistol-pose.js';
 
 const ease=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
 
 const v=(x,y,z)=>new Vector3(x,y,z);
 function path(keys,t){for(let i=1;i<keys.length;i++)if(t<=keys[i][0])return keys[i-1][1].clone().lerp(keys[i][1],ease((t-keys[i-1][0])/(keys[i][0]-keys[i-1][0])));return keys.at(-1)[1].clone();}
 const fingers=entity=>new Map([...entity.rifleHands.values()].filter(e=>/^(Index|Middle|Ring|Pinky|Thumb)/.test(e.bone.name)).map(e=>[e.bone,e.bone.quaternion.clone()]));
+const armJoints=(entity,sides=['R','L'])=>new Map(sides.flatMap(side=>['Shoulder','UpperArm','LowerArm','Wrist'].map(n=>entity.model.getObjectByName(n+side))).map(b=>[b,b.quaternion.clone()]));
 function blendFingers(before,weight){for(const [bone,q] of before)bone.quaternion.copy(q.clone().slerp(bone.quaternion,weight));}
 export function resetWeaponParts(weapon){
   for(const [name,pose] of weapon?.userData.partPose||[]){const part=weapon.getObjectByName(name);part.position.copy(pose.position);part.quaternion.copy(pose.rotation);part.visible=pose.visible;}
@@ -23,18 +25,38 @@ function cartridges(weapon){
   if(!weapon.userData.spentCartridges){const group=new Group();group.name='SpentCylinderCases';for(let i=0;i<6;i++)group.add(cartridgeMesh('ammo_44',true));weapon.add(group);weapon.userData.spentCartridges=group;}
   return weapon.userData.cartridges;
 }
-function gripPoint(part){
+function gripPoint(part,pistol=false){
   // Measure the lower half of each real magazine, including the AK's curve.
-  if(part.userData.handContact)return part.userData.handContact.clone();
+  const key=pistol?'pistolHandContact':'handContact';
+  if(part.userData[key])return part.userData[key].clone();
   const g=part.geometry;if(!g.boundingBox)g.computeBoundingBox();const box=g.boundingBox,y=box.min.y+(box.max.y-box.min.y)*.36,points=[];
   for(let i=0;i<(g.index?g.index.count:g.attributes.position.count);i+=3){
     const triangle=[0,1,2].map(k=>new Vector3().fromBufferAttribute(g.attributes.position,g.index?g.index.getX(i+k):i+k));
     for(let k=0;k<3;k++){const a=triangle[k],b=triangle[(k+1)%3],d=b.y-a.y;if(Math.abs(d)<1e-8)continue;const t=(y-a.y)/d;if(t>=0&&t<=1)points.push(a.clone().lerp(b,t));}
   }
   const section=points.length?new Box3().setFromPoints(points):box;
-  return (part.userData.handContact=v(section.min.x+.005,y,section.max.z+.009)).clone();
+  return (part.userData[key]=v(pistol?section.max.x+.010:section.min.x+.005,y,section.max.z+.009)).clone();
 }
 function placeLeft(entity,base,point,rotation,profile,weight,contact='Middle2',thumbPoint=null){
+  if(entity.weapon.userData.pistol){
+    const joints=armJoints(entity,['L']),before=fingers(entity);
+    if(weight>0){poseHand(entity,'L',profile,{thumbPoint});fitSupportContact(entity,point,rotation,contact);}
+    entity.pistolReloadTarget||=new Map();
+    for(const[b]of joints){
+      const previous=entity.pistolReloadTarget.get(b);
+      if(previous&&base.step<.5)b.quaternion.copy(previous.clone().rotateTowards(b.quaternion,base.step*8));
+      entity.pistolReloadTarget.set(b,b.quaternion.clone());
+    }
+    blendPistolJoints(entity,joints,weight,'magazine');blendFingers(before,weight);
+    entity.pistolReloadArm||=new Map();
+    for(const[b]of joints){
+      const previous=entity.pistolReloadArm.get(b);
+      if(previous&&base.step<.5)b.quaternion.copy(previous.clone().rotateTowards(b.quaternion,base.step*8));
+      entity.pistolReloadArm.set(b,b.quaternion.clone());
+    }
+    entity.root.updateMatrixWorld(true);
+    poseThumb(entity,'L',profile,{thumbPoint,weight});return;
+  }
   const before=fingers(entity),q=base.rotation.clone().slerp(rotation,weight);
   if(base.previous)q.copy(base.previous.clone().rotateTowards(q,base.step*10));
   poseHand(entity,'L',profile,{thumbPoint});blendFingers(before,weight);
@@ -49,13 +71,22 @@ function placeLeft(entity,base,point,rotation,profile,weight,contact='Middle2',t
 }
 function remember(entity,state,weight){
   const weapon=entity.weapon,wrist=entity.model.getObjectByName('WristL');
-  entity.reloadLast={id:state.weaponId,weight,elapsed:0,phaseTime:state.elapsed,point:weapon.getWorldPosition(new Vector3()),rotation:weapon.getWorldQuaternion(new Quaternion()),
+  entity.reloadLast={id:state.weaponId,weight:weapon.userData.pistol?1:weight,elapsed:0,phaseTime:state.elapsed,point:weapon.getWorldPosition(new Vector3()),rotation:weapon.getWorldQuaternion(new Quaternion()),
     left:wrist.getWorldPosition(new Vector3()),palm:entity.model.getObjectByName('Middle2L').getWorldPosition(new Vector3()),leftRotation:wrist.getWorldQuaternion(new Quaternion()),fingers:fingers(entity),
+    joints:weapon.userData.pistol?armJoints(entity):null,
     parts:new Map([...weapon.userData.partPose].map(([name])=>{const part=weapon.getObjectByName(name);return[name,{point:part.position.clone(),rotation:part.quaternion.clone()}];}))};
 }
 function finishInterrupted(entity,delta){
   const last=entity.reloadLast,weapon=entity.weapon;if(!last||last.id!==weapon?.userData.weaponId){entity.reloadLast=null;return;}
   last.elapsed+=Math.max(0,delta);const t=last.weight*(1-ease(last.elapsed/.28));if(t<.001){entity.reloadLast=null;return;}
+  if(weapon.userData.pistol){
+    const before=armJoints(entity);for(const[b,q]of last.joints)b.quaternion.copy(q);
+    blendPistolJoints(entity,before,t,'return');
+    for(const[b,q]of last.fingers)b.quaternion.slerp(q,t);
+    attachPistol(entity);
+    for(const[name,pose]of last.parts){const part=weapon.getObjectByName(name);part.position.lerp(pose.point,t);part.quaternion.slerp(pose.rotation,t);}
+    entity.root.updateMatrixWorld(true);return;
+  }
   const point=weapon.getWorldPosition(new Vector3()).lerp(last.point,t),rotation=weapon.getWorldQuaternion(new Quaternion()).slerp(last.rotation,t);
   const wrist=entity.model.getObjectByName('WristL'),q=wrist.getWorldQuaternion(new Quaternion()).slerp(last.leftRotation,t);
   const palm=entity.model.getObjectByName('Middle2L').getWorldPosition(new Vector3()).lerp(last.palm,t);
@@ -72,17 +103,18 @@ export function applyReloadPose(entity,player,delta=1/60){
   if(!state||state.weaponId!==weapon.userData.weaponId){finishInterrupted(entity,delta);return;}
   const phase=reloadPhase(state),weight=Math.min(ease(state.elapsed/.30),ease((state.duration-state.elapsed)/.28));
   if(weight===0){entity.reloadLast=null;return;}
-  const bone=n=>entity.model.getObjectByName(n),wrist=bone('WristL'),base={point:wrist.getWorldPosition(new Vector3()),rotation:wrist.getWorldQuaternion(new Quaternion())};
+  const bone=n=>entity.model.getObjectByName(n),wrist=bone('WristL'),base={point:wrist.getWorldPosition(new Vector3()),rotation:wrist.getWorldQuaternion(new Quaternion()),step:Math.max(0,delta)};
   const last=entity.reloadLast,step=state.elapsed-(last?.phaseTime??-1);
+  if(weapon.userData.pistol&&(!last||step<0)){entity.pistolContactPole=null;entity.pistolReloadTarget=null;entity.pistolReloadArm=null;}
   if(state.kind==='cylinder'&&last?.id===state.weaponId&&step>0&&step<.1){base.previous=last.leftRotation;base.step=step;}
   const shoulder=entity.root.worldToLocal(bone('UpperArmR').getWorldPosition(new Vector3()));
   const hips=entity.root.worldToLocal(bone('UpperLegL').getWorldPosition(new Vector3()).lerp(bone('UpperLegR').getWorldPosition(new Vector3()),.5));
   const waist=entity.root.localToWorld(hips.add(v(.24,.04,.14)));
-  const cylinder=state.kind==='cylinder',handgun=Boolean(weapon.userData.grips?.handgun),motion=Math.sin(Math.PI*phase.progress)*.012;
+  const cylinder=state.kind==='cylinder',handgun=Boolean(weapon.userData.grips?.handgun),pistol=Boolean(weapon.userData.pistol),motion=Math.sin(Math.PI*phase.progress)*.012;
   const goal=entity.root.localToWorld(v(handgun?.015:-.055,shoulder.y-(handgun?.27:.25)+motion,shoulder.z+(handgun?.29:.34)));
   const q=entity.root.getWorldQuaternion(new Quaternion()).multiply(new Quaternion().setFromEuler(new Euler(handgun?.48:.10,handgun?-.10:0,handgun?-.14:-.09,'YXZ')));
   const point=weapon.getWorldPosition(new Vector3()).lerp(goal,weight),rotation=weapon.getWorldQuaternion(new Quaternion()).slerp(q,weight);
-  fitWeaponPose(entity,point,rotation,weight,true);poseHand(entity,'R','support',{trigger:0});
+  fitWeaponPose(entity,pistol?goal:point,pistol?q:rotation,weight,true);poseHand(entity,'R',pistol?'pistol':'support',{trigger:0});
   const gunQ=weapon.getWorldQuaternion(new Quaternion());
   if(cylinder)revolver(entity,state,phase,base,waist,gunQ,weight);
   else magazine(entity,state,phase,base,waist,gunQ,weight);
@@ -91,7 +123,8 @@ export function applyReloadPose(entity,player,delta=1/60){
 function magazine(entity,state,phase,base,waist,gunQ,weight){
   const weapon=entity.weapon,mag=weapon.getObjectByName(weapon.userData.magazinePart);if(!mag)return;
   const thumbBefore=[1,2,3].map(i=>entity.model.getObjectByName('Thumb'+i+'L')).map(b=>[b,b.quaternion.clone()]);
-  const p=phase.progress,anchor=gripPoint(mag),socket=weapon.localToWorld(anchor.clone()),pull=socket.clone().add(v(0,-.17,0).applyQuaternion(entity.root.getWorldQuaternion(new Quaternion())));
+  const pistol=Boolean(weapon.userData.pistol),handFrame=pistol?PISTOL_SUPPORT_ROTATION:VERTICAL_HAND;
+  const p=phase.progress,anchor=gripPoint(mag,pistol),socket=weapon.localToWorld(anchor.clone()),pull=socket.clone().add(v(0,-.17,0).applyQuaternion(entity.root.getWorldQuaternion(new Quaternion())));
   const handPoint=path([[0,socket],[.18,socket],[.29,pull],[.40,waist],[.48,waist],[.61,pull],[.68,socket],[1,socket]],p);
   const held=p>=.18&&p<.68,old=Boolean(state.beforeMagazineId),visible=(p<.40&&old)||p>=.48;
   mag.visible=visible;
@@ -100,9 +133,9 @@ function magazine(entity,state,phase,base,waist,gunQ,weight){
     mag.quaternion.setFromAxisAngle(v(1,0,0),tilt);
     mag.position.copy(weapon.worldToLocal(handPoint.clone())).sub(anchor.clone().applyQuaternion(mag.quaternion));
   }
-  const contact=mag.localToWorld(anchor.clone()),handQ=gunQ.clone().multiply(mag.quaternion).multiply(VERTICAL_HAND);
-  const thumb=mag.localToWorld(anchor.clone().add(v(.035,.045,-.035)));
-  const approach=ease(p/.18),returning=ease((p-.73)/.19),amount=approach*(1-returning);
+  const contact=mag.localToWorld(anchor.clone()),handQ=gunQ.clone().multiply(mag.quaternion).multiply(handFrame);
+  const thumb=mag.localToWorld(anchor.clone().add(v(pistol?-.035:.035,.045,-.035)));
+  const approach=ease(p/.18),returning=ease((p-(pistol?.68:.73))/(pistol?.30:.19)),amount=approach*(1-returning);
   // A palm contact is defined even while the magazine is hidden in the pouch.
   placeLeft(entity,base,contact,handQ,'magazine',weight*amount,'Middle2',thumb);
   if(held&&visible){
@@ -110,7 +143,7 @@ function magazine(entity,state,phase,base,waist,gunQ,weight){
     // the fingers. Carry the object with the reached palm for detached phases.
     const palm=entity.model.getObjectByName('Middle2L').getWorldPosition(new Vector3());
     const actual=entity.model.getObjectByName('WristL').getWorldQuaternion(new Quaternion());
-    const carried=gunQ.clone().invert().multiply(actual).multiply(VERTICAL_HAND.clone().invert());
+    const carried=gunQ.clone().invert().multiply(actual).multiply(handFrame.clone().invert());
     mag.quaternion.slerp(carried,Math.min(ease((p-.18)/.05),1-ease((p-.60)/.08)));
     mag.position.copy(weapon.worldToLocal(palm)).sub(anchor.clone().applyQuaternion(mag.quaternion));
     mag.updateMatrixWorld(true);
@@ -118,7 +151,7 @@ function magazine(entity,state,phase,base,waist,gunQ,weight){
   }
   weapon.updateMatrixWorld(true);
   for(const[b,q]of thumbBefore)b.quaternion.copy(q);
-  poseThumb(entity,'L','magazine',{thumbPoint:mag.localToWorld(anchor.clone().add(v(.030,.025,-.035))),weight:weight*amount});
+  poseThumb(entity,'L','magazine',{thumbPoint:mag.localToWorld(anchor.clone().add(v(pistol?-.030:.030,.025,-.035))),weight:weight*amount});
 }
 function revolver(entity,state,phase,base,waist,gunQ,weight){
   const weapon=entity.weapon,cylinder=weapon.getObjectByName('Cylinder'),pivot=new Vector3().fromArray(REVOLVER_MODEL.reload.cylinderPivot);

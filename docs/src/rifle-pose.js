@@ -5,6 +5,7 @@ import {recoilPose} from './weapon-recoil.js';
 import {activeWeapon} from './inventory.js';
 import {fitArm,orientWorld} from './weapon-ik.js';
 import {contactWrist,poseThumb,poseWeaponHands,supportHandRotation} from './weapon-hands.js';
+import {applyPistolPose,fitPistolSupportContact,fitPistolWeaponPose} from './pistol-pose.js';
 
 // The authored wrist's +Y follows the fingers; a rifle asset's +Z follows its
 // barrel. Keep the original body/leg animation and fit both arms to this grip.
@@ -70,6 +71,7 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   if ([...right, ...left].some(part => !part)) return;
   entity.rifleHands ||= captureRifleRig(model);
   restoreRiflePose(entity);
+  if(weapon.userData.pistol){applyPistolPose(entity,player,delta,posture);return;}
   const torso=bone('Torso'),chest=bone('Chest'),head=bone('Head');
   entity.rifleRestore=new Map([...right,...left,torso,chest,head,...[...entity.rifleHands.values()].map(e=>e.bone)].filter(Boolean).map(b=>[b,b.quaternion.clone()]));
   const freeLeftPoint=left[2].getWorldPosition(new Vector3()),freeLeftRotation=left[2].getWorldQuaternion(new Quaternion());
@@ -212,6 +214,7 @@ export function fitSupportHand(entity,target,rotation){
 }
 
 export function fitWeaponPose(entity,point,rotation,amount=1,followSupport=false){
+  if(entity.weapon.userData.pistol){fitPistolWeaponPose(entity,point,rotation,amount);return;}
   const bone=n=>entity.model.getObjectByName(n),arm=['UpperArmR','LowerArmR','WristR'].map(bone),weapon=entity.weapon;
   if(!weapon.userData.grips?.handgun)amount=1;
   const offset=new Vector3().fromArray(weapon.userData.grips?.right||RIFLE_HANDS.right.toArray());
@@ -233,6 +236,7 @@ export function fitWeaponPose(entity,point,rotation,amount=1,followSupport=false
 // Keep the contact fixed while finding an attainable hand orientation. A fixed
 // wrist marker alone can demand a 90° bend in carry/crouch even with perfect IK.
 export function fitSupportContact(entity,point,rotation,contact='Middle2'){
+  if(entity.weapon.userData.pistol)return fitPistolSupportContact(entity,point,rotation,contact);
   const wrist=entity.model.getObjectByName('WristL'),lower=entity.model.getObjectByName('LowerArmL'),middle=entity.model.getObjectByName('Middle2L');
   const hand=rotation.clone();
   for(let iteration=0;iteration<(entity.weapon.userData.grips?.handgun?32:8);iteration++){
