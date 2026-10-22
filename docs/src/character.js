@@ -1,5 +1,5 @@
 import { BACKGROUNDS, ITEMS, SKILLS } from "./data.js";
-import { addItem, damageProtection, equipItem, equipmentProtection, createItem } from "./inventory.js";
+import { damageProtection, equipmentProtection } from "./inventory.js";
 import { clamp, uid } from "./util.js";
 import { createPlayerAppearance } from "./quaternius-catalog.js";
 
@@ -57,7 +57,7 @@ export function createPlayer({ name, background = "citizen", survivorNumber = 1,
     impactY: 0,
     baseCapacity: 8 + (origin.carryBonus || 0),
     inventory: [],
-    equipment: { mainHand: null, offHand: null, head: null, torso: null, legs: null, back: null },
+    equipment: { mainHand: null, offHand: null, head: null, torso: null, legs: null, feet: null, back: null },
     skills: { ...origin.skills },
     wounds: [],
     infectionStage: 0,
@@ -85,15 +85,6 @@ export function createPlayer({ name, background = "citizen", survivorNumber = 1,
     deathCause: null,
   };
 
-  const jacket = createItem("outfit_top",1,{modelStyle:player.appearance.torso.split('-').slice(1).join('-')});
-  const jeans = createItem("outfit_trousers",1,{modelStyle:player.appearance.legs.split('-').slice(1).join('-')});
-  const bag = createItem("canvas_bag");
-  addItem(player, jacket);
-  addItem(player, jeans);
-  addItem(player, bag);
-  equipItem(player, jacket.id);
-  equipItem(player, jeans.id);
-  equipItem(player, bag.id);
   return player;
 }
 

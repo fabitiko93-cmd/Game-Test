@@ -75,7 +75,7 @@ export function load(game) {
   game.player.combat ||= { enabled: false, targetId: null, attackCooldown: 0, attackTimer: 0, pendingAttack: 0, pendingTargetId: null, aim: 0, recoil: 0 };
   game.combat.end(game, { keepTarget: true });
   game.player.bleeding = totalBleeding(game.player);
-  game.player.equipment ||= { mainHand: null, offHand: null, head: null, torso: null, legs: null, back: null };
+  game.player.equipment ||= { mainHand: null, offHand: null, head: null, torso: null, legs: null, feet: null, back: null };
   game.player.noiseRadius ??= 0;
   game.player.hitKick ??= 0;
   // Preserve old saves while moving only entities now intersecting a corrected

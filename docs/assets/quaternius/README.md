@@ -65,7 +65,10 @@ GLB containers retain the original character geometry, material colours, separat
 clothing meshes, skeletons and all 24 animation clips without frame reduction.
 Gzip is lossless; output names contain content hashes. No external textures are needed.
 Head, torso, legs and feet share a posed skeleton and remain individually replaceable
-within the same male/female rig family. A fixed reference scale per family prevents
+on the player's rig. Cross-family garments are fitted through the source and target
+bind-joint positions and target inverse bind matrices, preserving each garment's
+original cut and material colours without inheriting the other rig's local axes.
+A fixed reference scale per family prevents
 changing a hat or clothing item from resizing the entire person.
 
 Male reference height is 1.80 m, female 1.68 m; hats and hairstyles may extend above
@@ -96,3 +99,12 @@ Without WebGL the new material-colour models render their actual posed triangles
 on Canvas; this is not a reduced-frame animation atlas. Existing zombie fallbacks
 remain separate. Knife, pistol and backpack use supplied meshes; the other existing
 weapons use small distinct metric silhouettes attached to the animated wrist.
+
+Starting clothing is now 45 individual inventory items (tops, bottoms and shoes)
+plus three separate headwear accessories. New survivors wear only underwear.
+`character-parts.js` derives the bare body, dark boxer briefs and sports bra from
+these existing CC0 meshes: the men's Beach torso/legs/skin feet and the women's
+Formal torso. It removes sandals and the formal belt, fits the shorts, splits
+skinned triangles at underwear hems, recolours surfaces and closes the waist.
+This is a runtime geometry adaptation; the original compressed assets are intact.
+Empty slots restore this body. Headwear overlays the independently selected face.

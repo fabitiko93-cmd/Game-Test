@@ -143,6 +143,11 @@ Zusammenführung, erfolgreiches Deployment und Prüfung des normalen Spieleinsti
 zum Abschluss. Abschließend Änderungen, Prüfergebnis und Live-Link nennen;
 bei einem tatsächlichen Hindernis den konkreten Blocker und offenen Schritt nennen.
 
+Kleidung vom 21.10.2026: Neue Überlebende starten ausschließlich in Unterwäsche,
+barfuß und ohne Rucksack. Die bisherigen Startkleider sind einzelne auffindbare
+Gegenstände inklusive Schuhe und Kopfbedeckungen; Gesicht/Haare bleiben unabhängig.
+Leere Slots zeigen den Grundkörper. Kleiderloot auch in Kommode/Waschmaschine.
+
 ## Effizient entwickeln
 
 - Modell, Denkstufe und Geschwindigkeit nach der aktuellen Nutzerwahl verwenden.

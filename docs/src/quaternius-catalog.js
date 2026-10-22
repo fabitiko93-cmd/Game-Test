@@ -1,6 +1,8 @@
 import MODELS from "../assets/quaternius/models.json" with { type: "json" };
 import ANIMATIONS from "../assets/quaternius/player-animations.json" with { type: "json" };
 import { metersToTiles, WORLD_SCALE } from "./world-scale.js";
+import { ITEMS } from './data.js';
+import { BODY_SOURCES, HEADWEAR_MODELS } from './clothing-catalog.js';
 
 export { MODELS as QUATERNIUS_MODELS };
 export { ANIMATIONS as PLAYER_ANIMATIONS };
@@ -25,14 +27,19 @@ export function createPlayerAppearance(profile = {}) {
 export function playerModelAppearance(player) {
   const appearance = createPlayerAppearance(player.appearance);
   const equippedItem = slot => player.inventory?.find(item=>item.id===player.equipment?.[slot]);
-  for(const slot of ['torso','legs']) {
-    const item=equippedItem(slot),key=`${appearance.sex}-${item?.modelStyle}`;
-    if(['outfit_top','outfit_trousers'].includes(item?.type)&&MODELS.characters[key])appearance[slot]=key;
+  // Appearance chooses the person. Only equipped inventory items dress them.
+  if(HEADWEAR_MODELS.has(appearance.head))appearance.head=`${appearance.sex}-${defaultStyle(appearance.sex)}`;
+  appearance.bare=[];
+  for(const slot of ['torso','legs','feet']) {
+    const item=equippedItem(slot),definition=ITEMS[item?.type];
+    let model=definition?.clothingModel;
+    const legacy={work_jacket:'Worker',leather_jacket:'Punk',jeans:defaultStyle(appearance.sex)};
+    if(legacy[item?.type])model=`${appearance.sex}-${legacy[item.type]}`;
+    if(['outfit_top','outfit_trousers'].includes(item?.type))model=`${appearance.sex}-${item.modelStyle||defaultStyle(appearance.sex)}`;
+    if(MODELS.characters[model])appearance[slot]=model;
+    else {appearance[slot]=BODY_SOURCES[appearance.sex][slot];appearance.bare.push(slot);}
   }
-  const torso = equippedItem("torso")?.type, legs = equippedItem("legs")?.type;
-  if (torso === "work_jacket") appearance.torso = `${appearance.sex}-Worker`;
-  if (torso === "leather_jacket") appearance.torso = `${appearance.sex}-Punk`;
-  if (legs === "jeans") appearance.legs = `${appearance.sex}-${defaultStyle(appearance.sex)}`;
+  appearance.headwear=ITEMS[equippedItem('head')?.type]?.clothingModel||null;
   return appearance;
 }
 

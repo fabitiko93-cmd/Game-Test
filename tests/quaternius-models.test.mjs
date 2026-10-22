@@ -54,10 +54,9 @@ test("actual modular clothing uses one posed rig and stable male/female metre sc
   for(const [key,definition] of Object.entries(metadata.characters)) {
     await library.request(key);
     const player=createPlayer({appearance:{sex:definition.sex,style:definition.style}});
-    assert.equal(playerModelAppearance(player).torso,key,'starting equipment retains the chosen top');
-    assert.equal(playerModelAppearance(player).legs,key,'starting equipment retains the chosen trousers');
-    models.beginFrame();assert.equal(models.draw(context(),player,0,{x:50,y:50}),true);
-    const entity=models.entities.get(player),bounds=visibleBounds(entity.root),size=bounds.getSize(new Vector3());
+    const entity=models.entity(player,createPlayerAppearance({sex:definition.sex,style:definition.style}));
+    models.pose(entity,{clip:'Idle_Neutral',progress:0,delta:1,yaw:0});
+    const bounds=visibleBounds(entity.root),size=bounds.getSize(new Vector3());
     assert.ok(Math.abs(bounds.min.y)<.035,`${key}: sole height ${bounds.min.y}`);
     assert.ok(Math.abs(size.y-playerHeight(player.appearance))<.2,`${key}: height ${size.y}`);
     assert.ok(size.x<1.2&&size.z<.8,`${key}: skeleton and meshes must stay in the same body`);
@@ -65,7 +64,7 @@ test("actual modular clothing uses one posed rig and stable male/female metre sc
     models.endFrame();
   }
   const player=createPlayer(),first=playerModelAppearance(player);
-  assert.equal(first.torso,'male-Casual_2');assert.equal(first.legs,'male-Casual_2');
+  assert.equal(first.torso,'male-Beach');assert.equal(first.legs,'male-Beach');assert.deepEqual(first.bare,['torso','legs','feet']);
   const jacket=createItem('leather_jacket');addItem(player,jacket);equipItem(player,jacket.id);
   assert.equal(playerModelAppearance(player).torso,'male-Punk');
   const saved=JSON.parse(JSON.stringify(player));assert.deepEqual(playerModelAppearance(saved),playerModelAppearance(player));

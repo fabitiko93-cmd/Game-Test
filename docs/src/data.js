@@ -1,3 +1,5 @@
+import { CLOTHING_ITEMS, CLOTHING_LOOT } from './clothing-catalog.js';
+
 export const SKILLS = {
   stealth: { name: "Schleichen", description: "Leisere Bewegung und geringere Sichtbarkeit." },
   perception: { name: "Wahrnehmung", description: "Gefahren und Geräuschrichtungen früher erkennen." },
@@ -48,6 +50,7 @@ export const EQUIPMENT_SLOTS = {
   head: "KOPF",
   torso: "OBERKÖRPER",
   legs: "BEINE",
+  feet: "FÜSSE",
   back: "RÜCKEN",
 };
 
@@ -62,6 +65,7 @@ const firearm = (name, short, options) => ({
 });
 
 export const ITEMS = {
+  ...CLOTHING_ITEMS,
   kitchen_knife: melee("Küchenmesser", "Messer", "blades", 20, 1.13, 0.95, 0.84, 1.8, 0.35, 1, "Schnell und leise, aber ohne große Reichweite.", { execution: true }),
   hammer: melee("Schlosserhammer", "Hammer", "blunt", 27, 1.04, 1.28, 0.8, 3.4, 0.75, 1, "Kurze Reichweite, kräftiger Taumelschlag."),
   baseball_bat: melee("Baseballschläger", "Schläger", "blunt", 25, 1.55, 1.42, 0.85, 4.1, 1.15, 2, "Reichweite und Kontrolle gegen einzelne Infizierte."),
@@ -233,6 +237,7 @@ export const LOOT_TABLES = {
     ["work_jacket", 0.1, 1, 1], ["crowbar", 0.035, 1, 1], ["pistol_suppressor", 0.025, 1, 1],
   ],
   clothing: [
+    ...CLOTHING_LOOT,
     ["work_jacket", 0.42, 1, 1], ["leather_jacket", 0.16, 1, 1], ["jeans", 0.42, 1, 1],
     ["canvas_bag", 0.22, 1, 1], ["hiking_pack", 0.08, 1, 1],
   ],

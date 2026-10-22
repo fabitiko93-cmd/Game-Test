@@ -1,4 +1,4 @@
-import { AnimationMixer, Box3, Group, LoopOnce, Quaternion, Skeleton, Vector3 } from "three";
+import { AnimationMixer, Box3, Group, LoopOnce, Quaternion, Vector3 } from "three";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { defaultStyle, playerModelScale, QUATERNIUS_MODELS } from "./quaternius-catalog.js";
@@ -13,23 +13,14 @@ import {applyWeaponClip} from './weapon-animation.js';
 import {reloadPhase} from './weapon-reload.js';
 import {recoilPose} from './weapon-recoil.js';
 import {metersToTiles} from './world-scale.js';
+import { rebindPart, disposeClothing } from './character-parts.js';
 
 const PARTS=["head","torso","legs","feet"];
-
-function rebindPart(original,model) {
-  const part=original.clone(true);
-  part.traverse(mesh=>{
-    if(!mesh.isSkinnedMesh)return;
-    const skeleton=new Skeleton(mesh.skeleton.bones.map(bone=>model.getObjectByName(bone.name)),mesh.skeleton.boneInverses);
-    mesh.bind(skeleton,mesh.bindMatrix.clone());mesh.frustumCulled=false;
-  });
-  return part;
-}
 
 export class PlayerModels {
   constructor(pass,library) {
     this.pass=pass;this.library=library;this.entities=new Map();this.used=new Set();this.prepared=new Map();this.motion=new PlayerMotion();this.weapons=new WeaponModels();
-    this.ready=Promise.all(["male-Casual_2","female-Casual","male-Worker","female-Worker","male-Swat","male-Adventurer","Knife","player-motion"].map(key=>library.request(key)));
+    this.ready=Promise.all(["male-Casual_2","female-Casual","male-Beach","female-Formal","male-Worker","female-Worker","male-Swat","male-Adventurer","Knife","player-motion"].map(key=>library.request(key)));
   }
   beginFrame(){this.used.clear();this.prepared.clear();}
 
@@ -37,7 +28,8 @@ export class PlayerModels {
     const baseKey=`${appearance.sex}-${defaultStyle(appearance.sex)}`,base=this.library.get(baseKey);
     const motions=this.library.get('player-motion');
     const needed=PARTS.map(slot=>this.library.get(appearance[slot]));if(!base||!motions||needed.some(x=>!x))return null;
-    const signature=PARTS.map(slot=>appearance[slot]).join("|");
+    const hat=appearance.headwear?this.library.get(appearance.headwear):null;if(appearance.headwear&&!hat)return null;
+    const signature=JSON.stringify([appearance.sex,...PARTS.map(slot=>appearance[slot]),appearance.bare,appearance.headwear]);
     let entity=this.entities.get(player);
     if(entity?.signature===signature)return entity;
     if(entity)this.release(entity);
@@ -47,9 +39,14 @@ export class PlayerModels {
     const clothing={};
     for(let i=0;i<PARTS.length;i++) {
       const slot=PARTS[i],name=QUATERNIUS_MODELS.characters[appearance[slot]].parts[slot];
-      const part=rebindPart(needed[i].scene.getObjectByName(name),model);
+      const part=rebindPart(needed[i].scene.getObjectByName(name),model,{sourceSex:QUATERNIUS_MODELS.characters[appearance[slot]].sex,targetSex:appearance.sex,slot,bare:appearance.bare?.includes(slot),coverHair:slot==='head'&&appearance.headwear==='male-Swat'});
       clothing[slot]=part;
       part.traverse(o=>{o.visible=true;});armature.add(part);
+    }
+    if(hat){
+      const definition=QUATERNIUS_MODELS.characters[appearance.headwear];
+      const part=rebindPart(hat.scene.getObjectByName(definition.parts.head),model,{sourceSex:definition.sex,targetSex:appearance.sex,headwear:true,sourceKey:appearance.headwear});
+      part.traverse(o=>{o.visible=true;});armature.add(part);clothing.headwear=part;
     }
     const mixer=new AnimationMixer(model),actions=new Map([...base.animations,...motions.animations].map(clip=>{
       const action=mixer.clipAction(clip).setEffectiveTimeScale(0);
@@ -58,7 +55,8 @@ export class PlayerModels {
     }));
     root.scale.setScalar(playerModelScale(appearance));
     root.position.y=QUATERNIUS_MODELS.characters[appearance.feet].groundOffset*root.scale.y;
-    entity={root,model,mixer,actions,signature,current:null,clip:null,weapon:null,weaponKind:null};
+    if(appearance.bare?.includes('feet'))root.position.y-=.016*root.scale.y;
+    entity={root,model,mixer,actions,clothing,signature,current:null,clip:null,weapon:null,weaponKind:null};
     entity.rifleHands=captureRifleRig(model);
     const neutral=actions.get('Idle_Neutral').getClip();
     entity.handgunCarry=new Map(['ShoulderR','UpperArmR','LowerArmR','WristR'].map(name=>{
@@ -183,6 +181,7 @@ export class PlayerModels {
     entity.mixer.stopAllAction();entity.mixer.uncacheRoot(entity.model);
     const skeletons=new Set();entity.root.traverse(o=>{if(o.isSkinnedMesh)skeletons.add(o.skeleton);});for(const skeleton of skeletons)skeleton.dispose();
     if(entity.weapon?.userData.generated)entity.weapon.traverse(o=>o.geometry?.dispose());
+    disposeClothing(entity.root);
   }
   endFrame(){for(const [player,entity] of this.entities)if(!this.used.has(player)){this.release(entity);this.entities.delete(player);}}
 }

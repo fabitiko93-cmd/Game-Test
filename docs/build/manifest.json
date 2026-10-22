@@ -1,7 +1,7 @@
 {
-  "id": "a795dc231b9ad1bb0743",
-  "script": "build/main-K3OAWE7Z.js",
-  "style": "build/style-UUBE233Y.css",
+  "id": "4a3317743d9291af22b7",
+  "script": "build/main-MSLDUGLM.js",
+  "style": "build/style-SAK7IILI.css",
   "precache": [
     "assets/icon.svg",
     "assets/quaternius/ANIMATION-LICENSE.txt",
@@ -267,8 +267,8 @@
     "build/assets/m4-icon-IDY2OEW6.svg",
     "build/assets/revolver-icon-XLHMVYDZ.svg",
     "build/assets/vector-icon-DX6NJN2U.svg",
-    "build/main-K3OAWE7Z.js",
-    "build/style-UUBE233Y.css",
+    "build/main-MSLDUGLM.js",
+    "build/style-SAK7IILI.css",
     "index.html",
     "manifest.webmanifest"
   ]
