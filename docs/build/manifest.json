@@ -1,8 +1,11 @@
 {
-  "id": "4a3317743d9291af22b7",
-  "script": "build/main-MSLDUGLM.js",
-  "style": "build/style-SAK7IILI.css",
+  "id": "1110c8310057b1894520",
+  "script": "build/main-2XPKMEKY.js",
+  "style": "build/style-TJLZNFIF.css",
   "precache": [
+    "assets/clothing/README.md",
+    "assets/clothing/icons-8e58abe2f658.svg",
+    "assets/clothing/icons.json",
     "assets/icon.svg",
     "assets/quaternius/ANIMATION-LICENSE.txt",
     "assets/quaternius/Bathroom_Bathtub-72efe624dac0.glb.gz",
@@ -267,8 +270,8 @@
     "build/assets/m4-icon-IDY2OEW6.svg",
     "build/assets/revolver-icon-XLHMVYDZ.svg",
     "build/assets/vector-icon-DX6NJN2U.svg",
-    "build/main-MSLDUGLM.js",
-    "build/style-SAK7IILI.css",
+    "build/main-2XPKMEKY.js",
+    "build/style-TJLZNFIF.css",
     "index.html",
     "manifest.webmanifest"
   ]

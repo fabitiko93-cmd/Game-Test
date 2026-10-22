@@ -1,4 +1,5 @@
 import { STATUS_ICONS, iconSVG } from "./status-icons.js";
+import { createItemIcon } from './item-icons.js';
 import { BACKGROUNDS, EQUIPMENT_SLOTS, ITEMS, SKILLS } from "./data.js";
 import {
   activeWeapon,
@@ -443,7 +444,7 @@ export class GameUI {
         continue;
       }
       const definition = itemDefinition(item);
-      slot.append(this.itemIcon(definition.icon || definition.type));
+      slot.append(this.itemIcon(item,player.appearance?.sex));
       const name = document.createElement("small");
       name.textContent = definition.short;
       slot.append(name);
@@ -471,6 +472,7 @@ export class GameUI {
       label.textContent = summary.label;
       const value = document.createElement("strong");
       value.textContent = summary.reserved ? "ZWEIHÄNDIG" : summary.item ? itemDefinition(summary.item).short : "LEER";
+      if(summary.item&&!summary.reserved)button.append(this.itemIcon(summary.item,player.appearance?.sex));
       button.append(label, value);
       button.disabled = !summary.item || summary.reserved;
       button.addEventListener("click", () => this.callbacks.unequip?.(summary.slot));
@@ -544,7 +546,7 @@ export class GameUI {
       if (!definition) continue;
       const button = document.createElement("button");
       button.className = "container-item";
-      button.append(this.itemIcon(definition.icon || definition.type));
+      button.append(this.itemIcon(item,player.appearance?.sex));
       const name = document.createElement("small");
       name.textContent = definition.short;
       button.append(name);
@@ -726,7 +728,7 @@ export class GameUI {
         const definitionMod = itemDefinition(mod);
         const button = document.createElement("button");
         button.className = "mod-item";
-        button.append(this.itemIcon(definitionMod.icon || definitionMod.type));
+        button.append(this.itemIcon(mod,player.appearance?.sex));
         const name = document.createElement("small");
         name.textContent = definitionMod.short;
         button.append(name);
@@ -753,7 +755,7 @@ export class GameUI {
       const definition = itemDefinition(item);
       const button = document.createElement("button");
       button.className = `quick-slot${weapon?.id === item.id ? " selected" : ""}`;
-      button.append(this.itemIcon(definition.icon || definition.type));
+      button.append(this.itemIcon(item,player.appearance?.sex));
       const amount = this.itemAmount(item);
       if (amount) {
         const count = document.createElement("b");
@@ -773,10 +775,8 @@ export class GameUI {
     return item.count > 1 ? String(item.count) : "";
   }
 
-  itemIcon(type) {
-    const icon = document.createElement("div");
-    icon.className = `item-icon ${type}`;
-    return icon;
+  itemIcon(item,sex) {
+    return createItemIcon(item,sex);
   }
 
   refreshAll(player, game) {

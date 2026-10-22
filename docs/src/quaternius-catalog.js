@@ -2,7 +2,7 @@ import MODELS from "../assets/quaternius/models.json" with { type: "json" };
 import ANIMATIONS from "../assets/quaternius/player-animations.json" with { type: "json" };
 import { metersToTiles, WORLD_SCALE } from "./world-scale.js";
 import { ITEMS } from './data.js';
-import { BODY_SOURCES, HEADWEAR_MODELS } from './clothing-catalog.js';
+import { BODY_SOURCES, HEADWEAR_MODELS, clothingModelFor } from './clothing-catalog.js';
 
 export { MODELS as QUATERNIUS_MODELS };
 export { ANIMATIONS as PLAYER_ANIMATIONS };
@@ -32,10 +32,7 @@ export function playerModelAppearance(player) {
   appearance.bare=[];
   for(const slot of ['torso','legs','feet']) {
     const item=equippedItem(slot),definition=ITEMS[item?.type];
-    let model=definition?.clothingModel;
-    const legacy={work_jacket:'Worker',leather_jacket:'Punk',jeans:defaultStyle(appearance.sex)};
-    if(legacy[item?.type])model=`${appearance.sex}-${legacy[item.type]}`;
-    if(['outfit_top','outfit_trousers'].includes(item?.type))model=`${appearance.sex}-${item.modelStyle||defaultStyle(appearance.sex)}`;
+    const model=clothingModelFor(item,definition,appearance.sex);
     if(MODELS.characters[model])appearance[slot]=model;
     else {appearance[slot]=BODY_SOURCES[appearance.sex][slot];appearance.bare.push(slot);}
   }

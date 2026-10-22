@@ -67,6 +67,7 @@ export class EquipmentViews {
     const selected=summaries.find(summary=>summary.slot===this.characterSlot),detail=this.el.character_equipment_detail;
     detail.replaceChildren(element('h3','',selected.label));
     if(selected.item){
+      detail.append(this.ui.itemIcon(selected.item,player.appearance?.sex));
       detail.append(element('strong','loadout-name',itemDefinition(selected.item).name),element('p','loadout-meta',weightLabel(selected.item)));
       const actions=element('div','loadout-actions');
       actions.append(button('ABLEGEN',()=>this.ui.callbacks.unequip?.(selected.reserved?'mainHand':selected.slot)));
@@ -76,8 +77,8 @@ export class EquipmentViews {
     detail.append(element('h3','','PASSEND IM RUCKSACK'));
     const candidates=player.inventory.filter(item=>item.id!==selected.item?.id&&(itemDefinition(item).equipSlot===selected.slot||(selected.slot==='mainHand'&&itemDefinition(item).type==='weapon')));
     for(const item of candidates){
-      const node=button('',()=>this.ui.callbacks.useItem?.(item.id),'loadout-choice');node.dataset.itemId=item.id;
-      node.append(element('strong','',itemDefinition(item).short),element('small','',weightLabel(item)));detail.append(node);
+      const node=button('',()=>this.ui.callbacks.useItem?.(item.id),'loadout-choice item-choice');node.dataset.itemId=item.id;
+      node.append(this.ui.itemIcon(item,player.appearance?.sex),element('strong','',itemDefinition(item).short),element('small','',weightLabel(item)));detail.append(node);
     }
     if(!candidates.length)detail.append(element('p','loadout-meta','Keine passenden Gegenstände dabei.'));
   }

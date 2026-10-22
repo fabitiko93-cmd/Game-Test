@@ -35,3 +35,12 @@ export const CHARACTER_HEADS={
   male:{Casual_2:'Braun · Zopf',Casual_Hoodie:'Braun · Kurz',Adventurer:'Braun · Bart',Suit:'Braun · Seitenscheitel',Punk:'Rot · Irokesenschnitt'},
   female:{Casual:'Blond · Bob',Adventurer:'Braun · Zurückgebunden',Formal:'Rot · Zurückgebunden',Punk:'Violett · Irokesenschnitt',Soldier:'Braun · Geflochten'},
 };
+
+// Keep inventory pictures and the worn part on the same source model, including
+// the older generic clothing items. New named garments keep their original cut.
+export function clothingModelFor(item,definition,sex='male') {
+  if(definition?.clothingModel)return definition.clothingModel;
+  const styles={work_jacket:'Worker',leather_jacket:'Punk',jeans:sex==='female'?'Casual':'Casual_2'};
+  const style=styles[item?.type]||(['outfit_top','outfit_trousers'].includes(item?.type)?item.modelStyle||(sex==='female'?'Casual':'Casual_2'):null);
+  return style?`${sex}-${style}`:null;
+}

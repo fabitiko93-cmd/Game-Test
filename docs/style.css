@@ -588,6 +588,9 @@ h1 span { color: var(--red-bright); }
 .available-empty { grid-column: 1/-1; padding: 12px; color: #7e857b; text-align: center; font: 500 8px "IBM Plex Mono", monospace; }
 
 .item-icon { width: 27px; height: 27px; position: relative; filter: drop-shadow(0 3px 2px #0008); }
+.item-icon.model-item-icon { width:36px; height:36px; flex:none; }
+.model-item-icon svg { display:block; width:100%; height:100%; overflow:visible; }
+.equip-slot > .item-icon { float:right; width:24px; height:24px; margin-left:4px; }
 .item-icon::before, .item-icon::after { content: ""; position: absolute; }
 .item-icon.food::before { inset: 5px; border-radius: 50%; background: #9e3d35; box-shadow: inset -4px -3px 0 #5d2521; }
 .item-icon.food::after { width: 3px; height: 7px; left: 14px; top: 2px; background: #60784c; transform: rotate(25deg); }
@@ -748,6 +751,9 @@ h1 span { color: var(--red-bright); }
 .loadout-choice { display:block; width:100%; min-height:46px; padding:8px; margin-bottom:5px; text-align:left; background:#212d23; border:1px solid #9eaa8c30; }
 .loadout-choice strong { display:block; font-size:11px; }
 .loadout-choice small { display:block; margin-top:3px; color:#a4ac95; font:500 8px "IBM Plex Mono",monospace; }
+.loadout-detail > .item-icon { float:right; width:48px; height:48px; margin:0 0 6px 8px; }
+.loadout-choice > .item-icon { float:right; width:32px; height:32px; margin-left:8px; }
+.item-choice strong, .item-choice small { margin-right:40px; }
 .character-panel .character-layout { display:block; max-height:none; flex:1; min-height:0; overflow-y:auto; padding:8px; }
 .character-panel .character-layout > div + div { border-left:0; }
 .weapon-model-stage { height:clamp(190px,39vh,280px); min-height:190px; }
