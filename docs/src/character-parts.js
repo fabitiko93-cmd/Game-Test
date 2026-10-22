@@ -1,4 +1,5 @@
 import { BufferGeometry, Float32BufferAttribute, Skeleton, Uint16BufferAttribute, Vector3 } from 'three';
+import {makeBareTorso} from './character-body.js';
 
 const SKIN='Skin',UNDERWEAR=0x343945;
 export const headwearMaterial=(name,source)=>source?.endsWith('Worker')?name==='Worker_Yellow':source?.endsWith('Swat')?/^(Swat.*|Visor)$/.test(name):['Beige','Red'].includes(name);
@@ -41,27 +42,14 @@ function region(mesh,height,above) {
 }
 
 function underwear(part,slot,sex) {
+  if(slot==='torso'){makeBareTorso(part,sex);return;}
   let skin;part.traverse(mesh=>{if(mesh.isMesh&&mesh.material.name===SKIN)skin=mesh.material.color;});
   const meshes=[];part.traverse(mesh=>{if(mesh.isSkinnedMesh)meshes.push(mesh);});
   for(const mesh of meshes){
     const name=mesh.material.name;
     if(slot==='feet'){if(name!==SKIN)mesh.removeFromParent();continue;}
     if(name===SKIN)continue;
-    if(slot==='torso'){
-      if(sex==='male'){mesh.material=material(mesh,skin,'Bare skin');continue;}
-      if(name==='Gold'){mesh.removeFromParent();continue;}
-      const geometry=mesh.geometry.clone(),positions=geometry.attributes.position,inverse=mesh.bindMatrix.clone().invert();
-      for(let i=0;i<positions.count;i++){
-        const p=new Vector3().fromBufferAttribute(positions,i).applyMatrix4(mesh.bindMatrix);
-        if(p.y<1.24)p.y-=.085*Math.min(1,(1.24-p.y)/.08);
-        positions.setXYZ(i,...p.applyMatrix4(inverse).toArray());
-      }
-      mesh.geometry=geometry;
-      const abdomen=region(mesh,1.14,true);geometry.dispose();mesh.geometry=abdomen;
-      const bra=mesh.clone();bra.geometry=region(mesh,1.36,true);bra.material=material(mesh,UNDERWEAR,'Underwear');mesh.parent.add(bra);
-      mesh.geometry=region(mesh,1.36,false);mesh.material=material(mesh,skin,'Bare skin');
-      abdomen.dispose();
-    }else if(slot==='legs'){
+    if(slot==='legs'){
       // Convert the original beach shorts to close-fitting boxer briefs and
       // skin below their hem, retaining the original hips/knees and seams.
       const geometry=mesh.geometry.clone(),positions=geometry.attributes.position,inverse=mesh.bindMatrix.clone().invert();

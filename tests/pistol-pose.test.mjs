@@ -116,10 +116,12 @@ test('carry, aim, crouch and sprint transitions retain continuous joints at 30 a
         // The original crouch clip moves the whole body vertically. Measure
         // arm continuity relative to its shoulder, independently of that lift.
         const qs=names.map(n=>f.entity.model.getObjectByName(n).quaternion.clone().normalize()),ps=['R','L'].map(s=>local(f,'Wrist'+s).sub(local(f,'UpperArm'+s)));
-        if(previous){qs.forEach((q,j)=>assert.ok(q.angleTo(previous.qs[j])<9/hz+1e-5,tag+` joint ${j} jumped`));ps.forEach((p,j)=>assert.ok(p.distanceTo(previous.ps[j])<5/hz,tag+` hand ${j} jumped ${p.distanceTo(previous.ps[j])}`));}
+        // Bound actual hand travel and skin twist independently of the local
+        // rotations needed by a world-space IK chain near full extension.
+        if(previous){qs.forEach((q,j)=>assert.ok(q.angleTo(previous.qs[j])<16/hz+1e-5,tag+` joint ${j} jumped`));ps.forEach((p,j)=>assert.ok(p.distanceTo(previous.ps[j])<3/hz,tag+` hand ${j} jumped ${p.distanceTo(previous.ps[j])}`));}
         for(const side of ['R','L']){
-          assert.ok(bend(f,side)<36,tag+' wrist bend');
-          const[fore,hand]=rolls(f,side);assert.ok(fore<70&&hand<40,tag+` ${side} axial twist ${fore}/${hand}`);
+          assert.ok(bend(f,side)<34.1,tag+' wrist bend');
+          const[fore,hand]=rolls(f,side);assert.ok(fore<60.05&&hand<25,tag+` ${side} axial twist ${fore}/${hand}`);
         }
         previous={qs,ps};
       }
@@ -127,15 +129,69 @@ test('carry, aim, crouch and sprint transitions retain continuous joints at 30 a
   }
 });
 
+const postures={idle:['walk',false,false,false],aim:['walk',false,false,true],walk:['walk',true,false,false],crouchIdle:['sneak',false,false,false],crouchAim:['sneak',false,false,true],crouchWalk:['sneak',true,false,false],sprint:['walk',true,true,false]};
+function setPosture(f,name){
+  const[stance,moving,running,aim]=postures[name];Object.assign(f.player,{stance,moving,running});Object.assign(f.player.combat,{enabled:aim,targetId:aim?'target':null,aim:Number(aim)});
+}
+function motionCheck(f,tag){
+  for(const side of ['R','L']){
+    assert.ok(bend(f,side)<34.1,tag+` ${side} wrist bend`);
+    const[fore,hand]=rolls(f,side);assert.ok(fore<60.05&&hand<25,tag+` ${side} skin twist ${fore}/${hand}`);
+  }
+  const elbow=local(f,'LowerArmL').sub(local(f,'UpperArmL'));
+  assert.ok(elbow.y<.08,tag+' support elbow must not swing over the shoulder');
+  return local(f,'Middle2L').sub(local(f,'UpperArmL'));
+}
+
+test('pistol hands join and leave the grip without an overhead loop, including interrupted aim on both rigs',async()=>{
+  const pairs=[['crouchIdle','crouchWalk'],['crouchAim','crouchIdle'],['crouchWalk','sprint'],['walk','idle']];
+  for(const sex of ['male','female'])for(const type of types)for(const hz of [30,60]){
+    for(const[from,to]of pairs){
+      const f=await fixture(type,sex);let time=0;setPosture(f,from);models.prepare(f.player,time);
+      const tick=()=>{if(f.player.moving)f.player.y+=.6/hz;models.prepare(f.player,time+=1/hz);};
+      for(let i=0;i<Math.ceil(hz*1.2);i++)tick();
+      const points=[local(f,'Middle2L').sub(local(f,'UpperArmL'))];setPosture(f,to);
+      for(let i=0;i<Math.ceil(hz*1.4);i++){tick();points.push(motionCheck(f,`${sex} ${type} ${hz} ${from}>${to} ${i}`));}
+      const maxY=Math.max(points[0].y,points.at(-1).y)+.08;
+      assert.ok(points.every(p=>p.y<=maxY),`${sex} ${type} ${hz} ${from}>${to}: hand goes over its endpoints`);
+      if(to!=='sprint'){
+        const distance=points[0].distanceTo(points.at(-1)),travel=points.slice(1).reduce((n,p,i)=>n+p.distanceTo(points[i]),0);
+        assert.ok(travel<distance*1.8+.04,`${sex} ${type} ${hz} ${from}>${to}: circular hand path ${travel}/${distance}`);
+      }
+      if(to==='crouchWalk'){
+        const gun=f.entity.weapon,target=gun.localToWorld(new Vector3().fromArray(gun.userData.pistol.leftPalm));
+        assert.ok(position(f,'Middle2L').distanceTo(target)<.008,'support hand returns to the actual grip');
+        assert.ok(surface(gun.getObjectByName('Receiver'),position(f,'Thumb3L'))<.030,'support thumb returns to the grip with the moving hand');
+        const optic=gun.getObjectByName('Reflex'),a=gun.userData.anchors.optic,sight=gun.localToWorld(new Vector3(0,a[1]+(optic?.visible?.008:-.014),a[2]));
+        const forward=new Vector3(0,0,1).applyQuaternion(gun.getWorldQuaternion(new Quaternion())),line=sight.sub(eye(f));
+        assert.ok(Math.abs(forward.y)<.02&&line.addScaledVector(forward,-line.dot(forward)).length()<.012,'settled moving aim returns to the eye and sight line');
+      }
+      models.release(f.entity);models.entities.delete(f.player);models.prepared.delete(f.player);models.used.delete(f.player);
+    }
+    for(const mods of type==='desert_eagle_50'?[false]:[false,true]){
+      const f=await fixture(type,sex,mods);let time=0;setPosture(f,'aim');models.prepare(f.player,time);
+      const tick=()=>{if(f.player.moving)f.player.y+=.6/hz;models.prepare(f.player,time+=1/hz);};
+      for(let i=0;i<hz;i++)tick();
+      // This exact history formerly retained a nearly 360-degree wrist arc.
+      for(const state of ['crouchIdle','walk','sprint','crouchWalk']){
+        setPosture(f,state);for(let i=0;i<Math.ceil(hz*(state==='crouchWalk'?1.4:.4));i++){tick();motionCheck(f,`${sex} ${type} ${hz} interrupted ${state} ${i}`);}
+      }
+      models.release(f.entity);models.entities.delete(f.player);models.prepared.delete(f.player);models.used.delete(f.player);
+    }
+  }
+});
+
 test('pistol magazine changes and interruption keep anatomical hands and carry the real magazine on both rigs',async()=>{
   const names=['UpperArmR','LowerArmR','WristR','UpperArmL','LowerArmL','WristL'];
-  for(const sex of ['male','female'])for(const type of types)for(const crouched of [false,true])for(const cut of [1,.29,.55]){
-    const f=await fixture(type,sex);f.weapon.magazine.rounds=0;f.player.stance=crouched?'sneak':'walk';let time=0;models.prepare(f.player,time);
-    for(let i=0;i<45;i++)models.prepare(f.player,time+=1/60);
+  for(const sex of ['male','female'])for(const type of types)for(const crouched of [false,true])for(const moving of [false,true])for(const cut of [1,.29,.55]){
+    const f=await fixture(type,sex);f.weapon.magazine.rounds=0;f.player.stance=crouched?'sneak':'walk';f.player.moving=moving;let time=0;models.prepare(f.player,time);
+    for(let i=0;i<45;i++){if(moving)f.player.y+=.6/60;models.prepare(f.player,time+=1/60);}
     assert.ok(beginReload(f.game).ok);const state=f.player.combat.reload;let previous=null;
     function check(){
-      models.prepare(f.player,time+=1/60);const tag=`${sex} ${type} ${crouched} ${cut} ${state.elapsed}`;
-      const qs=names.map(n=>f.entity.model.getObjectByName(n).quaternion.clone().normalize()),ps=['WristR','WristL'].map(n=>local(f,n));
+      if(f.player.moving)f.player.y+=.6/60;models.prepare(f.player,time+=1/60);const tag=`${sex} ${type} ${crouched} ${moving} ${cut} ${state.elapsed}`;
+      // A sprint abort also raises the original crouched body. Check the
+      // hands relative to their shoulders, independently of that body lift.
+      const qs=names.map(n=>f.entity.model.getObjectByName(n).quaternion.clone().normalize()),ps=['R','L'].map(side=>local(f,'Wrist'+side).sub(local(f,'UpperArm'+side)));
       if(previous){qs.forEach((q,j)=>assert.ok(q.angleTo(previous.qs[j])<Math.PI/3,tag+` joint ${j} flipped`));ps.forEach((p,j)=>assert.ok(p.distanceTo(previous.ps[j])<.09,tag+` hand ${j} detached`));}
       for(const side of ['R','L']){assert.ok(bend(f,side)<53,tag+' wrist bend');const[fore,hand]=rolls(f,side);assert.ok(fore<60.05&&hand<34,tag+` ${side} twist ${fore}/${hand}`);}
       const mag=f.entity.weapon.getObjectByName(f.entity.weapon.userData.magazinePart),p=state.elapsed/state.duration;
@@ -143,7 +199,7 @@ test('pistol magazine changes and interruption keep anatomical hands and carry t
       previous={qs,ps};
     }
     while(f.player.combat.reload&&state.elapsed<state.duration*cut){updateReload(f.game,Math.min(1/60,state.duration*cut-state.elapsed+.000001));check();}
-    if(cut<1)cancelReload(f.game);
+    if(cut<1){cancelReload(f.game);if(moving)Object.assign(f.player,{stance:'walk',moving:true,running:true});}
     for(let i=0;i<45;i++)check();
     assert.equal(f.entity.reloadLast,null,'reload/abort returns to the held pose');
     for(const[name,base]of f.entity.weapon.userData.partPose){const part=f.entity.weapon.getObjectByName(name);assert.ok(part.position.distanceTo(base.position)<1e-7);assert.ok(part.quaternion.angleTo(base.rotation)<1e-7);}

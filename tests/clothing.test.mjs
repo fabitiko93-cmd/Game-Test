@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFile} from 'node:fs/promises';
 import {gunzipSync} from 'node:zlib';
-import {Box3,Vector3} from 'three';
+import {Box3,Ray,Vector3} from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {BACKGROUNDS,EQUIPMENT_SLOTS,ITEMS,LOOT_TABLES} from '../docs/src/data.js';
 import {CLOTHING_ITEMS,CHARACTER_HEADS} from '../docs/src/clothing-catalog.js';
@@ -94,5 +94,32 @@ test('underwear is real skinned geometry and all 48 garments fit both animated r
       assert.deepEqual(playerModelAppearance(player).bare,['torso','legs','feet']);
     }
     models.release(models.entities.get(player));models.entities.delete(player);
+  }
+});
+
+test('bare abdomens have one continuous surface and the animated bra band wraps all the way around the torso',async()=>{
+  const library=new QuaterniusAssets({loadAsset:load}),models=new PlayerModels({},library);await models.ready;
+  function hits(mesh,y,angle){
+    const ray=new Ray(new Vector3(0,y,.066),new Vector3(Math.sin(angle),0,Math.cos(angle))),g=mesh.geometry,index=g.index,distances=[];
+    for(let i=0;i<(index?.count||g.attributes.position.count);i+=3){
+      const points=[0,1,2].map(k=>new Vector3().fromBufferAttribute(g.attributes.position,index?index.getX(i+k):i+k).applyMatrix4(mesh.bindMatrix));
+      const hit=ray.intersectTriangle(...points,false,new Vector3());if(hit){const d=hit.distanceTo(ray.origin);if(!distances.some(old=>Math.abs(old-d)<1e-5))distances.push(d);}
+    }return distances;
+  }
+  for(const sex of ['male','female']){
+    const player=createPlayer({appearance:{sex}}),entity=models.entity(player,playerModelAppearance(player)),abdomen=entity.clothing.torso.getObjectByName('BareAbdomen');
+    assert.ok(abdomen?.isSkinnedMesh,'the cloth hem is replaced by a skinned body surface');
+    for(const y of [1.06,1.15,1.24,1.31])for(let i=0;i<16;i++)assert.equal(hits(abdomen,y,(i+.3)/16*Math.PI*2).length,1,`${sex} ${y}: no folded-back cloth layer`);
+    if(sex==='female'){
+      let band;entity.clothing.torso.traverse(m=>{if(m.geometry?.userData.closedBraBand)band=m;});assert.ok(band?.isSkinnedMesh,'bra has its own continuous fabric band');
+      for(let i=0;i<32;i++)assert.equal(hits(band,1.39,(i+.3)/32*Math.PI*2).length,2,'inner and outer fabric surfaces cover every side');
+    }
+    for(const clip of ['Idle_Neutral','Idle_Gun_Pointing','Walk','Crouch_Idle','Crouch_Walk','Run']){
+      models.pose(entity,{clip,progress:.35,delta:1,yaw:0});entity.root.traverseVisible(mesh=>{
+        if(!mesh.isSkinnedMesh)return;
+        for(let i=0;i<mesh.geometry.attributes.position.count;i+=7){const p=mesh.getVertexPosition(i,new Vector3());assert.ok(p.toArray().every(Number.isFinite),`${sex} ${clip}: intact skinning`);}
+      });
+    }
+    models.release(entity);models.entities.delete(player);
   }
 });

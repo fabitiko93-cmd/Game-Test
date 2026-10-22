@@ -18,7 +18,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Ruhephasen und Schlurfen | `zombie-idle.js` | Nur `idle`: Pausen, kurze erreichbare Wege und träge Drehung; `ai.js` behält Wahrnehmung und aktive Zustände |
 | Zombie-Körper und Zuwanderung | `zombie-collision.js`, `ai.js`, `movement.js` | Maßstäbliche Körperradien, kontinuierliche Kontaktprüfung, seitliches Ausweichen und begrenzte Trennung alter Überlappungen. Weltkollisionen bleiben maßgeblich. Zuwanderung außerhalb der Spielersicht mit Abstand; ruhiger Weg ins Gebiet ohne erfundenen Suchreiz. |
 | Zombie-Modelle und Animationen | `zombie-models.js`, `zombie-motion.js`, `docs/assets/zombies3d/` | Zehn echte skinned GLBs, Three.js als fest gepinnte gebündelte Abhängigkeit, interpolierte Original-Schlüssel und Pose-Blends pro Renderbild; Gehphase aus tatsächlicher Strecke und gemessenem Fußweg je Modell. Gemeinsame 2:1-Kamera und kontinuierliche Blickrichtung. Frischer WebGL-Pass pro Figur wird in die bestehende Tiefensortierung eingemischt; `render.js` behält Wände/Bäume/Dächer, Schatten und Status. Aufbereitung: `scripts/prepare-zombies-3d.py`. `zombie-animation.js`/`zombie-sprites.js` und bisherige Atlanten dienen als Ersatz bei fehlendem WebGL oder Ladefehlern. |
-| Player-Modelle, Kleidung und menschliche Leichen | `player-models.js`, `character-parts.js`, `clothing-catalog.js`, `corpse-appearance.js`, `player-motion.js`, `quaternius-catalog.js` | Start in Unterwäsche ohne Ausrüstung. 45 einzeln lootbare Kleidungs-/Schuhteile und drei Kopfbedeckungen; Gesicht/Haare bleiben unabhängig. `character-parts.js` passt Originalkleidung an beide Rigs an. `corpse-appearance.js` wählt passende Originalteile für die platzierten Personen; `PlayerModels.drawCorpse` friert die Todespose ein und leitet Bodenlage/Antippmaße aus sichtbaren Meshes ab. Keine primitive Waffen- oder Leichengeometrie. 24 Originalclips plus zwei Schleichclips; Aufbereitung: `scripts/prepare-player-animations.mjs`. |
+| Player-Modelle, Kleidung und menschliche Leichen | `player-models.js`, `character-parts.js`, `character-body.js`, `clothing-catalog.js`, `corpse-appearance.js`, `player-motion.js`, `quaternius-catalog.js` | Start in Unterwäsche ohne Ausrüstung. 45 einzeln lootbare Kleidungs-/Schuhteile und drei Kopfbedeckungen; Gesicht/Haare bleiben unabhängig. `character-parts.js` passt Originalkleidung an beide Rigs an; `character-body.js` ersetzt gefaltete Kleidersäume durch einen durchgehenden skinned Bauch und ergänzt ein geschlossenes BH-Band. `corpse-appearance.js` wählt passende Originalteile für die platzierten Personen; `PlayerModels.drawCorpse` friert die Todespose ein und leitet Bodenlage/Antippmaße aus sichtbaren Meshes ab. Keine primitive Waffen- oder Leichengeometrie. 24 Originalclips plus zwei Schleichclips; Aufbereitung: `scripts/prepare-player-animations.mjs`. |
 | Gemeinsamer Modellpass und Einrichtung | `model-pass.js`, `quaternius-assets.js`, `world-models.js`, `docs/assets/quaternius/` | Ein WebGL-Kontext für Zombies, Player und statische Einrichtung; gleiche 2:1-Kamera und Meterprojektion. Neue Farbmodelle können ohne WebGL als echte animierte Canvas-Dreiecke erscheinen. Möbel/Blätter einmal pro Ausrichtung und Geräteauflösung zwischengespeichert. Maße aus Assetmetadaten gelten auch in `world.js` für Kollision und Wege. Aufbereitung: `scripts/prepare-quaternius.py`, danach `scripts/measure-quaternius.mjs`; Quellen/Maße im Asset-README. |
 | Größenmaßstab und Körperhöhen | `world-scale.js`, `zombie-appearance.js`, `locomotion.js`, `docs/assets/reference-scale.json` | Gemeinsamer Metermaßstab für Player, DIN-Türblatt, Kühlgerät und Zombie-Modelle. ID-stabile Zombie-Körperhöhen; Player 1,80 m männlich / 1,68 m weiblich. `locomotion.js` hält Geschwindigkeiten in m/s und die Umrechnung in vorhandene Tiles. Vergleich/Quellen: `docs/assets/scale-reference/`; Generator `scripts/prepare-scale-reference.py`. |
 | Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Ansatz prüft Ziel vor Bewegung in `movement.js`, verdeckte Wege und Zielumfahrung über `player-navigation.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
@@ -271,12 +271,17 @@ Original-SVG-Icons und Herkunftsnachweise entstehen in `scripts/prepare-pistols.
 den Griff mit dem gemessenen Mittelhandkontakt und richtet die Zielpose an den
 Augen des tatsächlichen Kopfmodells aus. `weapon-catalog.js` enthält je Modell
 Griff-/Daumenpunkte und den moderaten Darstellungsmaßstab. Eigene Handflächenrahmen,
-erreichbare Armposen und kontinuierliche Rotationspfade begrenzen Beugung und
-axiale Verdrehung getrennt. Ganze Gelenkposen überblenden Tragen/Anlegen/Ducken;
-die Original-Beinanimation bleibt erhalten. Rückstoß dreht um das Handgelenk.
+erreichbare Handziele begrenzen Beugung und axiale Verdrehung getrennt.
+Schulterbezogene Handbahnen führen Tragen/Anlegen/Ducken; die IK begrenzt
+Ellenbogenebene und Strecktempo und verwendet die tatsächlich zuletzt sichtbare
+Pose auch nach Unterbrechungen. Finger werden vor dem Kontaktfit gesetzt.
+Die Original-Beinanimation bleibt erhalten. Rückstoß dreht um das Handgelenk.
 `weapon-reload-pose.js` nutzt dieselben Pistolenrahmen für Magazin, Rückkehr und
 Abbruch; gelöste Magazine folgen der tatsächlich erreichten Hand. Die übrigen
 Waffen verwenden weiterhin ihre vorhandenen Kontaktprofile.
 `pistol-pose.test.mjs` prüft Originalgeometrie/Griffkontakt, konstante Weltgröße,
 Visierlinie, Arm-/Beinmaße, axiale Hautdrehung, vollständige Übergänge bei 30/60 Hz,
 Nachladen/Abbruch und maximalen Magnum-Rückstoß auf beiden Original-Rigs.
+Direkte Schleich-/Sprintwechsel und schnelle Unterbrechungen prüfen zusätzlich
+Handbahn, Ellenbogenhöhe und Griffwiederaufnahme. `clothing.test.mjs` prüft die
+einlagige Bauchfläche und die geschlossene innere/äußere BH-Stofffläche rundum.
