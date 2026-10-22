@@ -181,6 +181,13 @@ Schulter-/Brustkorbanpassung und Auge auf der Visierlinie. Haltungswechsel,
 Schleichstillstand, Rückstoß und Magazinwechsel einschließlich Abbruch auf beiden
 Rigs prüfen. Keine Änderung der bereits abgestimmten Revolver-/Langwaffenhaltungen.
 
+Pistolenübergänge vom 22.10.2026: Handbahnen vor dem Brustkorb und erreichbare
+Armziele verwenden; keine gespeicherten langen Gelenkdrehwege. Direkte Wechsel
+aus dem Anlegen, Schleich-/Sprintwechsel und schnelle Unterbrechungen auf beiden
+Rigs auf Armkreis, Ellenbogenhöhe, Hautverdrehung und erneuten Griffkontakt prüfen.
+Unterwäschekörper: gefaltete Kleidersäume am Bauch geometrisch ersetzen und den
+BH mit einem geschlossenen Stoffband einschließlich Seiten unter den Armen ergänzen.
+
 ## Effizient entwickeln
 
 - Modell, Denkstufe und Geschwindigkeit nach der aktuellen Nutzerwahl verwenden.

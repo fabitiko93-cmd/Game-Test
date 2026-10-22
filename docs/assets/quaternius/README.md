@@ -102,9 +102,14 @@ weapons use small distinct metric silhouettes attached to the animated wrist.
 
 Starting clothing is now 45 individual inventory items (tops, bottoms and shoes)
 plus three separate headwear accessories. New survivors wear only underwear.
-`character-parts.js` derives the bare body, dark boxer briefs and sports bra from
+`character-parts.js` and `character-body.js` derive the bare body, dark boxer briefs and sports bra from
 these existing CC0 meshes: the men's Beach torso/legs/skin feet and the women's
 Formal torso. It removes sandals and the formal belt, fits the shorts, splits
 skinned triangles at underwear hems, recolours surfaces and closes the waist.
+The inward-folded shirt/dress hem is replaced with a continuous waist surface,
+joined to the measured original torso section with interpolated skin weights.
+The sports bra has a closed, thin fabric band around the chest, including its
+side cut-outs; the band follows the torso rather than the arms. Generated body
+templates are cached and cloned when equipment changes.
 This is a runtime geometry adaptation; the original compressed assets are intact.
 Empty slots restore this body. Headwear overlays the independently selected face.
