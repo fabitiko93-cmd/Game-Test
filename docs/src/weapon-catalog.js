@@ -9,16 +9,23 @@ import REVOLVER from '../assets/weapons/revolver.json' with { type: 'json' };
 
 // One catalogue drives the held model, weapon bench, UI and upper-body motion.
 // Item compatibility and game values remain in data.js.
-function pistol(name,asset,magazines,mods=true){
+function pistol(name,asset,magazines,pose,mods=true){
   return{name,asset,baseParts:['Receiver','Slide','Barrel','Hammer','Trigger','Safety','SlideRelease'],muzzleParts:['Barrel','Receiver'],magazines,
     mods:mods?{pistol_optic_mount:'OpticMount',reflex_sight:'Reflex',pistol_flashlight:'Flashlight',sidearm_suppressor:'Suppressor'}:{},
-    anchors:asset.anchors,grips:asset.grips,mechanism:asset.mechanism,requires:mods?{optic:'mount'}:{}};
+    anchors:asset.anchors,grips:{...asset.grips,...pose,handgun:true,pistol:true},pistol:pose,
+    mechanism:asset.mechanism,requires:mods?{optic:'mount'}:{}};
 }
 const MODELS = {
-  pistol_9mm:pistol('G17',G17,{mag_9mm_12:'Magazine',mag_9mm_18:'ExtendedMagazine'}),
-  usp_9mm:pistol('USP',USP,{mag_usp_15:'Magazine',mag_usp_22:'ExtendedMagazine'}),
-  scorpion_45:pistol('SIG Scorpion',SCORPION,{mag_scorpion_8:'Magazine',mag_scorpion_12:'ExtendedMagazine'}),
-  desert_eagle_50:pistol('Desert Eagle',DEAGLE,{mag_deagle_7:'Magazine'},false),
+  // Palm contacts are on each authored grip, not offsets to an AK wrist.
+  // A modest, fixed presentation scale fits the stylised hands on both rigs.
+  pistol_9mm:pistol('G17',G17,{mag_9mm_12:'Magazine',mag_9mm_18:'ExtendedMagazine'},
+    {scale:1.18,rightPalm:[-.027,-.010,-.004],leftPalm:[.033,-.018,-.013],rightThumb:[.012,.016,-.044],leftThumb:[.024,.017,.007]}),
+  usp_9mm:pistol('USP',USP,{mag_usp_15:'Magazine',mag_usp_22:'ExtendedMagazine'},
+    {scale:1.12,rightPalm:[-.030,-.014,-.009],leftPalm:[.033,-.022,-.018],rightThumb:[.010,.012,-.046],leftThumb:[.023,.015,.005]}),
+  scorpion_45:pistol('SIG Scorpion',SCORPION,{mag_scorpion_8:'Magazine',mag_scorpion_12:'ExtendedMagazine'},
+    {scale:1.18,rightPalm:[-.030,-.015,-.012],leftPalm:[.035,-.024,-.020],rightThumb:[.013,.008,-.047],leftThumb:[.027,.010,-.006]}),
+  desert_eagle_50:pistol('Desert Eagle',DEAGLE,{mag_deagle_7:'Magazine'},
+    {scale:1.14,rightPalm:[-.030,-.015,-.017],leftPalm:[.036,-.026,-.025],rightThumb:[.015,.016,-.053],leftThumb:[.029,.019,-.004]},false),
   ak_762: {
     name: 'AK', asset: AK, baseParts: ['Receiver', 'Handguard', 'Barrel'], muzzleParts:['Barrel'],
     magazines: {mag_ak_30: 'Magazine'},

@@ -266,3 +266,17 @@ Ruhende Hülsen liegen im Bodenpass, fliegende in der normalen Tiefensortierung.
 Revolver-Nachladen; `game-audio.js` übernimmt leisere räumliche Metallklänge.
 Keine Möbelkollisionen, keine dauerhafte Hülsenspeicherung. Vier Pistolen-GLBs,
 Original-SVG-Icons und Herkunftsnachweise entstehen in `scripts/prepare-pistols.py`.
+
+`pistol-pose.js` hält die vier Pistolen unabhängig vom Körpermaßstab, verbindet
+den Griff mit dem gemessenen Mittelhandkontakt und richtet die Zielpose an den
+Augen des tatsächlichen Kopfmodells aus. `weapon-catalog.js` enthält je Modell
+Griff-/Daumenpunkte und den moderaten Darstellungsmaßstab. Eigene Handflächenrahmen,
+erreichbare Armposen und kontinuierliche Rotationspfade begrenzen Beugung und
+axiale Verdrehung getrennt. Ganze Gelenkposen überblenden Tragen/Anlegen/Ducken;
+die Original-Beinanimation bleibt erhalten. Rückstoß dreht um das Handgelenk.
+`weapon-reload-pose.js` nutzt dieselben Pistolenrahmen für Magazin, Rückkehr und
+Abbruch; gelöste Magazine folgen der tatsächlich erreichten Hand. Die übrigen
+Waffen verwenden weiterhin ihre vorhandenen Kontaktprofile.
+`pistol-pose.test.mjs` prüft Originalgeometrie/Griffkontakt, konstante Weltgröße,
+Visierlinie, Arm-/Beinmaße, axiale Hautdrehung, vollständige Übergänge bei 30/60 Hz,
+Nachladen/Abbruch und maximalen Magnum-Rückstoß auf beiden Original-Rigs.

@@ -173,6 +173,13 @@ Schussmechanik, Auswurf und Reload verwenden die bestehenden gemeinsamen Uhren;
 Pistolen bleiben nach dem letzten Schuss offen. Die Desert Eagle behält ihren
 festen Lauf. Bewegungen sind für das Spiel erstellt, keine mitgelieferten Clips.
 
+Die gehaltenen Pistolen verwenden eigene, auf den Original-Griffen liegende
+Handkontakte und einen festen Darstellungsmaßstab für die stilisierten Hände:
+G17/SIG 1,18; USP 1,12; Desert Eagle 1,14 gegenüber der vorbereiteten Grundgeometrie.
+Die Figurenhöhe verkleinert die Waffe nicht mehr. Die GLB-Geometrie selbst bleibt
+unverändert. Pistolenhaltung, Ziel-/Griffanpassung und Rückstoß sind eigene
+Spielanimationen; Quelle, Lizenz und übrige Modelländerungen bleiben wie oben angegeben.
+
 ## Patronen und Hülsen
 
 `cartridge-models.js` enthält eigene, einfache CC0-Profile für 9 mm, .45 ACP,

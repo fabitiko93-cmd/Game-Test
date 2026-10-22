@@ -28,6 +28,7 @@ export function configureWeaponModel(root, weapon) {
   if(stock?.visible){const bounds=weaponModelBounds(stock);root.userData.stockContact=bounds.getCenter(new Vector3()).setZ(bounds.min.z);}
   else root.userData.stockContact=null;
   root.userData.grips=definition.grips?Object.assign({verticalSupport:false,leftThumb:null,leftThumbPole:null},definition.grips,...setups.map(setup=>setup.grips)):null;
+  root.userData.pistol=definition.pistol||null;
   root.userData.anchors=Object.assign({},definition.anchors,...setups.map(setup=>setup.anchors));
   root.userData.weaponId=weapon.id;root.userData.weaponType=weapon.type;root.userData.mechanism=definition.mechanism||null;
   root.userData.magazinePart=definition.magazines[weapon.magazine?.type]||Object.values(definition.magazines)[0]||null;
