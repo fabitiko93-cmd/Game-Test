@@ -13,7 +13,7 @@ export function beginReload(game,weapon=activeWeapon(game.player),magazineId=nul
   if(activeWeapon(player)?.id!==weapon.id)return {ok:false,message:'ZUM NACHLADEN IN DIE HAND NEHMEN'};
   if(player.running||player.dead)return {ok:false,message:'ZUM NACHLADEN SPRINT BEENDEN'};
   const state={weaponId:weapon.id,weaponType:weapon.type,modKey:modKey(weapon),elapsed:0,loaded:0,
-    beforeMagazineId:weapon.magazine?.id||null,committed:false};
+    beforeMagazineId:weapon.magazine?.id||null,committed:false,spentCases:weapon.spentCases||0};
   const rate=(weaponStats(weapon).reloadSpeed||1)*.8;
   if(definition.feed==='magazine'){
     const candidates=player.inventory.filter(i=>definition.magazineTypes.includes(i.type)).sort((a,b)=>(b.rounds||0)-(a.rounds||0));
@@ -65,6 +65,12 @@ export function updateReload(game,delta){
   if(state.kind==='magazine'&&!state.committed&&(weapon.magazine?.id||null)!==state.beforeMagazineId){cancelReload(game);return false;}
   state.elapsed=Math.min(state.duration,state.elapsed+Math.max(0,delta));
   let changed=false;
+  if(state.kind==='cylinder'&&!state.ejected&&state.elapsed>=state.start*.56){
+    state.ejected=true;
+    if(state.spentCases>0)game.renderer?.ejectRevolverCases?.(game,state.spentCases);
+    weapon.spentCases=0;changed=true;
+  }
+
   if(state.kind==='cylinder'){
     while(state.loaded<state.planned&&state.elapsed>=state.start+state.loop*(state.loaded+.7)){
       const moved=consumeType(player,definition.ammoType,1);
@@ -77,7 +83,7 @@ export function updateReload(game,delta){
     }else weapon.rounds=(weapon.rounds||0)+consumeType(player,definition.ammoType,state.planned);
     state.committed=true;changed=true;game.sound('reload');
   }
-  if(state.elapsed>=state.duration){delete player.combat.reload;changed=true;game.ui?.showToast?.('NACHGELADEN');}
+  if(state.elapsed>=state.duration){weapon.slideLocked=false;delete player.combat.reload;changed=true;game.ui?.showToast?.('NACHGELADEN');}
   if(changed){game.ui?.refreshAll?.(player,game);game.save?.();}
   return Boolean(player.combat.reload);
 }

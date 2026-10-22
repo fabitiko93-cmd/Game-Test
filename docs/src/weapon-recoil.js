@@ -12,7 +12,7 @@ export function kickWeapon(player,weapon){
 export function recoilPose(player,weaponId,handgun=false){
   const impulse=player.combat?.shotImpulse;
   if(!impulse||impulse.weaponId!==weaponId||impulse.age>.5)return {pitch:0,back:0,roll:0};
-  const magnum=handgun&&player.inventory?.some(w=>w.id===weaponId&&w.type==='revolver_44');
+  const magnum=handgun&&player.inventory?.some(w=>w.id===weaponId&&['revolver_44','desert_eagle_50'].includes(w.type));
   const pulse=Math.exp(-Math.max(0,impulse.age-(magnum?.045:.018))*(magnum?11:16)),power=impulse.power*pulse;
   return {pitch:power*(magnum?.55:handgun?.30:.23),back:power*(magnum?.085:handgun?.055:.075),roll:power*.018*impulse.side};
 }

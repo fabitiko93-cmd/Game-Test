@@ -141,3 +141,57 @@ Das Grundmodell ist leer und schaftlos; die Start-Testkiste enthält alle
 kompatiblen Mods, volle/leere Magazine und Munition. Spielwerte sind vorläufige
 Balancewerte. Lauf und ursprünglicher Mündungsaufsatz wechseln nur gemeinsam;
 eine Klappanimation des abnehmbaren Schafts ist nicht enthalten.
+
+
+## Pistolen · G17, HK USP, SIG Emperor Scorpion, Desert Eagle
+
+Vier Originalmodelle von **TastyTony**, **CC BY 4.0**, jeweils aus dem öffentlichen
+Objaverse-Spiegel. Original- und Downloadlinks, Quellhash, Ergebnis-Hash sowie die
+Herkunft jedes einzelnen Moduls stehen in `g17.json`, `usp.json`, `scorpion.json`
+und `deagle.json`. Alle 2.317 / 2.772 / 4.232 / 4.299 ursprünglichen Dreiecke
+bleiben erhalten. Die Hautgewichte sind starr; Dreiecke lassen sich dadurch ohne
+Schnitt oder Verformung ihrem Bauteil zuordnen. Bindematrizen und vollständige
+Knotentransformationen werden ausgewertet, Metermaß und Handrahmen eingebrannt.
+Originalmaterialfarben bleiben als Vertexfarben erhalten. Die echten SVG-Icons
+entstehen aus diesen Dreiecken; Deserteagle und G17 nutzen auch die originalen
+Specular-Glossiness-Farben aus den GLBs.
+
+Reproduktion: `python scripts/prepare-pistols.py --source-dir /pfad/zu/glbs`.
+Die vier Quellrevisionen sind per SHA-256 gesperrt. Gesonderte verlängerte Magazine
+behalten ihre Originalflächen; ausschließlich der untere Magazinteil wird um
+25 mm verlängert. Standard-/Langmagazine: G17 17/24, USP 15/22, SIG .45 8/12.
+Die Desert Eagle nutzt nur ihr ursprüngliches 7er-Magazin und keine Aufsätze.
+`pistol_9mm` und die historischen beiden `mag_9mm_*`-IDs bleiben interne Identitäten
+für G17/17er/24er; sichtbare Namen und tatsächliche Kapazitäten sind aktualisiert.
+
+Dämpfer/Lampe: vorhandene Quaternius-Originalgeometrie, CC0; Leuchtpunkt: vorhandene
+TastyTony-Vector, CC BY 4.0. Die Sattelplatte ist ein eigenes CC0-Modell mit
+seitlichen Füßen und vier kurzen Schienenstegen. Optik benötigt die Platte und
+kehrt bei deren Ausbau ohne Verlust ins Inventar zurück. Ihre Größen und Sitze
+sind modellabhängig. Optik/Platte folgen dem Schlitten; Lampe sitzt am Rahmen.
+Schussmechanik, Auswurf und Reload verwenden die bestehenden gemeinsamen Uhren;
+Pistolen bleiben nach dem letzten Schuss offen. Die Desert Eagle behält ihren
+festen Lauf. Bewegungen sind für das Spiel erstellt, keine mitgelieferten Clips.
+
+## Patronen und Hülsen
+
+`cartridge-models.js` enthält eigene, einfache CC0-Profile für 9 mm, .45 ACP,
+.44 Magnum, .50 AE, 5,56×45 und 7,62×39. Offene Hülsenmünder, dunkler Innenraum,
+Auszieherrand und Gewehrhals sind echte Geometrie; scharfe Patronen erhalten ein
+eigenes kupferfarbenes Geschoss. Die Maße dienen der visuellen Annäherung.
+**.50 AE ist kein verkleinertes .50 BMG.** Diese Modelle ersetzen auch die alten
+vollen Messingzylinder in der Revolver-Nachladeanimation.
+
+Hülsen werden am Waffenfenster in Weltkoordinaten gelöst, fallen mit metrischer
+Schwerkraft, springen gedämpft nach und liegen auf der Seite am Boden. Bis zu
+96 Hülsen bleiben maximal 45 Sekunden; ruhende Darstellungen werden zwischengespeichert.
+Bodenmaterial beeinflusst Klang, Aufprall und die sehr kleinen lokalen Hörreize.
+Der Revolver wirft nur wirklich abgeschossene Hülsen während des Entladens aus;
+Abbruch erzeugt keine doppelten Hülsen und verbraucht keine scharfen Patronen.
+Möbel-/Wandkollisionen und dauerhafte Hülsenspeicherung sind nicht Teil des Patches.
+
+Körperdurchschuss: alle vorhandenen Schusswaffen verwenden denselben geordneten
+Strahl-/Körpertest. Jede weitere durchdrungene Figur erhält kumulativ weniger
+Schaden. Wände stoppen sämtliche Kaliber; kein Materialdurchschlag. Schussknall,
+Migration und übrige Geräusch-/Ausdauerregeln bleiben bestehen. Alle Werte sind
+vorläufige Spielbalance, keine reale ballistische Simulation.

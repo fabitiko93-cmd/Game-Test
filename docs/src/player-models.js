@@ -1,3 +1,4 @@
+import {applyWeaponCycle} from './weapon-cycle.js';
 import { AnimationMixer, Box3, Group, LoopOnce, Quaternion, Vector3 } from "three";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
@@ -80,9 +81,6 @@ export class PlayerModels {
     if(hasWeaponModel(item)) {
       const model=this.weapons.create(item);if(!model)return;
       entity.weapon=model;entity.model.getObjectByName("WristR").add(model);
-    } else if(item?.type==='pistol_9mm') {
-      const gun=this.library.get("male-Swat");if(!gun)return;
-      entity.weapon=rebindPart(gun.scene.getObjectByName("Pistol"),entity.model);entity.model.getObjectByName("CharacterArmature").add(entity.weapon);
     } else if(item?.type==='kitchen_knife') {
       const knife=this.library.get("Knife");if(!knife)return;
       entity.weapon=clone(knife.scene);entity.weapon.position.set(0,.035,.08);
@@ -111,7 +109,7 @@ export class PlayerModels {
     const pose=this.motion.sample(player,time),entity=this.entity(player,pose.appearance);if(!entity)return false;
     this.used.add(player);this.equip(entity,player);this.pose(entity,pose);
     resetWeaponParts(entity.weapon);
-    if(hasWeaponModel(activeWeapon(player))){applyRiflePose(entity,player,pose.delta);applyReloadPose(entity,player,pose.delta);}
+    if(hasWeaponModel(activeWeapon(player))){applyRiflePose(entity,player,pose.delta);applyReloadPose(entity,player,pose.delta);applyWeaponCycle(entity,player);}
     else if(itemDefinition(activeWeapon(player))?.weaponKind==='firearm'){
       const phase=reloadPhase(player.combat?.reload);
       const affected=['Torso','Chest','ShoulderL','ShoulderR','UpperArmL','UpperArmR','LowerArmL','LowerArmR','WristL','WristR'].map(n=>entity.model.getObjectByName(n)).filter(Boolean);
@@ -144,6 +142,21 @@ export class PlayerModels {
     const furthest=Math.max(...points.map(p=>p.dot(direction))),front=points.filter(p=>p.dot(direction)>furthest-.002);
     const point=front.reduce((sum,p)=>sum.add(p),new Vector3()).multiplyScalar(1/front.length);
     return {x:player.x+metersToTiles(point.x),y:player.y+metersToTiles(point.z),height:point.y};
+  }
+
+  ejectionSocket(player,time,cylinder=false){
+    const entity=this.prepare(player,time),weapon=entity?.weapon;if(!weapon)return null;
+    let at=weapon.userData.mechanism?.ejection;
+    if(cylinder){
+      const part=weapon.getObjectByName('Cylinder');if(!part)return null;
+      if(!part.geometry.boundingBox)part.geometry.computeBoundingBox();
+      const p=part.geometry.boundingBox.getCenter(new Vector3());p.z=part.geometry.boundingBox.min.z-.012;
+      const world=part.localToWorld(p),q=part.getWorldQuaternion(new Quaternion());
+      return{x:player.x+metersToTiles(world.x),y:player.y+metersToTiles(world.z),height:world.y,rotation:q.toArray(),unload:true};
+    }
+    if(!at){const a=weapon.userData.anchors||{};at=[.025,a.muzzle?.[1]??.07,(a.magazine?.[2]??.1)+.03];}
+    const p=weapon.localToWorld(new Vector3().fromArray(at)),q=weapon.getWorldQuaternion(new Quaternion());
+    return{x:player.x+metersToTiles(p.x),y:player.y+metersToTiles(p.z),height:p.y,rotation:q.toArray()};
   }
 
   drawShadow(ctx,player,time,point) {

@@ -1,3 +1,4 @@
+import {projectilePath} from './projectile-path.js';
 import { gainSkill, skillValue } from "./character.js";
 import { activeWeapon, ammoLabel, consumeShot, itemDefinition, missingWeaponPart, weaponFireMode, weaponStats } from "./inventory.js";
 import {beginReload,cancelReload,updateReload} from './weapon-reload.js';
@@ -213,6 +214,10 @@ export class CombatSystem {
     const missing = missingWeaponPart(weapon);
     if (missing) return { ok: false, message: `${missing} FEHLT` };
     if (!consumeShot(weapon)) return { ok: false, message: definition.feed === "magazine" && !weapon.magazine ? "KEIN MAGAZIN EINGESETZT" : "WAFFE LEER · NACHLADEN" };
+    if(weapon.type==='revolver_44'){
+      weapon.spentCases=Math.min(6-(weapon.rounds||0),(weapon.spentCases||0)+1);
+      weapon.cylinderIndex=((weapon.cylinderIndex||0)+1)%6;
+    }else if(definition.feed==='magazine')weapon.slideLocked=(weapon.magazine?.rounds||0)===0;
     game.stealth?.onAttack(game);
 
     this.facePlayer(player, target);
@@ -231,8 +236,9 @@ export class CombatSystem {
       x: target.x + (game.random() - 0.5) * (2.2 - combat.aim),
       y: target.y + (game.random() - 0.5) * (2.2 - combat.aim),
     };
-    if(game.renderer.firearmShot)game.renderer.firearmShot(game,weapon,endPoint,hit);
-    else game.renderer.trace(player, endPoint, hit);
+    const path=projectilePath(game,endPoint,stats);
+    if(game.renderer.firearmShot)game.renderer.firearmShot(game,weapon,path.end,path.hits.length>0);
+    else game.renderer.trace(player,path.end,path.hits.length>0);
     game.world.emitNoise(player.x, player.y, stats.noise, "gunshot", 5.2, 1.3);
     game.attractMigration(Math.min(18, stats.noise * 0.42));
     player.noisePulse = 1;
@@ -240,40 +246,22 @@ export class CombatSystem {
     game.sound(stats.shotSound || "gunshot");
     vibrate(stats.shotSound === 'magnum' ? [36, 16, 24] : 22);
 
-    if (hit) {
-      const impact = { x: target.x, y: target.y };
-      const headshotChance = clamp(stats.headshot + combat.aim * 0.4 + skill * 0.0015, 0.08, 0.82);
-      const headshot = game.random() < headshotChance;
-      const baseDamage = stats.damage * (0.9 + game.random() * 0.2);
-      const damage = baseDamage * (headshot ? 2.25 : 1);
-      this.damageZombie(game, target, damage, headshot ? "KOPFTREFFER" : null);
-      gainSkill(player, "firearms", headshot ? 0.68 : 0.46);
-      if (definition.spread) this.shotgunSplash(game, target, stats, damage);
-      if (stats.penetration) this.penetrate(game, target.id, impact, stats, baseDamage);
-    } else {
-      game.ui.showMessage("Schuss verfehlt", 0.8);
-      gainSkill(player, "firearms", 0.16);
+    if(path.hits.length){
+      const headshotChance=clamp(stats.headshot+combat.aim*.4+skill*.0015,.08,.82);
+      const headshot=game.random()<headshotChance,baseDamage=stats.damage*(.9+game.random()*.2);
+      for(let i=0;i<path.hits.length;i++){
+        const contact=path.hits[i];
+        this.damageZombie(game,contact.zombie,baseDamage*contact.attenuation*(i===0&&headshot?2.25:1),i>0?'DURCHSCHUSS':headshot?'KOPFTREFFER':null);
+      }
+      gainSkill(player,"firearms",headshot?.68:.46);
+    }else{
+      game.ui.showMessage("Schuss verfehlt",.8);gainSkill(player,"firearms",.16);
     }
     combat.attackCooldown = stats.fireInterval ? stats.fireInterval + Math.min(0, combat.attackCooldown) : stats.recovery;
     combat.recoil = stats.recoilPerShot ? Math.min(1.5, combat.recoil + stats.recoilPerShot) : 1;
     kickWeapon(player,weapon);
     combat.aim = Math.max(0.04, combat.aim * (stats.aimRetention || .18));
     return { ok: true, message: `${ammoLabel(weapon)} · ${Math.round(hitChance * 100)} %` };
-  }
-
-  penetrate(game, primaryId, impact, stats, damage) {
-    const player = game.player, dx = impact.x - player.x, dy = impact.y - player.y, length = Math.hypot(dx, dy);
-    if (!length) return;
-    const candidates = game.zombies.filter(zombie => {
-      if (zombie.removed || zombie.id === primaryId) return false;
-      const x = zombie.x - player.x, y = zombie.y - player.y;
-      const along = (x * dx + y * dy) / length, across = Math.abs(x * dy - y * dx) / length;
-      return along > length + .05 && along <= stats.range && across <= .16 && game.world.hasLineOfSight(player, zombie);
-    }).sort((a, b) => distance(player, a) - distance(player, b));
-    for (const zombie of candidates.slice(0, stats.penetration)) {
-      game.renderer.trace(impact, zombie, true);
-      this.damageZombie(game, zombie, damage * stats.penetrationDamage, "DURCHSCHUSS");
-    }
   }
 
   shotgunSplash(game, primary, stats, primaryDamage) {

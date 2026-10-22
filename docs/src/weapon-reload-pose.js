@@ -1,11 +1,12 @@
-import {Box3,CylinderGeometry,Euler,Group,Mesh,MeshStandardMaterial,Quaternion,Vector3} from 'three';
+import {cartridgeMesh} from './cartridge-models.js';
+import {Box3,Euler,Group,Quaternion,Vector3} from 'three';
 import {reloadPhase} from './weapon-reload.js';
 import {fitSupportContact,fitWeaponPose} from './rifle-pose.js';
 import {contactWrist,pinchPoint,poseHand,poseThumb,VERTICAL_HAND} from './weapon-hands.js';
 import {REVOLVER_MODEL} from './weapon-catalog.js';
 
 const ease=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
-const cartridgeGeometry=new CylinderGeometry(.0055,.0055,.029,8).rotateX(Math.PI/2),brass=new MeshStandardMaterial({color:0x9c7843,roughness:.55});
+
 const v=(x,y,z)=>new Vector3(x,y,z);
 function path(keys,t){for(let i=1;i<keys.length;i++)if(t<=keys[i][0])return keys[i-1][1].clone().lerp(keys[i][1],ease((t-keys[i-1][0])/(keys[i][0]-keys[i-1][0])));return keys.at(-1)[1].clone();}
 const fingers=entity=>new Map([...entity.rifleHands.values()].filter(e=>/^(Index|Middle|Ring|Pinky|Thumb)/.test(e.bone.name)).map(e=>[e.bone,e.bone.quaternion.clone()]));
@@ -14,10 +15,12 @@ export function resetWeaponParts(weapon){
   for(const [name,pose] of weapon?.userData.partPose||[]){const part=weapon.getObjectByName(name);part.position.copy(pose.position);part.quaternion.copy(pose.rotation);part.visible=pose.visible;}
   if(weapon?.userData.cartridges)weapon.userData.cartridges.visible=false;
   if(weapon?.userData.carriedRound)weapon.userData.carriedRound.visible=false;
+  if(weapon?.userData.spentCartridges)weapon.userData.spentCartridges.visible=false;
 }
 function cartridges(weapon){
-  if(!weapon.userData.cartridges){const group=new Group();group.name='ReloadCartridges';for(let i=0;i<6;i++)group.add(new Mesh(cartridgeGeometry,brass));weapon.add(group);weapon.userData.cartridges=group;
-    const carried=new Mesh(cartridgeGeometry,brass);carried.name='CarriedCartridge';weapon.add(carried);weapon.userData.carriedRound=carried;}
+  if(!weapon.userData.cartridges){const group=new Group();group.name='ReloadCartridges';for(let i=0;i<6;i++)group.add(cartridgeMesh('ammo_44',false));weapon.add(group);weapon.userData.cartridges=group;
+    const carried=cartridgeMesh('ammo_44',false);carried.name='CarriedCartridge';weapon.add(carried);weapon.userData.carriedRound=carried;}
+  if(!weapon.userData.spentCartridges){const group=new Group();group.name='SpentCylinderCases';for(let i=0;i<6;i++)group.add(cartridgeMesh('ammo_44',true));weapon.add(group);weapon.userData.spentCartridges=group;}
   return weapon.userData.cartridges;
 }
 function gripPoint(part){
@@ -75,13 +78,13 @@ export function applyReloadPose(entity,player,delta=1/60){
   const shoulder=entity.root.worldToLocal(bone('UpperArmR').getWorldPosition(new Vector3()));
   const hips=entity.root.worldToLocal(bone('UpperLegL').getWorldPosition(new Vector3()).lerp(bone('UpperLegR').getWorldPosition(new Vector3()),.5));
   const waist=entity.root.localToWorld(hips.add(v(.24,.04,.14)));
-  const handgun=state.kind==='cylinder',motion=Math.sin(Math.PI*phase.progress)*.012;
+  const cylinder=state.kind==='cylinder',handgun=Boolean(weapon.userData.grips?.handgun),motion=Math.sin(Math.PI*phase.progress)*.012;
   const goal=entity.root.localToWorld(v(handgun?.015:-.055,shoulder.y-(handgun?.27:.25)+motion,shoulder.z+(handgun?.29:.34)));
   const q=entity.root.getWorldQuaternion(new Quaternion()).multiply(new Quaternion().setFromEuler(new Euler(handgun?.48:.10,handgun?-.10:0,handgun?-.14:-.09,'YXZ')));
   const point=weapon.getWorldPosition(new Vector3()).lerp(goal,weight),rotation=weapon.getWorldQuaternion(new Quaternion()).slerp(q,weight);
   fitWeaponPose(entity,point,rotation,weight,true);poseHand(entity,'R','support',{trigger:0});
   const gunQ=weapon.getWorldQuaternion(new Quaternion());
-  if(handgun)revolver(entity,state,phase,base,waist,gunQ,weight);
+  if(cylinder)revolver(entity,state,phase,base,waist,gunQ,weight);
   else magazine(entity,state,phase,base,waist,gunQ,weight);
   entity.root.updateMatrixWorld(true);remember(entity,state,weight);
 }
@@ -131,8 +134,11 @@ function revolver(entity,state,phase,base,waist,gunQ,weight){
   const hole=i=>v(center.x+Math.cos(i*Math.PI/3)*.016,center.y+Math.sin(i*Math.PI/3)*.016,rear+.012);
   for(let i=0;i<6;i++){
     const round=rounds.children[i];round.position.copy(hole(i));round.visible=i<state.initialRounds+state.loaded;
-    if(opening&&p>.48&&i>=state.initialRounds){const t=(p-.48)/.52;round.visible=t<.88;round.position.z-=t*.16;round.position.y-=t*t*.13;}
+
   }
+  const spent=weapon.userData.spentCartridges;spent.visible=opening&&!state.ejected&&open>.05;
+  spent.position.copy(cylinder.position);spent.quaternion.copy(rotation);
+  for(let i=0;i<6;i++){spent.children[i].position.copy(hole(state.initialRounds+i));spent.children[i].visible=i<(state.spentCases||0);}
   if(opening||ending){
     const touch=cylinder.localToWorld(v(center.x+.020,center.y,rear-.008));
     const toRest=opening?ease((p-.78)/.22):1-ease(p/.20);

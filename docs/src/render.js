@@ -1,3 +1,4 @@
+import {queueCasings,updateCasings,drawCasing} from './casings.js';
 import { COLORS, VIEW } from "./config.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { clamp, hash2, lerp } from "./util.js";
@@ -229,6 +230,7 @@ export class Renderer {
       }
     }
     drawables.push({ kind: "player", ref: game.player, depth: game.player.x + game.player.y + .08 });
+    for(const c of this.casings||[])if(!c.settled)drawables.push({kind:'casing',ref:c,depth:c.x+c.y});
     sortWorldDrawables(drawables,game.world);
     this.metrics.visibleObjects = drawables.length;
 
@@ -237,9 +239,11 @@ export class Renderer {
     this.playerModels?.beginFrame();
     if (this.canvas?.dataset) this.canvas.dataset.zombieRenderer = this.zombieModels?.status || "sprites";
 
+    if(this.casingWorld&&this.casingWorld!==game.world){this.casings=[];this.casingQueue=[];this.casingWorld=game.world;}
     this.drawGround(game.world, game.minutes);
     for(const drawable of drawables)if(isFloorObject(drawable))this.drawObject(drawable.ref,game);
     this.drawBlood(game.world);
+    for(const c of this.casings||[])if(c.settled)drawCasing(this,c);
     this.drawCharacterShadows(game,drawables);
     this.drawPlayerNoise(game);
     this.drawCoverHints(game);
@@ -251,6 +255,7 @@ export class Renderer {
       if(isFloorObject(drawable))continue;
       if (drawable.kind === "object") this.drawObject(drawable.ref, game);
       else if (drawable.kind === "zombie") this.drawZombie(drawable.ref, game);
+      else if(drawable.kind==='casing')drawCasing(this,drawable.ref);
       else this.drawPlayer(drawable.ref, game);
     }
     this.zombieSprites.endFrame();
@@ -268,7 +273,7 @@ export class Renderer {
 
   drawEntityStatuses(game, drawables) {
     for (const drawable of drawables) {
-      if (drawable.kind === "object") continue;
+      if (["object","casing"].includes(drawable.kind)) continue;
       const isPlayer = drawable.kind === "player";
       const entity = drawable.ref;
       const p = this.iso(entity.x, entity.y);
@@ -926,11 +931,15 @@ export class Renderer {
     const start=this.playerModels.shotMuzzle(game.player,game.elapsed);
     if(!start)return; // Models still loading: never invent a shot from the hitbox.
     const impact=shotEnd(game.world,start,end),dx=impact.x-start.x,dy=impact.y-start.y,length=Math.max(.001,Math.hypot(dx,dy));
-    const suppressed=weapon.mods?.muzzle?.type.includes('suppressor'),magnum=weapon.type==='revolver_44';
+    const suppressed=weapon.mods?.muzzle?.type.includes('suppressor'),magnum=['revolver_44','desert_eagle_50'].includes(weapon.type);
     this.gunshots.push({start,age:0,fresh:true,direction:{x:dx/length,y:dy/length,height:0},
       size:(magnum?.24:.18)*(suppressed?.22:1),strength:suppressed?.35:1,flare:.65+Math.abs(Math.sin((game.player.shots+1)*12.9898))*.8});
     this.trace(start,impact);
+    if(weapon.type!=='revolver_44')queueCasings(this,game,itemDefinition(weapon)?.ammoType||'ammo_9mm',this.playerModels.ejectionSocket?.(game.player,game.elapsed));
   }
+
+  updateCasings(game,delta){updateCasings(this,game,delta);}
+  ejectRevolverCases(game,count){queueCasings(this,game,'ammo_44',this.playerModels.ejectionSocket(game.player,game.elapsed,true),count,0);}
 
   updateTracers(delta) {
     updateShotEffects(this,delta);

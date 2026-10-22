@@ -254,3 +254,15 @@ Unterbrechungen kehren weich zur laufenden Haltung zurück; Ausrüstungswechsel
 verwerfen die alte Übergangspose. Platzhalterwaffen bleiben im bisherigen Ablauf.
 `weapon-hands.test.mjs` prüft echte Griffoberflächen, beide Handgelenke, Patronen-
 kontakt/Übergabe, kontinuierliche vollständige Abläufe und unveränderte Hüftschüsse.
+
+
+`weapon-cycle.js` bewegt Schlitten/Hahn/Lauf und die Revolvertrommel aus derselben
+Schussuhr wie Rückstoß und Auswurf. `projectile-path.js` liefert nach Entfernung
+geordnete Körperkontakte der tatsächlichen Schusslinie; `combat.js` wendet den
+kumulativen Durchschlagsverlust an. `casings.js` löst Hülsen in Weltkoordinaten,
+integriert Flug/Bodenkontakt im Spieltakt und erzeugt kleine Hörreize am Auftreffort.
+Ruhende Hülsen liegen im Bodenpass, fliegende in der normalen Tiefensortierung.
+`cartridge-models.js` liefert gemeinsame kaliberbezogene Geometrie für Hülsen und
+Revolver-Nachladen; `game-audio.js` übernimmt leisere räumliche Metallklänge.
+Keine Möbelkollisionen, keine dauerhafte Hülsenspeicherung. Vier Pistolen-GLBs,
+Original-SVG-Icons und Herkunftsnachweise entstehen in `scripts/prepare-pistols.py`.

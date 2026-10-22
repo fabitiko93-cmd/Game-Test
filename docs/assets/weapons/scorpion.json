@@ -1,0 +1,148 @@
+{
+  "file": "scorpion-c4ce54192fe8.glb.gz",
+  "sha256": "c4ce54192fe84d8ce544f8abe5f1c4c3c4a4e9cc0d51147a28b04fe69633ed0d",
+  "author": "TastyTony",
+  "license": "CC BY 4.0",
+  "source": "https://sketchfab.com/3d-models/low-poly-sig-emperor-scorpion-afa23b99150d453dac92a875e9dc7b08",
+  "sourceDownload": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-035/afa23b99150d453dac92a875e9dc7b08.glb",
+  "sourceSha256": "562c8f3113514db7e4c9f3893771c65b74c637ac0f971e21ded52c3f43ff4269",
+  "sourceTriangles": 4232,
+  "length": 0.225,
+  "parts": {
+    "Receiver": {
+      "triangles": 1704,
+      "source": "https://sketchfab.com/3d-models/low-poly-sig-emperor-scorpion-afa23b99150d453dac92a875e9dc7b08",
+      "license": "CC BY 4.0"
+    },
+    "Slide": {
+      "triangles": 1667,
+      "source": "https://sketchfab.com/3d-models/low-poly-sig-emperor-scorpion-afa23b99150d453dac92a875e9dc7b08",
+      "license": "CC BY 4.0"
+    },
+    "Magazine": {
+      "triangles": 150,
+      "source": "https://sketchfab.com/3d-models/low-poly-sig-emperor-scorpion-afa23b99150d453dac92a875e9dc7b08",
+      "license": "CC BY 4.0"
+    },
+    "Safety": {
+      "triangles": 172,
+      "source": "https://sketchfab.com/3d-models/low-poly-sig-emperor-scorpion-afa23b99150d453dac92a875e9dc7b08",
+      "license": "CC BY 4.0"
+    },
+    "SlideRelease": {
+      "triangles": 58,
+      "source": "https://sketchfab.com/3d-models/low-poly-sig-emperor-scorpion-afa23b99150d453dac92a875e9dc7b08",
+      "license": "CC BY 4.0"
+    },
+    "Barrel": {
+      "triangles": 193,
+      "source": "https://sketchfab.com/3d-models/low-poly-sig-emperor-scorpion-afa23b99150d453dac92a875e9dc7b08",
+      "license": "CC BY 4.0"
+    },
+    "FeedRound": {
+      "triangles": 176,
+      "source": "https://sketchfab.com/3d-models/low-poly-sig-emperor-scorpion-afa23b99150d453dac92a875e9dc7b08",
+      "license": "CC BY 4.0"
+    },
+    "Hammer": {
+      "triangles": 112,
+      "source": "https://sketchfab.com/3d-models/low-poly-sig-emperor-scorpion-afa23b99150d453dac92a875e9dc7b08",
+      "license": "CC BY 4.0"
+    },
+    "Suppressor": {
+      "triangles": 248,
+      "source": "Existing ak/Suppressor",
+      "license": "CC0"
+    },
+    "Flashlight": {
+      "triangles": 156,
+      "source": "Existing revolver/Flashlight",
+      "license": "CC0"
+    },
+    "Reflex": {
+      "triangles": 600,
+      "source": "Existing vector/Optic",
+      "license": "CC BY 4.0"
+    },
+    "OpticMount": {
+      "triangles": 72,
+      "source": "SPERRKREIS authored pistol saddle plate",
+      "license": "CC0"
+    },
+    "ExtendedMagazine": {
+      "triangles": 150,
+      "source": "Original magazine, lower section extended 25 mm",
+      "license": "CC BY 4.0"
+    }
+  },
+  "anchors": {
+    "magazine": [
+      0,
+      -0.08,
+      -0.035
+    ],
+    "muzzle": [
+      0,
+      0.015863803889816785,
+      0.1428526917324975
+    ],
+    "optic": [
+      0,
+      0.04985253285834687,
+      -0.022201253990004985
+    ],
+    "utility": [
+      0,
+      -0.022136196110183214,
+      0.1048526917324975
+    ]
+  },
+  "grips": {
+    "handgun": true,
+    "right": [
+      -0.032,
+      0,
+      -0.14
+    ],
+    "left": [
+      0.16,
+      -0.015,
+      -0.025
+    ],
+    "leftThumb": [
+      0.027,
+      0.025,
+      -0.035
+    ],
+    "leftThumbPole": [
+      0.1,
+      0.08,
+      -0.025
+    ]
+  },
+  "mechanism": {
+    "slideTravel": 0.033,
+    "cycle": 0.085,
+    "ejection": [
+      0.011767609236992839,
+      0.015863803889816785,
+      0.03482356104234617
+    ],
+    "barrelTilt": 0.045,
+    "barrelPivot": [
+      0,
+      0.015863803889816785,
+      -0.022201253990004985
+    ],
+    "hammerPivot": [
+      0,
+      0.005863803889816785,
+      -0.04920125399000499
+    ]
+  },
+  "muzzle": [
+    0,
+    0.015863803889816785,
+    0.1428526917324975
+  ]
+}

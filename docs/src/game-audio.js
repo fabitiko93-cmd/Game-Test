@@ -61,3 +61,25 @@ export function sound(game, kind) {
     // Audio is non-critical and can be disabled by iOS.
   }
 }
+
+// Short inharmonic resonances give a tiny metal object a distinct impact,
+// independent of weapon/reload sounds. Attenuation and pan use the impact point.
+export function casingImpactSound(game,position,strength=1,surface='hard'){
+  const audio=game.audio;if(!audio)return;
+  const distance=Math.hypot(position.x-game.player.x,position.y-game.player.y);
+  const volume=.013*strength/Math.max(1,1+distance*1.8);if(volume<.0004)return;
+  try{
+    const bus=audio.createGain();bus.gain.value=volume;
+    const pan=audio.createStereoPanner?.();
+    if(pan){pan.pan.value=Math.max(-.85,Math.min(.85,((position.x-game.player.x)-(position.y-game.player.y))*.28));bus.connect(pan).connect(audio.destination);}else bus.connect(audio.destination);
+    const now=audio.currentTime;
+    for(const [hz,level,life]of [[3300,1,.055],[5700,.40,.035],[8200,.20,.022]]){
+      const oscillator=audio.createOscillator(),gain=audio.createGain();oscillator.type='sine';oscillator.frequency.value=hz*(surface==='gravel'?.82:1);
+      gain.gain.setValueAtTime(level,now);gain.gain.exponentialRampToValueAtTime(.001,now+life);
+      oscillator.connect(gain).connect(bus);oscillator.start(now);oscillator.stop(now+life);
+      oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};
+    }
+    // Web Audio nodes disconnect only after their scheduled envelope finishes.
+    setTimeout(()=>{bus.disconnect();pan?.disconnect();},150);
+  }catch(_){/* iOS can suspend or disable audio without affecting simulation. */}
+}

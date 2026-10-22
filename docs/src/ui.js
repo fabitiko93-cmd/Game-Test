@@ -29,6 +29,7 @@ import { EquipmentViews } from './equipment-views.js';
 import { hasWeaponModel } from './weapon-catalog.js';
 
 const MOD_SLOT_LABELS = {
+  mount: "MONTAGE",
   optic: "VISIERUNG",
   muzzle: "MÜNDUNG",
   stock: "SCHAFT",

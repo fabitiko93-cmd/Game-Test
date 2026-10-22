@@ -1,0 +1,128 @@
+{
+  "file": "deagle-046925c7cfb0.glb.gz",
+  "sha256": "046925c7cfb0869b8b8d201e99b2f897f3a5b81c1ca3e2349130d831cf453a9b",
+  "author": "TastyTony",
+  "license": "CC BY 4.0",
+  "source": "https://sketchfab.com/3d-models/low-poly-desert-eagle-b81da261345f4462b2c4412352162287",
+  "sourceDownload": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-061/b81da261345f4462b2c4412352162287.glb",
+  "sourceSha256": "c1467549768efcb566d29632935217d71f446a44d4cb2ae0b2740956aba05173",
+  "sourceTriangles": 4299,
+  "length": 0.273,
+  "parts": {
+    "Receiver": {
+      "triangles": 1795,
+      "source": "https://sketchfab.com/3d-models/low-poly-desert-eagle-b81da261345f4462b2c4412352162287",
+      "license": "CC BY 4.0"
+    },
+    "SlideRelease": {
+      "triangles": 76,
+      "source": "https://sketchfab.com/3d-models/low-poly-desert-eagle-b81da261345f4462b2c4412352162287",
+      "license": "CC BY 4.0"
+    },
+    "Slide": {
+      "triangles": 1292,
+      "source": "https://sketchfab.com/3d-models/low-poly-desert-eagle-b81da261345f4462b2c4412352162287",
+      "license": "CC BY 4.0"
+    },
+    "Safety": {
+      "triangles": 148,
+      "source": "https://sketchfab.com/3d-models/low-poly-desert-eagle-b81da261345f4462b2c4412352162287",
+      "license": "CC BY 4.0"
+    },
+    "Hammer": {
+      "triangles": 68,
+      "source": "https://sketchfab.com/3d-models/low-poly-desert-eagle-b81da261345f4462b2c4412352162287",
+      "license": "CC BY 4.0"
+    },
+    "Magazine": {
+      "triangles": 356,
+      "source": "https://sketchfab.com/3d-models/low-poly-desert-eagle-b81da261345f4462b2c4412352162287",
+      "license": "CC BY 4.0"
+    },
+    "FeedRound": {
+      "triangles": 188,
+      "source": "https://sketchfab.com/3d-models/low-poly-desert-eagle-b81da261345f4462b2c4412352162287",
+      "license": "CC BY 4.0"
+    },
+    "MagazineRounds": {
+      "triangles": 376,
+      "source": "https://sketchfab.com/3d-models/low-poly-desert-eagle-b81da261345f4462b2c4412352162287",
+      "license": "CC BY 4.0"
+    },
+    "ExtendedMagazine": {
+      "triangles": 356,
+      "source": "Original magazine, lower section extended 25 mm",
+      "license": "CC BY 4.0"
+    }
+  },
+  "anchors": {
+    "magazine": [
+      0,
+      -0.08,
+      -0.035
+    ],
+    "muzzle": [
+      0,
+      0.02648764947776641,
+      0.1683162571174225
+    ],
+    "optic": [
+      0,
+      0.0655338493645666,
+      -0.04441175647798515
+    ],
+    "utility": [
+      0,
+      -0.01151235052223359,
+      0.1303162571174225
+    ]
+  },
+  "grips": {
+    "handgun": true,
+    "right": [
+      -0.032,
+      0,
+      -0.14
+    ],
+    "left": [
+      0.16,
+      -0.015,
+      -0.025
+    ],
+    "leftThumb": [
+      0.027,
+      0.025,
+      -0.035
+    ],
+    "leftThumbPole": [
+      0.1,
+      0.08,
+      -0.025
+    ]
+  },
+  "mechanism": {
+    "slideTravel": 0.042,
+    "cycle": 0.11,
+    "ejection": [
+      0.014474248912444783,
+      0.02648764947776641,
+      0.034543129775902376
+    ],
+    "barrelTilt": 0,
+    "barrelPivot": [
+      0,
+      0.02648764947776641,
+      -0.04441175647798515
+    ],
+    "hammerPivot": [
+      0,
+      0.01648764947776641,
+      -0.07141175647798514
+    ]
+  },
+  "muzzle": [
+    0,
+    0.02648764947776641,
+    0.1683162571174225
+  ]
+}
