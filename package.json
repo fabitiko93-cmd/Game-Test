@@ -8,6 +8,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:check": "node scripts/build.mjs --check",
+    "release:status": "node scripts/release-status.mjs",
     "dev": "node scripts/dev.mjs",
     "test": "node --test"
   },
