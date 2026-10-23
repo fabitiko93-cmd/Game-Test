@@ -11,6 +11,7 @@ import { applyRiflePose, captureRifleRig, restoreRiflePose } from "./rifle-pose.
 import { createSoleProbes, drawSoleShadows, sampleSoleContacts } from "./character-shadow.js";
 import {metersToTiles} from './world-scale.js';
 import { rebindPart, disposeClothing } from './character-parts.js';
+import {bareWaist} from './character-legs.js';
 
 const PARTS=["head","torso","legs","feet"];
 
@@ -27,6 +28,8 @@ export class PlayerModels {
     const motions=this.library.get('player-motion');
     const needed=PARTS.map(slot=>this.library.get(appearance[slot]));if(!base||!motions||needed.some(x=>!x))return null;
     const hat=appearance.headwear?this.library.get(appearance.headwear):null;if(appearance.headwear&&!hat)return null;
+    const needsBody=appearance.bare?.some(slot=>slot==='torso'||slot==='legs'),beach=this.library.get('male-Beach');
+    if(needsBody&&!beach)return null;
     const signature=JSON.stringify([appearance.sex,...PARTS.map(slot=>appearance[slot]),appearance.bare,appearance.headwear]);
     let entity=this.entities.get(player);
     if(entity?.signature===signature)return entity;
@@ -35,12 +38,15 @@ export class PlayerModels {
     model.traverse(o=>{if(o.isMesh)o.visible=false;});
     const armature=model.getObjectByName("CharacterArmature");
     const clothing={};
+    const bodyLegs=needsBody?rebindPart(beach.scene.getObjectByName(QUATERNIUS_MODELS.characters['male-Beach'].parts.legs),model,{sourceSex:'male',targetSex:appearance.sex,slot:'legs',bare:true}):null;
+    const waist=bodyLegs?bareWaist(bodyLegs):null;
     for(let i=0;i<PARTS.length;i++) {
       const slot=PARTS[i],name=QUATERNIUS_MODELS.characters[appearance[slot]].parts[slot];
-      const part=rebindPart(needed[i].scene.getObjectByName(name),model,{sourceSex:QUATERNIUS_MODELS.characters[appearance[slot]].sex,targetSex:appearance.sex,slot,bare:appearance.bare?.includes(slot),coverHair:slot==='head'&&appearance.headwear==='male-Swat'});
+      const part=slot==='legs'&&appearance.bare?.includes(slot)?bodyLegs:rebindPart(needed[i].scene.getObjectByName(name),model,{sourceSex:QUATERNIUS_MODELS.characters[appearance[slot]].sex,targetSex:appearance.sex,slot,bare:appearance.bare?.includes(slot),coverHair:slot==='head'&&appearance.headwear==='male-Swat',waist});
       clothing[slot]=part;
       part.traverse(o=>{o.visible=true;});armature.add(part);
     }
+    if(bodyLegs!==clothing.legs&&bodyLegs){bodyLegs.traverse(m=>m.skeleton?.dispose());disposeClothing(bodyLegs);}
     if(hat){
       const definition=QUATERNIUS_MODELS.characters[appearance.headwear];
       const part=rebindPart(hat.scene.getObjectByName(definition.parts.head),model,{sourceSex:definition.sex,targetSex:appearance.sex,headwear:true,sourceKey:appearance.headwear});

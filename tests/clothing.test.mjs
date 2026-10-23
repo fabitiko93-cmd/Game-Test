@@ -97,29 +97,81 @@ test('underwear is real skinned geometry and all 48 garments fit both animated r
   }
 });
 
-test('bare abdomens have one continuous surface and the animated bra band wraps all the way around the torso',async()=>{
-  const library=new QuaterniusAssets({loadAsset:load}),models=new PlayerModels({},library);await models.ready;
-  function hits(mesh,y,angle){
-    const ray=new Ray(new Vector3(0,y,.066),new Vector3(Math.sin(angle),0,Math.cos(angle))),g=mesh.geometry,index=g.index,distances=[];
-    for(let i=0;i<(index?.count||g.attributes.position.count);i+=3){
-      const points=[0,1,2].map(k=>new Vector3().fromBufferAttribute(g.attributes.position,index?index.getX(i+k):i+k).applyMatrix4(mesh.bindMatrix));
-      const hit=ray.intersectTriangle(...points,false,new Vector3());if(hit){const d=hit.distanceTo(ray.origin);if(!distances.some(old=>Math.abs(old-d)<1e-5))distances.push(d);}
-    }return distances;
+function bodyMeshes(entity){
+  return ['torso','legs'].map(slot=>{let result;entity.clothing[slot].traverse(m=>{if(m.geometry?.userData[slot==='torso'?'bareTorso':'bareLegs'])result=m;});return result;});
+}
+function bindTriangles(mesh){
+  const g=mesh.geometry,a=g.attributes,index=g.index;
+  return Array.from({length:(index?.count||a.position.count)/3},(_,i)=>{
+    const ids=[0,1,2].map(k=>index?index.getX(i*3+k):i*3+k);
+    return {points:ids.map(id=>new Vector3().fromBufferAttribute(a.position,id).applyMatrix4(mesh.bindMatrix)),color:ids.map(id=>a.color?[a.color.getX(id),a.color.getY(id),a.color.getZ(id)]:null)};
+  });
+}
+function surfaceHits(triangles,origin,direction,accept=()=>true){
+  const ray=new Ray(origin,direction),hits=[];
+  for(const triangle of triangles){
+    const point=ray.intersectTriangle(...triangle.points,false,new Vector3());
+    if(point&&point.distanceTo(origin)<.22&&accept(point)&&!hits.some(hit=>hit.point.distanceTo(point)<1e-5))hits.push({point,color:triangle.color});
   }
+  return hits;
+}
+
+test('bare waist, abdomen and sports bra have one surface instead of overlapping skin and fabric',async()=>{
+  const library=new QuaterniusAssets({loadAsset:load}),models=new PlayerModels({},library);await models.ready;
   for(const sex of ['male','female']){
-    const player=createPlayer({appearance:{sex}}),entity=models.entity(player,playerModelAppearance(player)),abdomen=entity.clothing.torso.getObjectByName('BareAbdomen');
-    assert.ok(abdomen?.isSkinnedMesh,'the cloth hem is replaced by a skinned body surface');
-    for(const y of [1.06,1.15,1.24,1.31])for(let i=0;i<16;i++)assert.equal(hits(abdomen,y,(i+.3)/16*Math.PI*2).length,1,`${sex} ${y}: no folded-back cloth layer`);
-    if(sex==='female'){
-      let band;entity.clothing.torso.traverse(m=>{if(m.geometry?.userData.closedBraBand)band=m;});assert.ok(band?.isSkinnedMesh,'bra has its own continuous fabric band');
-      for(let i=0;i<32;i++)assert.equal(hits(band,1.39,(i+.3)/32*Math.PI*2).length,2,'inner and outer fabric surfaces cover every side');
+    const player=createPlayer({appearance:{sex}}),entity=models.entity(player,playerModelAppearance(player)),[torso,legs]=bodyMeshes(entity),triangles=[...bindTriangles(torso),...bindTriangles(legs)];
+    assert.ok(torso.material.vertexColors&&legs.material.vertexColors);
+    assert.ok(!torso.geometry.attributes.uv&&!legs.geometry.attributes.uv,'body colours need no texture pipeline');
+    const heights=sex==='female'?[1.08,1.105,1.12,1.125,1.14,1.18,1.25,1.31]:[.98,1,1.01,1.02,1.04,1.1,1.2,1.31];
+    for(const y of heights)for(let i=0;i<32;i++){
+      const angle=(i+.37)/32*Math.PI*2,hits=surfaceHits(triangles,new Vector3(0,y,.066),new Vector3(Math.sin(angle),0,Math.cos(angle)));
+      assert.equal(hits.length,1,`${sex} waist ${y}, angle ${i}: one continuous surface`);
     }
-    for(const clip of ['Idle_Neutral','Idle_Gun_Pointing','Walk','Crouch_Idle','Crouch_Walk','Run']){
-      models.pose(entity,{clip,progress:.35,delta:1,yaw:0});entity.root.traverseVisible(mesh=>{
-        if(!mesh.isSkinnedMesh)return;
-        for(let i=0;i<mesh.geometry.attributes.position.count;i+=7){const p=mesh.getVertexPosition(i,new Vector3());assert.ok(p.toArray().every(Number.isFinite),`${sex} ${clip}: intact skinning`);}
-      });
+    if(sex==='female')for(const y of [1.37,1.39,1.40])for(let i=0;i<32;i++){
+      const angle=(i+.37)/32*Math.PI*2,hits=surfaceHits(bindTriangles(torso),new Vector3(0,y,.066),new Vector3(Math.sin(angle),0,Math.cos(angle)));
+      assert.equal(hits.length,1,`sports bra ${y}, angle ${i}: no added inner or outer layer`);
+      assert.ok(hits[0].color.flat().every(v=>v<.1),'fabric also covers the original side cut-outs');
     }
+    models.release(entity);models.entities.delete(player);
+  }
+});
+
+test('thighs have a single closed surface through the removed beach-short hems on both rigs',async()=>{
+  const library=new QuaterniusAssets({loadAsset:load}),models=new PlayerModels({},library);await models.ready;
+  for(const sex of ['male','female']){
+    const player=createPlayer({appearance:{sex}}),entity=models.entity(player,playerModelAppearance(player)),[,legs]=bodyMeshes(entity),triangles=bindTriangles(legs);
+    for(const y of sex==='female'?[.65,.67,.69,.71,.73,.76,.79,.82]:[.59,.61,.63,.65,.67,.70,.73,.76,.79])for(const side of [-1,1]){
+      const section=[];
+      for(const{points}of triangles)for(let k=0;k<3;k++){
+        const a=points[k],b=points[(k+1)%3];if((a.y<y)===(b.y<y))continue;
+        const v=a.clone().lerp(b,(y-a.y)/(b.y-a.y));if(Math.sign(v.x)===side)section.push(v);
+      }
+      const origin=new Vector3((Math.min(...section.map(p=>p.x))+Math.max(...section.map(p=>p.x)))/2,y,(Math.min(...section.map(p=>p.z))+Math.max(...section.map(p=>p.z)))/2);
+      for(let i=0;i<24;i++){
+        const angle=(i+.37)/24*Math.PI*2,hits=surfaceHits(triangles,origin,new Vector3(Math.sin(angle),0,Math.cos(angle)),p=>Math.sign(p.x)===side);
+        assert.equal(hits.length,1,`${sex} thigh ${side} at ${y}, angle ${i}: no folded hem or open step`);
+      }
+    }
+    models.release(entity);models.entities.delete(player);
+  }
+});
+
+test('waist edges stay joined throughout every authored clip and movement transition on both rigs',async()=>{
+  const library=new QuaterniusAssets({loadAsset:load}),models=new PlayerModels({},library);await models.ready;
+  for(const sex of ['male','female']){
+    const player=createPlayer({appearance:{sex}}),entity=models.entity(player,playerModelAppearance(player)),[torso,legs]=bodyMeshes(entity),pairs=[];
+    for(const id of torso.geometry.userData.waistIndices){
+      const p=new Vector3().fromBufferAttribute(torso.geometry.attributes.position,id).applyMatrix4(torso.bindMatrix);
+      const match=legs.geometry.userData.waistIndices.find(other=>new Vector3().fromBufferAttribute(legs.geometry.attributes.position,other).applyMatrix4(legs.bindMatrix).distanceTo(p)<1e-6);
+      assert.notEqual(match,undefined,'torso boundary has a matching leg boundary');pairs.push([id,match]);
+    }
+    assert.ok(pairs.length>=24,'the complete waist boundary is matched');
+    const check=label=>{
+      for(const[a,b]of pairs){const p=torso.getVertexPosition(a,new Vector3()).applyMatrix4(torso.matrixWorld),q=legs.getVertexPosition(b,new Vector3()).applyMatrix4(legs.matrixWorld);assert.ok(p.distanceTo(q)<1e-6,`${sex} ${label}: no moving waist gap`);}
+      for(const mesh of [torso,legs])for(let i=0;i<mesh.geometry.attributes.position.count;i+=11)assert.ok(mesh.getVertexPosition(i,new Vector3()).toArray().every(Number.isFinite),`${sex} ${label}: finite skinning`);
+    };
+    for(const clip of entity.actions.keys())for(let frame=0;frame<17;frame++){models.pose(entity,{clip,progress:frame/17,delta:1,yaw:0});check(clip+' '+frame);}
+    for(const clip of ['Idle_Gun_Pointing','Crouch_Idle','Crouch_Walk','Run','Walk','Idle_Neutral'])for(let frame=0;frame<12;frame++){models.pose(entity,{clip,progress:frame/12,delta:1/60,yaw:0});check('transition '+clip+' '+frame);}
     models.release(entity);models.entities.delete(player);
   }
 });
