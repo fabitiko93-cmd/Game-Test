@@ -37,6 +37,16 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
 
+`asset-url.js` bindet öffentliche Modell-/Bilddateien an die Spielseite statt an
+die Tiefe eines Build-Chunks. `model-loading.js` teilt laufende Abrufe zwischen
+Aufrufern und begrenzt Wiederholungen; erfolgreiche Abrufe erhöhen die Modellrevision
+und invalidieren auch bei pausierter Spielzeit die vorbereitete Player-Pose.
+`consumeShot` in `inventory.js` führt Munitionsentnahme, Trommelstellung/Hülsen und
+Schlittenverriegelung gemeinsam für Kampf und Werkstatt aus. `build.test.mjs` lädt
+die acht Originalwaffen über den tatsächlich erzeugten gemeinsamen Chunk und HTTP
+unter Root-/Unterpfad-Hosting auf beiden Rigs. `workshop-regression.test.mjs` prüft
+Aufsatz-/Munitionsübernahme, Ladefehler/Erholung, Pause und Zeitleisten-Endbilder.
+
 `weapon-reload.js` hält den gemeinsamen Nachladetakt für Animation, Munitions-
 übertragung und Schusssperre. Magazine werden am Einsetzereignis atomar getauscht;
 Revolverpatronen pro Ladeschleife. Abbruch und Save erhalten bereits übertragene

@@ -3,9 +3,8 @@ import ATLAS from "../assets/zombies/atlas.json" with { type: "json" };
 import CORPSES from "../assets/zombies/corpses.json" with { type: "json" };
 import { zombieBodyProfile } from "./zombie-appearance.js";
 import { pixelsPerMeter, cameraElevationCosine } from "./world-scale.js";
+import {assetUrl} from './asset-url.js';
 
-// This relative path works both in docs/src and in the bundled docs/build entry.
-const ASSETS = new URL("../assets/zombies/", import.meta.url);
 const MAX_SHEETS = 14; // About 40–60 MB decoded; active sheets are never evicted.
 
 export class ZombieSprites {
@@ -31,7 +30,7 @@ export class ZombieSprites {
       this.cache.set(key, entry);
       entry.image.onload = () => { entry.loaded = true; this.trim(); };
       entry.image.onerror = () => { entry.failed = true; };
-      entry.image.src = new URL(clip.file, ASSETS).href;
+      entry.image.src = assetUrl(`zombies/${clip.file}`);
     }
     entry.used = this.tick;
     return entry.loaded ? entry.image : null;

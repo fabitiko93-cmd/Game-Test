@@ -214,10 +214,6 @@ export class CombatSystem {
     const missing = missingWeaponPart(weapon);
     if (missing) return { ok: false, message: `${missing} FEHLT` };
     if (!consumeShot(weapon)) return { ok: false, message: definition.feed === "magazine" && !weapon.magazine ? "KEIN MAGAZIN EINGESETZT" : "WAFFE LEER · NACHLADEN" };
-    if(weapon.type==='revolver_44'){
-      weapon.spentCases=Math.min(6-(weapon.rounds||0),(weapon.spentCases||0)+1);
-      weapon.cylinderIndex=((weapon.cylinderIndex||0)+1)%6;
-    }else if(definition.feed==='magazine')weapon.slideLocked=(weapon.magazine?.rounds||0)===0;
     game.stealth?.onAttack(game);
 
     this.facePlayer(player, target);

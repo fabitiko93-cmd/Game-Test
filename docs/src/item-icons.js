@@ -1,9 +1,9 @@
 import CATALOG from '../assets/clothing/icons.json' with {type:'json'};
 import {ITEMS} from './data.js';
 import {clothingModelFor} from './clothing-catalog.js';
+import {assetUrl} from './asset-url.js';
 
 const SVG='http://www.w3.org/2000/svg';
-const atlas=new URL(`../assets/clothing/${CATALOG.file}`,import.meta.url).href;
 
 export function clothingIconKey(item,sex='male') {
   const definition=ITEMS[typeof item==='string'?item:item?.type];
@@ -20,7 +20,7 @@ export function createItemIcon(item,sex='male',dom=globalThis.document) {
   if(key){
     const svg=dom.createElementNS(SVG,'svg'),use=dom.createElementNS(SVG,'use');
     svg.setAttribute('viewBox',CATALOG.viewBox);svg.setAttribute('focusable','false');
-    use.setAttribute('href',`${atlas}#${key}`);svg.append(use);icon.append(svg);
+    use.setAttribute('href',`${assetUrl(`clothing/${CATALOG.file}`)}#${key}`);svg.append(use);icon.append(svg);
   }
   return icon;
 }

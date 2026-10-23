@@ -398,9 +398,14 @@ export function consumeShot(weapon) {
   if (definition.feed === "magazine") {
     if (!weapon.magazine?.rounds) return false;
     weapon.magazine.rounds -= 1;
+    weapon.slideLocked=weapon.magazine.rounds===0;
   } else {
     if (!weapon.rounds) return false;
     weapon.rounds -= 1;
+    if(weapon.type==='revolver_44'){
+      weapon.spentCases=Math.min(definition.capacity-weapon.rounds,(weapon.spentCases||0)+1);
+      weapon.cylinderIndex=((weapon.cylinderIndex||0)+1)%definition.capacity;
+    }
   }
   weapon.condition = Math.max(0, (weapon.condition ?? 100) - 0.035);
   return true;

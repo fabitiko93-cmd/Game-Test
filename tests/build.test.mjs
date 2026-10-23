@@ -3,6 +3,10 @@ import { cp, mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "n
 import os from "node:os";
 import path from "node:path";
 import vm from "node:vm";
+import {createServer} from 'node:http';
+import {pathToFileURL} from 'node:url';
+import {QuaterniusAssets} from '../docs/src/quaternius-assets.js';
+import {WEAPON_TYPES} from '../docs/src/animation-document.js';
 import { ROOT, compileRelease, writeRelease, checkRelease } from "../scripts/build.mjs";
 
 const release = await compileRelease();
@@ -39,6 +43,44 @@ try {
     await readFile(path.join(ROOT, "docs/src/main.js"), "utf8"), "entry source requires no version edit");
   await writeRelease(temporary, changed);
   assert.deepEqual(await checkRelease(temporary), []);
+  // Exercise the emitted shared chunk's real HTTP loader, GLTF parser and
+  // controller. Source mocks cannot detect asset paths broken by code splitting.
+  const chunk=[...changed.outputs.keys()].find(name=>/^build\/chunks\/chunk-.*\.js$/.test(name));
+  assert.ok(chunk,'the production graph contains shared code below build/chunks');
+  const runtime=await import(pathToFileURL(path.join(temporary,'docs',chunk)).href);
+  const exported=name=>{const value=Object.values(runtime).find(value=>value?.name===name);assert.ok(value,name);return value;};
+  const Models=exported('PlayerModels'),loadAsset=exported('loadModelAsset'),createPlayer=exported('createPlayer');
+  const createItem=exported('createItem'),addItem=exported('addItem'),equipItem=exported('equipItem');
+  const requests=[];
+  const server=createServer(async(request,response)=>{
+    const pathname=new URL(request.url,'http://localhost').pathname;requests.push(pathname);
+    const relative=pathname.replace(/^\/Game-Test\//,'/').slice(1);
+    if(!changed.precache.includes(relative)){response.writeHead(404);response.end();return;}
+    try{response.end(await readFile(path.join(temporary,'docs',relative)));}catch{response.writeHead(404);response.end();}
+  });
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const oldDocument=globalThis.document;
+  try{
+    for(const prefix of ['/','/Game-Test/']){
+      globalThis.document={baseURI:`http://127.0.0.1:${server.address().port}${prefix}`};
+      const assets=new QuaterniusAssets({loadAsset}),models=new Models({},assets);await models.ready;
+      for(const sex of ['male','female'])for(const type of WEAPON_TYPES){
+        const player=createPlayer({appearance:{sex}}),item=createItem(type,1,{loadedRounds:3,rounds:3});
+        addItem(player,item);equipItem(player,item.id);await models.weapons.request(type);
+        player.combat.enabled=true;player.combat.targetId='build-test';player.combat.aim=1;
+        const entity=models.prepare(player,1);assert.ok(entity?.weapon,`${prefix} ${sex} ${type}: emitted build attaches the original weapon`);
+        assert.equal(entity.animationOwners.right,'Waffenhaltung');
+        const muzzle=models.shotMuzzle(player,1);assert.ok(muzzle&&[muzzle.x,muzzle.y,muzzle.height].every(Number.isFinite));
+        models.release(entity);models.entities.delete(player);
+      }
+      for(const type of WEAPON_TYPES){
+        const asset=models.weapons.entry(type).asset;assert.ok(asset);assert.ok(asset.scene.children.length);
+      }
+    }
+    assert.ok(requests.some(path=>path.startsWith('/assets/weapons/')));
+    assert.ok(requests.some(path=>path.startsWith('/Game-Test/assets/weapons/')));
+    assert.ok(requests.every(path=>!path.includes('/build/assets/')),'runtime URLs match the precached public asset tree');
+  }finally{globalThis.document=oldDocument;await new Promise(resolve=>server.close(resolve));}
   await writeFile(path.join(temporary, "docs/build/stale.js"), "obsolete");
   assert.ok((await checkRelease(temporary)).some(name => name.includes("stale.js")));
   await writeRelease(temporary, changed);
