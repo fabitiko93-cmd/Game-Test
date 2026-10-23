@@ -11,7 +11,7 @@ const template=`
   <header class="aw-header"><div><small>SPERRKREIS 98</small><h2>ANIMATIONSWERKSTATT</h2></div><button data-aw="close" aria-label="Animationswerkstatt schließen">SCHLIESSEN ×</button></header>
   <div class="aw-layout">
     <section class="aw-view">
-      <div class="aw-bar"><label><input type="checkbox" data-aw="original"> Original vergleichen</label><label><input type="checkbox" data-aw="skeleton" checked> Skelett / Ziele</label><button data-aw="camera">KAMERA ZURÜCK</button></div>
+      <div class="aw-bar"><label><input type="checkbox" data-aw="original"> Original vergleichen</label><label><input type="checkbox" data-aw="skeleton" checked> Skelett / Ziele</label><button data-aw="camera">KAMERA ZURÜCK</button><button data-aw="retry" hidden>MODELLE ERNEUT LADEN</button></div>
       <div class="aw-stage"><canvas data-aw="canvas" tabindex="0" aria-label="Animierte Figur. Zum Umsehen ziehen."></canvas><canvas data-aw="overlay" aria-hidden="true"></canvas><span class="aw-loading" data-aw="loading">Modelle werden geladen …</span></div>
       <div class="aw-zoom"><label>Fokus<select data-aw="focus"><option value="body">Ganze Figur</option><option value="chest">Oberkörper</option><option value="head">Kopf</option><option value="hands">Hände</option></select></label><label>Zoom <input data-aw="zoom" type="range" min="0.7" max="2.8" step="0.05" value="1" aria-label="Ansicht vergrößern"></label></div>
       <p class="aw-hint">Ansicht drehen: mit einem Finger ziehen. Die Kamerabewegung ändert die Pose nicht.</p>
@@ -64,7 +64,8 @@ export class AnimationWorkshop{
     const on=(name,fn)=>this.el[name].addEventListener('click',()=>{try{fn();}catch(error){this.message(error.message,true);}});
     on('close',()=>this.close());on('camera',()=>{this.yaw=.35;this.pitch=.08;this.zoom=1;this.el.zoom.value='1';});
     on('play',()=>{const playing=!this.playing;if(playing&&this.playHead>=this.replay.duration)this.seek(0);this.playing=playing;this.refreshPlayback();if(!playing){this.renderValues();this.renderFrames();}});
-    on('start',()=>this.seek(0));on('end',()=>this.seek(this.replay.duration));on('back',()=>this.seek(this.replay.time-1/this.replay.options.fps));on('next',()=>this.seek(this.replay.time+1/this.replay.options.fps));
+    on('retry',()=>this.configure());
+    on('start',()=>this.seek(0));on('end',()=>this.seek(this.replay.duration));on('back',()=>this.seek(this.replay.adjacentTime(-1)));on('next',()=>this.seek(this.replay.adjacentTime(1)));
     this.el.timeline.addEventListener('input',()=>this.seek(Number(this.el.timeline.value)*this.replay.duration));
     this.el.zoom.addEventListener('input',()=>{this.zoom=Number(this.el.zoom.value);});
     this.el.original.addEventListener('change',()=>{this.invalidate();this.renderValues();});
@@ -114,11 +115,11 @@ export class AnimationWorkshop{
   }
   close(){this.playing=false;this.isOpen=false;this.root.classList.add('hidden');this.game.setPaused(true);this.opener?.focus();}
   async configure(){
-    this.playing=false;this.pendingTime=undefined;this.pendingReset=false;this.notice='';this.noticeError=false;this.busy=true;this.el.loading.hidden=false;this.el.loading.textContent='Modelle werden geladen …';this.refreshPlayback();
+    this.playing=false;this.pendingTime=undefined;this.pendingReset=false;this.notice='';this.noticeError=false;this.busy=true;this.el.retry.hidden=true;this.el.loading.hidden=false;this.el.loading.textContent='Modelle werden geladen …';this.refreshPlayback();this.renderValues();
     const options={sex:this.el.sex.value,type:this.el.weapon.value,track:this.el.track.value,movement:this.el.movement.value,scenario:this.el.scenario.value,fps:Number(this.el.fps.value),mods:{...this.modSelection}};
     this.replay.setDocument(this.el.original.checked?null:this.project.document,this.project.revision);
     try{if(!await this.replay.configure(options))return;this.playHead=0;this.busy=false;this.el.loading.hidden=true;this.renderValues();this.renderFrames();}
-    catch(error){this.busy=true;this.el.loading.textContent=error.message;this.message(error.message,true);}
+    catch(error){this.busy=true;this.el.retry.hidden=false;this.el.loading.textContent=error.message;this.message(error.message,true);}
   }
   renderMods(){
     const definition=weaponModelDefinition(this.el.weapon.value),groups=new Map();this.el.mods.replaceChildren();
@@ -141,7 +142,7 @@ export class AnimationWorkshop{
   seek(time){this.playing=false;this.playHead=Math.max(0,Math.min(this.replay.duration,time));this.pendingTime=this.playHead;this.refreshPlayback();}
   refreshPlayback(){this.el.play.textContent=this.playing?'PAUSE':'ABSPIELEN';}
   renderValues(){
-    const c=CHANNELS[this.channel],values=this.currentValues()[this.channel],disabled=this.el.original.checked||this.el.scenario.value!=='single';this.el.values.replaceChildren();
+    const c=CHANNELS[this.channel],values=this.currentValues()[this.channel],disabled=this.busy||this.el.original.checked||this.el.scenario.value!=='single';this.el.values.replaceChildren();
     for(let i=0;i<c.size;i++){
       const translation=['weapon','support','elbowR','elbowL'].includes(this.channel)&&i<3,scale=translation?100:1,step=translation?.1:c.size===1?.05:1;
       const label=document.createElement('label');label.className='aw-axis';const title=document.createElement('span');title.textContent=c.size===1?'Fingerbeugung (rad)':`${translation?['X · seitlich','Y · Höhe','Z · vor / zurück'][i]:['X · neigen','Y · drehen','Z · kippen'][i%3]} (${translation?'cm':'°'})`;

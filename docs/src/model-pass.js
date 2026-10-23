@@ -4,10 +4,14 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { gunzipSync } from "three/addons/libs/fflate.module.js";
 import { heightPixels, pixelsPerMeter } from "./world-scale.js";
 
-export async function loadModelAsset(url) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
-  const compressed = new Uint8Array(await response.arrayBuffer());
+export async function loadModelAsset(url,{timeoutMs=15000}={}) {
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),timeoutMs);
+  let compressed;
+  try{
+    const response = await fetch(url,{signal:controller.signal});
+    if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
+    compressed = new Uint8Array(await response.arrayBuffer());
+  }finally{clearTimeout(timeout);}
   const bytes = compressed[0] === 31 && compressed[1] === 139 ? gunzipSync(compressed) : compressed;
   return new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset+bytes.byteLength), new URL(".", url).href);
 }

@@ -116,7 +116,10 @@ export class PlayerModels {
 
   prepare(player,time,options={}) {
     const library=appliedAnimation(),revision=options.revision??library.revision;
-    const key=animationInputKey(player,time,revision)+JSON.stringify([options.posture,options.preview,options.pose,options.document===null]);
+    const weapon=activeWeapon(player);
+    if(hasWeaponModel(weapon)&&!this.weapons.entry(weapon).asset)this.weapons.request(weapon);
+    const resources=`${this.weapons.revision||0}:${this.library.revision||0}`;
+    const key=animationInputKey(player,time,revision)+JSON.stringify([options.posture,options.preview,options.pose,options.document===null,resources]);
     const existing=this.entities.get(player);
     if(existing?.animationEvaluationKey===key){this.used.add(player);this.prepared.set(player,{entity:existing,time});return existing;}
     const pose=options.pose||this.motion.sample(player,time),entity=this.entity(player,pose.appearance);if(!entity)return false;
@@ -125,6 +128,7 @@ export class PlayerModels {
     entity.animationPreview=options.preview;
     this.controller.evaluate(entity,player,pose,options.posture);
     entity.animationEvaluationKey=key;
+    entity.animationResources=resources;
     entity.animationRevision=revision;entity.animationTime=time;entity.animationStateKey=animationInputKey(player,time,revision);
     this.prepared.set(player,{entity,time});return entity;
   }
@@ -133,7 +137,7 @@ export class PlayerModels {
 
   socketEntity(player,time){
     const entity=this.entities.get(player);
-    if(entity?.animationTime===time&&entity.animationStateKey===animationInputKey(player,time,entity.animationRevision))return entity;
+    if(entity?.animationTime===time&&entity.animationResources===`${this.weapons.revision||0}:${this.library.revision||0}`&&entity.animationStateKey===animationInputKey(player,time,entity.animationRevision))return entity;
     return this.prepare(player,time);
   }
 

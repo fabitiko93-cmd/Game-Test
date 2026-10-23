@@ -5,8 +5,7 @@ import MODELS from "../assets/zombies3d/models.json" with { type: "json" };
 import { ZombieMotion, zombieModelYaw } from "./zombie-motion.js";
 import { zombieBodyProfile } from "./zombie-appearance.js";
 import { createSoleProbes, drawSoleShadows, sampleSoleContacts } from "./character-shadow.js";
-
-const ASSETS = new URL("../assets/zombies3d/", import.meta.url);
+import {assetUrl} from './asset-url.js';
 
 // Each live skeletal pose is rendered at native display resolution, then
 // composited at its ordinary sorted depth. Walls, trees, roofs and night fog
@@ -21,7 +20,7 @@ export class ZombieModels {
       // Shared immutable geometry/textures, independent skeleton per entity.
       this.ready = Promise.all(MODELS.variants.map(async (model, variant) => {
         try {
-          const asset = await loadAsset(new URL(model.file, ASSETS).href);
+          const asset = await loadAsset(assetUrl(`zombies3d/${model.file}`));
           asset.scene.traverse(object => { if (object.isMesh) object.frustumCulled = false; });
           this.assets.set(variant, asset);
         } catch (error) {

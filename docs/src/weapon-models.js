@@ -2,6 +2,8 @@ import { Box3, Group, Vector3 } from "three";
 import { loadModelAsset } from "./model-pass.js";
 import { weaponModelDefinition, hasWeaponModel } from './weapon-catalog.js';
 import {weaponModSlots} from './inventory.js';
+import {assetUrl} from './asset-url.js';
+import {ModelAssetCache} from './model-loading.js';
 export { AK_MODEL, VECTOR_MODEL, M4_MODEL, REVOLVER_MODEL } from './weapon-catalog.js';
 
 export const WEAPON_ANCHORS=Object.freeze({stock:new Vector3(0,.04,-.18),optic:new Vector3(0,.15,.12),muzzle:new Vector3(0,.09,.54),magazine:new Vector3(0,-.08,.18)});
@@ -64,22 +66,17 @@ export function weaponModelBounds(root) {
   return bounds;
 }
 
-export class WeaponModels {
-  constructor({ loadAsset = loadModelAsset } = {}) { this.loadAsset = loadAsset; this.entries = new Map(); }
+export class WeaponModels extends ModelAssetCache {
+  constructor(options={}) { super({loadAsset:loadModelAsset,...options}); }
   entry(weapon='ak_762') {
     const type=typeof weapon==='string'?weapon:weapon.type;
-    if(!this.entries.has(type))this.entries.set(type,{asset:null,pending:null,failed:false});
-    return this.entries.get(type);
+    return super.entry(type);
   }
   isFailed(weapon) { return this.entry(weapon).failed; }
-  request(weapon='ak_762') {
+  request(weapon='ak_762',options={}) {
     const definition=weaponModelDefinition(weapon);
     if(!definition)return Promise.resolve(null);
-    const entry=this.entry(weapon);
-    entry.pending ||= this.loadAsset(new URL(`../assets/weapons/${definition.asset.file}`, import.meta.url).href)
-      .then(asset => { entry.asset = asset; return asset; })
-      .catch(error => { entry.failed = true; console.warn(`${definition.name}-Modell konnte nicht geladen werden.`, error); return null; });
-    return entry.pending;
+    return this.requestAsset(typeof weapon==='string'?weapon:weapon.type,assetUrl(`weapons/${definition.asset.file}`),options);
   }
   create(weapon) {
     const definition=weaponModelDefinition(weapon);

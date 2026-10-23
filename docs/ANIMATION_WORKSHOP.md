@@ -16,6 +16,13 @@ Die Welt bleibt pausiert; die Werkstatt verwendet einen eigenen Testcharakter.
    zusätzlich auf diesem Gerät. **Spiel auf Original setzen** entfernt diese
    Aktivierung, ohne den Entwurf zu löschen.
 
+Die Testwaffe übernimmt die ausgewählten Aufsätze und startet mit drei Patronen;
+ein Ersatzmagazin enthält sieben Patronen. Schusstests verwenden dieselbe
+Munitionsentnahme, Trommelstellung und Schlittenverriegelung wie das Spiel.
+Fehlt ein Modell, bleibt die Wiedergabe gesperrt. **Modelle erneut laden** startet
+einen neuen Versuch. Vorübergehende Fehler werden mit Abstand höchstens dreimal
+automatisch versucht; ein einzelner Abruf wartet maximal 15 Sekunden.
+
 **Posen exportieren** sichert die bearbeitbaren Daten als JSON-Datei. Mit
 **Prüfablauf exportieren** werden zusätzlich Waffe, Aufsätze, Körpermodell, Ablauf,
 Prüftakt und Zeitpunkt gespeichert. Beide Dateitypen können wieder importiert werden.
@@ -48,6 +55,9 @@ Rückspulen wiederholt die vollständige Historie einschließlich Nachladen und
 Unterbrechungen. Unterschiedliche Prüftakte können geringe numerische Unterschiede
 zeigen. Munitionsübertragung und Waffenmechanik behalten die gemeinsame Aktionszeit;
 die Werkstatt zeigt die Übernahmeereignisse als anfahrbare Markierungen.
+Einzelschritte verwenden die tatsächlichen Bildpositionen, einschließlich eines
+verkürzten Schlussbildes. Rundungsreste importierter Cliplängen erzeugen keine
+zusätzlichen winzigen Zeitschritte für die Handgeschwindigkeitsmessung.
 
 Die eingeblendeten Prüfungen zeigen Beugung, axiale Verdrehung, Handtempo und
 Abstand zum gewünschten Ziel. Während einer Bewegung kann ein Ziel noch nicht

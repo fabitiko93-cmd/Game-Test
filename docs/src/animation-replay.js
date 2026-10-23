@@ -1,8 +1,8 @@
 import {Quaternion,Vector3} from 'three';
 import {createPlayer} from './character.js';
-import {activeWeapon,createItem,addItem,equipItem} from './inventory.js';
+import {activeWeapon,createItem,addItem,equipItem,consumeShot} from './inventory.js';
 import {ITEMS} from './data.js';
-import {playerModelAppearance} from './quaternius-catalog.js';
+import {playerModelAppearance,defaultStyle} from './quaternius-catalog.js';
 import {beginReload,cancelReload,updateReload} from './weapon-reload.js';
 import {kickWeapon} from './weapon-recoil.js';
 import {axialAngle} from './weapon-ik.js';
@@ -16,21 +16,25 @@ export class AnimationReplay{
   async configure(options={}){
     this.options={...this.options,...options};
     const ticket=++this.version;
-    await Promise.all([this.models.ready,this.models.weapons.request(this.options.type)]);
+    const [,weaponAsset]=await Promise.all([this.models.ready,this.models.weapons.request(this.options.type,{retry:true})]);
     if(ticket!==this.version)return false;
+    if(!weaponAsset)throw Error('Waffenmodell konnte nicht geladen werden. Bitte Modelle erneut laden.');
     const player=createPlayer({appearance:{sex:this.options.sex}});player.inventory=[];player.baseCapacity=100;player.equipment.mainHand=null;player.equipment.back=null;player.facingY=1;player.x=0;player.y=0;
     const weapon=createItem(this.options.type);weapon.id='workshop-weapon';
-    addItem(player,weapon);equipItem(player,weapon.id);
     for(const [slot,type]of Object.entries(this.options.mods)){
       if(type)weapon.mods[slot]=createItem(type);else delete weapon.mods[slot];
     }
     const definition=ITEMS[weapon.type],magazine=definition.magazineTypes?.[0];
     if(magazine){weapon.magazine=createItem(magazine,1,{rounds:3});weapon.magazine.id='workshop-current-mag';addItem(player,createItem(magazine,1,{rounds:7}));}
     else{weapon.rounds=3;addItem(player,createItem(definition.ammoType,12));}
+    if(!addItem(player,weapon)||!equipItem(player,weapon.id).ok)throw Error('Testwaffe konnte nicht ausgerüstet werden.');
     this.base=clone(player);
     const appearance=playerModelAppearance(player);
-    await Promise.all(['head','torso','legs','feet'].map(s=>this.models.library.request(appearance[s])));
+    const needed=[...new Set([`${appearance.sex}-${defaultStyle(appearance.sex)}`,'player-motion','male-Beach',...['head','torso','legs','feet'].map(s=>appearance[s]),appearance.headwear].filter(Boolean))];
+    const loaded=await Promise.all(needed.map(key=>this.models.library.request(key,{retry:true})));
     if(ticket!==this.version)return false;
+    const missing=needed.filter((_,i)=>!loaded[i]);
+    if(missing.length)throw Error('Figurenmodell konnte nicht geladen werden: '+missing.join(', ')+'. Bitte Modelle erneut laden.');
     this.reset();return true;
   }
   reset(){
@@ -47,7 +51,7 @@ export class AnimationReplay{
       if(state.kind==='cylinder')for(let i=0;i<state.planned;i++)this.markers.push({time:state.start+state.loop*(i+.7),label:`Patrone ${i+1}`});
       else this.markers.push({time:state.commitTime,label:'Munition übernommen'});
     }
-    if(this.options.track==='shot'&&this.options.scenario==='single')this.fire();
+    if(this.options.track==='shot'&&this.options.scenario==='single'&&!this.fire())throw Error('Schuss nicht möglich. Munition, Laufmodul und Bewegung prüfen.');
     if(this.options.scenario==='single'&&this.options.track.startsWith('to'))this.duration=this.entity.weapon?.userData.pistol?.72:.42;
     else if(this.options.scenario==='single'&&!['reload','shot'].includes(this.options.track)){
       const action=this.entity.actions.get(this.clip);this.duration=action?.getClip().duration||2;
@@ -59,11 +63,12 @@ export class AnimationReplay{
     this.movement=name;this.player.moving=['walk','crouchWalk','sprint'].includes(name);this.player.running=name==='sprint';this.player.stance=name.startsWith('crouch')?'sneak':'walk';
   }
   fire(){
-    const weapon=activeWeapon(this.player);this.player.shots++;
-    if(weapon.magazine){weapon.magazine.rounds=Math.max(0,weapon.magazine.rounds-1);weapon.slideLocked=weapon.magazine.rounds===0;}
-    else weapon.rounds=Math.max(0,(weapon.rounds||0)-1);
+    const weapon=activeWeapon(this.player);
+    if(this.player.running||this.player.combat.reload||!consumeShot(weapon))return false;
+    this.player.shots++;
     kickWeapon(this.player,weapon);this.player.combat.shotImpulse.fresh=false;
     this.events.push({time:this.time,label:'Schuss'});
+    return true;
   }
   eventAt(at,previous,label,fn){if(previous<at&&this.time>=at){fn();this.events.push({time:at,label});}}
   step(delta){
@@ -103,11 +108,16 @@ export class AnimationReplay{
     this.previousJoints=this.diagnostics.joints;
     return this.entity;
   }
+  // Imported clip lengths are float32. Treat an almost-integral frame count as
+  // integral, so its last evaluation has a real frame interval, not nanoseconds.
+  get frameCount(){return Math.max(1,Math.ceil(this.duration*this.options.fps-1e-5));}
+  frameTime(index){return index>=this.frameCount?this.duration:Math.max(0,index)/this.options.fps;}
+  adjacentTime(direction){return this.frameTime(Math.min(this.frameCount,this.steps+Math.sign(direction)));}
   seek(time,{reset=false}={}){
-    time=Math.max(0,Math.min(this.duration,time));const step=1/this.options.fps;
-    const target=time>=this.duration-1e-8?Math.ceil(this.duration/step):Math.floor((time+1e-8)/step);
+    time=Math.max(0,Math.min(this.duration,time));
+    const target=time>=this.duration-1e-8?this.frameCount:Math.min(this.frameCount-1,Math.floor(time*this.options.fps+1e-7));
     if(reset||target<this.steps)this.reset();
-    while(this.steps<target)this.step(Math.min(step,this.duration-this.time));
+    while(this.steps<target)this.step(this.frameTime(this.steps+1)-this.time);
     return this.entity;
   }
   dispose(){for(const e of this.models.entities.values())this.models.release(e);this.models.entities.clear();}
@@ -116,6 +126,7 @@ export class AnimationReplay{
 export function measureAnimation(entity,player,previous=null,delta=0){
   if(!entity)return{warnings:['Modelle werden geladen.'],joints:{},sides:{}};
   const point=name=>entity.model.getObjectByName(name).getWorldPosition(vec()),joints={},warnings=[],sides={};
+  if(!entity.weapon||entity.weapon.userData.weaponId!==activeWeapon(player)?.id)warnings.push('Waffenmodell nicht geladen.');
   for(const name of ['Chest','Head','ShoulderR','ShoulderL','UpperArmR','UpperArmL','LowerArmR','LowerArmL','WristR','WristL','Middle2R','Middle2L'])joints[name]=point(name).toArray();
   for(const side of ['R','L']){
     const upper=point('UpperArm'+side),lower=point('LowerArm'+side),wrist=point('Wrist'+side),middle=point('Middle2'+side),axis=wrist.clone().sub(lower).normalize();
