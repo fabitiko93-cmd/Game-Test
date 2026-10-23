@@ -11,6 +11,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,3 +31,33 @@ jobs:
         run: npm run build:check
       - name: Verify required game files
         run: test -f docs/index.html && test -f docs/manifest.webmanifest && test -f docs/style.css
+
+  release:
+    name: Confirm live release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Confirm exact commit and normal live URLs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          node scripts/release-status.mjs
+          --repo "$GITHUB_REPOSITORY" --commit "$GITHUB_SHA"
+          --verify-run "$GITHUB_RUN_ID"
+          --state "$RUNNER_TEMP/release-state.json" --wait --timeout 600
+      - name: Keep release checkpoint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-status-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-state.json
+          retention-days: 7

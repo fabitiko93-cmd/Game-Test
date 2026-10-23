@@ -32,7 +32,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Grafik, Auflösung, Renderleistung | `render.js`, `render-order.js`, `vision-cone.js`, `vision-display.js`, `vision-geometry.js`, `config.js` | Kamera, Projektion, sichtbare Objekte, Canvas; weiche Kegel auf gemeinsamer Ebene mit genauer Hindernisabschattung, Farbe nach bestehender Sicht-Erkennung; Spieltakt in `game.js` |
 | Start, Laufzeitparameter, Hilfsfunktionen | `main.js`, `config.js`, `util.js` | `main.js` verbindet Welt, Renderer, Eingabe, UI und Game |
 | Audio | `game-audio.js` | Bestehende Web-Audio-Presets; `Game.sound` bleibt als Aufruf erhalten |
-| Veröffentlichung und Offlinecache | `scripts/build.mjs`, `web/index.html`, `web/service-worker.js` | Generiert Einstieg, Hashdateien, Cache-ID und vollständige Cacheliste |
+| Veröffentlichung und Offlinecache | `scripts/build.mjs`, `scripts/release-status.mjs`, `.github/workflows/verify.yml`, `web/index.html`, `web/service-worker.js` | Generiert Einstieg, Hashdateien, Cache-ID und vollständige Cacheliste. Begrenzter Release-Beobachter ordnet Main-Prüfjob und Pages-Lauf demselben Merge-Commit zu und prüft normale Live-Dateien; Ablauf in `docs/RELEASE.md`. |
 | Animationssteuerung und Werkstatt | `animation-controller.js`, `animation-document.js`, `animation-targets.js`, `animation-library.js`, `animation-replay.js`, `animation-workshop.js`, `weapon-poses.js` | Gemeinsame geordnete Poseauswertung und wiederverwendete Ergebnisse für Körper/Schatten/Waffensockel. Benannte Referenzposen plus versionierte, körper-/waffenbezogene Korrekturspuren vor der IK; separate Übergangsspuren. Isolierte Wiederholung bei 30/60 Hz, Zeitlupe, Einzelschritte, Kamera, Hand-/Gelenkprüfung. Pausenmenü öffnet Editor; Entwurf, lokal aktiviertes Profil und exportierter Prüfablauf bleiben getrennt. Werkstatt wird bei Bedarf als Build-Chunk geladen. |
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
@@ -205,7 +205,12 @@ Kleinere Dateien helfen erst, wenn Zuständigkeiten und Schnittstellen klar blei
 - `directional-cover.test.mjs`: Schutz pro Beobachter, Vegetationsvorrang, glatte
   Zonenkanten/Wandkollision, Türöffnungen, sichere Execution-Wege und bestehende Geräuschregeln.
 - `.github/workflows/verify.yml`: alle Tests, JavaScript-Syntax und erforderliche
-  Spieldateien. Bei reinen Dokumentationsänderungen genügt eine Diff-Prüfung.
+  Spieldateien. Auf Main danach `Confirm live release`: derselbe Merge-Commit,
+  erfolgreicher Pages-Lauf und bytegleiche normale Live-Dateien. Der Beobachter
+  wartet auf den Job `verify`, nicht auf den eigenen Gesamtworkflow.
+  `release-status.test.mjs` schützt gegen PR-/Commit-Verwechslung, fehlende Läufe,
+  Selbstwarten, veraltete Live-Dateien und unbegrenzte Wiederholungen.
+  Bei reinen Dokumentationsänderungen genügt eine Diff-Prüfung.
 - `camera-interaction.test.mjs`: Projektion/inverse Taps, Ziehen und Zoomgrenzen,
   native Weltauflösung und konstante UI-Koordinaten, echte HUD-Touchhandler ohne
   anschließende Bewegungsbefehle, kurze Rand-Reichweite, vollständige Containerwege

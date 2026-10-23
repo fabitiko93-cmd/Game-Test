@@ -196,6 +196,17 @@ mit Stofffarben verwenden; Bundanschlüsse und Verformung in Bewegung prüfen.
 
 ## Effizient entwickeln
 
+Release-Reparatur vom 23.10.2026: `docs/RELEASE.md` beschreibt den verbindlichen
+Abschluss. Nach dem Merge tatsächliche Merge-Commit-ID speichern. Main-/Pages-
+Läufe über die Repository-Actions-API abfragen; `fetch_commit_workflow_runs`
+filtert auf PR-Ereignisse und ist dafür ungeeignet. `npm run release:status`
+prüft denselben Commit und normale Live-Dateien; standardmäßig eine Abfrage,
+begrenztes Warten nur mit `--wait --state PFAD`. Der Main-Workflow bestätigt
+den Live-Stand im abschließenden Job; nicht auf den Gesamtworkflow warten,
+während dessen Release-Job selbst läuft. Bei Unterbrechung gespeicherten Stand
+fortsetzen, keine abgeschlossenen Uploads/Tests/Merges wiederholen. Kein
+zusätzlicher grafischer Vorschau- oder Performancepatch in dieser Reparatur.
+
 Animationswerkstatt vom 23.10.2026: gemeinsamer Controller, benannte Grundposen,
 reproduzierbarer Tester und speicherbarer Editor für alle vorhandenen modellierten
 Schusswaffen auf beiden Rigs sind beauftragt. Dieselbe Poseauswertung im Spiel
