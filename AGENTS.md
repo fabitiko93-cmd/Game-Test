@@ -188,6 +188,12 @@ Rigs auf Armkreis, Ellenbogenhöhe, Hautverdrehung und erneuten Griffkontakt pr�
 Unterwäschekörper: gefaltete Kleidersäume am Bauch geometrisch ersetzen und den
 BH mit einem geschlossenen Stoffband einschließlich Seiten unter den Armen ergänzen.
 
+Unterwäschekorrektur vom 23.10.2026: Weibliche Figur mit einer kurzen, eng
+anliegenden Panty ähnlich der männlichen Unterhose. Sport-BH als unterhalb der
+Brust gekürztes Top mit geschlossenen Seiten. Hautfarbene alte Hosenbeine samt
+sichtbarer Saumstufe am Oberschenkel geometrisch entfernen. Gemeinsame Oberflächen
+mit Stofffarben verwenden; Bundanschlüsse und Verformung in Bewegung prüfen.
+
 ## Effizient entwickeln
 
 Animationswerkstatt vom 23.10.2026: gemeinsamer Controller, benannte Grundposen,

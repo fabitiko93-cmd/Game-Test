@@ -102,14 +102,17 @@ weapons use small distinct metric silhouettes attached to the animated wrist.
 
 Starting clothing is now 45 individual inventory items (tops, bottoms and shoes)
 plus three separate headwear accessories. New survivors wear only underwear.
-`character-parts.js` and `character-body.js` derive the bare body, dark boxer briefs and sports bra from
-these existing CC0 meshes: the men's Beach torso/legs/skin feet and the women's
-Formal torso. It removes sandals and the formal belt, fits the shorts, splits
-skinned triangles at underwear hems, recolours surfaces and closes the waist.
-The inward-folded shirt/dress hem is replaced with a continuous waist surface,
-joined to the measured original torso section with interpolated skin weights.
-The sports bra has a closed, thin fabric band around the chest, including its
-side cut-outs; the band follows the torso rather than the arms. Generated body
-templates are cached and cloned when equipment changes.
+`character-parts.js`, `character-body.js` and `character-legs.js` derive the bare
+body, dark boxer briefs, female short panties and cropped sports top from the
+existing CC0 Beach and Formal meshes. Sandals and the formal belt are removed.
+The folded beach-short hems are discarded; smooth skinned transitions join the
+retained upper shorts to the actual bare legs. Cloth colours occupy the same
+surface as skin, using vertex colours instead of a second garment layer.
+`character-surface.js` preserves section-edge positions and joint weights when
+clipping and bridging. The abdomen meets the rebound leg waist at matching
+vertices and weights; the waistband follows the pelvis rather than both thighs.
+The sports top is the retained upper Formal top with its original skin side
+panels coloured as fabric, without an added band or thickness. Generated body
+templates are cached before rebinding and cloned when equipment changes.
 This is a runtime geometry adaptation; the original compressed assets are intact.
 Empty slots restore this body. Headwear overlays the independently selected face.
