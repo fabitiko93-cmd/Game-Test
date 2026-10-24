@@ -10,15 +10,30 @@ Ziele, Kontakte und Gelenkausrichtungen, nicht die Geometrie oder Skinning-Gewic
 1. Körpermodell, Waffe und Grundhaltung auswählen. Die Karten zeigen Tragen,
    Angelegt, Hüfte und die beiden Schleichhaltungen. Nach dem Speichern erscheint
    ein kleines Vorschaubild der gewählten Haltung.
-2. Einen markierten Punkt an der Figur antippen oder über **Auswahl** wählen.
+2. Einen markierten Punkt antippen oder oben **Körperteil auswählen** verwenden.
+   Die Kamera zoomt auf den Körperbereich einschließlich seiner Gelenkkette.
 3. **Verschieben** bewegt das Ziel in der sichtbaren Bildebene. **Vor / zurück**
    bewegt es entlang der Blickrichtung der Figur: nach oben ziehen = nach vorn.
-4. **Drehen** verwenden und Neigen, Drehen oder Kippen auswählen. Am Punkt oder
+4. Für Ellenbogen am sichtbaren **Beugebogen** ziehen: Die Hand bleibt am Griff,
+   der Ellenbogen bewegt sich um die Schulter-Hand-Achse. Beim fast gestreckten
+   Arm ist der mögliche Bogen klein; bei Bedarf die Hand/Waffe näher zum Körper
+   führen. Bewegungsgrenzen werden als Meldung angezeigt. Die frühere orange
+   Führungspunkt-Linie wird an Ellenbogen nicht mehr als Verschiebeziel dargestellt.
+5. **Drehen** verwenden und Neigen, Drehen oder Kippen auswählen. Am Punkt oder
    dem eingeblendeten Ring ziehen. Brust, Schultern und Kopf werden direkt gedreht.
-5. Mit **Vorne / Seite / Schräg** den anderen Blickwinkel prüfen. **Ansicht drehen**
+6. Mit **Vorne / Seite / Schräg** den anderen Blickwinkel prüfen. **Ansicht drehen**
    bewegt ausschließlich die Kamera. +/− und Fokus ändern den Bildausschnitt.
-6. **Entwurf speichern** sichert alle bearbeiteten Profile. **Im Spiel verwenden**
+7. **Entwurf speichern** sichert alle bearbeiteten Profile. **Im Spiel verwenden**
    aktiviert den Entwurf zusätzlich auf diesem Gerät.
+
+Die Modellansicht verwendet standardmäßig den verfügbaren Bildschirm zwischen
+der kompakten oberen Auswahl und der unteren Werkzeugleiste. **Werkzeuge** öffnet
+die Einstellungen in einem eigenen Fach; das Fach verkleinert die Ansicht und
+überdeckt sie nicht. Dort liegen auch die Zeitleiste und Speicherfunktionen.
+**Ganz** zeigt die gesamte Figur, **◎** zoomt erneut auf die Auswahl. Während
+eines Ziehvorgangs bleibt die Kamera fest. Antippen ohne Ziehen verändert keine
+Pose und erzeugt keinen Rückgängig-Schritt. Auf schmalen Displays steht die Ansicht
+über dem Fach, im Querformat daneben.
 
 Grundhaltungen gelten unabhängig von der Zeit. Jede Bearbeitung ändert diese
 Grundhaltung; es entstehen dabei keine zeitlichen Anfangs-/Endschlüssel.
@@ -111,6 +126,9 @@ Versuche und Abrufdauer bleiben begrenzt.
 - `animation-workshop.js`: Orchestrierung des isolierten Editors.
 - `workshop-ui.js`, `workshop-interaction.js`, `workshop-reference.js`:
   ausschließlich nachgeladene Oberfläche, Touchbedienung und Gerätebilder.
+- `elbow-pose.js`: erreichbare, anatomisch begrenzte Ellenbogenrichtungen bei
+  erhaltenen Handkontakten. Die Originalarmstellung bildet die Referenz.
+- `workshop-camera.js`: Körperteil-Framing und während einer Geste feste Kamera.
 - `asset-url.js` und Modellbibliotheken: unveränderte, öffentliche Assetauflösung,
   unabhängig von Position und Existenz des Werkstatt-Chunks.
 

@@ -153,6 +153,7 @@ export function measureAnimation(entity,player,previous=null,delta=0){
   }
   const gaps={};
   for(const [side,gap]of Object.entries(entity.characterGaps||{}))if(gap>.025)warnings.push(`${side==='R'?'Rechter':'Linker'} Fuß: Ziel außerhalb der Reichweite`);
+  for(const [side,limit]of Object.entries(entity.elbowConstraints||{}))if(limit.limited)warnings.push(`${side==='R'?'Rechter':'Linker'} Ellenbogen: Bewegungsgrenze bei festem Handkontakt`);
   for(const [channel,target]of Object.entries(entity.animationTargets||{})){
     if(channel==='weapon'||channel==='support'){
       const actual=channel==='weapon'?entity.weapon.getWorldPosition(vec()):point('Middle2L');gaps[channel]=actual.distanceTo(target);

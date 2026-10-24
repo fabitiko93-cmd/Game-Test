@@ -10,6 +10,45 @@ import {QuaterniusAssets} from '../docs/src/quaternius-assets.js';
 import {AnimationReplay} from '../docs/src/animation-replay.js';
 import {bindWorkshopInteraction,dragValues,screenPointToWorld} from '../docs/src/workshop-interaction.js';
 import {fitArm} from '../docs/src/weapon-ik.js';
+import {focusPoints,fitCameraPoints,WorkshopCamera} from '../docs/src/workshop-camera.js';
+import {elbowDragAngle} from '../docs/src/workshop-interaction.js';
+
+test('authored elbow directions move actual joints while preserving weapon and palm contacts on both rigs',async()=>{
+  for(const sex of ['male','female'])for(const type of WEAPON_TYPES){
+    const r=await replay({sex,type,track:'aim'}),key=sex+':'+type;
+    const weapon=r.entity.weapon.getWorldPosition(new Vector3()),base=Object.fromEntries(['R','L'].map(s=>[s,{elbow:point(r,'LowerArm'+s),palm:point(r,'Middle2'+s)}]));
+    for(const side of ['R','L']){
+      let largest=0;
+      for(const angle of [-35,35]){
+        const values=emptyValues();values['elbowTurn'+side][0]=angle;const doc=putPose(emptyAnimation(),key,'aim',values);r.setDocument(doc,angle+side);r.seek(0,{reset:true});
+        largest=Math.max(largest,point(r,'LowerArm'+side).distanceTo(base[side].elbow));
+        assert.ok(point(r,'Middle2'+side).distanceTo(base[side].palm)<.007,`${sex} ${type} ${side}: the palm stays at its grip`);
+        assert.ok(r.entity.weapon.getWorldPosition(new Vector3()).distanceTo(weapon)<.007,`${sex} ${type}: elbow editing preserves the weapon`);
+        const reached=point(r,'LowerArm'+side);r.previewEdits(doc,angle+side+'again');r.previewEdits(doc,angle+side+'repeat');
+        assert.ok(point(r,'LowerArm'+side).distanceTo(reached)<.002,`${sex} ${type}: previews do not accumulate elbow turns`);
+      }
+      assert.ok(largest>.005,`${sex} ${type} ${side}: the elbow visibly moves instead of just drawing a target line`);
+    }
+    r.dispose();
+  }
+});
+
+test('camera framing fits selected arms in portrait and landscape and freezes throughout a drag',async()=>{
+  const r=await replay({sex:'female',type:'pistol_9mm',track:'aim'}),points=focusPoints(r.entity,'elbowL');
+  for(const aspect of [.5,1.8])for(const yaw of [0,.65,Math.PI/2]){
+    const frame=fitCameraPoints(points,{aspect,yaw}),camera=new OrthographicCamera(-frame.height*aspect/2,frame.height*aspect/2,frame.height/2,-frame.height/2,.1,30);
+    camera.position.copy(frame.center).add(new Vector3(Math.sin(yaw)*10,0,Math.cos(yaw)*10));camera.lookAt(frame.center);camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
+    for(const point of points){const p=point.clone().project(camera);assert.ok(Math.abs(p.x)<.9&&Math.abs(p.y)<.9);}
+    const whole=fitCameraPoints(focusPoints(r.entity,'body'),{aspect,yaw,minimum:1.8});assert.ok(frame.height<whole.height*.8);
+  }
+  const control=new WorkshopCamera();control.request('elbowL');const before=control.view(r.entity,{aspect:.5,yaw:0,zoom:1});control.freeze();assert.equal(control.view(r.entity,{aspect:2,yaw:1,zoom:2}),before);control.release();assert.notEqual(control.view(r.entity,{aspect:2,yaw:1,zoom:2}),before);r.dispose();
+});
+
+test('elbow dragging chooses a point on its projected bend circle rather than translating an unreachable pole',()=>{
+  const circle={center:new Vector3(0,0,0),axis:new Vector3(0,0,1),radial:new Vector3(.2,0,0)},camera=new OrthographicCamera(-.5,.5,.5,-.5,.1,30);camera.position.z=10;camera.lookAt(0,0,0);camera.updateMatrixWorld(true);
+  const angle=35*Math.PI/180,p=circle.radial.clone().applyAxisAngle(circle.axis,angle).project(camera),result=elbowDragAngle(circle,camera,{width:400,height:400},(p.x+1)*200,(1-p.y)*200);
+  assert.ok(Math.abs(result-35)<=1);
+});
 
 const cache=new Map();
 async function parse(url){if(!cache.has(url))cache.set(url,(async()=>{let b=await readFile(new URL(url));if(b[0]===31)b=gunzipSync(b);return new GLTFLoader().parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'');})());return cache.get(url);}

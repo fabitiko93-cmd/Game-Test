@@ -9,6 +9,8 @@ export const CHANNELS={
   support:{label:'Stützhand',size:6,limit:[.30,.30,.30,90,90,90]},
   elbowR:{label:'Rechter Ellenbogen',size:3,limit:[.30,.30,.30]},
   elbowL:{label:'Linker Ellenbogen',size:3,limit:[.30,.30,.30]},
+  elbowTurnR:{label:'Rechte Beugerichtung',size:1,limit:[160]},
+  elbowTurnL:{label:'Linke Beugerichtung',size:1,limit:[160]},
   chest:{label:'Brustkorb',size:3,limit:[35,35,35]},
   shoulderR:{label:'Rechte Schulter',size:3,limit:[35,35,35]},
   shoulderL:{label:'Linke Schulter',size:3,limit:[35,35,35]},

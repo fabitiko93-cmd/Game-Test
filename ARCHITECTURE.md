@@ -53,6 +53,12 @@ Prüfung hält Editoroberfläche und Gesten aus den Laufzeit-Modellmodulen herau
 Explizite Handbindungen erhalten die modellbezogenen Handflächenkontakte;
 kollineare Ellenbogenführungen und Ziele innerhalb der Mindestreichweite werden
 ohne gestreckte Knochen oder ungültige Gelenkwerte aufgelöst.
+`elbow-pose.js` setzt ausdrücklich bearbeitete Beugerichtungen um die tatsächlich
+erreichte Originalarmstellung um und hält Hand-/Waffenkontakte fest. Die Oberfläche
+zeichnet den resultierenden Beugebogen statt eines frei verschobenen IK-Pols.
+`workshop-camera.js` rahmt ausgewählte Gelenkketten in Hoch-/Querformat ein und
+hält die Kamera während einer Geste fest. Werkzeuge liegen in einem eigenen,
+einklappbaren Bereich außerhalb der standardmäßig großen Modellansicht.
 `scripts/workbase-browser-check.mjs` verwendet auf GitHub das vorinstallierte Chrome
 für eine begrenzte Touch-/DOM-Prüfung ohne Browserdownload: mobile Bedienung,
 Speicher-Roundtrip, Aktivierung und Zeitleiste. Der Modell-Ladepfad bleibt unabhängig
