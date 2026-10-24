@@ -30,6 +30,10 @@ keine Armlänge. Die linke Hand kann automatisch dem Aktionskontakt folgen, am
 Waffengriff gehalten oder frei positioniert werden. Zum unabhängigen Verschieben
 zunächst **Hand frei positionieren** wählen. Das übernimmt die aktuelle Handlage
 als Ausgangspunkt; anschließendes Ziehen verändert das freie Handziel.
+Die Bindung unterscheidet Handflächenanker der Pistolen von Handgelenkankern der
+Langwaffen und des Revolvers. Ellenbogenführungen bleiben auch dann gültig, wenn
+der gewünschte Führungspunkt auf der Schulter-Hand-Achse liegt; zu nahe Ziele
+werden auf die aus Ober-/Unterarm abgeleitete Mindestreichweite begrenzt.
 
 Becken, Knie, Füße und Fußfixierung wirken im Stillstand einschließlich Ducken.
 Die Schritte beim Gehen/Schleichen/Sprinten bleiben bei der Originalanimation.

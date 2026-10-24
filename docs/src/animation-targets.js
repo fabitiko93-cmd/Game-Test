@@ -36,7 +36,9 @@ export function editTarget(entity,channel,point,rotation=null,stage='base'){
     const contact=entity.animationEdits.contactL[0];
     if(contact<0)point.lerp(new Vector3(...entity.animationEdits.freeHandL).applyQuaternion(yaw).add(entity.root.getWorldPosition(new Vector3())),Math.min(1,-contact));
     else if(contact>0&&stage==='base'){
-      const grip=entity.weapon?.userData.pistol?.leftPalm||entity.weapon?.userData.grips?.left;
+      // Pistols expose a metacarpal contact. Rifle/revolver anchors describe
+      // the wrist; their pose module already converts it to the palm target.
+      const grip=entity.weapon?.userData.pistol?.leftPalm;
       if(grip)point.lerp(entity.weapon.localToWorld(new Vector3(...grip)),Math.min(1,contact));
     }
   }

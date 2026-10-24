@@ -50,6 +50,9 @@ Aufsatz-/Munitionsübernahme, Ladefehler/Erholung, Pause und Zeitleisten-Endbild
 `character-workbase.test.mjs` schützt zeitunabhängige Posen, Stand-/Gehmaskierung,
 Armlängen und Fußkontakte auf beiden Rigs mit allen acht Waffen. Eine Importgraph-
 Prüfung hält Editoroberfläche und Gesten aus den Laufzeit-Modellmodulen heraus.
+Explizite Handbindungen erhalten die modellbezogenen Handflächenkontakte;
+kollineare Ellenbogenführungen und Ziele innerhalb der Mindestreichweite werden
+ohne gestreckte Knochen oder ungültige Gelenkwerte aufgelöst.
 `scripts/workbase-browser-check.mjs` verwendet auf GitHub das vorinstallierte Chrome
 für eine begrenzte Touch-/DOM-Prüfung ohne Browserdownload: mobile Bedienung,
 Speicher-Roundtrip, Aktivierung und Zeitleiste. Der Modell-Ladepfad bleibt unabhängig
