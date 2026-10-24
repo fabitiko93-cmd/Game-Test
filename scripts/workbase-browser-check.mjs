@@ -35,6 +35,7 @@ const server=createServer(async(req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const base=`http://127.0.0.1:${server.address().port}`,chrome=spawn(browser,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--no-first-run','--no-default-browser-check','--use-angle=swiftshader','--enable-unsafe-swiftshader','--remote-debugging-port=0',`--user-data-dir=${temporary}`,'about:blank'],{stdio:'ignore'});
 chrome.on('error',error=>errors.push(error.message));
+const browserClosed=new Promise(resolve=>{chrome.once('close',resolve);chrome.once('error',resolve);});
 let socket,sequence=0;const pending=new Map();
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function until(fn,label,timeout=30000){const deadline=Date.now()+timeout;while(Date.now()<deadline){try{const value=await fn();if(value)return value;}catch(_){}await delay(100);}throw Error('Timed out: '+label+(errors.length?' · '+errors.join(' · '):''));}
@@ -71,4 +72,12 @@ try{
   await click('[data-aw-mode="pose"]');await ready();
   if(process.env.WORKBASE_SCREENSHOT){const result=await send('Page.captureScreenshot',{format:'png'});await writeFile(process.env.WORKBASE_SCREENSHOT,Buffer.from(result.data,'base64'));}
   assert.deepEqual(badAssets,[]);assert.deepEqual(errors,[]);console.log('Workbase browser check passed: mobile layout, real touch drag, undo/redo, save/reload, activation, reload scrub, read-only tests and both rigs.');
-}finally{socket?.close();chrome.kill('SIGTERM');await new Promise(resolve=>server.close(resolve));await rm(temporary,{recursive:true,force:true});}
+}finally{
+  socket?.close();chrome.kill('SIGTERM');
+  // Chrome's background storage workers can still write after the test has
+  // passed. Wait for the process before removing its private profile.
+  await Promise.race([browserClosed,delay(2000)]);
+  if(chrome.exitCode===null&&chrome.signalCode===null){chrome.kill('SIGKILL');await Promise.race([browserClosed,delay(2000)]);}
+  server.closeAllConnections();await new Promise(resolve=>server.close(resolve));
+  await rm(temporary,{recursive:true,force:true,maxRetries:8,retryDelay:100});
+}
