@@ -79,7 +79,7 @@ export class PlayerModels {
     entity.animationEvaluationKey=null;
     entity.reloadLast=null;entity.supportElbow=null;entity.supportTwist=null;entity.handgunCrouchBlend=null;entity.handgunCrouchHold=0;
     entity.pistolCrouch=null;entity.pistolCrouchHold=0;entity.pistolWeaponPose=null;entity.pistolSupportPose=null;entity.pistolBodyPose=null;entity.pistolContactPole=null;entity.pistolReloadPose=null;
-    entity.pistolFits=null;entity.pistolPreviousFit=null;entity.pistolReloadClearance=0;
+    entity.pistolFits=null;entity.pistolPreviousFit=null;entity.pistolAutoFits=null;entity.pistolReloadClearance=0;
     if(entity.weapon){
       entity.weapon.parent.remove(entity.weapon);
       if(entity.weapon.userData.generated)entity.weapon.traverse(o=>o.geometry?.dispose());

@@ -4,6 +4,7 @@ import {contactWrist,poseHand,poseThumb} from './weapon-hands.js';
 import {recoilPose} from './weapon-recoil.js';
 import {resolveAnimationEdits,editTarget,editBone,transitionDuration} from './animation-targets.js';
 import {applyCharacterPose} from './character-pose.js';
+import {fitAuthoredElbow,hasElbowEdit} from './elbow-pose.js';
 import {PISTOL_POSES as POSES} from './weapon-poses.js';
 
 const v=(x=0,y=0,z=0)=>new Vector3(x,y,z);
@@ -88,7 +89,7 @@ function aimPoint(entity,rotation){
   return origin.addScaledVector(forward,distance);
 }
 
-function fitHand(entity,side,target,rotation,pole,maxBend,contact=null,delta=entity.pistolStep??1){
+function fitHandBase(entity,side,target,rotation,pole,maxBend,contact=null,delta=entity.pistolStep??1){
   if(entity.animationDirectEdit)delta=1;
   const hand=rotation.clone(),root=entity.root,yaw=root.getWorldQuaternion(new Quaternion()),start=point(entity,'UpperArm'+side),previous=entity.pistolPreviousFit?.[side];
   if(previous&&delta<.5)hand.copy(yaw.clone().multiply(previous.hand).rotateTowards(hand,Math.max(0,delta)*5));
@@ -144,6 +145,21 @@ function fitHand(entity,side,target,rotation,pole,maxBend,contact=null,delta=ent
   const actual=point(entity,'LowerArm'+side).sub(start),along=point(entity,'Wrist'+side).sub(start).normalize();actual.addScaledVector(along,-actual.dot(along)).normalize();
   const flex=point(entity,'LowerArm'+side).sub(start).angleTo(point(entity,'Wrist'+side).sub(point(entity,'LowerArm'+side)));
   entity.pistolFits||={};entity.pistolFits[side]={bend:actual.applyQuaternion(yaw.clone().invert()),hand:bone(entity,'Wrist'+side).getWorldQuaternion(new Quaternion()).premultiply(yaw.clone().invert()),flex,twist};
+  return hand;
+}
+
+function fitHand(entity,side,target,rotation,pole,maxBend,contact=null,delta=entity.pistolStep??1){
+  const authored=hasElbowEdit(entity,side),previous=entity.pistolPreviousFit;
+  if(authored)entity.pistolPreviousFit={...previous,[side]:entity.pistolAutoFits?.[side]};
+  let hand;
+  try{hand=fitHandBase(entity,side,target,rotation,authored?(entity.animationTargetBases?.['elbow'+side]||pole):pole,maxBend,contact,delta);}
+  finally{entity.pistolPreviousFit=previous;}
+  entity.pistolAutoFits||={};entity.pistolAutoFits[side]=entity.pistolFits[side];
+  if(authored){
+    const baseline=point(entity,'LowerArm'+side),wristTarget=point(entity,'Wrist'+side),reached=bone(entity,'Wrist'+side).getWorldQuaternion(new Quaternion());
+    fitAuthoredElbow(entity,side,arm(entity,side),wristTarget,pole,frame(entity,side,reached,maxBend),{maxBend:38,maxWristTwist:35,basePole:baseline});
+    hand=bone(entity,'Wrist'+side).getWorldQuaternion(new Quaternion());
+  }
   return hand;
 }
 
