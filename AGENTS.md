@@ -217,6 +217,15 @@ Haltungen und Übergänge bearbeiten, vorhandene Waffenregeln und Originalassets
 beibehalten. G17 auf beiden Rigs ist erste Prüfreferenz, keine Einschränkung des
 Gesamtumfangs auf diese Waffe.
 
+Workbase vom 24.10.2026: Haltung, Animation und Prüfen getrennt bedienen.
+Grundhaltungen zeitunabhängig speichern; Ziele per Touch verschieben/drehen,
+Handkontakte lösen/halten und Standhaltungen über Becken, Knie und Füße bearbeiten.
+Gehschritte bleiben bei der Originalanimation. Editoroberfläche, Gesten und lokale
+Referenzbilder dürfen nicht in die Importkette der Laufzeit-Modellloader gelangen.
+Öffentliche Assetpfade bleiben an der Spielseite verankert. Alle acht Waffen auf
+beiden Rigs sowie die tatsächlich generierten Dateien technisch prüfen; eine
+begrenzte Browserprüfung der geänderten Bedienung ergänzt die bestehenden Tests.
+
 - Modell, Denkstufe und Geschwindigkeit nach der aktuellen Nutzerwahl verwenden.
 - Pro Patch einen zusammenhängenden Schwerpunkt mit überprüfbarem Ergebnis wählen.
 - Zuerst die zuständigen Module und direkten Aufrufer bestimmen. Mit `rg` und

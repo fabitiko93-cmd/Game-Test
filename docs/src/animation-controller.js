@@ -14,6 +14,7 @@ export class AnimationController{
   evaluate(entity,player,pose,posture){
     resetWeaponParts(entity.weapon);
     entity.animationTargets={};
+    entity.animationTargetBases={};entity.characterGaps={};
     const weapon=activeWeapon(player),reload=player.combat?.reload;
     entity.animationOwners={legs:'Bewegung',body:'Haltung',right:'Waffenhaltung',left:'Waffenhaltung',weapon:'Schussmechanik'};
     if(player.dead){entity.animationOwners={legs:'Tod',body:'Tod',right:'Tod',left:'Tod',weapon:'Ruhe'};return;}

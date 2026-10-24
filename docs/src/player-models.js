@@ -12,6 +12,7 @@ import { createSoleProbes, drawSoleShadows, sampleSoleContacts } from "./charact
 import {metersToTiles} from './world-scale.js';
 import { rebindPart, disposeClothing } from './character-parts.js';
 import {bareWaist} from './character-legs.js';
+import {restoreCharacterPose} from './character-pose.js';
 
 const PARTS=["head","torso","legs","feet"];
 
@@ -60,7 +61,7 @@ export class PlayerModels {
     root.scale.setScalar(playerModelScale(appearance));
     root.position.y=QUATERNIUS_MODELS.characters[appearance.feet].groundOffset*root.scale.y;
     if(appearance.bare?.includes('feet'))root.position.y-=.016*root.scale.y;
-    entity={root,model,mixer,actions,clothing,signature,current:null,clip:null,weapon:null,weaponKind:null};
+    entity={root,model,mixer,actions,clothing,signature,modelSex:appearance.sex,current:null,clip:null,weapon:null,weaponKind:null};
     entity.rifleHands=captureRifleRig(model);
     const neutral=actions.get('Idle_Neutral').getClip();
     entity.handgunCarry=new Map(['ShoulderR','UpperArmR','LowerArmR','WristR'].map(name=>{
@@ -104,6 +105,7 @@ export class PlayerModels {
 
   pose(entity,pose) {
     restoreRiflePose(entity);
+    restoreCharacterPose(entity);
     const action=entity.actions.get(pose.clip);
     if(entity.clip!==pose.clip){action.reset().setEffectiveTimeScale(0).setEffectiveWeight(1).play();if(entity.current)entity.current.crossFadeTo(action,.16,false);entity.current=action;entity.clip=pose.clip;}
     action.time=Math.min(.999999,pose.progress)*action.getClip().duration;entity.mixer.update(pose.delta);

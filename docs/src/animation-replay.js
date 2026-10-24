@@ -6,6 +6,7 @@ import {playerModelAppearance,defaultStyle} from './quaternius-catalog.js';
 import {beginReload,cancelReload,updateReload} from './weapon-reload.js';
 import {kickWeapon} from './weapon-recoil.js';
 import {axialAngle} from './weapon-ik.js';
+import {transitionDuration} from './animation-targets.js';
 
 export const SCENARIOS={single:'Einzelne Haltung / Aktion',transitions:'Anlegen → Schleichen → Sprint',interrupt:'Nachladen → Abbruch → Anlegen',turn:'Anlegen mit Richtungswechsel'};
 export const MOVEMENTS={idle:'Stillstand',walk:'Gehen',crouch:'Schleichstillstand',crouchWalk:'Schleichen',sprint:'Sprinten'};
@@ -52,13 +53,18 @@ export class AnimationReplay{
       else this.markers.push({time:state.commitTime,label:'Munition übernommen'});
     }
     if(this.options.track==='shot'&&this.options.scenario==='single'&&!this.fire())throw Error('Schuss nicht möglich. Munition, Laufmodul und Bewegung prüfen.');
-    if(this.options.scenario==='single'&&this.options.track.startsWith('to'))this.duration=this.entity.weapon?.userData.pistol?.72:.42;
+    if(this.options.scenario==='single'&&this.options.track.startsWith('to'))this.duration=transitionDuration(this.entity,this.options.track.slice(2).toLowerCase(),this.entity.weapon?.userData.pistol?.72:.42);
     else if(this.options.scenario==='single'&&!['reload','shot'].includes(this.options.track)){
       const action=this.entity.actions.get(this.clip);this.duration=action?.getClip().duration||2;
     }
     this.evaluate(0);return this.entity;
   }
   setDocument(document,revision){this.document=document;this.revision=revision;}
+  previewEdits(document,revision){
+    this.setDocument(document,revision);
+    for(const entity of this.models.entities.values())entity.animationDirectEdit=true;
+    try{return this.evaluate(0);}finally{for(const entity of this.models.entities.values())entity.animationDirectEdit=false;}
+  }
   setMovement(name){
     this.movement=name;this.player.moving=['walk','crouchWalk','sprint'].includes(name);this.player.running=name==='sprint';this.player.stance=name.startsWith('crouch')?'sneak':'walk';
   }
@@ -146,6 +152,7 @@ export function measureAnimation(entity,player,previous=null,delta=0){
     if(speed>4)warnings.push(`${side}: schneller Handsprung`);
   }
   const gaps={};
+  for(const [side,gap]of Object.entries(entity.characterGaps||{}))if(gap>.025)warnings.push(`${side==='R'?'Rechter':'Linker'} Fuß: Ziel außerhalb der Reichweite`);
   for(const [channel,target]of Object.entries(entity.animationTargets||{})){
     if(channel==='weapon'||channel==='support'){
       const actual=channel==='weapon'?entity.weapon.getWorldPosition(vec()):point('Middle2L');gaps[channel]=actual.distanceTo(target);
