@@ -848,3 +848,58 @@ h1 span { color: var(--red-bright); }
   .aw-header { gap:6px; }
   .aw-header button { font-size:10px; padding:6px 8px; }
 }
+
+/* Workbase keeps the model visible while only the editing panel scrolls. */
+.animation-workshop { display:flex; flex-direction:column; height:100dvh; overflow:hidden; padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
+.aw-header { flex:none; padding:8px 0; }
+.aw-header h2 { font-size:clamp(13px,3.4vw,20px); }
+.aw-modes { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:6px 0; flex:none; }
+.aw-layout { width:100%; margin:0 auto; min-height:0; flex:1; overflow:hidden; gap:12px; padding-bottom:8px; }
+.aw-view { position:static; display:flex; flex-direction:column; min-height:0; align-self:stretch; }
+.aw-edit { min-height:0; overflow:auto; overscroll-behavior:contain; padding:12px; }
+.aw-tools { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; flex:none; margin-bottom:5px; }
+.aw-tools button { padding:5px 3px; font-size:10px; }
+.aw-stage { height:auto; min-height:180px; flex:1; }
+.aw-viewbar,.aw-quick,.aw-rotation { display:flex; gap:5px; flex:none; margin-top:5px; }
+.aw-viewbar { justify-content:space-between; }
+.aw-viewbar button { padding:4px 8px; }
+.aw-views { display:flex; gap:4px; }
+.aw-views button { font-size:10px; }
+.aw-selection { display:flex; flex-direction:column; gap:3px; padding:7px 2px 2px; flex:none; min-height:44px; }
+.aw-selection strong { color:#ffe1a5; font-size:12px; }
+.aw-selection span { font-size:11px; line-height:1.35; color:#bbcec0; }
+.aw-quick button,.aw-rotation button { flex:1; font-size:10px; padding:4px; }
+.aw-playarea { flex:none; }
+.aw-timeline { margin-top:3px; flex-direction:row!important; align-items:center; }
+.aw-timeline output { white-space:nowrap; font-size:10px; }
+.aw-playback { margin-top:5px; }
+.aw-status { margin-top:6px; min-height:32px; max-height:62px; overflow:auto; padding:6px 9px; font-size:11px; flex:none; }
+.aw-rotation[hidden],.aw-playarea[hidden],.aw-frames[hidden],.aw-posecards[hidden],.animation-workshop [hidden] { display:none!important; }
+.aw-reference { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; opacity:.3; pointer-events:none; }
+.aw-contacts { display:grid; gap:9px; margin-top:12px; }
+.aw-contacts label:has(input[type=checkbox]) { flex-direction:row; align-items:center; min-height:44px; }
+.aw-posecards { display:flex; gap:6px; overflow-x:auto; margin:12px 0; padding-bottom:6px; }
+.aw-posecards button { flex:0 0 88px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:5px; padding:6px; }
+.aw-posecards img { width:64px; height:64px; object-fit:contain; background:#263c30; border-radius:5px; }
+.aw-posecards span { font-size:10px; }
+.animation-workshop button[aria-pressed=true] { background:#395943; border-color:#d4c28c; color:#fff0c6; }
+.aw-modeHint { margin-top:0; }
+@media (max-width:820px) and (orientation:portrait) {
+  .aw-layout { display:flex; flex-direction:column; gap:8px; }
+  .aw-view { flex:none; }
+  .aw-stage { flex:none; height:clamp(160px,30dvh,330px); min-height:160px; }
+  .aw-edit { flex:1; padding:10px; }
+  .aw-header small { font-size:8px; }
+  .aw-selection { min-height:38px; }
+  .aw-tools button,.aw-viewbar button,.aw-quick button { min-height:44px; }
+  .aw-status { max-height:42px; }
+  .animation-workshop[data-mode=animation] .aw-stage,.animation-workshop[data-mode=test] .aw-stage { height:clamp(140px,24dvh,260px); min-height:140px; }
+}
+@media (orientation:landscape) and (max-height:600px) {
+  .aw-layout { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(280px,1fr); gap:8px; }
+  .aw-header { padding:2px 0; }.aw-header h2 { margin:0; font-size:13px; }.aw-header small { display:none; }
+  .aw-modes { padding:3px 0; }.aw-modes button { min-height:36px; }
+  .aw-stage { min-height:80px; }.aw-tools button,.aw-viewbar button,.aw-quick button { min-height:36px; }
+  .aw-selection span { display:none; }.aw-selection { min-height:20px; padding:3px; }.aw-status { max-height:32px; }
+  .aw-rotation { margin-top:2px; }.aw-rotation button { min-height:32px; }
+}

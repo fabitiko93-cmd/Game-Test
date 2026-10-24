@@ -29,6 +29,9 @@ jobs:
         run: npm test
       - name: Verify generated release matches source
         run: npm run build:check
+      - name: Check workbase touch and storage integration
+        timeout-minutes: 3
+        run: node scripts/workbase-browser-check.mjs
       - name: Verify required game files
         run: test -f docs/index.html && test -f docs/manifest.webmanifest && test -f docs/style.css
 

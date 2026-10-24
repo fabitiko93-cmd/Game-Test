@@ -2,7 +2,8 @@ import {Box3,Euler,Quaternion,Vector3} from 'three';
 import {fitArm,orientWorld} from './weapon-ik.js';
 import {contactWrist,poseHand,poseThumb} from './weapon-hands.js';
 import {recoilPose} from './weapon-recoil.js';
-import {resolveAnimationEdits,editTarget,editBone} from './animation-targets.js';
+import {resolveAnimationEdits,editTarget,editBone,transitionDuration} from './animation-targets.js';
+import {applyCharacterPose} from './character-pose.js';
 import {PISTOL_POSES as POSES} from './weapon-poses.js';
 
 const v=(x=0,y=0,z=0)=>new Vector3(x,y,z);
@@ -24,8 +25,8 @@ function blendPostures(entity,posture,delta){
   const blend=entity.rifleBlend||={carry:Number(posture==='carry'),hip:Number(posture==='hip'),aim:Number(posture==='aim')};
   if(delta>=.5){for(const state of ['carry','hip','aim'])blend[state]=Number(state===posture);entity.rifleTransition=null;}
   else{
-    if(entity.rifleTransition?.posture!==posture)entity.rifleTransition={posture,from:{...blend},elapsed:0};
-    const t=Math.min(1,(entity.rifleTransition.elapsed+=Math.max(0,delta))/POSES.transition),amount=t*t*(3-2*t);
+    if(entity.rifleTransition?.posture!==posture)entity.rifleTransition={posture,from:{...blend},elapsed:0,duration:transitionDuration(entity,posture,POSES.transition)};
+    const t=Math.min(1,(entity.rifleTransition.elapsed+=Math.max(0,delta))/(entity.rifleTransition.duration||POSES.transition)),amount=t*t*(3-2*t);
     for(const state of ['carry','hip','aim'])blend[state]=entity.rifleTransition.from[state]+(Number(state===posture)-entity.rifleTransition.from[state])*amount;
   }
   entity.riflePosture=posture;return blend;
@@ -88,6 +89,7 @@ function aimPoint(entity,rotation){
 }
 
 function fitHand(entity,side,target,rotation,pole,maxBend,contact=null,delta=entity.pistolStep??1){
+  if(entity.animationDirectEdit)delta=1;
   const hand=rotation.clone(),root=entity.root,yaw=root.getWorldQuaternion(new Quaternion()),start=point(entity,'UpperArm'+side),previous=entity.pistolPreviousFit?.[side];
   if(previous&&delta<.5)hand.copy(yaw.clone().multiply(previous.hand).rotateTowards(hand,Math.max(0,delta)*5));
   const a=start.distanceTo(point(entity,'LowerArm'+side)),b=point(entity,'LowerArm'+side).distanceTo(point(entity,'Wrist'+side));
@@ -107,7 +109,7 @@ function fitHand(entity,side,target,rotation,pole,maxBend,contact=null,delta=ent
   fitArm(...arm(entity,side),wristTarget(),pole,{...frame(entity,side,hand,maxBend),twistPreference:previous?.twist});
   const axis=point(entity,'Wrist'+side).sub(start).normalize();
   const bend=point(entity,'LowerArm'+side).sub(start);bend.addScaledVector(axis,-bend.dot(axis)).normalize();
-  if(previous&&delta<.5){
+  if(previous&&delta<.5&&!entity.animationDirectEdit){
     const before=previous.bend.clone().applyQuaternion(yaw);before.addScaledVector(axis,-before.dot(axis)).normalize();
     if(before.lengthSq()>.5){
       const turn=Math.atan2(axis.dot(before.clone().cross(bend)),before.dot(bend)),limit=Math.max(0,delta)*3;
@@ -188,7 +190,7 @@ function frontPoint(entity,palm,amount){
 function guide(entity,key,side,pointTarget,rotation,delta){
   const root=entity.root,yaw=root.getWorldQuaternion(new Quaternion()),anchor=root.worldToLocal(point(entity,'UpperArm'+side));
   const offset=root.worldToLocal(pointTarget.clone()).sub(anchor),q=yaw.clone().invert().multiply(rotation),previous=entity[key];
-  if(previous&&delta<.5){
+  if(previous&&delta<.5&&!entity.animationDirectEdit){
     const step=offset.clone().sub(previous.offset),distance=1.5*Math.max(0,delta)/root.scale.x;
     offset.copy(previous.offset).add(step.clampLength(0,distance));
     q.copy(previous.rotation.clone().rotateTowards(q,Math.max(0,delta)*6));
@@ -207,11 +209,12 @@ export function applyPistolPose(entity,player,delta,posture){
   eyeLocal(entity,player);
   const blend=blendPostures(entity,posture,delta),active=blend.aim+blend.hip;
   resolveAnimationEdits(entity,player,blend);
+  applyCharacterPose(entity,player);
   entity.pistolBodyPose||=new Map();
   const bodyYaw=root.getWorldQuaternion(new Quaternion()),bodyTargets=new Map(['Torso','Chest'].map(name=>[name,bodyYaw.clone().invert().multiply(bone(entity,name).getWorldQuaternion(new Quaternion()))]));
   for(const name of ['Torso','Chest']){
     const target=bodyTargets.get(name),previous=entity.pistolBodyPose.get(name);
-    if(previous&&delta<.5)target.copy(previous.clone().rotateTowards(target,Math.max(0,delta)*3));
+    if(previous&&delta<.5&&!entity.animationDirectEdit)target.copy(previous.clone().rotateTowards(target,Math.max(0,delta)*3));
     orientWorld(bone(entity,name),bodyYaw.clone().multiply(target));entity.pistolBodyPose.set(name,target.clone());
   }
   for(const side of ['R','L'])for(const part of ['Shoulder','UpperArm','LowerArm','Wrist']){const e=rig.get(part+side);e.bone.quaternion.copy(e.rotation);}

@@ -1,66 +1,120 @@
-# Animationswerkstatt
+# Character & IK Workbase
 
-Im laufenden Spiel das Pausenmenü öffnen und **Animationswerkstatt** wählen.
-Die Welt bleibt pausiert; die Werkstatt verwendet einen eigenen Testcharakter.
+Im Pausenmenü **Animationswerkstatt** öffnen. Die Welt bleibt pausiert; die
+Werkstatt verwendet einen eigenen Charakter und dieselbe Poseauswertung wie das
+Spiel. Modelle und Kleidung bleiben Originalassets. Die Werkstatt verändert
+Ziele, Kontakte und Gelenkausrichtungen, nicht die Geometrie oder Skinning-Gewichte.
 
-1. Körpermodell, Waffe und bei Bedarf Aufsätze auswählen.
-2. Haltung, Bewegung und Prüfablauf festlegen. Für Änderungen einen einzelnen
-   Ablauf wählen; die kombinierten Abläufe dienen zum Prüfen der Übergänge.
-3. Abspielen, Zeitlupe oder Einzelschritte verwenden. Die Kamera mit einem Finger
-   drehen; Fokus und Zoom verändern ausschließlich die Ansicht.
-4. Anhalten, einen Bereich wählen und Werte mit den Schritttasten oder Eingabefeldern
-   ändern. Jede Änderung erzeugt eine Schlüsselstellung am aktuellen Zeitpunkt.
-5. Die Schlüsselstellungen auf der Zeitleiste anfahren, ergänzen oder löschen.
-   Rückgängig/Wiederholen erhält auch Änderungen an anderen Körper-/Waffenprofilen.
-6. **Entwurf speichern** sichert den Entwurf. **Im Spiel verwenden** aktiviert ihn
-   zusätzlich auf diesem Gerät. **Spiel auf Original setzen** entfernt diese
-   Aktivierung, ohne den Entwurf zu löschen.
+## Haltung
 
-Die Testwaffe übernimmt die ausgewählten Aufsätze und startet mit drei Patronen;
-ein Ersatzmagazin enthält sieben Patronen. Schusstests verwenden dieselbe
-Munitionsentnahme, Trommelstellung und Schlittenverriegelung wie das Spiel.
-Fehlt ein Modell, bleibt die Wiedergabe gesperrt. **Modelle erneut laden** startet
-einen neuen Versuch. Vorübergehende Fehler werden mit Abstand höchstens dreimal
-automatisch versucht; ein einzelner Abruf wartet maximal 15 Sekunden.
+1. Körpermodell, Waffe und Grundhaltung auswählen. Die Karten zeigen Tragen,
+   Angelegt, Hüfte und die beiden Schleichhaltungen. Nach dem Speichern erscheint
+   ein kleines Vorschaubild der gewählten Haltung.
+2. Einen markierten Punkt an der Figur antippen oder über **Auswahl** wählen.
+3. **Verschieben** bewegt das Ziel in der sichtbaren Bildebene. **Vor / zurück**
+   bewegt es entlang der Blickrichtung der Figur: nach oben ziehen = nach vorn.
+4. **Drehen** verwenden und Neigen, Drehen oder Kippen auswählen. Am Punkt oder
+   dem eingeblendeten Ring ziehen. Brust, Schultern und Kopf werden direkt gedreht.
+5. Mit **Vorne / Seite / Schräg** den anderen Blickwinkel prüfen. **Ansicht drehen**
+   bewegt ausschließlich die Kamera. +/− und Fokus ändern den Bildausschnitt.
+6. **Entwurf speichern** sichert alle bearbeiteten Profile. **Im Spiel verwenden**
+   aktiviert den Entwurf zusätzlich auf diesem Gerät.
 
-**Posen exportieren** sichert die bearbeitbaren Daten als JSON-Datei. Mit
-**Prüfablauf exportieren** werden zusätzlich Waffe, Aufsätze, Körpermodell, Ablauf,
-Prüftakt und Zeitpunkt gespeichert. Beide Dateitypen können wieder importiert werden.
-Ein Export ist auch die Grundlage für eine spätere Übernahme in die allgemeine
-Projektversion. Browserdaten können vom Gerät gelöscht werden; wichtige Entwürfe
-deshalb zusätzlich exportieren.
+Grundhaltungen gelten unabhängig von der Zeit. Jede Bearbeitung ändert diese
+Grundhaltung; es entstehen dabei keine zeitlichen Anfangs-/Endschlüssel.
+**Haltung festhalten** übernimmt auch eine bisher unveränderte Haltung als Entwurf.
 
-## Gemeinsame Auswertung
+Die rechte Hand führt die Waffe. Beim Verschieben der Waffe folgen ihre Arme und
+vorhandenen Handkontakte. Ellenbogenpunkte steuern die Beugerichtung und ändern
+keine Armlänge. Die linke Hand kann automatisch dem Aktionskontakt folgen, am
+Waffengriff gehalten oder frei positioniert werden. Zum unabhängigen Verschieben
+zunächst **Hand frei positionieren** wählen. Das übernimmt die aktuelle Handlage
+als Ausgangspunkt; anschließendes Ziehen verändert das freie Handziel.
 
-`AnimationController` ordnet Basisbewegung, Waffenhaltung, Nachladeaktion, Finger
-und Waffenmechanik. `PlayerModels` hält das ausgewertete Ergebnis für denselben
-Zeitpunkt/Zustand bereit. Mündungs- und Auswurfsockel lesen dieses Ergebnis;
-Kamera und Schatten verändern den Spielzustand nicht. Die Charakteransicht nutzt
-ebenfalls den gemeinsamen Controller.
+Becken, Knie, Füße und Fußfixierung wirken im Stillstand einschließlich Ducken.
+Die Schritte beim Gehen/Schleichen/Sprinten bleiben bei der Originalanimation.
+Fixierte Füße halten beim Bearbeiten des Beckens ihre ursprünglichen Kontakte;
+Fußziele können seitlich versetzt, angehoben und gedreht werden. Nicht erreichbare
+Ziele werden begrenzt und als Abweichung angezeigt. Ein Zielfeld kann deshalb
+weiter von der Figur entfernt liegen als der tatsächlich erreichte Körperpunkt.
 
-Bestehende, abgestimmte Waffenhaltungen bilden die Referenz. Die benannten
-Pistolenreferenzen liegen in `weapon-poses.js`; Langwaffen/Revolver verwenden ihre
-Originalbewegungen und modellbezogenen Griffdaten. Korrekturen verändern Ziele
-vor der Arm-IK. Originale GLBs, Skelettgewichte, Waffenmaßstab und Spielregeln
-bleiben erhalten.
+Ein Ziehvorgang ist ein Rückgängig-Schritt. Ein zweiter Finger übernimmt keine
+laufende Geste. Bei Pointer-Abbruch oder Fenster-Fokusverlust wird eine laufende
+Bearbeitung zurückgenommen. **Auswahl zurücksetzen** betrifft nur den gewählten
+Bereich; **Haltung / Spur zurücksetzen** entfernt die aktuelle Grundhaltung bzw.
+Animationsspur. Die Zahlen unter **Feineinstellung** zeigen cm und Grad, Finger
+werden in Radiant bearbeitet.
 
-Profile sind nach Körpermodell und Waffentyp getrennt und gelten für deren
-Aufsatzkonfigurationen. Positionswerte sind Meter in Blickrichtung der Figur;
-Waffen-/Handdrehungen sind Grad um die Figurenachsen. Körperdrehungen beziehen
-sich auf die jeweiligen lokalen Skelettachsen. Die Oberfläche zeigt cm und Grad,
-Fingerbeugung in Radiant. Übergangsspuren werden an den Enden weich ausgeblendet.
+## Animation
 
-Die Werkstatt wiederholt Aktionen bei 30 oder 60 Hz aus einem frischen Zustand.
-Rückspulen wiederholt die vollständige Historie einschließlich Nachladen und
-Unterbrechungen. Unterschiedliche Prüftakte können geringe numerische Unterschiede
-zeigen. Munitionsübertragung und Waffenmechanik behalten die gemeinsame Aktionszeit;
-die Werkstatt zeigt die Übernahmeereignisse als anfahrbare Markierungen.
-Einzelschritte verwenden die tatsächlichen Bildpositionen, einschließlich eines
-verkürzten Schlussbildes. Rundungsreste importierter Cliplängen erzeugen keine
-zusätzlichen winzigen Zeitschritte für die Handgeschwindigkeitsmessung.
+Hier bleibt die Zeitleiste sichtbar. Haltung/Aktion, Bewegung und Zeitpunkt
+wählen, anhalten und bearbeiten. Jede Änderung setzt ein Schlüsselbild an der
+gewählten Stelle. Vorhandene Grundhaltungen bleiben als Basis erhalten; die
+Animationsspur ergänzt zeitabhängige Korrekturen. Die Schaltfläche
+**Schlüsselstellung setzen** übernimmt eine unveränderte Zwischenstellung.
 
-Die eingeblendeten Prüfungen zeigen Beugung, axiale Verdrehung, Handtempo und
-Abstand zum gewünschten Ziel. Während einer Bewegung kann ein Ziel noch nicht
-erreicht sein. Natürlichkeit und sichtbare Haut-/Kleidungsdurchdringung zusätzlich
-aus mehreren Blickwinkeln prüfen. Der Editor verändert keine Modellgeometrie oder
-Skinning-Gewichte.
+Übergangsspuren formen die Hand-/Waffenwege zum Tragen, Anlegen oder zur Hüfte.
+Ihre Dauer ist zwischen 0,1 und 2 Sekunden einstellbar und wird vom gemeinsamen
+Spielcontroller verwendet. Die Korrekturen blenden an den Enden weich aus.
+Nachladen und Schüsse verwenden weiterhin ihre tatsächlichen Aktionsuhren,
+Munitionsereignisse und Waffenmechanik. Marker fahren diese Ereignisse direkt an.
+Einzelschritte besuchen die tatsächlichen Bildpositionen einschließlich eines
+verkürzten Schlussbildes. Zeitlupe und Wiederholung stehen unter Wiedergabe.
+
+Während des Ziehens wird die aktuelle Pose ohne erneutes Klonen der Modelle
+aktualisiert. Nach dem Loslassen wird der vollständige Ablauf einmal aus seinem
+Ausgangszustand ausgewertet, damit auch Übergänge und Abbrüche reproduzierbar sind.
+
+## Prüfen und vergleichen
+
+**Prüfen** ist schreibgeschützt und wiederholt Kombinationen wie Anlegen,
+Schleichen, Sprint, Richtungswechsel und Nachladeabbruch bei 30 oder 60 Hz. Zur
+Bearbeitung zu **Haltung** oder **Animation** wechseln.
+
+**Original vergleichen** zeigt die Ausgangsposen und sperrt die Bearbeitung.
+Die Gelenkprüfung zeigt Handgelenkbeugung, Verdrehung, Geschwindigkeit und
+Zielabweichungen. Die Anfasspunkte zeigen tatsächlich erreichte Stellen; ein
+abgesetztes Zielfeld macht nicht erreichte Wunschpositionen sichtbar.
+Natürlichkeit sowie Haut-/Kleidungsdurchdringungen zusätzlich aus mehreren
+Blickwinkeln prüfen. Numerische Grenzen ersetzen diese Beurteilung nicht.
+
+Ein eigenes Referenzbild (bis 15 MB, browserlesbares Bildformat) lässt sich mit
+veränderbarer Deckkraft über der Figur anzeigen. Blickwinkel und Zoom passend
+wählen. Das Bild bleibt lokal und gehört nicht zum exportierten Posenprofil.
+
+## Speichern und Modelle
+
+Entwurf, aktivierte Spielprofile und optionale Geräte-Vorschaubilder werden
+getrennt gespeichert. **Spiel auf Original setzen** entfernt nur die Aktivierung.
+Browserdaten können gelöscht werden; wichtige Entwürfe deshalb exportieren.
+**Posen exportieren** sichert alle bearbeitbaren Daten. **Prüfablauf exportieren**
+sichert zusätzlich Modus, Waffe, Aufsätze, Körpermodell, Ablauf, Prüftakt und Zeit.
+Beide Formate lassen sich importieren. Frühere Exporte bleiben als Zeitspuren
+lesbar; ihre Zeitabhängigkeit wird nicht automatisch in eine Grundhaltung umgedeutet.
+
+Die Testwaffe erhält die gewählten Aufsätze und drei Patronen, das Ersatzmagazin
+sieben. Fehlende Figuren-/Waffenmodelle sperren die Werkstatt mit einer konkreten
+Meldung. **Modelle erneut laden** startet einen neuen Versuch; automatische
+Versuche und Abrufdauer bleiben begrenzt.
+
+## Modulgrenzen und Prüfung
+
+- `animation-document.js`: versionierte Grundhaltungen, Korrekturspuren,
+  Übergangsdauer, Validierung, Export und transaktionales Rückgängig.
+- `animation-targets.js`, `character-pose.js`, `character-ik.js`: optionale,
+  gemeinsame Ziele und Stand-IK. Keine DOM- oder Asset-Ladeabhängigkeit.
+- `animation-controller.js`: geordnete Auswertung für Spiel und Werkstatt.
+- `animation-workshop.js`: Orchestrierung des isolierten Editors.
+- `workshop-ui.js`, `workshop-interaction.js`, `workshop-reference.js`:
+  ausschließlich nachgeladene Oberfläche, Touchbedienung und Gerätebilder.
+- `asset-url.js` und Modellbibliotheken: unveränderte, öffentliche Assetauflösung,
+  unabhängig von Position und Existenz des Werkstatt-Chunks.
+
+`character-workbase.test.mjs` prüft gespeicherte Ganzkörperhaltungen auf allen
+acht Waffen und beiden Rigs, Armlängen, Füße, Rücknahme, Gehmaskierung, freie
+Handziele, Übergangstakt, Gesten und die Importgrenze zwischen Spiel und Editor.
+Der vorhandene Buildtest lädt die tatsächlich erzeugten Waffen über HTTP unter
+Root und Unterpfad. `scripts/workbase-browser-check.mjs` ergänzt auf GitHub eine
+gezielte Prüfung mit installiertem Chrome: mobiles Layout, echter Touch-Drag,
+Rückgängig, Speichern/Neuladen, Aktivierung, Nachlade-Zeitleiste und Prüfmodus.
+Die optische Prüfung auf dem tatsächlichen iPhone übernimmt der Nutzer.

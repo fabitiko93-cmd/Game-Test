@@ -33,7 +33,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Start, Laufzeitparameter, Hilfsfunktionen | `main.js`, `config.js`, `util.js` | `main.js` verbindet Welt, Renderer, Eingabe, UI und Game |
 | Audio | `game-audio.js` | Bestehende Web-Audio-Presets; `Game.sound` bleibt als Aufruf erhalten |
 | Veröffentlichung und Offlinecache | `scripts/build.mjs`, `scripts/release-status.mjs`, `.github/workflows/verify.yml`, `web/index.html`, `web/service-worker.js` | Generiert Einstieg, Hashdateien, Cache-ID und vollständige Cacheliste. Begrenzter Release-Beobachter ordnet Main-Prüfjob und Pages-Lauf demselben Merge-Commit zu und prüft normale Live-Dateien; Ablauf in `docs/RELEASE.md`. |
-| Animationssteuerung und Werkstatt | `animation-controller.js`, `animation-document.js`, `animation-targets.js`, `animation-library.js`, `animation-replay.js`, `animation-workshop.js`, `weapon-poses.js` | Gemeinsame geordnete Poseauswertung und wiederverwendete Ergebnisse für Körper/Schatten/Waffensockel. Benannte Referenzposen plus versionierte, körper-/waffenbezogene Korrekturspuren vor der IK; separate Übergangsspuren. Isolierte Wiederholung bei 30/60 Hz, Zeitlupe, Einzelschritte, Kamera, Hand-/Gelenkprüfung. Pausenmenü öffnet Editor; Entwurf, lokal aktiviertes Profil und exportierter Prüfablauf bleiben getrennt. Werkstatt wird bei Bedarf als Build-Chunk geladen. |
+| Animationssteuerung und Workbase | `animation-controller.js`, `animation-document.js`, `animation-targets.js`, `character-pose.js`, `character-ik.js`, `animation-library.js`, `animation-replay.js`, `animation-workshop.js`, `workshop-ui.js`, `workshop-interaction.js`, `workshop-reference.js` | Gemeinsame geordnete Poseauswertung für Körper/Schatten/Waffensockel. Zeitunabhängige Grundhaltungen plus additive Zeitspuren und einstellbare Übergangsdauern. Optionale Stand-IK mit Becken, separaten Fußkontrollern und Kniezielen; Gehschritte behalten die Bewegungshoheit. Nachgeladener Editor mit Haltung/Animation/Prüfen, direkten Touchzielen, Kontaktwahl, Gestentransaktionen und lokalen Referenzbildern. Entwurf, Aktivierung und Export getrennt; Anleitung in `docs/ANIMATION_WORKSHOP.md`. |
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
 
@@ -46,6 +46,14 @@ Schlittenverriegelung gemeinsam für Kampf und Werkstatt aus. `build.test.mjs` l
 die acht Originalwaffen über den tatsächlich erzeugten gemeinsamen Chunk und HTTP
 unter Root-/Unterpfad-Hosting auf beiden Rigs. `workshop-regression.test.mjs` prüft
 Aufsatz-/Munitionsübernahme, Ladefehler/Erholung, Pause und Zeitleisten-Endbilder.
+
+`character-workbase.test.mjs` schützt zeitunabhängige Posen, Stand-/Gehmaskierung,
+Armlängen und Fußkontakte auf beiden Rigs mit allen acht Waffen. Eine Importgraph-
+Prüfung hält Editoroberfläche und Gesten aus den Laufzeit-Modellmodulen heraus.
+`scripts/workbase-browser-check.mjs` verwendet auf GitHub das vorinstallierte Chrome
+für eine begrenzte Touch-/DOM-Prüfung ohne Browserdownload: mobile Bedienung,
+Speicher-Roundtrip, Aktivierung und Zeitleiste. Der Modell-Ladepfad bleibt unabhängig
+von diesen Editor-Modulen und vom Ort generierter Build-Chunks.
 
 `weapon-reload.js` hält den gemeinsamen Nachladetakt für Animation, Munitions-
 übertragung und Schusssperre. Magazine werden am Einsetzereignis atomar getauscht;
