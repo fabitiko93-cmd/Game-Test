@@ -99,6 +99,8 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   entity.riflePosture=posture;
   resolveAnimationEdits(entity,player,blend);
   applyCharacterPose(entity,player);
+  const contactWeight=Math.max(0,Math.min(1,entity.animationEdits.contactL[0]));
+  const freeLeftWeight=handgun?blend.carry*(1-contactWeight):0;
   const crouched=handgun&&player.stance==='sneak'&&!player.running;
   // Hold the front carry until the torso has finished standing up, then lower
   // it. Mixing in the neutral arm while the chest still leans twists the wrist.
@@ -162,7 +164,7 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   // Walking/running twists the shoulders. Keep the chosen grip inside both
   // arms' actual reach rather than stretching a sleeve or detaching a hand.
   for (let iteration = 0; iteration < 10; iteration++) {
-    for (const [arm, offset] of (handgun&&blend.carry>.99?[[right,offsets[0]]]:[[right,offsets[0]],[left,offsets[1]]])) {
+    for (const [arm, offset] of (handgun&&freeLeftWeight>.99?[[right,offsets[0]]]:[[right,offsets[0]],[left,offsets[1]]])) {
       const start = arm[0].getWorldPosition(new Vector3()), elbow = arm[1].getWorldPosition(new Vector3()), hand = arm[2].getWorldPosition(new Vector3());
       const reach = elbow.distanceTo(start) + hand.distanceTo(elbow) - .01;
       const delta = gunGoal.clone().add(offset).sub(start);
@@ -179,31 +181,31 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   const leftBend=new Vector3(.07,-.28,-.05).multiplyScalar(blend.carry)
     .addScaledVector(new Vector3(.10,-.24,.12),blend.hip).addScaledVector(new Vector3(.10,-.18,.15),blend.aim);
   const leftPole=root.localToWorld(leftShoulder.clone().add(leftBend));
-  if(handgun)leftPole.lerp(freeLeftElbow,blend.carry);
+  if(handgun)leftPole.lerp(freeLeftElbow,freeLeftWeight);
   editTarget(entity,'elbowR',rightPole);editTarget(entity,'elbowL',leftPole);
   const rightHand=gunRotation.clone().multiply(inverseGrip),leftHand=gunRotation.clone().multiply(supportHandRotation(weapon));
-  if(handgun)leftHand.slerp(freeLeftRotation,blend.carry);
+  if(handgun)leftHand.slerp(freeLeftRotation,freeLeftWeight);
   const frame=side=>({hand:side==='R'?rightHand:leftHand,axis:entity.rifleHands.get('Wrist'+side).palm,rest:entity.rifleHands.get('Wrist'+side).rotation,lowerRest:entity.rifleHands.get('LowerArm'+side).rotation,hinge:entity.rifleHands.get('UpperArm'+side).hinge,maxTwist:handgun?Math.PI/3:Math.PI,maxBend:(side==='R'?75:60)*Math.PI/180});
   entity.weaponPoles={right:rightPole.clone(),left:leftPole.clone()};
   if(delta<.5&&!entity.animationDirectEdit&&entity.supportElbow)entity.weaponPoles.left=root.localToWorld(entity.supportElbow.clone()).lerp(leftPole,Math.min(1,delta*8));
   fitArm(...right, gunGoal.clone().add(offsets[0]), rightPole,frame('R'));
   orientWorld(right[2], rightHand);
-  if(handgun&&entity.handgunCarry&&kick.pitch===0&&crouchCarry===0&&!entity.animationEdits.weapon.some(Boolean)&&!entity.animationEdits.elbowR.some(Boolean)&&!entity.animationEdits.shoulderR.some(Boolean))for(const[b,q]of entity.handgunCarry)b.quaternion.slerp(q,blend.carry**4);
+  if(handgun&&!contactWeight&&entity.handgunCarry&&kick.pitch===0&&crouchCarry===0&&!entity.animationEdits.weapon.some(Boolean)&&!entity.animationEdits.elbowR.some(Boolean)&&!entity.animationEdits.shoulderR.some(Boolean))for(const[b,q]of entity.handgunCarry)b.quaternion.slerp(q,blend.carry**4);
   root.updateMatrixWorld(true);
   if(handgun)entity.weaponPoles.right.copy(right[1].getWorldPosition(new Vector3()));
   weapon.quaternion.copy(RIFLE_GRIP_ROTATION);
   weapon.position.copy(rightOffset).negate().applyQuaternion(RIFLE_GRIP_ROTATION);
   weapon.updateMatrixWorld(true);
   const leftGoal = weapon.localToWorld(leftOffset.clone());
-  if(handgun)leftGoal.lerp(freeLeftPoint,blend.carry);
-  poseWeaponHands(entity,player,{freeLeft:handgun?blend.carry:0,freeLeftFingers});
+  if(handgun)leftGoal.lerp(freeLeftPoint,freeLeftWeight);
+  poseWeaponHands(entity,player,{freeLeft:freeLeftWeight,freeLeftFingers});
   const offset=left[2].getWorldPosition(new Vector3()).sub(bone('Middle2L').getWorldPosition(new Vector3())).applyQuaternion(left[2].getWorldQuaternion(new Quaternion()).invert()).applyQuaternion(leftHand);
   const palmGoal=leftGoal.clone().sub(offset);
   if(handgun&&blend.carry>.999&&!entity.animationEdits.contactL.some(Boolean)&&!entity.animationEdits.support.some(Boolean)&&!entity.animationEdits.elbowL.some(Boolean)&&!entity.animationEdits.shoulderL.some(Boolean)){for(const[b,q]of freeLeftArm)b.quaternion.copy(q);}
   else fitSupportContact(entity,palmGoal,leftHand,'Middle2','base');
-  if(!handgun||blend.carry<.999){
+  if(!handgun||blend.carry<.999||contactWeight>0){
     poseThumb(entity,'L',handgun?'revolver':grips?.verticalSupport?'vertical':'support');
-    if(handgun)for(const[b,q]of freeLeftFingers)if(b.name.startsWith('Thumb'))b.quaternion.slerp(q,blend.carry);
+    if(handgun)for(const[b,q]of freeLeftFingers)if(b.name.startsWith('Thumb'))b.quaternion.slerp(q,freeLeftWeight);
   }
   root.updateMatrixWorld(true);
 }

@@ -22,9 +22,15 @@ function pointBone(bone, child, target) {
 export function fitArm(upper, lower, wrist, target, pole, frame) {
   const start = upper.getWorldPosition(new Vector3()), elbow = lower.getWorldPosition(new Vector3()), hand = wrist.getWorldPosition(new Vector3());
   const a = elbow.distanceTo(start), b = hand.distanceTo(elbow);
-  const direction = target.clone().sub(start), distance = Math.max(.001, Math.min(direction.length(), a + b - .001));
+  const direction = target.clone().sub(start), wanted=direction.length();
+  const distance = Math.max(Math.abs(a-b)+.001, Math.min(wanted, a + b - .001));
+  if(wanted<1e-8)direction.copy(hand).sub(start);
+  if(direction.lengthSq()<1e-12)direction.set(0,-1,0);
   direction.normalize();
-  const bend = pole.clone().sub(start); bend.addScaledVector(direction, -bend.dot(direction)).normalize();
+  const bend = pole.clone().sub(start); bend.addScaledVector(direction, -bend.dot(direction));
+  if(bend.lengthSq()<1e-10){bend.copy(elbow).sub(start);bend.addScaledVector(direction,-bend.dot(direction));}
+  if(bend.lengthSq()<1e-10){bend.set(0,0,1).addScaledVector(direction,-direction.z);if(bend.lengthSq()<1e-10)bend.set(1,0,0).addScaledVector(direction,-direction.x);}
+  bend.normalize();
   const along = (a * a - b * b + distance * distance) / (2 * distance);
   const height = Math.sqrt(Math.max(0, a * a - along * along));
   if(frame?.maxBend) {

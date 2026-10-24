@@ -3,26 +3,28 @@ import test from 'node:test';
 import {readFile} from 'node:fs/promises';
 import {gunzipSync} from 'node:zlib';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {OrthographicCamera,Plane,Quaternion,Vector3} from 'three';
+import {Bone,Group,OrthographicCamera,Plane,Quaternion,Vector3} from 'three';
 import {AnimationProject,emptyAnimation,emptyValues,parseAnimation,putPose,putFrame,putDuration,poseValues,WEAPON_TYPES} from '../docs/src/animation-document.js';
 import {PlayerModels} from '../docs/src/player-models.js';
 import {QuaterniusAssets} from '../docs/src/quaternius-assets.js';
 import {AnimationReplay} from '../docs/src/animation-replay.js';
 import {bindWorkshopInteraction,dragValues,screenPointToWorld} from '../docs/src/workshop-interaction.js';
+import {fitArm} from '../docs/src/weapon-ik.js';
 
 const cache=new Map();
 async function parse(url){if(!cache.has(url))cache.set(url,(async()=>{let b=await readFile(new URL(url));if(b[0]===31)b=gunzipSync(b);return new GLTFLoader().parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'');})());return cache.get(url);}
 const library=new QuaterniusAssets({loadAsset:parse});
 async function replay(options,document=null){const models=new PlayerModels({},library);models.weapons.loadAsset=parse;const r=new AnimationReplay(models);r.setDocument(document,1);await r.configure(options);return r;}
 const point=(r,name)=>r.entity.model.getObjectByName(name).getWorldPosition(new Vector3());
-function lengths(r){return ['R','L'].flatMap(s=>[['UpperLeg'+s,'LowerLeg'+s],['UpperArm'+s,'LowerArm'+s],['LowerArm'+s,'Wrist'+s]].map(([a,b])=>point(r,a).distanceTo(point(r,b))));}
+function lengths(r){return ['R','L'].flatMap(s=>[['UpperLeg'+s,'LowerLeg'+s],['LowerLeg'+s,'Foot'+s],['UpperArm'+s,'LowerArm'+s],['LowerArm'+s,'Wrist'+s]].map(([a,b])=>point(r,a).distanceTo(point(r,b))));}
 
 test('static whole-body poses persist independently of the timeline on all eight weapons and both original rigs',async()=>{
   for(const sex of ['male','female'])for(const type of WEAPON_TYPES){
     const key=sex+':'+type,v=emptyValues();v.head[1]=5;v.weapon[0]=.01;v.pelvis[1]=-.06;v.footR[0]=-.02;
-    const doc=putPose(emptyAnimation(),key,'aim',v),r=await replay({sex,type,track:'aim'},parseAnimation(JSON.stringify(doc))),base=await replay({sex,type,track:'aim'}),original=lengths(base);
+    const doc=putPose(emptyAnimation(),key,'aim',v),r=await replay({sex,type,track:'aim'},parseAnimation(JSON.stringify(doc))),base=await replay({sex,type,track:'aim'});
     for(const t of [0,.5,1]){
       r.seek(r.duration*t);base.seek(base.duration*t);
+      const original=lengths(base);
       assert.equal(r.entity.animationEdits.head[1],5);assert.equal(r.entity.animationEdits.pelvis[1],-.06);
       assert.ok(r.entity.weapon);assert.ok(r.models.shotMuzzle(r.player,r.time));
       for(const [i,l]of lengths(r).entries())assert.ok(Math.abs(l-original[i])<1e-5,`${sex} ${type} limb ${i} retains its physical length`);
@@ -46,7 +48,9 @@ test('stand-pose edits never freeze walking legs, and clearing a body pose resto
 
 test('free support-hand targets and explicit grip contacts share the real arm solver and preserve the weapon',async()=>{
   for(const type of ['pistol_9mm','revolver_44','m4_556']){
-    const r=await replay({sex:'male',type,track:'aim'}),values=emptyValues(),origin=r.entity.root.getWorldPosition(new Vector3()),yaw=r.entity.root.getWorldQuaternion(new Quaternion());
+    const r=await replay({sex:'male',type,track:'aim'}),values=emptyValues(),origin=r.entity.root.getWorldPosition(new Vector3()),yaw=r.entity.root.getWorldQuaternion(new Quaternion()),held=r.entity.animationTargets.support.clone();
+    const pinned=emptyValues();pinned.contactL[0]=1;r.setDocument(putPose(emptyAnimation(),'male:'+type,'aim',pinned),2);r.seek(0,{reset:true});
+    assert.ok(r.entity.animationTargets.support.distanceTo(held)<1e-7,type+' pin retains the existing palm contact rather than using the wrist anchor');
     const target=point(r,'Middle2L').sub(origin).applyQuaternion(yaw.clone().invert());target.y-=.035;
     values.contactL[0]=-1;values.freeHandL=target.toArray();
     const doc=putPose(emptyAnimation(),'male:'+type,'aim',values);r.setDocument(doc,2);r.seek(0,{reset:true});
@@ -54,6 +58,16 @@ test('free support-hand targets and explicit grip contacts share the real arm so
     assert.ok(r.entity.weapon&&r.models.shotMuzzle(r.player,r.time));
     const drag=dragValues(values,'support','move',0,new Vector3(.02,0,0),0,yaw);assert.equal(drag.freeHandL[0],values.freeHandL[0]+.02);assert.deepEqual(drag.support,values.support);
     r.dispose();
+  }
+});
+
+test('dragging arm targets through minimum reach or a collinear elbow hint keeps a finite, unstretched chain',()=>{
+  for(const target of [new Vector3(),new Vector3(0,-.35,0),new Vector3(0,-5,0)]){
+    const root=new Group(),upper=new Bone(),lower=new Bone(),wrist=new Bone();root.add(upper);upper.add(lower);lower.add(wrist);lower.position.y=-.2;wrist.position.y=-.25;root.updateMatrixWorld(true);
+    fitArm(upper,lower,wrist,target,new Vector3(0,-1,0));root.updateMatrixWorld(true);
+    const a=upper.getWorldPosition(new Vector3()),b=lower.getWorldPosition(new Vector3()),c=wrist.getWorldPosition(new Vector3());
+    assert.ok([...a,...b,...c,...upper.quaternion,...lower.quaternion].every(Number.isFinite));assert.ok(Math.abs(a.distanceTo(b)-.2)<1e-8);assert.ok(Math.abs(b.distanceTo(c)-.25)<1e-8);
+    assert.ok(a.distanceTo(c)>=.0509&&a.distanceTo(c)<=.4491);
   }
 });
 
