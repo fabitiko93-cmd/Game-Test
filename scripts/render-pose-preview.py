@@ -8,7 +8,7 @@ OUT=Path('/workspace/scratch/b1c135e31a11/pose-review')
 def unit(v):
     v=np.asarray(v,dtype=float);return v/max(np.linalg.norm(v),1e-10)
 
-def render(data,view='reference',detail=False,width=1100,height=950,filename=None):
+def render(data,view='reference',detail=False,width=1100,height=950,filename=None,identify=False,hide_side=None):
     j={k:np.array(v) for k,v in data['joints'].items()}
     target=(j['Middle2L']+j['Middle2R'])/2 if detail else (j['Head']+j['WristL']+j['WristR']+j['UpperArmL']+j['UpperArmR'])/5
     dirs={'reference':[-4,.6,2.0],'support':[4,.65,2.0],'side':[-5,.2,.1],'top':[-1,4,1.5],'front':[.1,.2,5]}
@@ -24,6 +24,9 @@ def render(data,view='reference',detail=False,width=1100,height=950,filename=Non
         p=np.asarray(mesh['positions']);delta=p-target
         screen=np.column_stack((width/2+delta@right*scale,height/2-delta@up*scale,delta@eye))
         for face,colors in zip(mesh['faces'],mesh['colors']):
+            sides=[mesh.get('sides',[None]*len(p))[i] for i in face]
+            if hide_side and sides.count(hide_side)>=2:continue
+            if identify:colors=[([.025,.20,.72] if s=='R' else [.95,.25,.025] if s=='L' else c) for s,c in zip(sides,colors)]
             t=screen[face];xyz=p[face]
             normal=unit(np.cross(xyz[1]-xyz[0],xyz[2]-xyz[0]));normal=normal if normal@eye>=0 else -normal
             shade=.42+.49*max(0,normal@light)+.15*max(0,normal@fill)

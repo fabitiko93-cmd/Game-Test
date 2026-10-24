@@ -26,19 +26,28 @@ function meshData(entity){
     if(!mesh.isMesh)return;mesh.skeleton?.update();const g=mesh.geometry,p=g.attributes.position,index=g.index,col=g.attributes.color;
     const positions=Array.from({length:p.count},(_,i)=>mesh.getVertexPosition(i,new Vector3()).applyMatrix4(mesh.matrixWorld).toArray());
     const faces=[],colors=[];
+    const sides=Array.from({length:p.count},(_,i)=>{
+      if(!mesh.skeleton||!g.attributes.skinIndex||!g.attributes.skinWeight)return null;
+      let right=0,left=0;for(let k=0;k<4;k++){
+        const n=mesh.skeleton.bones[g.attributes.skinIndex.getComponent(i,k)]?.name||'',w=g.attributes.skinWeight.getComponent(i,k);
+        if(!/^(Shoulder|UpperArm|LowerArm|Wrist|Index|Middle|Ring|Pinky|Thumb)/.test(n))continue;
+        if(n.endsWith('R'))right+=w;else if(n.endsWith('L'))left+=w;
+      }
+      return Math.max(right,left)>.35?(right>=left?'R':'L'):null;
+    });
     for(let j=0;j<(index?.count||p.count);j+=3){
       const ids=[0,1,2].map(k=>index?index.getX(j+k):j+k);faces.push(ids);
       const group=g.groups.find(group=>j>=group.start&&j<group.start+group.count),mat=Array.isArray(mesh.material)?mesh.material[group?.materialIndex||0]:mesh.material;
       colors.push(ids.map(i=>{const c=(mat?.color||new Color(.6,.6,.6)).clone();if(mat?.vertexColors&&col)c.multiply(new Color().fromBufferAttribute(col,i));return c.toArray();}));
     }
-    meshes.push({name:mesh.name,positions,faces,colors});
+    meshes.push({name:mesh.name,positions,faces,colors,sides});
   });return meshes;
 }
 
-const variants=[{name:'user'},{name:'candidate-g',roll:20,shift:.014}];
+const variants=[{name:'user'},{name:'candidate-i',roll:20,shift:.024}];
 function referenceFingers(entity){
   poseHand(entity,'R','pistol',{trigger:1});
-  const curls={Index:[1.22,.68,.28],Middle:[1.22,.68,.30],Ring:[1.20,.72,.28],Pinky:[1.18,.72,.28]};
+  const curls={Index:[.95,.90,.40],Middle:[.95,.90,.40],Ring:[1,.90,.38],Pinky:[1,.90,.38]};
   for(const[finger,angles]of Object.entries(curls))for(let i=2;i<=4;i++){
     const entry=entity.rifleHands.get(`${finger}${i}L`);if(!entry)continue;
     const euler=new Euler().setFromQuaternion(entry.rotation);euler.x=-angles[i-2];entry.bone.quaternion.setFromEuler(euler);
@@ -53,15 +62,16 @@ function referenceFingers(entity){
     hand:triggerBones[2].getWorldQuaternion(new Quaternion()),rest:entity.rifleHands.get('Index4R').rotation,maxTwist:0,
   });
   const tip=new Euler().setFromQuaternion(entity.rifleHands.get('Index4R').rotation);tip.x=-.8;triggerBones[2].quaternion.setFromEuler(tip);
-  poseThumb(entity,'R','pistol',{thumbPoint:entity.weapon.localToWorld(new Vector3(-.014,.022,-.022))});
-  const target=entity.weapon.localToWorld(new Vector3(.032,.012,.009));
+  // Keep the original right-thumb opposition on the other side of the grip.
+  // The previous preview crossed it onto the back of the firing hand.
+  const target=entity.weapon.localToWorld(new Vector3(.040,.017,.008));
   poseThumb(entity,'L','pistol',{thumbPoint:target});entity.root.updateMatrixWorld(true);
 }
 for(const sex of ['male','female'])for(const variant of variants){
   const doc=structuredClone(original);if(sex==='female'){doc.profiles['female:pistol_9mm']=doc.profiles['male:pistol_9mm'];delete doc.profiles['male:pistol_9mm'];}
   if(variant.name!=='user'){
     const values=doc.profiles[sex+':pistol_9mm'].poses.aim;
-    values.support=[.009,-.012,variant.shift,0,0,variant.roll];
+    values.support=[.018,-.012,variant.shift,0,0,variant.roll];
     if(sex==='female')values.elbowTurnL[0]=-25;
   }
   const models=new PlayerModels({},library);models.weapons.loadAsset=load;
