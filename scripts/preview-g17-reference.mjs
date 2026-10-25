@@ -2,7 +2,7 @@
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {gunzipSync} from 'node:zlib';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {Vector3,Color,Euler,Quaternion} from 'three';
+import {Vector3,Color,Euler,Quaternion,Matrix3,Matrix4} from 'three';
 import {QuaterniusAssets} from '../docs/src/quaternius-assets.js';
 import {PlayerModels} from '../docs/src/player-models.js';
 import {AnimationReplay} from '../docs/src/animation-replay.js';
@@ -12,11 +12,14 @@ import {fitArm} from '../docs/src/weapon-ik.js';
 import {fitPreviewContacts} from './g17-preview-contact.js';
 import {orientWorld} from '../docs/src/weapon-ik.js';
 import {fileURLToPath} from 'node:url';
+import {authorFiringHand} from './g17-firing-hand.js';
 
 const output=process.env.SPERRKREIS_POSE_OUTPUT||fileURLToPath(new URL('../previews/rendered-g17',import.meta.url));
 await mkdir(output,{recursive:true});
 const source=await readFile(process.env.SPERRKREIS_POSE_INPUT||new URL('../previews/g17-input-reference.json',import.meta.url),'utf8');
 const original=parseAnimation(source),cache=new Map();
+const firingHandFile=process.env.SPERRKREIS_FIRING_HAND;
+const firingHand=firingHandFile?JSON.parse(await readFile(firingHandFile,'utf8')):null;
 async function load(url){
   if(!cache.has(url))cache.set(url,(async()=>{let b=await readFile(new URL(url));if(b[0]===31)b=gunzipSync(b);return new GLTFLoader().parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'');})());return cache.get(url);
 }
@@ -28,6 +31,19 @@ function meshData(entity){
   entity.root.traverseVisible(mesh=>{
     if(!mesh.isMesh)return;mesh.skeleton?.update();const g=mesh.geometry,p=g.attributes.position,index=g.index,col=g.attributes.color;
     const positions=Array.from({length:p.count},(_,i)=>mesh.getVertexPosition(i,new Vector3()).applyMatrix4(mesh.matrixWorld).toArray());
+    const normalMatrix=new Matrix3().getNormalMatrix(mesh.matrixWorld),bind=new Matrix3().setFromMatrix4(mesh.bindMatrix||new Matrix4()),inverseBind=new Matrix3().setFromMatrix4(mesh.bindMatrixInverse||new Matrix4());
+    const normals=g.attributes.normal?Array.from({length:p.count},(_,i)=>{
+      let n=new Vector3().fromBufferAttribute(g.attributes.normal,i);
+      if(mesh.skeleton){
+        n.applyMatrix3(bind);const skinned=new Vector3();
+        for(let k=0;k<4;k++){
+          const id=g.attributes.skinIndex.getComponent(i,k),weight=g.attributes.skinWeight.getComponent(i,k);
+          if(weight)skinned.addScaledVector(n.clone().applyMatrix3(new Matrix3().setFromMatrix4(new Matrix4().fromArray(mesh.skeleton.boneMatrices,id*16))),weight);
+        }
+        n.copy(skinned).applyMatrix3(inverseBind);
+      }
+      return n.applyMatrix3(normalMatrix).normalize().toArray();
+    }):null;
     const faces=[],colors=[],faceSides=[];
     const boneNames=[];
     const sides=Array.from({length:p.count},(_,i)=>{
@@ -47,7 +63,7 @@ function meshData(entity){
       faceSides.push(mat?.side??0);
       colors.push(ids.map(i=>{const c=(mat?.color||new Color(.6,.6,.6)).clone();if(mat?.vertexColors&&col)c.multiply(new Color().fromBufferAttribute(col,i));return c.toArray();}));
     }
-    meshes.push({name:mesh.name,positions,faces,colors,sides,boneNames,faceSides});
+    meshes.push({name:mesh.name,positions,normals,faces,colors,sides,boneNames,faceSides});
   });return meshes;
 }
 
@@ -80,6 +96,7 @@ function referenceFingers(entity){
   poseThumb(entity,'L','pistol',{thumbPoint:target});entity.root.updateMatrixWorld(true);
 }
 for(const sex of ['male','female'])for(const variant of variants){
+  if(firingHand&&sex!==(firingHand.sex||'male'))continue;
   if(process.argv.includes('--serve')&&sex!==(process.argv.includes('--female')?'female':'male'))continue;
   const doc=structuredClone(original);if(sex==='female'){doc.profiles['female:pistol_9mm']=doc.profiles['male:pistol_9mm'];delete doc.profiles['male:pistol_9mm'];}
   if(variant.name!=='user'){
@@ -106,15 +123,23 @@ for(const sex of ['male','female'])for(const variant of variants){
     }
     values.elbowTurnL[0]=best.angle;replay.setDocument(doc,1000);replay.seek(0,{reset:true});
   }
-  const entity=replay.entity,joints={};const contactMetrics=variant.name!=='user'?fitPreviewContacts(entity):null;if(variant.name!=='user')referenceFingers(entity);entity.root.updateMatrixWorld(true);
+  const entity=replay.entity,joints={};const contactMetrics=variant.name!=='user'?fitPreviewContacts(entity):null;
+  const firingBase=new Map();if(firingHand)entity.model.traverse(b=>{if(b.isBone)firingBase.set(b,b.quaternion.clone());});
+  if(firingHand)contactMetrics.authoredRight=authorFiringHand(entity,firingHand);
+  else if(variant.name!=='user')referenceFingers(entity);
+  entity.root.updateMatrixWorld(true);
   entity.model.traverse(b=>{if(b.isBone)joints[b.name]=point(entity,b.name).toArray();});
   const localJoints=Object.fromEntries(Object.keys(joints).filter(n=>/Wrist|Thumb|Index|Middle|Ring|Pinky|LowerArm|UpperArm/.test(n)).map(n=>[n,entity.weapon.worldToLocal(point(entity,n)).toArray()]));
   const rotations=Object.fromEntries([...entity.rifleHands.keys()].filter(n=>/^(Wrist|Thumb|Index|Middle|Ring|Pinky)/.test(n)).map(n=>[n,entity.model.getObjectByName(n).quaternion.toArray()]));
-  const data={sex,variant:variant.name,document:doc,rotations,meshes:meshData(entity),joints,localJoints,weaponProfile:entity.weapon.userData.pistol,contactMetrics,weaponOrigin:entity.weapon.getWorldPosition(new Vector3()).toArray(),weaponQuaternion:entity.weapon.getWorldQuaternion(new Quaternion()).toArray(),scale:entity.weapon.getWorldScale(new Vector3()).toArray(),constraints:entity.elbowConstraints};
+  const boneRotations={};if(firingHand)entity.model.traverse(b=>{if(b.isBone)boneRotations[b.name]=b.quaternion.toArray();});
+  const data={sex,variant:firingHand?'firing-hand':variant.name,document:doc,rotations,boneRotations,authoredRight:firingHand,meshes:meshData(entity),joints,localJoints,weaponProfile:entity.weapon.userData.pistol,contactMetrics,weaponOrigin:entity.weapon.getWorldPosition(new Vector3()).toArray(),weaponQuaternion:entity.weapon.getWorldQuaternion(new Quaternion()).toArray(),scale:entity.weapon.getWorldScale(new Vector3()).toArray(),constraints:entity.elbowConstraints};
+  if(firingHand&&process.argv.includes('--serve-firing-hand')){
+    const{serveFiringHand}=await import('./g17-firing-hand-server.js');await serveFiringHand(entity,{base:firingBase,data,meshData,output});replay.dispose();process.exit(0);
+  }
   if(process.argv.includes('--serve')){
     const {serveContacts}=await import('./g17-contact-server.js');await serveContacts(entity,{meshData,data,output});replay.dispose();process.exit(0);
   }
-  await writeFile(`${output}/${sex}-${variant.name}-mesh.json`,JSON.stringify(data));
-  console.log(JSON.stringify({sex,variant:variant.name,meshes:data.meshes.length,triangles:data.meshes.reduce((n,m)=>n+m.faces.length,0),elbowConstraint:entity.elbowConstraints?.L,elbow:point(entity,'LowerArmL').toArray(),thumb:localJoints.Thumb3L}));
+  await writeFile(`${output}/${sex}-${data.variant}-mesh.json`,JSON.stringify(data));
+  console.log(JSON.stringify({sex,variant:data.variant,meshes:data.meshes.length,triangles:data.meshes.reduce((n,m)=>n+m.faces.length,0),contact:firingHand?contactMetrics.authoredRight:contactMetrics,thumb:localJoints[firingHand?'Thumb3R':'Thumb3L']}));
   replay.dispose();
 }

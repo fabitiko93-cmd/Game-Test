@@ -1,0 +1,70 @@
+{
+  "format": "sperrkreis-firing-hand-preview",
+  "version": 1,
+  "reviewVersion": 4,
+  "status": "awaiting-visual-approval",
+  "scope": "male / G17 / static aim / right firing hand only",
+  "sourceCommit": "1e344e7d1df366a226e87303f2c706b50833215d",
+  "sourceDocument": "previews/g17-input-reference.json",
+  "units": {
+    "palm": "weapon-local metres before the existing weapon scale",
+    "curls": "degrees; cumulative anatomical finger flexion",
+    "spread": "degrees about weapon X/Y/Z axes"
+  },
+  "sex": "male",
+  "palm": [
+    -0.044,
+    -0.036,
+    -0.035
+  ],
+  "pitch": 0,
+  "yaw": -12,
+  "roll": 0,
+  "curls": {
+    "Index": [
+      14,
+      25,
+      15
+    ],
+    "Middle": [
+      37.21843442564078,
+      28.310194127017223,
+      79.99999999496518
+    ],
+    "Ring": [
+      36.30173866584729,
+      21.56625831503632,
+      79.9999989310612
+    ],
+    "Pinky": [
+      36.06870137555348,
+      8.000000000205958,
+      50.436798144668536
+    ]
+  },
+  "spread": {
+    "Pinky": [
+      1.8,
+      -2,
+      0
+    ]
+  },
+  "thumb": [
+    [
+      0.023,
+      -0.012,
+      -0.078
+    ],
+    [
+      0.025,
+      -0.013,
+      -0.05
+    ],
+    [
+      0.025,
+      -0.014,
+      -0.022
+    ]
+  ],
+  "planar": true
+}

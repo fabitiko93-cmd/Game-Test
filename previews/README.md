@@ -1,5 +1,29 @@
 # G17 reference-pose review
 
+## Review 04: firing hand only
+
+`g17-firing-hand-pose.json` is the new, unapproved male G17 firing-hand study.
+The support hand is excluded from its renders. Individual finger arcs are
+authored in anatomical flexion planes, independently of the arm IK. The
+thumb has its own joint directions. Arm fitting must reach the palm anchor;
+an unreachable target retreats the prop without stretching the skeleton.
+`g17-firing-hand-review.json` records the reached right-bone rotations and
+checks against the original rig, including the adjacent finger skin surfaces.
+Small skin/object contact overlaps remain; this is not a collision-free
+certificate or an approved whole-body/animation pose.
+
+```sh
+SPERRKREIS_FIRING_HAND=previews/g17-firing-hand-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/sperrkreis-g17-right node scripts/preview-g17-reference.mjs
+python scripts/render-g17-firing-hand.py /tmp/sperrkreis-g17-right/male-firing-hand-mesh.json --output /tmp/Sperrkreis_G17_Waffenhand_Vorschau_04.png
+```
+
+The close-ups use the original posed skin, material colors and skinned vertex
+normals, with per-pixel depth. The earlier renderer used flat face normals
+instead. No replacement hand mesh, altered bone lengths or generated image is
+used. Runtime, source assets and published files are unchanged.
+
+## Rejected review 03
+
 The user rejected review 03 on 2026-10-25. The stored pose must not be used as an
 approved reference or integrated into the game. Its hand and finger shapes are
 visibly unnatural despite the surface-contact measurements. The original rigs
