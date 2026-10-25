@@ -1,0 +1,120 @@
+{
+  "format": "sperrkreis-animation",
+  "version": 2,
+  "profiles": {
+    "male:pistol_9mm": {
+      "tracks": {},
+      "poses": {
+        "aim": {
+          "weapon": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "support": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            52.75
+          ],
+          "elbowR": [
+            0,
+            0,
+            0
+          ],
+          "elbowL": [
+            0,
+            0,
+            0
+          ],
+          "elbowTurnR": [
+            0
+          ],
+          "elbowTurnL": [
+            83
+          ],
+          "chest": [
+            0,
+            0,
+            0
+          ],
+          "shoulderR": [
+            0,
+            0,
+            0
+          ],
+          "shoulderL": [
+            0,
+            0,
+            0
+          ],
+          "head": [
+            0,
+            0,
+            0
+          ],
+          "fingersR": [
+            0
+          ],
+          "fingersL": [
+            0
+          ],
+          "pelvis": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "footR": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "footL": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "kneeR": [
+            0,
+            0,
+            0
+          ],
+          "kneeL": [
+            0,
+            0,
+            0
+          ],
+          "contactL": [
+            0
+          ],
+          "freeHandL": [
+            0,
+            0,
+            0
+          ],
+          "pinR": [
+            1
+          ],
+          "pinL": [
+            1
+          ]
+        }
+      },
+      "durations": {}
+    }
+  }
+}
