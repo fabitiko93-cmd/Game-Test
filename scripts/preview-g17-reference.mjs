@@ -1,5 +1,6 @@
 // Isolated review render. Does not activate a profile, build or publish the game.
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import {gunzipSync} from 'node:zlib';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {Vector3,Color,Euler,Quaternion,Matrix3,Matrix4} from 'three';
@@ -13,13 +14,22 @@ import {fitPreviewContacts} from './g17-preview-contact.js';
 import {orientWorld} from '../docs/src/weapon-ik.js';
 import {fileURLToPath} from 'node:url';
 import {authorFiringHand} from './g17-firing-hand.js';
+import {authorSupportHand} from './g17-support-hand.js';
 
 const output=process.env.SPERRKREIS_POSE_OUTPUT||fileURLToPath(new URL('../previews/rendered-g17',import.meta.url));
 await mkdir(output,{recursive:true});
 const source=await readFile(process.env.SPERRKREIS_POSE_INPUT||new URL('../previews/g17-input-reference.json',import.meta.url),'utf8');
 const original=parseAnimation(source),cache=new Map();
-const firingHandFile=process.env.SPERRKREIS_FIRING_HAND;
-const firingHand=firingHandFile?JSON.parse(await readFile(firingHandFile,'utf8')):null;
+const supportHandFile=process.env.SPERRKREIS_SUPPORT_HAND;
+const supportHand=supportHandFile?JSON.parse(await readFile(supportHandFile,'utf8')):null;
+const firingHandFile=process.env.SPERRKREIS_FIRING_HAND||(supportHandFile?fileURLToPath(new URL('../previews/g17-firing-hand-pose.json',import.meta.url)):null);
+const firingHandSource=firingHandFile?await readFile(firingHandFile,'utf8'):null;
+const firingHand=firingHandSource?JSON.parse(firingHandSource):null;
+if(supportHand){
+  if(firingHand.status!=='visually-approved'||supportHand.sex!==firingHand.sex)throw Error('Support study requires the approved firing-hand reference on the same rig');
+  const expected=supportHand.firingHandReference?.poseSha256;
+  if(expected&&createHash('sha256').update(firingHandSource).digest('hex')!==expected)throw Error('Approved firing-hand reference has changed');
+}
 async function load(url){
   if(!cache.has(url))cache.set(url,(async()=>{let b=await readFile(new URL(url));if(b[0]===31)b=gunzipSync(b);return new GLTFLoader().parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'');})());return cache.get(url);
 }
@@ -127,12 +137,13 @@ for(const sex of ['male','female'])for(const variant of variants){
   const firingBase=new Map();if(firingHand)entity.model.traverse(b=>{if(b.isBone)firingBase.set(b,b.quaternion.clone());});
   if(firingHand)contactMetrics.authoredRight=authorFiringHand(entity,firingHand);
   else if(variant.name!=='user')referenceFingers(entity);
+  if(supportHand)contactMetrics.authoredLeft=authorSupportHand(entity,supportHand);
   entity.root.updateMatrixWorld(true);
   entity.model.traverse(b=>{if(b.isBone)joints[b.name]=point(entity,b.name).toArray();});
   const localJoints=Object.fromEntries(Object.keys(joints).filter(n=>/Wrist|Thumb|Index|Middle|Ring|Pinky|LowerArm|UpperArm/.test(n)).map(n=>[n,entity.weapon.worldToLocal(point(entity,n)).toArray()]));
   const rotations=Object.fromEntries([...entity.rifleHands.keys()].filter(n=>/^(Wrist|Thumb|Index|Middle|Ring|Pinky)/.test(n)).map(n=>[n,entity.model.getObjectByName(n).quaternion.toArray()]));
   const boneRotations={};if(firingHand)entity.model.traverse(b=>{if(b.isBone)boneRotations[b.name]=b.quaternion.toArray();});
-  const data={sex,variant:firingHand?'firing-hand':variant.name,document:doc,rotations,boneRotations,authoredRight:firingHand,meshes:meshData(entity),joints,localJoints,weaponProfile:entity.weapon.userData.pistol,contactMetrics,weaponOrigin:entity.weapon.getWorldPosition(new Vector3()).toArray(),weaponQuaternion:entity.weapon.getWorldQuaternion(new Quaternion()).toArray(),scale:entity.weapon.getWorldScale(new Vector3()).toArray(),constraints:entity.elbowConstraints};
+  const data={sex,variant:supportHand?'both-hands':firingHand?'firing-hand':variant.name,document:doc,rotations,boneRotations,authoredRight:firingHand,authoredLeft:supportHand,meshes:meshData(entity),joints,localJoints,weaponProfile:entity.weapon.userData.pistol,contactMetrics,weaponOrigin:entity.weapon.getWorldPosition(new Vector3()).toArray(),weaponQuaternion:entity.weapon.getWorldQuaternion(new Quaternion()).toArray(),scale:entity.weapon.getWorldScale(new Vector3()).toArray(),constraints:entity.elbowConstraints};
   if(firingHand&&process.argv.includes('--serve-firing-hand')){
     const{serveFiringHand}=await import('./g17-firing-hand-server.js');await serveFiringHand(entity,{base:firingBase,data,meshData,output});replay.dispose();process.exit(0);
   }

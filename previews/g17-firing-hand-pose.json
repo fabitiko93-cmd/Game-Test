@@ -2,7 +2,7 @@
   "format": "sperrkreis-firing-hand-preview",
   "version": 1,
   "reviewVersion": 4,
-  "status": "awaiting-visual-approval",
+  "status": "visually-approved",
   "scope": "male / G17 / static aim / right firing hand only",
   "sourceCommit": "1e344e7d1df366a226e87303f2c706b50833215d",
   "sourceDocument": "previews/g17-input-reference.json",
@@ -66,5 +66,7 @@
       -0.022
     ]
   ],
-  "planar": true
+  "planar": true,
+  "approvedAt": "2026-10-25",
+  "approvalScope": "Male G17 static right firing hand, review 04; no full-pose or runtime release approval."
 }

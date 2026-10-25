@@ -8,7 +8,7 @@ from PIL import Image,ImageDraw,ImageFont
 spec=importlib.util.spec_from_file_location('pose_renderer',Path(__file__).with_name('render-pose-preview.py'))
 renderer=importlib.util.module_from_spec(spec);spec.loader.exec_module(renderer)
 
-def firing_scene(data):
+def firing_scene(data,sides='R'):
     result=deepcopy(data);x,y,z,w=data['weaponQuaternion']
     r=np.array([[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)],[2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)],[2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)]])
     origin=np.asarray(data['weaponOrigin']);result['joints']={k:((np.asarray(v)-origin)@r).tolist() for k,v in data['joints'].items()}
@@ -17,7 +17,7 @@ def firing_scene(data):
         m=deepcopy(mesh);p=(np.asarray(m['positions'])-origin)@r;m['positions']=p.tolist()
         if m.get('normals'):m['normals']=(np.asarray(m['normals'])@r).tolist()
         if any(m.get('boneNames',[])):
-            allowed=np.array([bool(re.match(r'^(Wrist|LowerArm|Index[1-4]|Middle[1-4]|Ring[1-4]|Pinky[1-4]|Thumb[1-3])R$',n or '')) for n in m['boneNames']])
+            allowed=np.array([bool(re.match(r'^(Wrist|LowerArm|Index[1-4]|Middle[1-4]|Ring[1-4]|Pinky[1-4]|Thumb[1-3])['+sides+r']$',n or '')) for n in m['boneNames']])
             faces=np.asarray(m['faces']);keep=allowed[faces].all(1)&(p[faces][...,2].max(1)>-.26)
             for key in ['faces','colors','faceSides']:m[key]=[v for v,k in zip(m[key],keep) if k]
         result['meshes'].append(m)

@@ -1,0 +1,187 @@
+{
+  "format": "sperrkreis-support-hand-review-snapshot",
+  "version": 1,
+  "reviewVersion": 5,
+  "status": "awaiting-visual-approval",
+  "scope": "male / G17 / static two-hand grip",
+  "supportPoseSha256": "8164f287620aa00726f5fd056bdba112400cbedbd8b60f89b4406b9223f0b93c",
+  "firingHandReference": {
+    "poseFile": "previews/g17-firing-hand-pose.json",
+    "reviewFile": "previews/g17-firing-hand-review.json",
+    "approvalDate": "2026-10-25",
+    "poseSha256": "e166c8440bbb7c2c6668bb237f6a1c558ef4259a89175ea58fa4a6f6328bcb15",
+    "approvedImage": "Sperrkreis_G17_Waffenhand_Vorschau_04.png",
+    "approvedImageReview": 4
+  },
+  "checks": {
+    "adjacentFingerAndThumbSkinCrossingPairs": {
+      "IndexR/MiddleR": 0,
+      "MiddleR/RingR": 0,
+      "RingR/PinkyR": 0,
+      "IndexL/MiddleL": 0,
+      "MiddleL/RingL": 0,
+      "RingL/PinkyL": 0,
+      "ThumbL/ThumbR": 0,
+      "ThumbL/IndexR": 0,
+      "ThumbL/IndexL": 0
+    },
+    "approvedRightSkinMaxWorldDifferenceMetres": 0,
+    "maxArmAndFingerSegmentLengthErrorMetres": 1.4913156418105977e-08,
+    "finiteSkinAndUnitQuaternionsAndNormals": true,
+    "approvedReferenceHashMatches": true,
+    "supportContact": {
+      "palmError": 2.5729602883985208e-08,
+      "handFrame": [
+        0.5,
+        0.5,
+        0.5,
+        0.5
+      ],
+      "wristBend": 0.7330385838115923,
+      "forearmTwist": 0.4002079268562184,
+      "wristTwist": 0,
+      "poleTurn": 20,
+      "fixedRightQuaternionDelta": 0,
+      "fixedWeaponMatrixDelta": 0
+    }
+  },
+  "leftBoneRotations": {
+    "UpperArmL": [
+      -0.7313785584441943,
+      -0.4908984857353494,
+      0.0639115485839421,
+      0.4690623188704626
+    ],
+    "LowerArmL": [
+      -0.10929289648187446,
+      0.1615491738115058,
+      -0.27200258409930345,
+      0.9423224432194384
+    ],
+    "WristL": [
+      0.20440852154455896,
+      0.017570493072578852,
+      0.26674095915144264,
+      0.9416781216734533
+    ],
+    "Index1L": [
+      -0.00879565300537849,
+      0.014256850041919511,
+      -0.09766252105024834,
+      0.9950786484665255
+    ],
+    "Index2L": [
+      -0.5987874678229057,
+      -0.07076390452325304,
+      0.06880184655664282,
+      0.7948033795509724
+    ],
+    "Index3L": [
+      -0.17364813585652975,
+      -1.3899380812976148e-08,
+      2.8613848928292496e-08,
+      0.9848077619706423
+    ],
+    "Index4L": [
+      -0.216439614025619,
+      1.7439105871180915e-08,
+      4.803651307457024e-09,
+      0.9762960073287315
+    ],
+    "Middle1L": [
+      0.025722741313487868,
+      -0.019408818906248293,
+      0.0169106746467918,
+      0.9993376092883339
+    ],
+    "Middle2L": [
+      -0.6750376715338361,
+      0.025742465989952834,
+      -2.930359244427902e-05,
+      0.7373339939729959
+    ],
+    "Middle3L": [
+      -0.2249510801405128,
+      -1.301274789311524e-09,
+      -2.156178829145622e-08,
+      0.974370058087235
+    ],
+    "Middle4L": [
+      -0.15643446624373333,
+      6.638467173192275e-08,
+      -1.0335823405482891e-08,
+      0.9876883523213082
+    ],
+    "Ring1L": [
+      -0.02545890928263908,
+      -0.04584455802082227,
+      0.12963630182857766,
+      0.9901740104708814
+    ],
+    "Ring2L": [
+      -0.7157661805413117,
+      0.10948694060616776,
+      -0.07332269494914051,
+      0.6857952695749298
+    ],
+    "Ring3L": [
+      -0.15643447342013395,
+      3.7556775467351144e-09,
+      -1.2506505817078128e-08,
+      0.9876883407255261
+    ],
+    "Ring4L": [
+      -0.043619387903257784,
+      -1.004224092771011e-09,
+      -1.2222635185216157e-08,
+      0.9990482274000719
+    ],
+    "Pinky1L": [
+      -0.19039826624496178,
+      -0.015276810160834708,
+      0.2612034335992276,
+      0.9461965575568932
+    ],
+    "Pinky2L": [
+      -0.6516676606817241,
+      0.1592064099644565,
+      -0.2587447300534883,
+      0.6950063188119346
+    ],
+    "Pinky3L": [
+      -0.17364816297555247,
+      3.4145892974235537e-08,
+      7.340675612504954e-09,
+      0.9848077524183155
+    ],
+    "Pinky4L": [
+      -0.13052619475113336,
+      -4.852470669725051e-08,
+      8.97377412656386e-09,
+      0.9914448407041814
+    ],
+    "Thumb1L": [
+      0.1398037480533004,
+      0.1560978583825266,
+      -0.18261269025904903,
+      0.9605941492045278
+    ],
+    "Thumb2L": [
+      -0.3684116537928899,
+      -0.13428859733940146,
+      -0.19885390612929987,
+      0.89816288055039
+    ],
+    "Thumb3L": [
+      0.07706083867902686,
+      -0.036677553687745446,
+      0.10698845314926966,
+      0.9905907005280598
+    ]
+  },
+  "limits": [
+    "Right firing hand approved; support hand and combined grip await review.",
+    "Small skin contact overlaps remain; this is not a collision-free certificate.",
+    "Static male G17 only; no female transfer, transitions or runtime release."
+  ]
+}

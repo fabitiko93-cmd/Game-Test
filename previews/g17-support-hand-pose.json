@@ -1,0 +1,96 @@
+{
+  "format": "sperrkreis-support-hand-preview",
+  "version": 1,
+  "reviewVersion": 5,
+  "status": "awaiting-visual-approval",
+  "sex": "male",
+  "palm": [
+    0.045,
+    -0.06,
+    0.015
+  ],
+  "pitch": 0,
+  "yaw": 0,
+  "roll": 0,
+  "elbowDirection": [
+    0.014732925,
+    -0.291954971,
+    0.956318585
+  ],
+  "poleTurn": 0,
+  "curls": {
+    "Index": [
+      75,
+      20,
+      25
+    ],
+    "Middle": [
+      82,
+      26,
+      18
+    ],
+    "Ring": [
+      95,
+      18,
+      5
+    ],
+    "Pinky": [
+      105,
+      20,
+      15
+    ]
+  },
+  "spread": {
+    "Index": [
+      -0.5,
+      0,
+      0
+    ],
+    "Ring": [
+      0,
+      -4,
+      0
+    ],
+    "Pinky": [
+      3,
+      -25,
+      0
+    ]
+  },
+  "thumb": [
+    [
+      0.054,
+      -0.03,
+      -0.027
+    ],
+    [
+      0.025,
+      -0.004,
+      0.006
+    ],
+    [
+      0.02,
+      0,
+      0.026
+    ]
+  ],
+  "fingerPlaneRoll": {
+    "Ring": -3,
+    "Pinky": -15
+  },
+  "scope": "male / G17 / static aim / left support hand added to approved firing hand",
+  "sourceCommit": "6a5e868c04626f424914a9d941321033d78a5287",
+  "firingHandReference": {
+    "poseFile": "previews/g17-firing-hand-pose.json",
+    "reviewFile": "previews/g17-firing-hand-review.json",
+    "approvalDate": "2026-10-25",
+    "poseSha256": "e166c8440bbb7c2c6668bb237f6a1c558ef4259a89175ea58fa4a6f6328bcb15",
+    "approvedImage": "Sperrkreis_G17_Waffenhand_Vorschau_04.png",
+    "approvedImageReview": 4
+  },
+  "units": {
+    "palm": "weapon-local metres before the existing weapon scale",
+    "rotations": "degrees",
+    "elbowDirection": "preferred upper-arm direction from the supplied user pose"
+  }
+}

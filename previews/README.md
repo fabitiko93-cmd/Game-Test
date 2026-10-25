@@ -1,8 +1,32 @@
 # G17 reference-pose review
 
+## Review 05: support hand, awaiting review
+
+The user approved the right firing hand in review 04 on 2026-10-25. Review 05
+adds the support hand around that fixed reference. Its left-hand skin, thumb
+and adjacent finger contacts were inspected separately. The approved firing
+hand skin and prop do not move; both the authoring guard and the recorded skin
+comparison check this. A reference content hash and rig check prevent using a
+silently changed firing-hand study. The original user elbow direction remains
+the preferred pole; its reached plane adjusts to the wrist limits.
+
+`g17-support-hand-pose.json` is the new left-hand draft, and
+`g17-support-hand-review.json` records the actual left-bone rotations and checks.
+The combined grip is still awaiting approval. No runtime changes or publishing
+are included. Small skin contact overlaps remain; this is not a collision-free
+certificate, a female-rig transfer or a validated animation transition.
+
+```sh
+SPERRKREIS_SUPPORT_HAND=previews/g17-support-hand-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/sperrkreis-g17-grip node scripts/preview-g17-reference.mjs
+python scripts/render-g17-grip-review.py /tmp/sperrkreis-g17-grip/male-both-hands-mesh.json --output /tmp/Sperrkreis_G17_Beide_Haende_Vorschau_05.png
+```
+
+The review sheet contains five natural-color views and one clearly marked hand
+ID view: blue is the approved firing hand, orange is the support-hand draft.
+
 ## Review 04: firing hand only
 
-`g17-firing-hand-pose.json` is the new, unapproved male G17 firing-hand study.
+`g17-firing-hand-pose.json` is the visually approved male G17 firing-hand study.
 The support hand is excluded from its renders. Individual finger arcs are
 authored in anatomical flexion planes, independently of the arm IK. The
 thumb has its own joint directions. Arm fitting must reach the palm anchor;
