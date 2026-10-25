@@ -15,6 +15,7 @@ import {orientWorld} from '../docs/src/weapon-ik.js';
 import {fileURLToPath} from 'node:url';
 import {authorFiringHand} from './g17-firing-hand.js';
 import {authorSupportHand} from './g17-support-hand.js';
+import {alignPreviewArm} from './g17-arm-alignment.js';
 
 const output=process.env.SPERRKREIS_POSE_OUTPUT||fileURLToPath(new URL('../previews/rendered-g17',import.meta.url));
 await mkdir(output,{recursive:true});
@@ -137,6 +138,8 @@ for(const sex of ['male','female'])for(const variant of variants){
   const firingBase=new Map();if(firingHand)entity.model.traverse(b=>{if(b.isBone)firingBase.set(b,b.quaternion.clone());});
   if(firingHand)contactMetrics.authoredRight=authorFiringHand(entity,firingHand);
   else if(variant.name!=='user')referenceFingers(entity);
+  if(supportHand?.armAlignment?.right)contactMetrics.alignedRight=alignPreviewArm(entity,'R',supportHand.armAlignment.right);
+  const supportBase=new Map();if(supportHand&&process.argv.includes('--serve-support-fit'))entity.model.traverse(b=>{if(b.isBone&&b.name.endsWith('L'))supportBase.set(b,b.quaternion.clone());});
   if(supportHand)contactMetrics.authoredLeft=authorSupportHand(entity,supportHand);
   entity.root.updateMatrixWorld(true);
   entity.model.traverse(b=>{if(b.isBone)joints[b.name]=point(entity,b.name).toArray();});
@@ -144,6 +147,9 @@ for(const sex of ['male','female'])for(const variant of variants){
   const rotations=Object.fromEntries([...entity.rifleHands.keys()].filter(n=>/^(Wrist|Thumb|Index|Middle|Ring|Pinky)/.test(n)).map(n=>[n,entity.model.getObjectByName(n).quaternion.toArray()]));
   const boneRotations={};if(firingHand)entity.model.traverse(b=>{if(b.isBone)boneRotations[b.name]=b.quaternion.toArray();});
   const data={sex,variant:supportHand?'both-hands':firingHand?'firing-hand':variant.name,document:doc,rotations,boneRotations,authoredRight:firingHand,authoredLeft:supportHand,meshes:meshData(entity),joints,localJoints,weaponProfile:entity.weapon.userData.pistol,contactMetrics,weaponOrigin:entity.weapon.getWorldPosition(new Vector3()).toArray(),weaponQuaternion:entity.weapon.getWorldQuaternion(new Quaternion()).toArray(),scale:entity.weapon.getWorldScale(new Vector3()).toArray(),constraints:entity.elbowConstraints};
+  if(supportHand&&process.argv.includes('--serve-support-fit')){
+    const{serveSupportFit}=await import('./g17-support-fit-server.js');await serveSupportFit(entity,{base:supportBase,data,meshData,output});replay.dispose();process.exit(0);
+  }
   if(firingHand&&process.argv.includes('--serve-firing-hand')){
     const{serveFiringHand}=await import('./g17-firing-hand-server.js');await serveFiringHand(entity,{base:firingBase,data,meshData,output});replay.dispose();process.exit(0);
   }

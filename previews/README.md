@@ -1,5 +1,36 @@
 # G17 reference-pose review
 
+## Review 06: natural grip and arm connection, awaiting review
+
+The user requested a more natural support hand and an explanation of the right
+wrist kink, permitting deviation from the photograph. The earlier arm fitting
+accepted a 38-degree right wrist bend while holding the grasp. This revision
+fits shoulder/elbow/forearm together and reduces that bend to about 22 degrees;
+the left wrist falls from 42 to about 20 degrees. Bend and axial wrist twist
+are checked separately. The bounded arm search does not change the approved
+right finger rotations, grip anchors or prop frame. Wrist/palm skin blending
+changes locally as the forearm connects differently.
+
+`g17-natural-grip-pose.json` stores the new draft. The support fingers now flex
+relative to the hand frame; individual contact refinements retain that basis.
+`g17-natural-grip-review.json` records the reached rotations, preserved grasp,
+actual wrist angles, unchanged segment lengths and selected skin checks.
+The arm roll bounds are specific to this rig rest frame, not anatomical angle
+measurements. This remains a static male G17 review with minor skin contact
+overlaps; it is not an animation-transition, female-rig or runtime approval.
+
+```sh
+SPERRKREIS_SUPPORT_HAND=previews/g17-support-hand-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/sperrkreis-g17-before node scripts/preview-g17-reference.mjs
+SPERRKREIS_SUPPORT_HAND=previews/g17-natural-grip-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/sperrkreis-g17-natural node scripts/preview-g17-reference.mjs
+python scripts/render-g17-natural-review.py /tmp/sperrkreis-g17-natural/male-both-hands-mesh.json --before /tmp/sperrkreis-g17-before/male-both-hands-mesh.json --output /tmp/Sperrkreis_G17_Natuerlicher_Griff_Vorschau_06.png
+```
+
+The sheet compares the same right-hand camera before/after and includes both
+hands, upper-body context and a separate hand ID view. The old grasp-only
+approval remains intact; the new arm connection and support hand await review.
+The optional `--serve-support-fit` JSON-line tool is for isolated contact
+calibration and never activates a game/workshop profile.
+
 ## Review 05: support hand, awaiting review
 
 The user approved the right firing hand in review 04 on 2026-10-25. Review 05

@@ -1,0 +1,231 @@
+{
+  "format": "sperrkreis-natural-grip-review-snapshot",
+  "version": 1,
+  "reviewVersion": 6,
+  "status": "awaiting-visual-approval",
+  "scope": "male / G17 / static two-hand grip",
+  "supportPoseSha256": "9535762b66cf48aecf04988fdcac6957cb7b2d5d4205952e4725ae6e8ad5f8ec",
+  "firingHandReference": {
+    "poseFile": "previews/g17-firing-hand-pose.json",
+    "reviewFile": "previews/g17-firing-hand-review.json",
+    "approvalDate": "2026-10-25",
+    "poseSha256": "e166c8440bbb7c2c6668bb237f6a1c558ef4259a89175ea58fa4a6f6328bcb15",
+    "approvedImage": "Sperrkreis_G17_Waffenhand_Vorschau_04.png",
+    "approvedImageReview": 4
+  },
+  "checks": {
+    "adjacentFingerAndThumbSkinCrossingPairs": {
+      "IndexR/MiddleR": 0,
+      "MiddleR/RingR": 0,
+      "RingR/PinkyR": 0,
+      "IndexL/MiddleL": 0,
+      "MiddleL/RingL": 0,
+      "RingL/PinkyL": 0,
+      "ThumbL/ThumbR": 0,
+      "ThumbL/IndexR": 0,
+      "ThumbL/IndexL": 0
+    },
+    "approvedFingerSkinMaxWorldDifferenceMetres": 7.636527921128788e-08,
+    "maxArmAndFingerSegmentLengthErrorMetres": 1.4304311665713776e-08,
+    "finiteSkinAndUnitQuaternionsAndNormals": true,
+    "approvedReferenceHashMatches": true,
+    "supportContact": {
+      "palmError": 3.061674559016292e-08,
+      "handFrame": [
+        0.35782099013581736,
+        0.46632139328016,
+        0.49249834158803313,
+        0.6418363348397399
+      ],
+      "wristBend": 0.35717369154225564,
+      "forearmTwist": -0.013640968352632399,
+      "wristTwist": 0,
+      "poleTurn": 0,
+      "fixedRightQuaternionDelta": 0,
+      "fixedWeaponMatrixDelta": 0
+    },
+    "approvedFingerJointWorldMaxDifferenceMetres": 1.0580453144958671e-07,
+    "approvedFingerLocalQuaternionMaxDifference": 0.0,
+    "rightArmAlignment": {
+      "beforeDegrees": 37.999976531469,
+      "afterDegrees": 22.292973824934496,
+      "originalFixedShoulderMinimumDegrees": 18.942935537326736,
+      "shoulderTurnDegrees": 24.930780751407788,
+      "shoulderEulerDegrees": [
+        3,
+        -14.5,
+        -20.5
+      ],
+      "shoulderDisplacementMetres": [
+        0.02248288443814138,
+        0.010739302473027568,
+        -0.0075805522295722405
+      ],
+      "elbowDisplacementMetres": [
+        0.03480306683162855,
+        0.0487557986233742,
+        -0.02111444603087126
+      ],
+      "gripRetreatMetres": 0,
+      "gripTranslation": [
+        0,
+        0,
+        0
+      ],
+      "handPositionError": 1.0431341033529485e-07,
+      "palmPositionError": 1.01951159899796e-07,
+      "handRotationError": 1.6049041769309358e-07,
+      "forearmTwist": -1.7453292519943295,
+      "wristTwist": -0.16414061790944579,
+      "evaluations": 1287
+    },
+    "weaponSkinMaxWorldDifferenceMetres": 2.397496035033697e-08,
+    "wristAnglesDegrees": {
+      "rightBefore": 37.999976531469,
+      "rightAfter": 22.292973824934496,
+      "leftBefore": 42,
+      "leftAfter": 20.464545078478757
+    }
+  },
+  "leftBoneRotations": {
+    "UpperArmL": [
+      -0.6994248147028996,
+      -0.35218401313219877,
+      0.03971467229378889,
+      0.6206401516809922
+    ],
+    "LowerArmL": [
+      -0.22421352263143485,
+      -0.03397060744141195,
+      -0.3356029483697257,
+      0.9143002570313495
+    ],
+    "WristL": [
+      0.10456079474274302,
+      0.017703427534872362,
+      0.11235808701917584,
+      0.9879925548258203
+    ],
+    "Index1L": [
+      -0.03376478349992759,
+      0.0063079610581763534,
+      -0.09786518969983249,
+      0.9946067499940523
+    ],
+    "Index2L": [
+      -0.23446503525240428,
+      -0.03234721182746492,
+      0.09257992727596374,
+      0.9671653330342949
+    ],
+    "Index3L": [
+      -0.07132964896918143,
+      -1.6333822502878625e-08,
+      5.5819519909072746e-09,
+      0.9974528070399225
+    ],
+    "Index4L": [
+      -0.3826834346732125,
+      -3.788738378585066e-09,
+      4.496107881835076e-09,
+      0.9238795417280834
+    ],
+    "Middle1L": [
+      0.025722726792102607,
+      -0.01940881789719473,
+      0.01691062857558054,
+      0.9993376255529434
+    ],
+    "Middle2L": [
+      -0.46970126721613026,
+      0.02492081130549967,
+      -0.006451752256113852,
+      0.8824500298180203
+    ],
+    "Middle3L": [
+      -0.38268344025591133,
+      -1.2061733438428757e-08,
+      1.6222555368483604e-08,
+      0.9238795289454156
+    ],
+    "Middle4L": [
+      -0.3370340116311898,
+      9.524229793722583e-08,
+      2.1198295650087795e-08,
+      0.9414924855971897
+    ],
+    "Ring1L": [
+      -0.008163111756701619,
+      -0.05265007575512601,
+      0.12882763593030655,
+      0.990234710413652
+    ],
+    "Ring2L": [
+      -0.6127242289072614,
+      0.09900969161450057,
+      -0.10375929956120014,
+      0.7771744359237278
+    ],
+    "Ring3L": [
+      -0.33300793394723804,
+      5.645471395920865e-09,
+      2.344150720756666e-09,
+      0.9429240273509475
+    ],
+    "Ring4L": [
+      -0.16908027494404515,
+      1.0149855983465628e-08,
+      -1.6452237863728847e-08,
+      0.9856022958982333
+    ],
+    "Pinky1L": [
+      -0.055670861158745505,
+      -0.07168647441049514,
+      0.2209062310464993,
+      0.9710624318986745
+    ],
+    "Pinky2L": [
+      -0.6523092212044421,
+      0.17729466274932462,
+      -0.1750780109105311,
+      0.7158260718507488
+    ],
+    "Pinky3L": [
+      -0.20160446905684282,
+      2.6553713339261265e-08,
+      3.465343622298389e-09,
+      0.9794670133410908
+    ],
+    "Pinky4L": [
+      -0.0671970349755625,
+      -5.6942994014486104e-08,
+      -5.138658179526523e-10,
+      0.9977397068972871
+    ],
+    "Thumb1L": [
+      0.21574436750155632,
+      0.12288390780784979,
+      -0.2407024604911305,
+      0.9383050101566318
+    ],
+    "Thumb2L": [
+      -0.2669498914241013,
+      -0.14173390451316592,
+      0.024482325501597485,
+      0.9529165473670296
+    ],
+    "Thumb3L": [
+      0.01024050232641291,
+      -0.03867847790158338,
+      0.17267902691828482,
+      0.9841651863987393
+    ]
+  },
+  "limits": [
+    "Right grasp remains approved; new arm connection and support hand await review.",
+    "Small skin contact overlaps remain; this is not a collision-free certificate.",
+    "Static male G17 only; no female transfer, transitions or runtime release.",
+    "Wrist-to-palm skin blending changes locally with the new arm connection; approved finger joints and grip anchors remain fixed.",
+    "The forearm-roll bound is expressed in this rig rest frame; this is not an animation-transition approval."
+  ]
+}
