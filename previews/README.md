@@ -1,6 +1,13 @@
 # G17 reference-pose review
 
-This directory holds a review candidate, not an activated game profile. No
+The user rejected review 03 on 2026-10-25. The stored pose must not be used as an
+approved reference or integrated into the game. Its hand and finger shapes are
+visibly unnatural despite the surface-contact measurements. The original rigs
+have individual finger joints; the current fitting objective does not adequately
+constrain hand shape. A replacement must first establish a visually credible
+firing hand by itself, then fit and inspect the support hand from both sides.
+
+This directory retains the rejected attempt for reproduction. No
 runtime files, original models, build output or game rules are changed here.
 The accepted visual direction must be integrated and checked separately before
 it is published. The current close-up review uses the male G17 reference; the

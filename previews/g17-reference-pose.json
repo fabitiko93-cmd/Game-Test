@@ -1,7 +1,7 @@
 {
   "format": "sperrkreis-reference-pose-preview",
   "version": 1,
-  "status": "awaiting-visual-approval",
+  "status": "rejected-by-user",
   "sourceCommit": "1e344e7d1df366a226e87303f2c706b50833215d",
   "weapon": "pistol_9mm",
   "pose": "aim",
@@ -827,7 +827,7 @@
     }
   },
   "reviewVersion": 3,
-  "notes": "Rebuilt grip-height and palm-frame calibration. Individual fingers fitted against original grip/posed-hand skin. Preview only; no activated game profile.",
+  "notes": "Review 03 rejected by the user on 2026-10-25 for visibly unnatural hand and finger posing. Not approved for transfer or runtime integration. Surface-contact distances did not establish a credible hand shape. Retained only to reproduce the rejected attempt.",
   "referenceScope": {
     "sex": "male",
     "weapon": "pistol_9mm",
