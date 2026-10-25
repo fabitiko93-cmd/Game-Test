@@ -1,5 +1,12 @@
 # G17 reference-pose review
 
+## Right-shoulder review: unresolved
+
+The user found review 06's grip promising but flagged the right shoulder as
+unnatural. This is not whole-pose approval. The shoulder/upper-arm connection
+remains unresolved; see `g17-shoulder-diagnosis.md`. Do not integrate review 06
+as a completed pose. The separately approved review-04 grasp remains intact.
+
 ## Review 06: natural grip and arm connection, awaiting review
 
 The user requested a more natural support hand and an explanation of the right
