@@ -13,8 +13,12 @@ are child-joint edits; the prop follows their palm contact. The support arm
 uses the nearest swing from its original frame without an axial hinge reset.
 The actual right shoulder/upper-arm skin has zero displacement from the
 original game pose, and the original mesh attributes/weights are unchanged.
-See `g17-hand-local-review.json` for the verified boundary. Review 08 still
-awaits visual approval; no runtime change is included.
+See `g17-hand-local-review.json` for the verified boundary. Review 08 was subsequently rejected because it changed the approved fingers.
+Review 09 copies the full approved hand frame and finger rotations, preserves
+the original right shoulder/upper-arm bones and shoulder skin exactly, and
+uses a small forearm swing with a 17.3-degree body/aim yaw offset. See
+`g17-approved-grip-review.json` for measured skin tolerances. No runtime change
+is included; the complete static pose still awaits visual approval.
 
 ## Historical review-07 investigation (rejected)
 

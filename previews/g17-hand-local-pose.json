@@ -2,7 +2,7 @@
   "format": "sperrkreis-natural-grip-preview",
   "version": 1,
   "reviewVersion": 8,
-  "status": "awaiting-visual-approval",
+  "status": "rejected-by-user",
   "sex": "male",
   "palm": [
     0.025,
@@ -125,5 +125,7 @@
       ]
     },
     "supportReviewSha256": "a921105b9fd92b8eaa194e16cb456e1f097a6ffd01fa14392de72f1e6cbe04d0"
-  }
+  },
+  "rejectedAt": "2026-10-26",
+  "rejectionReason": "The user identified changed fingers after the shoulder restoration. Hand-local knuckle calibration is not the complete approved grasp."
 }

@@ -1,6 +1,45 @@
 # G17 reference-pose review
 
-## Review 08: original firing arm, hand-local attachment, awaiting review
+## Review 09: complete approved grasp and original shoulder, awaiting review
+
+Review 08 restored the shoulder but reauthored the metacarpals and index finger,
+so it changed the approved hand. Review 09 copies every review-04 right-finger
+quaternion and the complete wrist/weapon frame from the approved snapshot. It
+never reconstructs curls, targets new knuckles or moves individual fingers.
+Both reference snapshots are hash-locked.
+
+`g17-approved-grip-pose.json` keeps the original torso, head, both clavicles and
+right upper-arm rotations. The body is 17.3 degrees oblique to the level gun;
+the right forearm makes a 9.95-degree shortest swing, without upper-arm roll or
+hinge reset. This permits the unchanged grasp, a 24-degree right wrist bend and
+a reachable review-06 support grasp. The gun moves 4.45 cm overall, including
+2.57 cm down; its barrel stays level. The left wrist bends 22.54 degrees.
+
+`check-g17-approved-grip.py` compares actual Three.js-skinned geometry with
+both the approved hand and the original game shoulder. Shoulder skin has zero
+displacement; all approved right-hand joints in weapon space differ by less
+than 0.05 micrometres. The 445 vertices wholly weighted to the hand reproduce
+the approved skin within floating-point tolerance. Mixed hand/forearm vertices
+at the seam differ by up to 1.93 mm; distal upper-arm skin near the moved elbow
+differs by up to 3.31 mm. These are measured deformations, not weight or geometry
+edits. Original geometry, materials and skin weights remain identical.
+All ten selected finger/thumb surface-crossing checks pass.
+
+The sheet compares the approved and new hand with identical weapon cameras,
+and the original and new shoulder with identical body cameras. It also shows
+the combined grip. Visual approval remains pending. No game source, asset,
+build, workshop activation or deployment changes. Female transfer and animation
+transitions remain pending the accepted static reference.
+
+```sh
+SPERRKREIS_FIRING_HAND=previews/g17-firing-hand-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-original node scripts/preview-g17-reference.mjs --original-game-pose --export-shoulder-binding
+SPERRKREIS_FIRING_HAND=previews/g17-firing-hand-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-approved node scripts/preview-g17-reference.mjs --export-shoulder-binding
+SPERRKREIS_SUPPORT_HAND=previews/g17-approved-grip-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-composed node scripts/preview-g17-reference.mjs --export-shoulder-binding
+python scripts/check-g17-approved-grip.py /tmp/g17-original/male-firing-hand-mesh.json /tmp/g17-approved/male-firing-hand-mesh.json /tmp/g17-composed/male-both-hands-mesh.json --original-binding /tmp/g17-original/male-shoulder-binding.json --reference-binding /tmp/g17-approved/male-shoulder-binding.json --candidate-binding /tmp/g17-composed/male-shoulder-binding.json --pose previews/g17-approved-grip-pose.json --output previews/g17-approved-grip-review.json
+python scripts/render-g17-approved-grip.py /tmp/g17-original/male-firing-hand-mesh.json /tmp/g17-approved/male-firing-hand-mesh.json /tmp/g17-composed/male-both-hands-mesh.json --output /tmp/Sperrkreis_G17_Freigegebener_Griff_Vorschau_09.png
+```
+
+## Review 08: rejected; shoulder restored but fingers changed
 
 The user rejected review 07: correcting fingers must not destroy a previously
 working shoulder. The earlier pipeline additionally fitted the arm chain,
@@ -20,13 +59,13 @@ displacement from the original game reference, byte-equivalent mesh attributes
 and skin weights, unchanged protected bone rotations, segment lengths and
 selected finger surface crossings. The firing wrist remains at its original
 19.6-degree bend. The prop translates about 5.2 cm to fit the hand rather than
-dragging the firing arm toward a fixed prop. This new attachment and local
-finger calibration still require visual approval; they are not a claim that
-every hand vertex is identical to review 04.
+dragging the firing arm toward a fixed prop. This attachment and local finger
+calibration changed the approved hand and are rejected. Do not integrate this
+profile or use it as the approved grasp.
 
 ```sh
 SPERRKREIS_FIRING_HAND=previews/g17-firing-hand-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-original node scripts/preview-g17-reference.mjs --original-game-pose --export-shoulder-binding
-SPERRKREIS_SUPPORT_HAND=previews/g17-hand-local-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-hand-local node scripts/preview-g17-reference.mjs --export-shoulder-binding
+SPERRKREIS_SUPPORT_HAND=previews/g17-hand-local-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-hand-local node scripts/preview-g17-reference.mjs --replay-rejected --export-shoulder-binding
 python scripts/check-g17-hand-local.py /tmp/g17-original/male-firing-hand-mesh.json /tmp/g17-hand-local/male-both-hands-mesh.json --original-binding /tmp/g17-original/male-shoulder-binding.json --candidate-binding /tmp/g17-hand-local/male-shoulder-binding.json --pose previews/g17-hand-local-pose.json --output previews/g17-hand-local-review.json
 python scripts/render-g17-hand-local.py /tmp/g17-original/male-firing-hand-mesh.json /tmp/g17-hand-local/male-both-hands-mesh.json --output /tmp/Sperrkreis_G17_Originalarm_Griff_Vorschau_08.png
 ```

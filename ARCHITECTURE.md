@@ -1,5 +1,13 @@
 # Modulkarte für SPERRKREIS 98
 
+Die isolierten G17-Prüfrender liegen unter `previews/` und `scripts/` und werden
+nicht vom Spiel importiert. `g17-approved-grip.js` kopiert die freigegebene
+Handpose vollständig, schützt Schulter/Oberarm und verbindet den Unterarm ohne
+zusätzliche Oberarmdrehung. Prüfer und Renderer vergleichen echte Hautdreiecke
+mit der freigegebenen Hand und der ursprünglichen Schulter. Referenz-Hashes und
+Ablehnungsstatus sperren unbeabsichtigte Änderungen; Laufzeitintegration folgt
+erst nach visueller Freigabe.
+
 Fortlaufende Modulkarte auf Basis der technischen Modularisierung vom 02.10.2026.
 Zweck: den Einstieg und den Umfang eines Patches begrenzen.
 Spielregeln und Ideen stehen in `DESIGN_PLAN.md`; diese Karte enthält Zuständigkeiten.

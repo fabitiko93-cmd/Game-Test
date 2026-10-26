@@ -1,0 +1,78 @@
+{
+  "format": "sperrkreis-approved-grip-review",
+  "version": 1,
+  "reviewVersion": 9,
+  "status": "awaiting-visual-approval",
+  "poseSha256": "7a5565d660ea81068526ceb5359b9f074cf6443a00dd9c9c817f2b4e06fc8255",
+  "checks": {
+    "approvedRightFingerLocalRotationsExactlyPreserved": true,
+    "approvedRightHandWeaponLocalJointMaxDifferenceMetres": 4.842845407426916e-08,
+    "approvedHandCoreSkinMaxDifferenceMetres": 6.313854207080707e-08,
+    "approvedHandCoreVertexCount": 445,
+    "mixedForearmHandSeamSkinMaxDifferenceMetres": 0.0019298599144316707,
+    "originalRightShoulderSkinMaxDifferenceMetres": 0.0,
+    "distalUpperArmSkinChangeNearElbowMetres": 0.0033108295596890294,
+    "protectedOriginalBoneRotationsExactlyPreserved": [
+      "Torso",
+      "Chest",
+      "Head",
+      "ShoulderR",
+      "UpperArmR",
+      "ShoulderL"
+    ],
+    "originalGeometryNormalsTopologyAndSkinWeightsExactlyPreserved": true,
+    "maxSegmentLengthErrorMetres": 1.9873630296984857e-08,
+    "finiteSkinAndUnitNormalsAndQuaternions": true,
+    "levelBarrel": true,
+    "adjacentFingerAndThumbCrossingPairs": {
+      "IndexR/MiddleR": 0,
+      "MiddleR/RingR": 0,
+      "RingR/PinkyR": 0,
+      "IndexL/MiddleL": 0,
+      "MiddleL/RingL": 0,
+      "RingL/PinkyL": 0,
+      "ThumbL/ThumbR": 0,
+      "ThumbR/IndexR": 0,
+      "ThumbL/IndexR": 0,
+      "ThumbL/IndexL": 0
+    },
+    "attachment": {
+      "mode": "approved-grip-attachment",
+      "protectedBones": [
+        "Torso",
+        "Chest",
+        "Head",
+        "ShoulderR",
+        "UpperArmR",
+        "ShoulderL"
+      ],
+      "protectedQuaternionMaxDifference": 0,
+      "approvedRightFingerQuaternionMaxDifference": 0,
+      "approvedHandFrameErrorRadians": 1.3328003749250115e-07,
+      "rightPalmError": 1.1350128385941981e-08,
+      "leftPalmError": 3.8448521950935586e-08,
+      "rightWristBendDegrees": 24.000009276108088,
+      "leftWristBendDegrees": 22.542660985537267,
+      "rightUpperArmSwingDegrees": 0,
+      "rightLowerArmSwingDegrees": 9.946746374865517,
+      "weaponYawDegrees": 17.292024100568522,
+      "additionalRightUpperArmAxialRollDegrees": 0,
+      "support": {
+        "upperSwingDegrees": 0.6848842821432096,
+        "lowerSwingDegrees": 21.135428786823468
+      },
+      "gunTranslationMetres": [
+        0.00784433846680311,
+        -0.02571632174051719,
+        0.03550105054654318
+      ],
+      "skinWeightsModified": false
+    }
+  },
+  "limits": [
+    "Static male G17 only. Full-pose visual approval, female transfer and animation transitions remain pending.",
+    "A 17.3-degree body/weapon yaw offset is deliberate; the forearm moves by less than 10 degrees.",
+    "The approved finger and wrist/weapon transforms are preserved. Mixed forearm weights produce a measured skin change below 2.1 mm at the seam.",
+    "Selected finger collision pairs do not certify the entire character globally collision-free. No runtime or asset changes."
+  ]
+}

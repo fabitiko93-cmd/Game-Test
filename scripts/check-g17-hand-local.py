@@ -68,7 +68,7 @@ def check(original_path,candidate_path,original_binding_path,candidate_binding_p
         crossings[a+'/'+b]=value
     reference_hash=hashlib.sha256(Path(pose['firingHandReference']['poseFile']).read_bytes()).hexdigest()
     assert reference_hash==pose['firingHandReference']['poseSha256']
-    report={'format':'sperrkreis-hand-local-review','version':1,'reviewVersion':8,'status':'awaiting-visual-approval',
+    report={'format':'sperrkreis-hand-local-review','version':1,'reviewVersion':pose['reviewVersion'],'status':pose['status'],
             'poseSha256':hashlib.sha256(Path(pose_path).read_bytes()).hexdigest(),
             'checks':{'originalFiringArmBoneRotationsExactlyPreserved':True,'originalRightShoulderAndUpperArmSkinMaxDifferenceMetres':skin_delta,
                       'originalMeshPositionsNormalsTopologyAndSkinWeightsExactlyPreserved':True,'maxSegmentLengthErrorMetres':max(length_errors),

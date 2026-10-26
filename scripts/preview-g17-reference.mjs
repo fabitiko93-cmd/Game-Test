@@ -23,6 +23,7 @@ const source=await readFile(process.env.SPERRKREIS_POSE_INPUT||new URL('../previ
 const original=parseAnimation(source),cache=new Map();
 const supportHandFile=process.env.SPERRKREIS_SUPPORT_HAND;
 const supportHand=supportHandFile?JSON.parse(await readFile(supportHandFile,'utf8')):null;
+const isolatedAttachment=Boolean(supportHand?.handLocalAttachment||supportHand?.approvedGripAttachment);
 if(supportHand?.status==='rejected-by-user'&&!process.argv.includes('--replay-rejected'))throw Error('Rejected pose: use --replay-rejected only for a historical comparison');
 const firingHandFile=process.env.SPERRKREIS_FIRING_HAND||(supportHandFile?fileURLToPath(new URL('../previews/g17-firing-hand-pose.json',import.meta.url)):null);
 const firingHandSource=firingHandFile?await readFile(firingHandFile,'utf8'):null;
@@ -119,7 +120,7 @@ for(const sex of ['male','female'])for(const variant of variants){
   const models=new PlayerModels({},library);models.weapons.loadAsset=load;
   const create=models.weapons.create.bind(models.weapons);
   models.weapons.create=(item)=>{
-    const weapon=create(item);if(!weapon||variant.name==='user'||process.argv.includes('--original-game-pose')||supportHand?.handLocalAttachment)return weapon;
+    const weapon=create(item);if(!weapon||variant.name==='user'||process.argv.includes('--original-game-pose')||isolatedAttachment)return weapon;
     weapon.userData.pistol={...weapon.userData.pistol,rightPalm:[-.032,-.038,-.013],leftPalm:[.035,-.054,.009],rightThumb:[.012,-.010,-.050]};
     weapon.userData.grips={...weapon.userData.grips,rightThumb:[.012,-.010,-.050]};return weapon;
   };
@@ -135,7 +136,7 @@ for(const sex of ['male','female'])for(const variant of variants){
     }
     values.elbowTurnL[0]=best.angle;replay.setDocument(doc,1000);replay.seek(0,{reset:true});
   }
-  const entity=replay.entity,joints={};const originalGame=process.argv.includes('--original-game-pose')||Boolean(supportHand?.handLocalAttachment);
+  const entity=replay.entity,joints={};const originalGame=process.argv.includes('--original-game-pose')||isolatedAttachment;
   const contactMetrics=variant.name!=='user'&&!originalGame?fitPreviewContacts(entity):{};
   const firingBase=new Map();if(firingHand)entity.model.traverse(b=>{if(b.isBone)firingBase.set(b,b.quaternion.clone());});
   if(firingHand&&!originalGame)contactMetrics.authoredRight=authorFiringHand(entity,firingHand);
@@ -154,6 +155,20 @@ for(const sex of ['male','female'])for(const variant of variants){
     if(createHash('sha256').update(leftSource).digest('hex')!==supportHand.handLocalAttachment.supportReviewSha256)throw Error('Support-grasp reference has changed');
     const leftReference=JSON.parse(leftSource);
     contactMetrics.handLocalAttachment=attachAuthoredGrip(entity,{...firingHand,knuckleTargets:supportHand.handLocalAttachment.rightKnuckleTargets,knuckleRotations:supportHand.handLocalAttachment.rightKnuckleRotations},supportHand,leftReference);
+  }
+  if(supportHand?.approvedGripAttachment){
+    if(supportHand.armAlignment||supportHand.shoulderSkin||supportHand.handLocalAttachment)throw Error('Approved-grip composition cannot rebuild fingers or repair skinning');
+    if(process.argv.some(a=>/^--serve/.test(a)))throw Error('Approved-grip snapshots do not use the legacy authoring servers');
+    const options=supportHand.approvedGripAttachment;
+    const readReference=async(file,hash)=>{
+      const source=await readFile(file,'utf8');
+      if(createHash('sha256').update(source).digest('hex')!==hash)throw Error('Approved grasp snapshot has changed: '+file);
+      return JSON.parse(source);
+    };
+    const rightReference=await readReference(supportHand.firingHandReference.reviewFile,options.rightReviewSha256);
+    const leftReference=await readReference(options.supportReviewFile,options.supportReviewSha256);
+    const{attachApprovedGrip}=await import('./g17-approved-grip.js');
+    contactMetrics.approvedGripAttachment=attachApprovedGrip(entity,firingHand,rightReference,supportHand,leftReference,options);
   }
   entity.root.updateMatrixWorld(true);
   entity.model.traverse(b=>{if(b.isBone)joints[b.name]=point(entity,b.name).toArray();});

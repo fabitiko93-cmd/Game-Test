@@ -2,8 +2,8 @@
   "format": "sperrkreis-hand-local-review",
   "version": 1,
   "reviewVersion": 8,
-  "status": "awaiting-visual-approval",
-  "poseSha256": "314eab4a265a5c8759048f93a83dad7ce762953dd767c72675e52a38962d4f54",
+  "status": "rejected-by-user",
+  "poseSha256": "7595d651de1e173136e997decc420d6092b6d8ea85e6c46bd8d176f4bcc10a7c",
   "checks": {
     "originalFiringArmBoneRotationsExactlyPreserved": true,
     "originalRightShoulderAndUpperArmSkinMaxDifferenceMetres": 0,
@@ -53,5 +53,6 @@
     "Hand/finger contacts are not a globally collision-free certificate.",
     "Static male G17 preview only; no runtime release, female transfer or transition approval.",
     "Finger arc parameters come from review 04; local knuckle calibration and the new attachment require visual review."
-  ]
+  ],
+  "rejectedAt": "2026-10-26"
 }
