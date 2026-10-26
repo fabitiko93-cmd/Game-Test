@@ -1,10 +1,11 @@
-# Right shoulder: unresolved visual defect
+# Right shoulder: diagnosis and isolated review 07
 
 Reviewed on 2026-10-25 after the user found review 06's grip promising and
-reported its right shoulder as unnatural. The delivered review 06 remains the
-latest combined preview; no shoulder replacement has been presented or approved.
-Review 04's right grasp approval is unchanged. No runtime files, source assets,
-published files or workshop profiles were modified during this investigation.
+reported its right shoulder as unnatural. On 2026-10-26 the user requested the
+shoulder correction. Review 07 now combines a neutral clavicle/arm calibration
+with a localized skin-weight correction and awaits visual approval. Review 04's
+right grasp approval is unchanged. No runtime files, original assets, published
+files or workshop profiles were modified during this investigation.
 
 ## Confirmed findings
 
@@ -19,8 +20,9 @@ published files or workshop profiles were modified during this investigation.
   `docs/src/character-body.js:createBareTorso` retains upper source surfaces,
   including non-skin garment surfaces, and repaints them as skin. Their vertex
   positions and bone weights remain inherited in the shoulder region.
-  This is a possible additional contributor to the visible shoulder edge;
-  it has not been established as the sole cause.
+  A bind-space render of the source confirms the retained tank-top surfaces.
+  A controlled same-arm-pose comparison shows that localized weight smoothing
+  improves the shoulder silhouette. The joint fit and skin binding both matter.
 - An inspection of coincident bind-space torso vertices found no separated
   coincident seam above 0.1 mm in the review-06 mesh. Do not describe this as
   a confirmed open seam or a missing model.
@@ -40,12 +42,21 @@ visibly unacceptable. It must not become an approved pose merely because
 its geometric checks pass. No such trial replaced review 06 or the approved
 right-hand reference.
 
-## Proposed next scope
+## Review-07 correction and remaining scope
 
-Keep both grasp frames fixed and inspect the bare shoulder surface and its
-skinning independently of the hand-contact solver. Compare matching front,
-rear and side views; include the original source and a clothed body to separate
-pose and body-surface effects. Any body correction should first be an isolated,
-reviewable instance, with unchanged original assets and game imports. This is
-a technical proposal, not a recorded user approval for a runtime body change.
-The shoulder, female transfer and animation transitions remain unapproved.
+Both grasp frames remain fixed. The revised arm fitting restores the neutral
+clavicle rather than optimizing wrist bend alone. A separate, explicitly
+configured preview step diffuses only the right shoulder's skin weights over
+the original mesh adjacency. It clones geometry first and checks the original
+fingerprint afterward. It does not change bind positions, normals, topology,
+colors or source files. The neck, opposite arm, fingers and outer body weights
+remain outside the correction. Actual Three.js-skinned triangles are rendered;
+no bitmap edits or substitute body are used.
+
+The snapshot records the 93 corrected vertices, fixed grasp/prop skin, actual
+wrist bend and static Idle_Neutral/Punch_Right source-clip probes. The selected
+shoulder triangle-crossing count falls from 138 to 110, but intersections
+remain. This is a visual improvement with bounded, reviewable scope, not a
+globally collision-free body or a validated animation-transition solution.
+The new shoulder still awaits user approval. Female transfer, full animation
+transitions and any runtime body integration remain separate pending work.

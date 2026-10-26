@@ -1,0 +1,134 @@
+{
+  "format": "sperrkreis-natural-grip-preview",
+  "version": 1,
+  "reviewVersion": 7,
+  "status": "awaiting-visual-approval",
+  "sex": "male",
+  "palm": [
+    0.025,
+    -0.06,
+    0.007
+  ],
+  "pitch": -15,
+  "yaw": -18,
+  "roll": 0,
+  "elbowDirection": [
+    0.014732925,
+    -0.291954971,
+    0.956318585
+  ],
+  "poleTurn": 0,
+  "curls": {
+    "Index": [
+      31.142713315471727,
+      8.180724067783423,
+      44.99999991234043
+    ],
+    "Middle": [
+      53.101115238082365,
+      44.99999995931706,
+      39.39254466233859
+    ],
+    "Ring": [
+      78,
+      38.90289214915642,
+      19.468696701463735
+    ],
+    "Pinky": [
+      91.38390939599377,
+      23.26159325871702,
+      7.706019004361969
+    ]
+  },
+  "spread": {
+    "Index": [
+      -0.5,
+      -3,
+      0
+    ],
+    "Ring": [
+      0,
+      -2,
+      0
+    ],
+    "Pinky": [
+      -1.2371650087781807,
+      -8.264584293932321,
+      0
+    ]
+  },
+  "thumb": [
+    [
+      0.06,
+      -0.035,
+      -0.04
+    ],
+    [
+      0.043,
+      -0.01,
+      -0.012
+    ],
+    [
+      0.027,
+      -0.003,
+      0.023
+    ]
+  ],
+  "fingerPlaneRoll": {
+    "Pinky": -8.999995938847865,
+    "Ring": -5
+  },
+  "scope": "male / G17 / static grip / relaxed right shoulder and isolated skin binding correction",
+  "sourceCommit": "f284f0095d3a299a392bd29cc10b28628860b4e7",
+  "firingHandReference": {
+    "poseFile": "previews/g17-firing-hand-pose.json",
+    "reviewFile": "previews/g17-firing-hand-review.json",
+    "approvalDate": "2026-10-25",
+    "poseSha256": "e166c8440bbb7c2c6668bb237f6a1c558ef4259a89175ea58fa4a6f6328bcb15",
+    "approvedImage": "Sperrkreis_G17_Waffenhand_Vorschau_04.png",
+    "approvedImageReview": 4
+  },
+  "units": {
+    "palm": "weapon-local metres before the existing weapon scale",
+    "rotations": "degrees",
+    "elbowDirection": "preferred upper-arm direction from the supplied user pose"
+  },
+  "armAlignment": {
+    "right": {
+      "maxBend": 27,
+      "maxShoulderTurn": 0,
+      "maxWristTwist": 10,
+      "maxRetreat": 0,
+      "maxForearmTwist": 90,
+      "shoulderReference": "rig-rest",
+      "upperArmRoll": -60,
+      "preferredBend": 25
+    }
+  },
+  "maxWristBend": 27,
+  "handAlignedFingers": true,
+  "revisionOf": "previews/g17-natural-grip-pose.json",
+  "preservedReference": "Approved firing-hand grasp relative to the prop; wrist/forearm skin connection may change.",
+  "notes": "Preview only. Restore neutral clavicle, calibrate the upper-arm crease and diffuse only the original right shoulder skin weights on an instance clone. Original mesh positions, topology, colors, fingers, assets and runtime remain unchanged. Review-06 support grasp and approved review-04 firing grasp remain fixed. Rig-specific static calibration; not a transition or female-rig approval.",
+  "shoulderSkin": {
+    "mode": "localized-weight-diffusion",
+    "side": "R",
+    "sourceGeometrySha256": "579f67583fe0f5611f31d6c54afe04023a171a341bb187a108ac993f9997f28b",
+    "iterations": 12,
+    "strength": 0.5,
+    "bounds": {
+      "xOuter": [
+        -0.32,
+        -0.25
+      ],
+      "xInner": [
+        -0.09,
+        -0.045
+      ],
+      "yBottom": [
+        1.35,
+        1.42
+      ]
+    }
+  }
+}

@@ -1,0 +1,275 @@
+{
+  "format": "sperrkreis-shoulder-review-snapshot",
+  "version": 1,
+  "reviewVersion": 7,
+  "status": "awaiting-visual-approval",
+  "scope": "male / G17 / static grip / relaxed right shoulder and isolated skin binding correction",
+  "poseSha256": "4544a6449638f9f5220656a31b8a6638be48c65001583f9cdd0c13e220832016",
+  "firingHandReference": {
+    "poseFile": "previews/g17-firing-hand-pose.json",
+    "reviewFile": "previews/g17-firing-hand-review.json",
+    "approvalDate": "2026-10-25",
+    "poseSha256": "e166c8440bbb7c2c6668bb237f6a1c558ef4259a89175ea58fa4a6f6328bcb15",
+    "approvedImage": "Sperrkreis_G17_Waffenhand_Vorschau_04.png",
+    "approvedImageReview": 4
+  },
+  "checks": {
+    "approvedRightFingerSkinMaxWorldDifferenceMetres": 7.406836702653075e-08,
+    "review06LeftSkinMaxWorldDifferenceMetres": 2.8189064416039855e-09,
+    "bothHandJointMaxWorldDifferenceMetres": 1.404769866754414e-07,
+    "weaponSkinMaxWorldDifferenceMetres": 2.935755843286314e-09,
+    "maxArmAndFingerSegmentLengthErrorMetres": 1.430431151305811e-08,
+    "finiteSkinAndUnitNormalsAndQuaternions": true,
+    "meshTopologyAndOriginalMaterialColorsUnchanged": true,
+    "shoulderHeightDifferenceMetres": {
+      "before": 0.021883961888810477,
+      "after": 0.0005461037883174313
+    },
+    "bodyBindPositionsNormalsAndTopologyUnchanged": true,
+    "sourceBodyGeometryUnmodified": true,
+    "shoulderSkinCorrection": {
+      "format": "sperrkreis-shoulder-skinning-review",
+      "version": 1,
+      "side": "R",
+      "sourceGeometrySha256": "579f67583fe0f5611f31d6c54afe04023a171a341bb187a108ac993f9997f28b",
+      "iterations": 12,
+      "strength": 0.5,
+      "bounds": {
+        "xOuter": [
+          -0.32,
+          -0.25
+        ],
+        "xInner": [
+          -0.09,
+          -0.045
+        ],
+        "yBottom": [
+          1.35,
+          1.42
+        ]
+      },
+      "changedVertexIndices": [
+        639,
+        640,
+        643,
+        644,
+        645,
+        647,
+        650,
+        651,
+        652,
+        657,
+        658,
+        659,
+        660,
+        661,
+        662,
+        663,
+        664,
+        665,
+        666,
+        667,
+        668,
+        669,
+        670,
+        671,
+        672,
+        673,
+        675,
+        677,
+        679,
+        682,
+        683,
+        684,
+        685,
+        686,
+        687,
+        688,
+        689,
+        690,
+        691,
+        692,
+        693,
+        694,
+        695,
+        696,
+        697,
+        699,
+        700,
+        701,
+        702,
+        703,
+        704,
+        705,
+        708,
+        709,
+        710,
+        711,
+        712,
+        713,
+        714,
+        717,
+        718,
+        722,
+        725,
+        726,
+        727,
+        732,
+        733,
+        734,
+        735,
+        736,
+        737,
+        738,
+        739,
+        803,
+        804,
+        805,
+        806,
+        807,
+        808,
+        809,
+        810,
+        811,
+        1256,
+        1257,
+        1258,
+        1259,
+        1260,
+        1261,
+        1290,
+        1291,
+        1292,
+        1293,
+        1297
+      ],
+      "changedVertices": 93,
+      "maximumWeightDelta": 0.39746516942977905,
+      "originalGeometryUnmodified": true,
+      "geometryCloned": true,
+      "bindPositionsUnchanged": true,
+      "bindNormalsUnchanged": true,
+      "topologyUnchanged": true
+    },
+    "shoulderPatchTriangleCrossingPairs": {
+      "before": 138,
+      "after": 110
+    },
+    "sourceClipPoseProbes": {
+      "neutral": {
+        "sourceClip": {
+          "name": "neutral",
+          "clip": "Idle_Neutral",
+          "phase": 0.2
+        },
+        "finiteSkin": true,
+        "jointsUnchanged": true,
+        "outsidePatchMaxWorldDifferenceMetres": 0
+      },
+      "reach": {
+        "sourceClip": {
+          "name": "reach",
+          "clip": "Punch_Right",
+          "phase": 0.6
+        },
+        "finiteSkin": true,
+        "jointsUnchanged": true,
+        "outsidePatchMaxWorldDifferenceMetres": 0
+      }
+    },
+    "adjacentFingerAndThumbSkinCrossingPairs": {
+      "IndexR/MiddleR": 0,
+      "MiddleR/RingR": 0,
+      "RingR/PinkyR": 0,
+      "IndexL/MiddleL": 0,
+      "MiddleL/RingL": 0,
+      "RingL/PinkyL": 0,
+      "ThumbL/ThumbR": 0,
+      "ThumbL/IndexR": 0,
+      "ThumbL/IndexL": 0
+    },
+    "rightArmAlignment": {
+      "beforeDegrees": 37.999976531469,
+      "afterDegrees": 24.530066275953608,
+      "originalFixedShoulderMinimumDegrees": 18.942935537326736,
+      "shoulderReference": "rig-rest",
+      "upperArmRollDegrees": -60,
+      "shoulderTurnDegrees": 0,
+      "shoulderEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "poleTurnDegrees": 66,
+      "shoulderDisplacementMetres": [
+        -0.01051317974253363,
+        -0.01169076320410034,
+        -1.7095268672884245e-09
+      ],
+      "elbowDisplacementMetres": [
+        -0.001096463770775366,
+        0.058602903389524785,
+        -0.026153254499419187
+      ],
+      "gripRetreatMetres": 0,
+      "gripTranslation": [
+        0,
+        0,
+        0
+      ],
+      "handPositionError": 4.751363122383705e-08,
+      "palmPositionError": 6.677189727169812e-08,
+      "handRotationError": 1.632340423778195e-07,
+      "forearmTwist": -1.4926900173442572,
+      "wristTwist": 0,
+      "evaluations": 45
+    },
+    "supportContact": {
+      "palmError": 3.061674677636484e-08,
+      "handFrame": [
+        0.35782099013581736,
+        0.46632139328016,
+        0.49249834158803313,
+        0.6418363348397399
+      ],
+      "wristBend": 0.3571736791558081,
+      "forearmTwist": -0.013640937636179018,
+      "wristTwist": 0,
+      "poleTurn": 0,
+      "fixedRightQuaternionDelta": 0,
+      "fixedWeaponMatrixDelta": 0
+    }
+  },
+  "rightArmBoneRotations": {
+    "ShoulderR": [
+      -0.4561992646592943,
+      0.8402316180753696,
+      0.10690750417787623,
+      0.27288064140015966
+    ],
+    "UpperArmR": [
+      0.7193125204132688,
+      -0.5521417107135939,
+      0.3396619091830142,
+      0.249717467746812
+    ],
+    "LowerArmR": [
+      0.24236236488245802,
+      -0.732453842658175,
+      0.11330881807441916,
+      0.6260455044432561
+    ],
+    "WristR": [
+      0.11767794998634892,
+      -0.017778156720945765,
+      -0.1477916646125624,
+      0.9818316601643345
+    ]
+  },
+  "limits": [
+    "The upper-arm crease offset is an authored calibration in this rig frame, not an anatomical angle.",
+    "Selected finger skin pairs are checked; contact overlaps elsewhere remain possible.",
+    "Shoulder triangle intersections decrease but remain; this is not a collision-free body certificate.",
+    "Static male G17 preview only; no female fit, animation-transition or runtime approval."
+  ]
+}

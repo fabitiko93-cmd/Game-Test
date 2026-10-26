@@ -4,7 +4,7 @@ import {fitArm,orientWorld} from '../docs/src/weapon-ik.js';
 const v=()=>new Vector3(),rad=n=>n*Math.PI/180,deg=n=>n*180/Math.PI;
 const point=(e,n)=>e.model.getObjectByName(n).getWorldPosition(v());
 
-export function alignPreviewArm(entity,side,{maxBend=22,maxShoulderTurn=20,maxWristTwist=25,maxForearmTwist=60,maxRetreat=0}={}){
+export function alignPreviewArm(entity,side,{maxBend=22,maxShoulderTurn=20,maxWristTwist=25,maxForearmTwist=60,maxRetreat=0,shoulderReference='current',upperArmRoll=0,preferredBend=null}={}){
   const root=entity.root,gun=entity.weapon,rig=entity.rifleHands;
   root.updateMatrixWorld(true);
   const [shoulder,upper,lower,wrist]=['Shoulder','UpperArm','LowerArm','Wrist'].map(n=>entity.model.getObjectByName(n+side));
@@ -13,7 +13,9 @@ export function alignPreviewArm(entity,side,{maxBend=22,maxShoulderTurn=20,maxWr
   const palm=point(entity,'Middle2'+side),handAxis=palm.clone().sub(target).normalize(),before=target.clone().sub(oldElbow).angleTo(handAxis);
   const oldStart=upper.getWorldPosition(v()),a=oldStart.distanceTo(oldElbow),b=oldElbow.distanceTo(target),distance=oldStart.distanceTo(target);
   const axis0=target.clone().sub(oldStart).normalize(),delta=axis0.angleTo(handAxis),cone=Math.acos(Math.max(-1,Math.min(1,(b*b+distance*distance-a*a)/(2*b*distance))));
-  const originalMinimum=Math.abs(delta-cone),shoulderWorld=shoulder.getWorldQuaternion(new Quaternion()).normalize();
+  const originalMinimum=Math.abs(delta-cone),shoulderWorld=shoulderReference==='rig-rest'
+    ?shoulder.parent.getWorldQuaternion(new Quaternion()).multiply(rig.get('Shoulder'+side).rotation).normalize()
+    :shoulder.getWorldQuaternion(new Quaternion()).normalize();
   const axes=[new Vector3(1,0,0),new Vector3(0,1,0),new Vector3(0,0,1)].map(x=>x.applyQuaternion(root.getWorldQuaternion(new Quaternion())));
   const forward=new Vector3(0,0,1).applyQuaternion(gun.getWorldQuaternion(new Quaternion())).normalize(),oldGunPosition=gun.getWorldPosition(v());
   const parent=gun.parent;root.attach(gun);root.updateMatrixWorld(true);
@@ -25,11 +27,17 @@ export function alignPreviewArm(entity,side,{maxBend=22,maxShoulderTurn=20,maxWr
     if(d>=a+b-.001||d<=Math.abs(a-b)+.001)return;
     const axis=offset.normalize(),radial=oldElbow.clone().sub(start);radial.addScaledVector(axis,-radial.dot(axis)).normalize();
     const pole=start.clone().add(radial.applyAxisAngle(axis,rad(poleTurn)));
-    const frame={hand,axis:rig.get('Wrist'+side).palm,rest:rig.get('Wrist'+side).rotation,lowerRest:rig.get('LowerArm'+side).rotation,hinge:rig.get('UpperArm'+side).hinge,maxTwist:rad(maxForearmTwist),maxBend:0};
+    // Authored crease-frame calibration precedes the lower-arm solve. The angle
+    // belongs to this rig's axes; it is not an anatomical range measurement.
+    const hinge=rig.get('UpperArm'+side).hinge.clone().applyAxisAngle(lower.position.clone().normalize(),-rad(upperArmRoll));
+    const frame={hand,axis:rig.get('Wrist'+side).palm,rest:rig.get('Wrist'+side).rotation,lowerRest:rig.get('LowerArm'+side).rotation,hinge,maxTwist:rad(maxForearmTwist),maxBend:0};
     fitArm(upper,lower,wrist,goal,pole,frame);orientWorld(wrist,hand);root.updateMatrixWorld(true);evaluations++;
     const elbow=lower.getWorldPosition(v()),bend=deg(goal.clone().sub(elbow).angleTo(handAxis)),twist=Math.abs(deg(frame.wristTwist)),shoulderAngle=deg(rotation.angleTo(new Quaternion()));
     const violation=100*(Math.max(0,bend-maxBend)**2+Math.max(0,twist-maxWristTwist)**2)+10000*Math.max(0,elbow.y-goal.y+.005)**2;
-    const cost=violation+bend*bend+shoulderAngle*shoulderAngle*.18+oldElbow.distanceToSquared(elbow)*400+(retreat*100)**2*5;
+    // Permit a comfortable wrist range instead of sacrificing shoulder shape
+    // for the mathematically smallest wrist bend.
+    const bendCost=preferredBend===null?bend*bend:Math.max(0,bend-preferredBend)**2*4+bend*bend*.01;
+    const cost=violation+bendCost+shoulderAngle*shoulderAngle*.18+oldElbow.distanceToSquared(elbow)*400+(retreat*100)**2*5;
     if(!best||cost<best.cost)best={cost,violation,bend,twist,frame,angles,poleTurn,shoulderAngle,retreat,quaternions:bones.map(bone=>bone.quaternion.clone())};
   };
   const span=maxShoulderTurn?[-maxShoulderTurn,-maxShoulderTurn/2,0,maxShoulderTurn/2,maxShoulderTurn]:[0];
@@ -55,5 +63,5 @@ export function alignPreviewArm(entity,side,{maxBend=22,maxShoulderTurn=20,maxWr
   bones.forEach((bone,i)=>bone.quaternion.copy(best.quaternions[i]));root.updateMatrixWorld(true);gun.position.copy(root.worldToLocal(oldGunPosition.clone().add(translation)));root.updateMatrixWorld(true);parent.attach(gun);root.updateMatrixWorld(true);
   const positionError=point(entity,'Wrist'+side).distanceTo(target.clone().add(translation)),palmError=point(entity,'Middle2'+side).distanceTo(palm.clone().add(translation)),rotationError=wrist.getWorldQuaternion(new Quaternion()).normalize().angleTo(hand);
   if(positionError>1e-6||palmError>1e-6||rotationError>1e-6)throw Error('Arm alignment lost the fixed hand frame');
-  return{beforeDegrees:deg(before),afterDegrees:best.bend,originalFixedShoulderMinimumDegrees:deg(originalMinimum),shoulderTurnDegrees:best.shoulderAngle,shoulderEulerDegrees:best.angles,shoulderDisplacementMetres:point(entity,'UpperArm'+side).sub(oldStart).toArray(),elbowDisplacementMetres:point(entity,'LowerArm'+side).sub(oldElbow).toArray(),gripRetreatMetres:best.retreat,gripTranslation:translation.toArray(),handPositionError:positionError,palmPositionError:palmError,handRotationError:rotationError,forearmTwist:best.frame.forearmTwist,wristTwist:best.frame.wristTwist,evaluations};
+  return{beforeDegrees:deg(before),afterDegrees:best.bend,originalFixedShoulderMinimumDegrees:deg(originalMinimum),shoulderReference,upperArmRollDegrees:upperArmRoll,shoulderTurnDegrees:best.shoulderAngle,shoulderEulerDegrees:best.angles,poleTurnDegrees:best.poleTurn,shoulderDisplacementMetres:point(entity,'UpperArm'+side).sub(oldStart).toArray(),elbowDisplacementMetres:point(entity,'LowerArm'+side).sub(oldElbow).toArray(),gripRetreatMetres:best.retreat,gripTranslation:translation.toArray(),handPositionError:positionError,palmPositionError:palmError,handRotationError:rotationError,forearmTwist:best.frame.forearmTwist,wristTwist:best.frame.wristTwist,evaluations};
 }

@@ -141,12 +141,24 @@ for(const sex of ['male','female'])for(const variant of variants){
   if(supportHand?.armAlignment?.right)contactMetrics.alignedRight=alignPreviewArm(entity,'R',supportHand.armAlignment.right);
   const supportBase=new Map();if(supportHand&&process.argv.includes('--serve-support-fit'))entity.model.traverse(b=>{if(b.isBone&&b.name.endsWith('L'))supportBase.set(b,b.quaternion.clone());});
   if(supportHand)contactMetrics.authoredLeft=authorSupportHand(entity,supportHand);
+  if(supportHand?.shoulderSkin){
+    const{repairPreviewShoulder}=await import('./g17-shoulder-skinning.js');
+    contactMetrics.shoulderSkin=repairPreviewShoulder(entity,supportHand.shoulderSkin);
+  }
   entity.root.updateMatrixWorld(true);
   entity.model.traverse(b=>{if(b.isBone)joints[b.name]=point(entity,b.name).toArray();});
   const localJoints=Object.fromEntries(Object.keys(joints).filter(n=>/Wrist|Thumb|Index|Middle|Ring|Pinky|LowerArm|UpperArm/.test(n)).map(n=>[n,entity.weapon.worldToLocal(point(entity,n)).toArray()]));
   const rotations=Object.fromEntries([...entity.rifleHands.keys()].filter(n=>/^(Wrist|Thumb|Index|Middle|Ring|Pinky)/.test(n)).map(n=>[n,entity.model.getObjectByName(n).quaternion.toArray()]));
   const boneRotations={};if(firingHand)entity.model.traverse(b=>{if(b.isBone)boneRotations[b.name]=b.quaternion.toArray();});
   const data={sex,variant:supportHand?'both-hands':firingHand?'firing-hand':variant.name,document:doc,rotations,boneRotations,authoredRight:firingHand,authoredLeft:supportHand,meshes:meshData(entity),joints,localJoints,weaponProfile:entity.weapon.userData.pistol,contactMetrics,weaponOrigin:entity.weapon.getWorldPosition(new Vector3()).toArray(),weaponQuaternion:entity.weapon.getWorldQuaternion(new Quaternion()).toArray(),scale:entity.weapon.getWorldScale(new Vector3()).toArray(),constraints:entity.elbowConstraints};
+  if(process.argv.includes('--export-shoulder-binding')){
+    const{shoulderBinding}=await import('./g17-shoulder-binding.js');
+    await writeFile(`${output}/${sex}-shoulder-binding.json`,JSON.stringify(shoulderBinding(entity)));
+  }
+  if(process.argv.includes('--export-shoulder-probes')){
+    const{exportShoulderProbes}=await import('./g17-shoulder-probes.js');
+    await exportShoulderProbes(entity,{data,meshData,output});
+  }
   if(supportHand&&process.argv.includes('--serve-support-fit')){
     const{serveSupportFit}=await import('./g17-support-fit-server.js');await serveSupportFit(entity,{base:supportBase,data,meshData,output});replay.dispose();process.exit(0);
   }

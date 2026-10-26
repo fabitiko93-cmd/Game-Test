@@ -1,11 +1,39 @@
 # G17 reference-pose review
 
-## Right-shoulder review: unresolved
+## Review 07: shoulder correction, awaiting visual approval
 
-The user found review 06's grip promising but flagged the right shoulder as
-unnatural. This is not whole-pose approval. The shoulder/upper-arm connection
-remains unresolved; see `g17-shoulder-diagnosis.md`. Do not integrate review 06
-as a completed pose. The separately approved review-04 grasp remains intact.
+Review 06's wrist correction pulled the right shoulder inward and upward.
+Joint-only trials then moved the skin pinching to the rear. Review 07 restores
+the neutral clavicle, distributes upper/forearm roll with an authored crease
+frame, and smooths the skin weights locally at the right shoulder. See
+`g17-shoulder-diagnosis.md` for the source-surface investigation.
+
+`g17-shoulder-pose.json` stores the isolated draft. The skin correction affects
+93 original vertices on a geometry clone. It does not sculpt the bind-space
+positions, change normals/topology/material colors, replace an asset, or mutate
+cached geometry. A source-geometry fingerprint and rig/side checks reject an
+incompatible model. Outside the local patch the original weights stay intact.
+The preserved firing grasp is still review 04; the support grasp is review 06.
+
+`g17-shoulder-review.json` records actual skinned finger/prop preservation, bone
+lengths, normalized weights, cloned source geometry and static source-clip
+probes. Matching front/rear cameras and a new side view show the result.
+The right wrist is about 24.5 degrees, compared with 22.3 in review 06 and 38
+in review 05. The rig-frame roll calibration is not an anatomical angle limit.
+
+```sh
+SPERRKREIS_SUPPORT_HAND=previews/g17-natural-grip-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-before node scripts/preview-g17-reference.mjs --export-shoulder-binding
+SPERRKREIS_SUPPORT_HAND=previews/g17-shoulder-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-shoulder node scripts/preview-g17-reference.mjs --export-shoulder-binding --export-shoulder-probes
+SPERRKREIS_FIRING_HAND=previews/g17-firing-hand-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-right node scripts/preview-g17-reference.mjs
+python scripts/check-g17-shoulder-review.py /tmp/g17-shoulder/male-both-hands-mesh.json --before /tmp/g17-before/male-both-hands-mesh.json --approved /tmp/g17-right/male-firing-hand-mesh.json --pose previews/g17-shoulder-pose.json --binding-before /tmp/g17-before/male-shoulder-binding.json --binding-after /tmp/g17-shoulder/male-shoulder-binding.json --probe-directory /tmp/g17-shoulder --output previews/g17-shoulder-review.json
+python scripts/render-g17-shoulder-review.py /tmp/g17-shoulder/male-both-hands-mesh.json --before /tmp/g17-before/male-both-hands-mesh.json --output /tmp/Sperrkreis_G17_Schulterkorrektur_Vorschau_07.png
+```
+
+This remains a static male G17 preview. Shoulder triangle intersections decrease
+but remain; the checks are not a collision-free body certificate. Female fitting,
+complete animation transitions and runtime integration still require separate
+work. Game sources, original assets, builds, local workshop activation and the
+published game are unchanged. The previous pose files remain reproducible.
 
 ## Review 06: natural grip and arm connection, awaiting review
 
