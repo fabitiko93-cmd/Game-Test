@@ -2,9 +2,9 @@
   "format": "sperrkreis-shoulder-review-snapshot",
   "version": 1,
   "reviewVersion": 7,
-  "status": "awaiting-visual-approval",
+  "status": "rejected-by-user",
   "scope": "male / G17 / static grip / relaxed right shoulder and isolated skin binding correction",
-  "poseSha256": "4544a6449638f9f5220656a31b8a6638be48c65001583f9cdd0c13e220832016",
+  "poseSha256": "6331696b1d84ed98cb9227315519305b0db36ab4bb66faed38e72c214c4fd0bb",
   "firingHandReference": {
     "poseFile": "previews/g17-firing-hand-pose.json",
     "reviewFile": "previews/g17-firing-hand-review.json",
@@ -271,5 +271,7 @@
     "Selected finger skin pairs are checked; contact overlaps elsewhere remain possible.",
     "Shoulder triangle intersections decrease but remain; this is not a collision-free body certificate.",
     "Static male G17 preview only; no female fit, animation-transition or runtime approval."
-  ]
+  ],
+  "rejectedAt": "2026-10-26",
+  "rejectionReason": "Shoulder still visibly wrong; superseded by an attachment that preserves the original firing arm."
 }

@@ -1,6 +1,46 @@
 # G17 reference-pose review
 
-## Review 07: shoulder correction, awaiting visual approval
+## Review 08: original firing arm, hand-local attachment, awaiting review
+
+The user rejected review 07: correcting fingers must not destroy a previously
+working shoulder. The earlier pipeline additionally fitted the arm chain,
+aligned its upper-arm hinge, optimized the clavicle, and then compensated the
+result with changed skin weights. That was the wrong scope for a hand correction.
+
+`g17-hand-local-pose.json` starts from the actual game pose with the original
+weapon profile. The right shoulder, upper arm, forearm and wrist rotations are
+protected exactly. `g17-grip-attachment.js` only authors the child fingers and
+moves the prop to the reached hand contact. It reuses review-04 finger arcs
+with local knuckle calibration; the support grasp comes from review 06 and its
+arm is transported by a minimal swing without a new upper-arm hinge alignment.
+No skinning correction, geometry change or right-arm IK runs on this path.
+
+`g17-hand-local-review.json` verifies **zero** right shoulder/upper-arm skin
+displacement from the original game reference, byte-equivalent mesh attributes
+and skin weights, unchanged protected bone rotations, segment lengths and
+selected finger surface crossings. The firing wrist remains at its original
+19.6-degree bend. The prop translates about 5.2 cm to fit the hand rather than
+dragging the firing arm toward a fixed prop. This new attachment and local
+finger calibration still require visual approval; they are not a claim that
+every hand vertex is identical to review 04.
+
+```sh
+SPERRKREIS_FIRING_HAND=previews/g17-firing-hand-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-original node scripts/preview-g17-reference.mjs --original-game-pose --export-shoulder-binding
+SPERRKREIS_SUPPORT_HAND=previews/g17-hand-local-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-hand-local node scripts/preview-g17-reference.mjs --export-shoulder-binding
+python scripts/check-g17-hand-local.py /tmp/g17-original/male-firing-hand-mesh.json /tmp/g17-hand-local/male-both-hands-mesh.json --original-binding /tmp/g17-original/male-shoulder-binding.json --candidate-binding /tmp/g17-hand-local/male-shoulder-binding.json --pose previews/g17-hand-local-pose.json --output previews/g17-hand-local-review.json
+python scripts/render-g17-hand-local.py /tmp/g17-original/male-firing-hand-mesh.json /tmp/g17-hand-local/male-both-hands-mesh.json --output /tmp/Sperrkreis_G17_Originalarm_Griff_Vorschau_08.png
+```
+
+Only a static male G17 preview is included. Game sources, original assets,
+workshop activation and the published game remain unchanged. Female transfer,
+animation transitions and runtime integration are pending the reference review.
+
+## Review 07: rejected by the user
+
+This shoulder/skin-weight experiment is rejected and must not be integrated.
+The preview loader blocks rejected profiles unless `--replay-rejected` is
+explicitly passed for historical inspection. The description below records
+the superseded mechanism, not an accepted body repair.
 
 Review 06's wrist correction pulled the right shoulder inward and upward.
 Joint-only trials then moved the skin pinching to the rear. Review 07 restores
@@ -23,7 +63,7 @@ in review 05. The rig-frame roll calibration is not an anatomical angle limit.
 
 ```sh
 SPERRKREIS_SUPPORT_HAND=previews/g17-natural-grip-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-before node scripts/preview-g17-reference.mjs --export-shoulder-binding
-SPERRKREIS_SUPPORT_HAND=previews/g17-shoulder-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-shoulder node scripts/preview-g17-reference.mjs --export-shoulder-binding --export-shoulder-probes
+SPERRKREIS_SUPPORT_HAND=previews/g17-shoulder-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-shoulder node scripts/preview-g17-reference.mjs --replay-rejected --export-shoulder-binding --export-shoulder-probes
 SPERRKREIS_FIRING_HAND=previews/g17-firing-hand-pose.json SPERRKREIS_POSE_OUTPUT=/tmp/g17-right node scripts/preview-g17-reference.mjs
 python scripts/check-g17-shoulder-review.py /tmp/g17-shoulder/male-both-hands-mesh.json --before /tmp/g17-before/male-both-hands-mesh.json --approved /tmp/g17-right/male-firing-hand-mesh.json --pose previews/g17-shoulder-pose.json --binding-before /tmp/g17-before/male-shoulder-binding.json --binding-after /tmp/g17-shoulder/male-shoulder-binding.json --probe-directory /tmp/g17-shoulder --output previews/g17-shoulder-review.json
 python scripts/render-g17-shoulder-review.py /tmp/g17-shoulder/male-both-hands-mesh.json --before /tmp/g17-before/male-both-hands-mesh.json --output /tmp/Sperrkreis_G17_Schulterkorrektur_Vorschau_07.png

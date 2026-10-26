@@ -1,0 +1,129 @@
+{
+  "format": "sperrkreis-natural-grip-preview",
+  "version": 1,
+  "reviewVersion": 8,
+  "status": "awaiting-visual-approval",
+  "sex": "male",
+  "palm": [
+    0.025,
+    -0.06,
+    0.007
+  ],
+  "pitch": -15,
+  "yaw": -18,
+  "roll": 0,
+  "elbowDirection": [
+    0.014732925,
+    -0.291954971,
+    0.956318585
+  ],
+  "poleTurn": 0,
+  "curls": {
+    "Index": [
+      31.142713315471727,
+      8.180724067783423,
+      44.99999991234043
+    ],
+    "Middle": [
+      53.101115238082365,
+      44.99999995931706,
+      39.39254466233859
+    ],
+    "Ring": [
+      78,
+      38.90289214915642,
+      19.468696701463735
+    ],
+    "Pinky": [
+      91.38390939599377,
+      23.26159325871702,
+      7.706019004361969
+    ]
+  },
+  "spread": {
+    "Index": [
+      -0.5,
+      -3,
+      0
+    ],
+    "Ring": [
+      0,
+      -2,
+      0
+    ],
+    "Pinky": [
+      -1.2371650087781807,
+      -8.264584293932321,
+      0
+    ]
+  },
+  "thumb": [
+    [
+      0.06,
+      -0.035,
+      -0.04
+    ],
+    [
+      0.043,
+      -0.01,
+      -0.012
+    ],
+    [
+      0.027,
+      -0.003,
+      0.023
+    ]
+  ],
+  "fingerPlaneRoll": {
+    "Pinky": -8.999995938847865,
+    "Ring": -5
+  },
+  "scope": "male / G17 / hand-local grip attachment / original firing arm preserved",
+  "sourceCommit": "6c9fa090bd9252e9ba76705fc41f08cfffc6c690",
+  "firingHandReference": {
+    "poseFile": "previews/g17-firing-hand-pose.json",
+    "reviewFile": "previews/g17-firing-hand-review.json",
+    "approvalDate": "2026-10-25",
+    "poseSha256": "e166c8440bbb7c2c6668bb237f6a1c558ef4259a89175ea58fa4a6f6328bcb15",
+    "approvedImage": "Sperrkreis_G17_Waffenhand_Vorschau_04.png",
+    "approvedImageReview": 4
+  },
+  "units": {
+    "palm": "weapon-local metres before the existing weapon scale",
+    "rotations": "degrees",
+    "elbowDirection": "preferred upper-arm direction from the supplied user pose"
+  },
+  "maxWristBend": 27,
+  "handAlignedFingers": true,
+  "revisionOf": "previews/g17-support-hand-pose.json",
+  "preservedReference": "Approved firing-hand grasp relative to the prop; wrist/forearm skin connection may change.",
+  "notes": "No shoulder optimization, no skinning changes. Original game firing arm remains fixed; only fingers and prop attachment are authored. Support arm uses a minimal swing from its original frame.",
+  "handLocalAttachment": {
+    "supportReviewFile": "previews/g17-natural-grip-review.json",
+    "rightKnuckleTargets": {
+      "Index": [
+        -0.0367372689210018,
+        -0.013399348758900587,
+        -0.034226638379216745
+      ],
+      "Ring": [
+        -0.03852874929490851,
+        -0.05814171484588093,
+        -0.03832473086372318
+      ],
+      "Pinky": [
+        -0.03891524321250021,
+        -0.07839456290514657,
+        -0.05014524221621136
+      ]
+    },
+    "rightKnuckleRotations": {
+      "Index": [
+        -4,
+        0,
+        0
+      ]
+    },
+    "supportReviewSha256": "a921105b9fd92b8eaa194e16cb456e1f097a6ffd01fa14392de72f1e6cbe04d0"
+  }
+}

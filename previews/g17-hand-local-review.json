@@ -1,0 +1,57 @@
+{
+  "format": "sperrkreis-hand-local-review",
+  "version": 1,
+  "reviewVersion": 8,
+  "status": "awaiting-visual-approval",
+  "poseSha256": "314eab4a265a5c8759048f93a83dad7ce762953dd767c72675e52a38962d4f54",
+  "checks": {
+    "originalFiringArmBoneRotationsExactlyPreserved": true,
+    "originalRightShoulderAndUpperArmSkinMaxDifferenceMetres": 0,
+    "originalMeshPositionsNormalsTopologyAndSkinWeightsExactlyPreserved": true,
+    "maxSegmentLengthErrorMetres": 2.3155253353612792e-08,
+    "finiteSkinAndUnitNormalsAndQuaternions": true,
+    "adjacentFingerAndThumbCrossingPairs": {
+      "IndexR/MiddleR": 0,
+      "MiddleR/RingR": 0,
+      "RingR/PinkyR": 0,
+      "IndexL/MiddleL": 0,
+      "MiddleL/RingL": 0,
+      "RingL/PinkyL": 0,
+      "ThumbL/ThumbR": 0,
+      "ThumbR/IndexR": 0,
+      "ThumbL/IndexR": 0,
+      "ThumbL/IndexL": 0
+    },
+    "attachment": {
+      "mode": "hand-local-attachment",
+      "protectedBones": [
+        "Torso",
+        "Chest",
+        "Head",
+        "ShoulderR",
+        "UpperArmR",
+        "LowerArmR",
+        "WristR",
+        "ShoulderL"
+      ],
+      "protectedQuaternionMaxDifference": 0,
+      "rightPalmError": 4.177939920722442e-09,
+      "leftPalmError": 4.516433003781498e-08,
+      "gunTranslationMetres": [
+        0.020059998466922024,
+        0.030680001005302326,
+        0.036579988210294845
+      ],
+      "rightWristBendDegrees": 19.564094607056298,
+      "leftWristBendDegrees": 13.749619832925706,
+      "supportUpperSwingDegrees": 14.466730345182985,
+      "supportLowerSwingDegrees": 32.140161272910596,
+      "skinWeightsModified": false
+    }
+  },
+  "limits": [
+    "Hand/finger contacts are not a globally collision-free certificate.",
+    "Static male G17 preview only; no runtime release, female transfer or transition approval.",
+    "Finger arc parameters come from review 04; local knuckle calibration and the new attachment require visual review."
+  ]
+}

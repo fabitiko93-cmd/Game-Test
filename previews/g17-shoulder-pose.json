@@ -2,7 +2,7 @@
   "format": "sperrkreis-natural-grip-preview",
   "version": 1,
   "reviewVersion": 7,
-  "status": "awaiting-visual-approval",
+  "status": "rejected-by-user",
   "sex": "male",
   "palm": [
     0.025,
@@ -130,5 +130,7 @@
         1.42
       ]
     }
-  }
+  },
+  "rejectedAt": "2026-10-26",
+  "rejectionReason": "User rejected the shoulder deformation. Arm-chain optimization and skin-weight compensation are not the accepted solution."
 }

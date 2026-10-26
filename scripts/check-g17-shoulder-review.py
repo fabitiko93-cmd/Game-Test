@@ -162,7 +162,7 @@ def check(source, before, approved, pose_path, binding_before, binding_after, pr
     }
     report = {
         'format': 'sperrkreis-shoulder-review-snapshot', 'version': 1, 'reviewVersion': 7,
-        'status': 'awaiting-visual-approval', 'scope': pose['scope'],
+        'status': pose['status'], 'scope': pose['scope'],
         'poseSha256': hashlib.sha256(Path(pose_path).read_bytes()).hexdigest(),
         'firingHandReference': pose['firingHandReference'], 'checks': checks,
         'rightArmBoneRotations': {n: q for n, q in current['boneRotations'].items()

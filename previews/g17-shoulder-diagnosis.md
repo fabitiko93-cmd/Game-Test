@@ -1,4 +1,22 @@
-# Right shoulder: diagnosis and isolated review 07
+# Right shoulder: rejected approach and corrected separation in review 08
+
+**Review 07 was rejected by the user on 2026-10-26.** The original game pose
+already has the better shoulder/arm connection. The underlying mistake was
+coupling finger/prop authoring to a new arm-chain solve, upper-arm hinge
+alignment and clavicle optimization, then trying to compensate with skinning.
+The retained tank-top surfaces are not a justification for changing body
+geometry or weights to fix this regression. The earlier investigation below
+must be read as a rejected attempt, not an accepted root-cause repair.
+
+Review 08 keeps the complete original right firing-arm pose fixed. Fingers
+are child-joint edits; the prop follows their palm contact. The support arm
+uses the nearest swing from its original frame without an axial hinge reset.
+The actual right shoulder/upper-arm skin has zero displacement from the
+original game pose, and the original mesh attributes/weights are unchanged.
+See `g17-hand-local-review.json` for the verified boundary. Review 08 still
+awaits visual approval; no runtime change is included.
+
+## Historical review-07 investigation (rejected)
 
 Reviewed on 2026-10-25 after the user found review 06's grip promising and
 reported its right shoulder as unnatural. On 2026-10-26 the user requested the

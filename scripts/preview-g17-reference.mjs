@@ -23,6 +23,7 @@ const source=await readFile(process.env.SPERRKREIS_POSE_INPUT||new URL('../previ
 const original=parseAnimation(source),cache=new Map();
 const supportHandFile=process.env.SPERRKREIS_SUPPORT_HAND;
 const supportHand=supportHandFile?JSON.parse(await readFile(supportHandFile,'utf8')):null;
+if(supportHand?.status==='rejected-by-user'&&!process.argv.includes('--replay-rejected'))throw Error('Rejected pose: use --replay-rejected only for a historical comparison');
 const firingHandFile=process.env.SPERRKREIS_FIRING_HAND||(supportHandFile?fileURLToPath(new URL('../previews/g17-firing-hand-pose.json',import.meta.url)):null);
 const firingHandSource=firingHandFile?await readFile(firingHandFile,'utf8'):null;
 const firingHand=firingHandSource?JSON.parse(firingHandSource):null;
@@ -118,7 +119,7 @@ for(const sex of ['male','female'])for(const variant of variants){
   const models=new PlayerModels({},library);models.weapons.loadAsset=load;
   const create=models.weapons.create.bind(models.weapons);
   models.weapons.create=(item)=>{
-    const weapon=create(item);if(!weapon||variant.name==='user')return weapon;
+    const weapon=create(item);if(!weapon||variant.name==='user'||process.argv.includes('--original-game-pose')||supportHand?.handLocalAttachment)return weapon;
     weapon.userData.pistol={...weapon.userData.pistol,rightPalm:[-.032,-.038,-.013],leftPalm:[.035,-.054,.009],rightThumb:[.012,-.010,-.050]};
     weapon.userData.grips={...weapon.userData.grips,rightThumb:[.012,-.010,-.050]};return weapon;
   };
@@ -134,16 +135,25 @@ for(const sex of ['male','female'])for(const variant of variants){
     }
     values.elbowTurnL[0]=best.angle;replay.setDocument(doc,1000);replay.seek(0,{reset:true});
   }
-  const entity=replay.entity,joints={};const contactMetrics=variant.name!=='user'?fitPreviewContacts(entity):null;
+  const entity=replay.entity,joints={};const originalGame=process.argv.includes('--original-game-pose')||Boolean(supportHand?.handLocalAttachment);
+  const contactMetrics=variant.name!=='user'&&!originalGame?fitPreviewContacts(entity):{};
   const firingBase=new Map();if(firingHand)entity.model.traverse(b=>{if(b.isBone)firingBase.set(b,b.quaternion.clone());});
-  if(firingHand)contactMetrics.authoredRight=authorFiringHand(entity,firingHand);
-  else if(variant.name!=='user')referenceFingers(entity);
-  if(supportHand?.armAlignment?.right)contactMetrics.alignedRight=alignPreviewArm(entity,'R',supportHand.armAlignment.right);
+  if(firingHand&&!originalGame)contactMetrics.authoredRight=authorFiringHand(entity,firingHand);
+  else if(variant.name!=='user'&&!originalGame)referenceFingers(entity);
+  if(supportHand?.armAlignment?.right&&!originalGame)contactMetrics.alignedRight=alignPreviewArm(entity,'R',supportHand.armAlignment.right);
   const supportBase=new Map();if(supportHand&&process.argv.includes('--serve-support-fit'))entity.model.traverse(b=>{if(b.isBone&&b.name.endsWith('L'))supportBase.set(b,b.quaternion.clone());});
-  if(supportHand)contactMetrics.authoredLeft=authorSupportHand(entity,supportHand);
-  if(supportHand?.shoulderSkin){
+  if(supportHand&&!originalGame)contactMetrics.authoredLeft=authorSupportHand(entity,supportHand);
+  if(supportHand?.shoulderSkin&&!originalGame){
     const{repairPreviewShoulder}=await import('./g17-shoulder-skinning.js');
     contactMetrics.shoulderSkin=repairPreviewShoulder(entity,supportHand.shoulderSkin);
+  }
+  if(supportHand?.handLocalAttachment){
+    if(supportHand.armAlignment||supportHand.shoulderSkin)throw Error('Hand-local attachment cannot use arm optimization or skin correction');
+    const {attachAuthoredGrip}=await import('./g17-grip-attachment.js');
+    const leftSource=await readFile(supportHand.handLocalAttachment.supportReviewFile,'utf8');
+    if(createHash('sha256').update(leftSource).digest('hex')!==supportHand.handLocalAttachment.supportReviewSha256)throw Error('Support-grasp reference has changed');
+    const leftReference=JSON.parse(leftSource);
+    contactMetrics.handLocalAttachment=attachAuthoredGrip(entity,{...firingHand,knuckleTargets:supportHand.handLocalAttachment.rightKnuckleTargets,knuckleRotations:supportHand.handLocalAttachment.rightKnuckleRotations},supportHand,leftReference);
   }
   entity.root.updateMatrixWorld(true);
   entity.model.traverse(b=>{if(b.isBone)joints[b.name]=point(entity,b.name).toArray();});
