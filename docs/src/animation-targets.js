@@ -2,6 +2,7 @@ import {Euler,Quaternion,Vector3} from 'three';
 import {activeWeapon} from './inventory.js';
 import {emptyValues,profileKey,sampleTrack,poseValues,combineValues,POSES} from './animation-document.js';
 import {PISTOL_POSES} from './weapon-poses.js';
+import {hasApprovedGrip,approvedAimTurn} from './g17-grasp.js';
 
 const radians=Math.PI/180;
 export function resolveAnimationEdits(entity,player,blend){
@@ -31,10 +32,18 @@ export function editTarget(entity,channel,point,rotation=null,stage='base'){
   if((stage==='reload')!==Boolean(entity.animationEditingReload))return;
   const values=entity.animationEdits?.[channel];if(!values)return;
   const yaw=entity.root.getWorldQuaternion(new Quaternion());
+  // Editor values use the displayed facing frame. G17 solves in its authored
+  // review frame and aligns the complete spine afterward, so map user edits
+  // back into that frame before solving; final handles remain in world space.
+  const turn=hasApprovedGrip(entity)?approvedAimTurn(entity):null,inverse=turn?.clone().invert();
   entity.animationTargetBases||={};entity.animationTargetBases[channel]=point.clone();
   if(channel==='support'){
     const contact=entity.animationEdits.contactL[0];
-    if(contact<0)point.lerp(new Vector3(...entity.animationEdits.freeHandL).applyQuaternion(yaw).add(entity.root.getWorldPosition(new Vector3())),Math.min(1,-contact));
+    if(contact<0){
+      const free=new Vector3(...entity.animationEdits.freeHandL).applyQuaternion(yaw).add(entity.root.getWorldPosition(new Vector3()));
+      if(inverse){const pivot=entity.model.getObjectByName('Hips').getWorldPosition(new Vector3());free.sub(pivot).applyQuaternion(inverse).add(pivot);}
+      point.lerp(free,Math.min(1,-contact));
+    }
     else if(contact>0&&stage==='base'){
       // Pistols expose a metacarpal contact. Rifle/revolver anchors describe
       // the wrist; their pose module already converts it to the palm target.
@@ -42,8 +51,12 @@ export function editTarget(entity,channel,point,rotation=null,stage='base'){
       if(grip)point.lerp(entity.weapon.localToWorld(new Vector3(...grip)),Math.min(1,contact));
     }
   }
-  point.add(new Vector3(...values.slice(0,3)).applyQuaternion(yaw));
-  if(rotation&&values.length===6){const correction=new Quaternion().setFromEuler(new Euler(...values.slice(3).map(v=>v*radians),'YXZ'));rotation.premultiply(yaw.clone().multiply(correction).multiply(yaw.clone().invert()));}
+  const offset=new Vector3(...values.slice(0,3)).applyQuaternion(yaw);if(inverse)offset.applyQuaternion(inverse);point.add(offset);
+  if(rotation&&values.length===6){
+    const correction=yaw.clone().multiply(new Quaternion().setFromEuler(new Euler(...values.slice(3).map(v=>v*radians),'YXZ'))).multiply(yaw.clone().invert());
+    if(inverse)correction.premultiply(inverse).multiply(turn);
+    rotation.premultiply(correction);
+  }
   entity.animationTargets||={};entity.animationTargets[channel]=point.clone();
 }
 

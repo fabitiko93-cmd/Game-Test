@@ -4,7 +4,7 @@ import {readFile,writeFile} from 'node:fs/promises';
 import {gunzipSync} from 'node:zlib';
 import {createHash} from 'node:crypto';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {Quaternion,Vector3} from 'three';
+import {Matrix4,Quaternion,Vector3} from 'three';
 import {QUATERNIUS_MODELS,playerModelScale,playerModelAppearance} from '../docs/src/quaternius-catalog.js';
 import {createPlayer} from '../docs/src/character.js';
 import {orientWorld} from '../docs/src/weapon-ik.js';
@@ -58,13 +58,30 @@ result.reference={scale,head:reference.joints.Head,weapon:reference.weaponOrigin
 await writeFile(new URL('../docs/assets/weapons/g17-grasp.json',import.meta.url),JSON.stringify(result,null,2)+'\n');
 if(process.argv[3]){
   const binding=JSON.parse(await readFile(process.argv[3],'utf8'));
-  const mesh=reference.meshes.find(m=>m.name===binding.meshName),handVertices={},shoulderVertices={};
+  const mesh=reference.meshes.find(m=>m.name===binding.meshName),handVertices={},shoulderVertices={},shoulderAimCorrections={};
   const inverse=gunQ.clone().invert(),head=p('Head');
   for(let i=0;i<mesh.positions.length;i++){
     const names=[];for(let k=0;k<4;k++)if(binding.skinWeight[i*4+k]>1e-7)names.push(binding.boneNames[binding.skinIndex[i*4+k]]);
     if(names.length&&names.every(n=>/^(Wrist|Index|Middle|Ring|Pinky|Thumb).*[RL]$/.test(n)))handVertices[i]=new Vector3(...mesh.positions[i]).sub(new Vector3(...reference.weaponOrigin)).applyQuaternion(inverse).toArray().map(v=>Number(v.toFixed(8)));
-    if(['ShoulderR','UpperArmR'].includes(mesh.boneNames[i]))shoulderVertices[i]=new Vector3(...mesh.positions[i]).sub(head).divideScalar(scale).toArray().map(v=>Number(v.toFixed(8)));
+    if(['ShoulderR','UpperArmR'].includes(mesh.boneNames[i])){
+      shoulderVertices[i]=new Vector3(...mesh.positions[i]).sub(head).divideScalar(scale).toArray().map(v=>Number(v.toFixed(8)));
+      // Two lower seam vertices also carry Body weight. Legs/Body stay on
+      // their original heading when the spine turns. Derive their skinning
+      // correction from the original review binding, never runtime output.
+      const correction=new Vector3();
+      for(let k=0;k<4;k++){
+        const index=binding.skinIndex[i*4+k],weight=binding.skinWeight[i*4+k];
+        if(!weight||binding.boneNames[index]!=='Body')continue;
+        const offset=new Vector3().fromArray(binding.positions,i*3)
+          .applyMatrix4(new Matrix4().fromArray(binding.bindMatrix))
+          .applyMatrix4(new Matrix4().fromArray(binding.boneMatrices,index*16))
+          .applyMatrix4(new Matrix4().fromArray(binding.bindMatrixInverse))
+          .applyMatrix4(new Matrix4().fromArray(binding.matrixWorld)).sub(p('Hips'));
+        correction.add(offset.clone().applyAxisAngle(new Vector3(0,1,0),result.weaponYaw).sub(offset).multiplyScalar(weight/scale));
+      }
+      if(correction.length()>1e-8)shoulderAimCorrections[i]=correction.toArray().map(v=>Number(v.toFixed(8)));
+    }
   }
-  await writeFile(new URL('../tests/fixtures/g17-approved-review10.json',import.meta.url),JSON.stringify({review:10,sourceCommit:result.sourceCommit,sourceSha256:result.sourceSha256,mesh:binding.meshName,handVertices,shoulderVertices})+'\n');
+  await writeFile(new URL('../tests/fixtures/g17-approved-review10.json',import.meta.url),JSON.stringify({review:10,sourceCommit:result.sourceCommit,sourceSha256:result.sourceSha256,mesh:binding.meshName,handVertices,shoulderVertices,shoulderAimCorrections})+'\n');
 }
 console.log('Exported approved review-10 G17 grasp for both original rigs.');

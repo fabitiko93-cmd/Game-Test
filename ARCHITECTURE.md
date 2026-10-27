@@ -88,10 +88,15 @@ Ein Patch erfordert nicht automatisch das Lesen jeder Datei in seiner Tabellenze
 beide Original-Rigs aufbereitet. `pistol-pose.js` führt weiter die gemeinsamen
 Zielbahnen, Kontakte und Unterbrechungen aus; die G17 blendet ihre Oberarmreferenz
 zwischen Tragen/Nachladen und Anlegen in Weltkoordinaten. Der Stützarm gewinnt
-bei Bedarf Reichweite über das Schlüsselbein. `weapon-ik.js` kann für diesen
+bei Bedarf Reichweite über das Schlüsselbein. Nach der vollständigen Hand-/
+Nachladeauswertung richtet `alignApprovedAim` die ganze Wirbelsäulenkette auf
+die Spielzielrichtung aus: Der seitliche Referenzwinkel gehört zur Körperhaltung,
+nicht als zusätzlicher Winkel zur Schussrichtung. Die Original-Beinketten bleiben
+unverändert; Werkstattziele folgen derselben Korrektur. `weapon-ik.js` kann für diesen
 Arm die kürzeste Oberarmschwenkung erhalten. Keine Preview-/Editor-Imports im
 Laufzeitpfad. `g17-approved.test.mjs` vergleicht echte Hautpunkte mit dem
-freigegebenen Render und schützt langsame 15-Hz-Übergänge zusätzlich zu den
+freigegebenen Render, prüft Lauf und Live-Mündung gegen die Spielzielrichtung
+und schützt langsame 15-Hz-Übergänge sowie die Rumpfkorrektur zusätzlich zu den
 30-/60-Hz-Pistolenprüfungen. Die Kalibrierung und die unabhängigen Testpunkte
 lassen sich mit `scripts/prepare-g17-grasp.mjs` aus dem gespeicherten Review-10-
 Mesh und dessen Schulterbindung erneut aufbereiten.

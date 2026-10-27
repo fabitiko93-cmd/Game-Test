@@ -203,6 +203,12 @@ Fingerform erhalten; Haltung auf beiden Rigs kalibrieren und kontinuierliche
 Abbruch prüfen. Statische Referenz und Laufzeitoberfläche müssen übereinstimmen;
 keine neue Freigaberunde für den bereits beauftragten Einbau.
 
+G17-Zielkorrektur vom 27.10.2026: Der Nutzer meldet einen starken Linksversatz.
+Den seitlichen Winkel der freigegebenen Renderpose nicht als zusätzlichen
+Spielzielwinkel übernehmen. Oberkörper samt beiden Griffkontakten gemeinsam
+auf die Zielrichtung ausrichten; tatsächlichen Lauf-/Mündungsvektor und weiche
+Übergänge prüfen, die Original-Beinanimation erhalten.
+
 Release-Reparatur vom 23.10.2026: `docs/RELEASE.md` beschreibt den verbindlichen
 Abschluss. Nach dem Merge tatsächliche Merge-Commit-ID speichern. Main-/Pages-
 Läufe über die Repository-Actions-API abfragen; `fetch_commit_workflow_runs`

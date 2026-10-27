@@ -13,6 +13,31 @@ const calibrated=Object.fromEntries(Object.entries(GRASP.rigs).map(([sex,rig])=>
 }]));
 export const hasApprovedGrip=e=>e.weapon?.userData.weaponType==='pistol_9mm';
 export const approvedHandFrame=(e,side)=>calibrated[e.modelSex].frames[side].clone();
+export function approvedAimTurn(entity){
+  const yaw=entity.root.getWorldQuaternion(new Quaternion()),active=entity.rifleBlend.aim+entity.rifleBlend.hip;
+  return yaw.clone().multiply(new Quaternion().setFromAxisAngle(new Vector3(0,1,0),-GRASP.weaponYaw*active)).multiply(yaw.clone().invert());
+}
+
+// The review's oblique body/barrel angle belongs to its pose, not to the
+// gameplay aim. Rebase the completed upper body together so both grips and
+// the shoulder keep their approved shape while the barrel follows facing.
+// Run after reload/finger evaluation; solver histories stay in review space.
+export function alignApprovedAim(entity){
+  if(!hasApprovedGrip(entity))return;
+  const active=entity.rifleBlend.aim+entity.rifleBlend.hip;
+  if(!active)return;
+  // Hips is the spine root on these rigs; both leg chains branch from Body.
+  // Include the abdomen so mixed shoulder weights turn with the whole torso.
+  const root=entity.root,spine=entity.model.getObjectByName('Hips');
+  entity.rifleRestore.set(spine,spine.quaternion.clone());
+  const pivot=spine.getWorldPosition(new Vector3());
+  const turn=approvedAimTurn(entity);
+  orientWorld(spine,turn.clone().multiply(spine.getWorldQuaternion(new Quaternion())));root.updateMatrixWorld(true);
+  const rebase=point=>point.sub(pivot).applyQuaternion(turn).add(pivot);
+  for(const targets of [entity.animationTargets,entity.animationTargetBases])for(const channel of ['weapon','support','elbowR','elbowL'])if(targets?.[channel])rebase(targets[channel]);
+  for(const point of Object.values(entity.weaponPoles||{}))rebase(point);
+}
+
 export function approvedUpperRest(entity){
   const upper=entity.model.getObjectByName('UpperArmR'),parent=upper.parent.getWorldQuaternion(new Quaternion()).normalize();
   const neutral=parent.clone().multiply(entity.handgunCarry.get(upper));
