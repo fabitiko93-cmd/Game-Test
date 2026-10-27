@@ -59,6 +59,12 @@ export class InputController {
     this.canvas.addEventListener("pointerup", event => this.pointerUp(event));
     this.canvas.addEventListener("pointercancel", event => this.pointerCancel(event));
     this.canvas.addEventListener("contextmenu", event => event.preventDefault());
+    // Safari can still perform its native double-tap action after pointerup.
+    // Cancel the native touch default on the playfield; pointer events remain
+    // the sole owner of taps, sprinting and camera gestures.
+    for (const type of ["touchmove", "touchend", "dblclick"]) {
+      this.canvas.addEventListener(type, event => event.preventDefault(), { passive: false });
+    }
 
     this.button("attack-button", () => this.callbacks.combat?.());
     this.button("action-button", () => this.callbacks.action?.(), () => this.callbacks.actionEnd?.());

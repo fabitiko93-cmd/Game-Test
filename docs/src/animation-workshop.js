@@ -110,9 +110,9 @@ export class AnimationWorkshop{
   async open(){
     this.game.setPaused(true);this.game.ui.hidePause();this.opener=document.activeElement;this.root.classList.remove('hidden');this.isOpen=true;
     this.setPanel(false);
-    this.el.close.focus();await this.configure();if(this.project.error)this.message('Gespeicherter Entwurf konnte nicht geladen werden: '+this.project.error,true);
+    this.el.close.focus({preventScroll:true});await this.configure();if(this.project.error)this.message('Gespeicherter Entwurf konnte nicht geladen werden: '+this.project.error,true);
   }
-  close(){this.playing=false;this.isOpen=false;this.root.classList.add('hidden');this.game.setPaused(true);this.cancelGesture?.();this.opener?.focus();}
+  close(){this.playing=false;this.isOpen=false;this.root.classList.add('hidden');this.game.setPaused(true);this.cancelGesture?.();this.opener?.focus({preventScroll:true});}
   async configure(){
     this.cancelGesture?.();
     this.camera=null;this.handles=[];this.viewKey=null;
