@@ -84,8 +84,9 @@ test('both real rigs keep an extended pistol arm, aligned eye/sights, intact leg
       const gun=f.entity.weapon,optic=gun.getObjectByName('Reflex'),a=gun.userData.anchors.optic;
       const sight=gun.localToWorld(new Vector3(0,a[1]+(optic?.visible?.008:-.014),a[2]));
       const forward=new Vector3(0,0,1).applyQuaternion(gun.getWorldQuaternion(new Quaternion())),line=sight.clone().sub(eye(f));
-      // G17 now uses the user's approved oblique review-10 pose. Its exact
-      // shoulder and both hand skins are pinned by g17-approved.test.mjs.
+      // This raw solver retains the oblique review-10 authoring frame. The
+      // shared controller then aligns the complete pose with gameplay aim;
+      // g17-approved.test.mjs checks that final barrel and live shot socket.
       if(type==='pistol_9mm')assert.ok(Math.abs(Math.atan2(Math.sin(Math.atan2(forward.x,forward.z)-yaw-G17_GRASP.weaponYaw),Math.cos(Math.atan2(forward.x,forward.z)-yaw-G17_GRASP.weaponYaw)))<.001,tag+' approved body/weapon yaw');
       else assert.ok(line.clone().addScaledVector(forward,-line.dot(forward)).length()<.004,tag+' eye on actual sight line');
       assert.ok(line.dot(forward)>.20&&Math.abs(forward.y)<.001,tag+' raised and level barrel');
