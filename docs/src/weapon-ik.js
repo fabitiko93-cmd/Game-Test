@@ -52,8 +52,9 @@ export function fitArm(upper, lower, wrist, target, pole, frame) {
   }
   const nextElbow = start.clone().addScaledVector(direction, along).addScaledVector(bend, height);
   const nextHand = start.clone().addScaledVector(direction, distance);
+  if(frame?.upperRest){upper.quaternion.copy(frame.upperRest);upper.updateMatrixWorld(true);}
   pointBone(upper, lower, nextElbow);
-  if(frame) {
+  if(frame&&!frame.preserveUpperSwing) {
     // Put the sleeve/elbow crease in the actual bend plane instead of carrying
     // the donor clip's upper-arm roll into a different hand target.
     const axis=nextElbow.clone().sub(start).normalize();

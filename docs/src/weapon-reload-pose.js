@@ -5,6 +5,7 @@ import {fitSupportContact,fitWeaponPose} from './rifle-pose.js';
 import {contactWrist,pinchPoint,poseHand,poseThumb,VERTICAL_HAND} from './weapon-hands.js';
 import {REVOLVER_MODEL} from './weapon-catalog.js';
 import {fitPistolSupportContact,PISTOL_SUPPORT_ROTATION} from './pistol-pose.js';
+import {hasApprovedGrip,poseApprovedHand} from './g17-grasp.js';
 
 const ease=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
 
@@ -113,7 +114,8 @@ export function applyReloadPose(entity,player,delta=1/60){
   const goal=entity.root.localToWorld(v(handgun?.015:-.055,shoulder.y-(handgun?.27:.25)+motion,shoulder.z+(handgun?.29:.34)));
   const q=entity.root.getWorldQuaternion(new Quaternion()).multiply(new Quaternion().setFromEuler(new Euler(handgun?.48:.10,handgun?-.10:0,handgun?-.14:-.09,'YXZ')));
   const point=weapon.getWorldPosition(new Vector3()).lerp(goal,weight),rotation=weapon.getWorldQuaternion(new Quaternion()).slerp(q,weight);
-  fitWeaponPose(entity,pistol?goal:point,pistol?q:rotation,weight,true);poseHand(entity,'R',pistol?'pistol':'support',{trigger:0});
+  fitWeaponPose(entity,pistol?goal:point,pistol?q:rotation,weight,true);
+  if(hasApprovedGrip(entity))poseApprovedHand(entity,'R');else poseHand(entity,'R',pistol?'pistol':'support',{trigger:0});
   const gunQ=weapon.getWorldQuaternion(new Quaternion());
   if(cylinder)revolver(entity,state,phase,base,waist,gunQ,weight);
   else magazine(entity,state,phase,base,waist,gunQ,weight);
