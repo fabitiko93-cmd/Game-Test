@@ -1,0 +1,41 @@
+{
+  "format": "sperrkreis-shoulder-reference-preview",
+  "version": 1,
+  "reviewVersion": 10,
+  "status": "awaiting-visual-review",
+  "sex": "male",
+  "weapon": "pistol_9mm",
+  "referenceImage": "IMG_3835.jpeg",
+  "sourceCommit": "b57d2b001c3681c1fce6a82c517f7135b45b45d5",
+  "approvedGripPoseFile": "previews/g17-approved-grip-pose.json",
+  "approvedGripPoseSha256": "7a5565d660ea81068526ceb5359b9f074cf6443a00dd9c9c817f2b4e06fc8255",
+  "sides": {
+    "R": {
+      "protractionDegrees": 15,
+      "elevationDegrees": 0,
+      "upperRollDegrees": 0,
+      "elbowPole": [
+        -0.23,
+        1.2,
+        0.26
+      ],
+      "maxWristBendDegrees": 24,
+      "maxForearmTwistDegrees": 60
+    }
+  },
+  "units": {
+    "elbowPole": "unscaled character-root coordinates, metres",
+    "angles": "rig calibration degrees, not anatomical measurements"
+  },
+  "preserved": [
+    "complete approved review-04 firing grasp",
+    "review-09 support grasp",
+    "both wrist endpoints and world hand frames",
+    "weapon world transform and scale",
+    "original geometry, normals, topology, material colours and skin weights",
+    "all bone lengths",
+    "torso, head, left shoulder and left arm"
+  ],
+  "method": "Reset the right clavicle and arm to their captured rig frames, protract the clavicle, use the shortest humerus swing, and select the nearest reachable elbow plane satisfying the fixed hand frame. Do not align the upper arm to a new hinge plane. Reconnect the forearm with bounded axial twist.",
+  "scope": "Static male G17 render. Isolated preview code only; game and source assets unchanged."
+}

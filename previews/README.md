@@ -1,5 +1,41 @@
 # G17 reference-pose review
 
+## Review 10: shoulder silhouette from the supplied reference
+
+The user reported review 09's shoulder as still compressed on 2026-10-27 and
+provided `IMG_3835.jpeg` as a silhouette reference. Review 09 is therefore not
+an accepted shoulder reference. Review 04 remains the approved firing grasp.
+
+`g17-shoulder-reference-pose.json` preserves the complete hash-locked review-09
+grasp composition, then reconnects the right proximal arm from the captured
+rig frame. The clavicle protracts by 15 rig-calibration degrees; the humerus
+uses the shortest swing without resetting its axial hinge frame. The elbow
+plane is adjusted only enough to retain the fixed wrist's 24-degree bend bound.
+Neither the original mesh nor its weights are modified. This directly changes
+the shoulder pose instead of proving identity with the already compressed pose.
+
+The actual posed skin check preserves all right finger rotations exactly and
+445 pure-hand vertices from approved review 04 within 0.1 micrometres. Mixed
+forearm/hand skin differs by up to 1.92 mm. The right shoulder skin moves by up
+to 47.74 mm; bone lengths remain unchanged within numerical tolerance. Other
+body bones, the support grasp and the prop's world transform remain fixed.
+Forearm axial twist is bounded at 60 degrees, with 16.37 degrees at the wrist.
+These rig-frame values are not anatomical measurements from the clothed photo.
+
+```sh
+SPERRKREIS_SUPPORT_HAND=previews/g17-approved-grip-pose.json SPERRKREIS_POSE_OUTPUT=previews/rendered-g17/review10/before node scripts/preview-g17-reference.mjs --export-shoulder-binding
+SPERRKREIS_FIRING_HAND=previews/g17-firing-hand-pose.json SPERRKREIS_POSE_OUTPUT=previews/rendered-g17/review10/approved node scripts/preview-g17-reference.mjs
+SPERRKREIS_SUPPORT_HAND=previews/g17-approved-grip-pose.json SPERRKREIS_SHOULDER_REFERENCE=previews/g17-shoulder-reference-pose.json SPERRKREIS_POSE_OUTPUT=previews/rendered-g17/review10/final node scripts/preview-g17-reference.mjs --export-shoulder-binding
+python scripts/check-g17-shoulder-reference.py previews/rendered-g17/review10/before/male-both-hands-mesh.json previews/rendered-g17/review10/approved/male-firing-hand-mesh.json previews/rendered-g17/review10/final/male-both-hands-mesh.json --before-binding previews/rendered-g17/review10/before/male-shoulder-binding.json --after-binding previews/rendered-g17/review10/final/male-shoulder-binding.json --pose previews/g17-shoulder-reference-pose.json --output previews/g17-shoulder-reference-review.json
+python scripts/render-g17-shoulder-reference.py previews/rendered-g17/review10/before/male-both-hands-mesh.json previews/rendered-g17/review10/approved/male-firing-hand-mesh.json previews/rendered-g17/review10/final/male-both-hands-mesh.json --output /tmp/Sperrkreis_G17_Schulter_Vorschau_10.png
+```
+
+The sheet compares review 09 and review 10 from identical rear/front cameras,
+and the approved/new firing hand from the same weapon camera. It is a static
+male G17 preview awaiting visual review. Runtime integration, female transfer
+and animation transitions are outside this render; game/source assets and
+published files are unchanged. The supplied photograph is not redistributed.
+
 ## Review 09: complete approved grasp and original shoulder, awaiting review
 
 Review 08 restored the shoulder but reauthored the metacarpals and index finger,

@@ -170,6 +170,14 @@ for(const sex of ['male','female'])for(const variant of variants){
     const{attachApprovedGrip}=await import('./g17-approved-grip.js');
     contactMetrics.approvedGripAttachment=attachApprovedGrip(entity,firingHand,rightReference,supportHand,leftReference,options);
   }
+  if(process.env.SPERRKREIS_SHOULDER_REFERENCE){
+    const options=JSON.parse(await readFile(process.env.SPERRKREIS_SHOULDER_REFERENCE,'utf8'));
+    if(!supportHand?.approvedGripAttachment||entity.modelSex!==options.sex)throw Error('Reference shoulder requires the captured approved grasp on the configured rig');
+    const source=await readFile(supportHandFile,'utf8');
+    if(createHash('sha256').update(source).digest('hex')!==options.approvedGripPoseSha256)throw Error('Reference shoulder baseline has changed');
+    const{fitReferenceShoulder}=await import('./g17-shoulder-reference.js');
+    contactMetrics.shoulderReference=fitReferenceShoulder(entity,options);
+  }
   entity.root.updateMatrixWorld(true);
   entity.model.traverse(b=>{if(b.isBone)joints[b.name]=point(entity,b.name).toArray();});
   const localJoints=Object.fromEntries(Object.keys(joints).filter(n=>/Wrist|Thumb|Index|Middle|Ring|Pinky|LowerArm|UpperArm/.test(n)).map(n=>[n,entity.weapon.worldToLocal(point(entity,n)).toArray()]));

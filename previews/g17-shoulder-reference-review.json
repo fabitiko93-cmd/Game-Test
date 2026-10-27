@@ -1,0 +1,45 @@
+{
+  "format": "sperrkreis-shoulder-reference-review",
+  "version": 1,
+  "reviewVersion": 10,
+  "status": "awaiting-visual-review",
+  "poseSha256": "abbbd4fe2433705dbe8977da966ed845280f17b20c84cd2dc1fac763a8a11fca",
+  "checks": {
+    "originalGeometryNormalsTopologyMaterialColoursAndSkinWeightsExactlyPreserved": true,
+    "firingFingerRotationsExactlyMatchApproved04": true,
+    "supportGraspAndOtherBodyBoneRotationsExactlyPreserved": true,
+    "approvedRightHandWeaponLocalJointMaxDifferenceMetres": 6.913533060387169e-08,
+    "approvedHandCoreVertexCount": 445,
+    "approvedHandCoreSkinMaxDifferenceMetres": 9.643676220421976e-08,
+    "mixedForearmHandSeamSkinMaxDifferenceMetres": 0.0019125000637857219,
+    "rightShoulderSkinMaxDisplacementMetres": 0.047733271348640416,
+    "maxSegmentLengthErrorMetres": 1.003210264860499e-08,
+    "finiteSkinnedPositionsAndUnitNormals": true,
+    "shoulderReference": {
+      "mode": "reference-shoulder-proximal-swing",
+      "sides": {
+        "R": {
+          "clavicleChangeDegrees": 20.712338745504717,
+          "upperRollDegrees": 0,
+          "wristEndpointError": 8.366912432248267e-08,
+          "handFrameErrorRadians": 9.424321830774485e-08,
+          "upperLengthError": 1.003210264860499e-08,
+          "lowerLengthError": 5.177090700581033e-10,
+          "forearmTwistDegrees": 59.99999999999999,
+          "wristAxialTwistDegrees": 16.36134091518684,
+          "wristBendDegrees": 24.000034120427944
+        }
+      },
+      "fingerQuaternionMaxDifference": 0,
+      "gunPositionError": 4.449557262054371e-16,
+      "gunRotationErrorRadians": 1.7631291696726137e-07,
+      "geometryModified": false,
+      "skinWeightsModified": false
+    }
+  },
+  "limits": [
+    "Static male G17 reference only; game, source assets, female transfer and animation transitions are outside this render.",
+    "The supplied photo defines the silhouette. Clothing in the photo hides precise bone centres.",
+    "Pure hand skin is preserved; mixed forearm/hand vertices deform as recorded. This is not a global collision-free certificate."
+  ]
+}

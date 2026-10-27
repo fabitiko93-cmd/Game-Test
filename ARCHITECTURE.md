@@ -8,6 +8,14 @@ mit der freigegebenen Hand und der ursprünglichen Schulter. Referenz-Hashes und
 Ablehnungsstatus sperren unbeabsichtigte Änderungen; Laufzeitintegration folgt
 erst nach visueller Freigabe.
 
+Vorschau 10 ergänzt `g17-shoulder-reference.js`: Nach dem unveränderten
+Griffaufbau richtet ein isolierter Schritt Schlüsselbein und Oberarm nach der
+Bildreferenz aus. Der Oberarm erhält keine neue axiale Gelenkausrichtung;
+die Ellenbogenebene berücksichtigt den festgehaltenen Handkontakt. Ein eigener
+Prüfer vergleicht Handhaut, Originalgewichte und Armlängen; Vorher/Nachher
+verwenden identische Kameras. Die alte Schulteridentität ist hier ausdrücklich
+kein Qualitätskriterium mehr. Auch dieser Schritt bleibt außerhalb der Laufzeit.
+
 Fortlaufende Modulkarte auf Basis der technischen Modularisierung vom 02.10.2026.
 Zweck: den Einstieg und den Umfang eines Patches begrenzen.
 Spielregeln und Ideen stehen in `DESIGN_PLAN.md`; diese Karte enthält Zuständigkeiten.
