@@ -83,6 +83,19 @@ unten, unabhängig von der Vorneigung des Rumpfes; die linke Hand bleibt frei.
 Handgelenkdrehung beim Reload getrennt von der Handgelenkbeugung.
 Ein Patch erfordert nicht automatisch das Lesen jeder Datei in seiner Tabellenzeile.
 
+`g17-grasp.js` nutzt die am 27.10. freigegebene Schulter-/Griffreferenz 10 aus
+`docs/assets/weapons/g17-grasp.json`. Kalibrierte Finger und Handrahmen sind für
+beide Original-Rigs aufbereitet. `pistol-pose.js` führt weiter die gemeinsamen
+Zielbahnen, Kontakte und Unterbrechungen aus; die G17 blendet ihre Oberarmreferenz
+zwischen Tragen/Nachladen und Anlegen in Weltkoordinaten. Der Stützarm gewinnt
+bei Bedarf Reichweite über das Schlüsselbein. `weapon-ik.js` kann für diesen
+Arm die kürzeste Oberarmschwenkung erhalten. Keine Preview-/Editor-Imports im
+Laufzeitpfad. `g17-approved.test.mjs` vergleicht echte Hautpunkte mit dem
+freigegebenen Render und schützt langsame 15-Hz-Übergänge zusätzlich zu den
+30-/60-Hz-Pistolenprüfungen. Die Kalibrierung und die unabhängigen Testpunkte
+lassen sich mit `scripts/prepare-g17-grasp.mjs` aus dem gespeicherten Review-10-
+Mesh und dessen Schulterbindung erneut aufbereiten.
+
 `interior-layout.js` ergänzt die vier Gebäude um einzeln adressierbare Möbel,
 Wandmontagen und Tischobjekte. `quaternius-catalog.js` liefert gedrehte physische
 Fußabdrücke und metrische Tischhöhen. `interaction.js` begrenzt Behälter auf 50 cm

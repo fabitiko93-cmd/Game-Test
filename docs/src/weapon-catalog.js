@@ -1,4 +1,5 @@
 import G17 from '../assets/weapons/g17.json' with {type:'json'};
+import G17_GRASP from '../assets/weapons/g17-grasp.json' with {type:'json'};
 import USP from '../assets/weapons/usp.json' with {type:'json'};
 import SCORPION from '../assets/weapons/scorpion.json' with {type:'json'};
 import DEAGLE from '../assets/weapons/deagle.json' with {type:'json'};
@@ -19,7 +20,7 @@ const MODELS = {
   // Palm contacts are on each authored grip, not offsets to an AK wrist.
   // A modest, fixed presentation scale fits the stylised hands on both rigs.
   pistol_9mm:pistol('G17',G17,{mag_9mm_12:'Magazine',mag_9mm_18:'ExtendedMagazine'},
-    {scale:1.18,rightPalm:[-.027,-.010,-.004],leftPalm:[.033,-.018,-.013],rightThumb:[.012,.016,-.044],leftThumb:[.024,.017,.007]}),
+    {scale:1.18,rightPalm:G17_GRASP.rightPalm,leftPalm:G17_GRASP.leftPalm,rightThumb:[.012,.016,-.044],leftThumb:[.024,.017,.007]}),
   usp_9mm:pistol('USP',USP,{mag_usp_15:'Magazine',mag_usp_22:'ExtendedMagazine'},
     {scale:1.12,rightPalm:[-.030,-.014,-.009],leftPalm:[.033,-.022,-.018],rightThumb:[.010,.012,-.046],leftThumb:[.023,.015,.005]}),
   scorpion_45:pistol('SIG Scorpion',SCORPION,{mag_scorpion_8:'Magazine',mag_scorpion_12:'ExtendedMagazine'},

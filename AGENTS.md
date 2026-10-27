@@ -196,6 +196,13 @@ mit Stofffarben verwenden; Bundanschlüsse und Verformung in Bewegung prüfen.
 
 ## Effizient entwickeln
 
+G17-Freigabe vom 27.10.2026: Schulterstellung aus Vorschau 10 und beide Hände
+aus deren Nahansicht sind freigegeben und zum Einbau beauftragt. Die freigegebene
+Fingerform erhalten; Haltung auf beiden Rigs kalibrieren und kontinuierliche
+Übergänge einschließlich Schleichen, Sprint, Richtungswechsel, Nachladen und
+Abbruch prüfen. Statische Referenz und Laufzeitoberfläche müssen übereinstimmen;
+keine neue Freigaberunde für den bereits beauftragten Einbau.
+
 Release-Reparatur vom 23.10.2026: `docs/RELEASE.md` beschreibt den verbindlichen
 Abschluss. Nach dem Merge tatsächliche Merge-Commit-ID speichern. Main-/Pages-
 Läufe über die Repository-Actions-API abfragen; `fetch_commit_workflow_runs`

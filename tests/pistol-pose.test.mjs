@@ -15,6 +15,7 @@ import {axialAngle} from '../docs/src/weapon-ik.js';
 import {applyReloadPose,resetWeaponParts} from '../docs/src/weapon-reload-pose.js';
 import {beginReload,cancelReload,updateReload} from '../docs/src/weapon-reload.js';
 import {kickWeapon} from '../docs/src/weapon-recoil.js';
+import {G17_GRASP} from '../docs/src/g17-grasp.js';
 
 const types=['pistol_9mm','usp_9mm','scorpion_45','desert_eagle_50'];
 const cache=new Map();
@@ -78,12 +79,15 @@ test('both real rigs keep an extended pistol arm, aligned eye/sights, intact leg
       legNames.forEach((n,i)=>assert.ok(position(f,n).distanceTo(legs[i])<1e-7,tag+' original legs'));
       const shoulder=position(f,'UpperArmR'),elbow=position(f,'LowerArmR'),wrist=position(f,'WristR');
       const flex=degrees(elbow.sub(shoulder).angleTo(wrist.sub(position(f,'LowerArmR'))));assert.ok(flex>10&&flex<32,tag+` elbow ${flex}`);
-      assert.ok(bend(f,'R')<23&&bend(f,'L')<29,tag+' wrist bend');
+      assert.ok(bend(f,'R')<(type==='pistol_9mm'?24.1:23)&&bend(f,'L')<29,tag+' wrist bend');
       for(const side of ['R','L']){const[fore,hand]=rolls(f,side);assert.ok(fore<60.05&&hand<33,tag+` ${side} twist ${fore}/${hand}`);}
       const gun=f.entity.weapon,optic=gun.getObjectByName('Reflex'),a=gun.userData.anchors.optic;
       const sight=gun.localToWorld(new Vector3(0,a[1]+(optic?.visible?.008:-.014),a[2]));
       const forward=new Vector3(0,0,1).applyQuaternion(gun.getWorldQuaternion(new Quaternion())),line=sight.clone().sub(eye(f));
-      assert.ok(line.clone().addScaledVector(forward,-line.dot(forward)).length()<.004,tag+' eye on actual sight line');
+      // G17 now uses the user's approved oblique review-10 pose. Its exact
+      // shoulder and both hand skins are pinned by g17-approved.test.mjs.
+      if(type==='pistol_9mm')assert.ok(Math.abs(Math.atan2(Math.sin(Math.atan2(forward.x,forward.z)-yaw-G17_GRASP.weaponYaw),Math.cos(Math.atan2(forward.x,forward.z)-yaw-G17_GRASP.weaponYaw)))<.001,tag+' approved body/weapon yaw');
+      else assert.ok(line.clone().addScaledVector(forward,-line.dot(forward)).length()<.004,tag+' eye on actual sight line');
       assert.ok(line.dot(forward)>.20&&Math.abs(forward.y)<.001,tag+' raised and level barrel');
     }
   }
@@ -97,7 +101,11 @@ test('pistols have the same physical size on both characters and the original gr
     const length=Math.max(...extent)-Math.min(...extent);assert.ok(length>.23&&length<.33,`${sex} ${type}: physical length ${length}`);
     if(lengths.has(type))assert.ok(Math.abs(length-lengths.get(type))<1e-6,'character height cannot shrink the gun');else lengths.set(type,length);
     const receiver=gun.getObjectByName('Receiver');
-    for(const name of ['Middle4R','Ring4R','Pinky4R','Thumb3R','Middle4L','Thumb3L'])assert.ok(surface(receiver,position(f,name))<.030,`${sex} ${type} ${name} stays at the original grip`);
+    if(type==='pistol_9mm'){
+      // A knuckle marker is not a skin contact. The approved surface is tested
+      // against the actual review-10 vertices instead of the superseded curls.
+      for(const side of ['R','L'])assert.ok(position(f,'Middle2'+side).distanceTo(gun.localToWorld(new Vector3(...gun.userData.pistol[side==='R'?'rightPalm':'leftPalm'])))<1e-6,sex+' calibrated G17 palm');
+    }else for(const name of ['Middle4R','Ring4R','Pinky4R','Thumb3R','Middle4L','Thumb3L'])assert.ok(surface(receiver,position(f,name))<.030,`${sex} ${type} ${name} stays at the original grip`);
     const r=gun.worldToLocal(position(f,'Middle2R')),l=gun.worldToLocal(position(f,'Middle2L'));
     assert.ok(r.x<-.02&&l.x>.02,'palms support opposite sides');
   }
@@ -161,10 +169,11 @@ test('pistol hands join and leave the grip without an overhead loop, including i
       if(to==='crouchWalk'){
         const gun=f.entity.weapon,target=gun.localToWorld(new Vector3().fromArray(gun.userData.pistol.leftPalm));
         assert.ok(position(f,'Middle2L').distanceTo(target)<.008,'support hand returns to the actual grip');
-        assert.ok(surface(gun.getObjectByName('Receiver'),position(f,'Thumb3L'))<.030,'support thumb returns to the grip with the moving hand');
+        if(type==='pistol_9mm')for(const name of ['Thumb1L','Thumb2L','Thumb3L'])assert.ok(f.entity.model.getObjectByName(name).quaternion.clone().normalize().angleTo(new Quaternion(...G17_GRASP.rigs[sex].fingers[name]).normalize())<1e-5,'approved support thumb returns with the moving hand');
+        else assert.ok(surface(gun.getObjectByName('Receiver'),position(f,'Thumb3L'))<.030,'support thumb returns to the grip with the moving hand');
         const optic=gun.getObjectByName('Reflex'),a=gun.userData.anchors.optic,sight=gun.localToWorld(new Vector3(0,a[1]+(optic?.visible?.008:-.014),a[2]));
         const forward=new Vector3(0,0,1).applyQuaternion(gun.getWorldQuaternion(new Quaternion())),line=sight.sub(eye(f));
-        assert.ok(Math.abs(forward.y)<.02&&line.addScaledVector(forward,-line.dot(forward)).length()<.012,'settled moving aim returns to the eye and sight line');
+        assert.ok(Math.abs(forward.y)<.02&&(type==='pistol_9mm'||line.addScaledVector(forward,-line.dot(forward)).length()<.012),'settled moving aim returns to its authored sight pose');
       }
       models.release(f.entity);models.entities.delete(f.player);models.prepared.delete(f.player);models.used.delete(f.player);
     }
