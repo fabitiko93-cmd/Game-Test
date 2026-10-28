@@ -1346,7 +1346,7 @@
       }
     },
     "female-Adventurer": {
-      "file": "female-Adventurer-9aea8fc24192.glb.gz",
+      "file": "female-Adventurer-0b1ce06490cb.glb.gz",
       "sex": "female",
       "style": "Adventurer",
       "parts": {
@@ -1387,7 +1387,7 @@
       "dimensions": [
         0.5207633853660667,
         1.8208385014818946,
-        0.4580352901764788
+        0.3130622594731929
       ],
       "clips": {
         "Death": {

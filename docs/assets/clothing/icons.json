@@ -1,5 +1,5 @@
 {
-  "file": "icons-8e58abe2f658.svg",
+  "file": "icons-90973c06703c.svg",
   "viewBox": "0 0 96 96",
   "license": "CC0-1.0",
   "generator": "scripts/prepare-clothing-icons.mjs",
@@ -7,8 +7,8 @@
     "female-Adventurer-feet": {
       "model": "female-Adventurer",
       "slot": "feet",
-      "source": "female-Adventurer-9aea8fc24192.glb.gz",
-      "sourceSha256": "9aea8fc2419253db9760f846e9af04b9093b322a2d6ca6ac5968befb860de019",
+      "source": "female-Adventurer-0b1ce06490cb.glb.gz",
+      "sourceSha256": "0b1ce06490cb88aac6b30bce9d9a89eb0d2a91da045f2bafaf5ef14dfebdf7c6",
       "materials": [
         "Brown2",
         "Brown_02"
@@ -18,8 +18,8 @@
     "female-Adventurer-legs": {
       "model": "female-Adventurer",
       "slot": "legs",
-      "source": "female-Adventurer-9aea8fc24192.glb.gz",
-      "sourceSha256": "9aea8fc2419253db9760f846e9af04b9093b322a2d6ca6ac5968befb860de019",
+      "source": "female-Adventurer-0b1ce06490cb.glb.gz",
+      "sourceSha256": "0b1ce06490cb88aac6b30bce9d9a89eb0d2a91da045f2bafaf5ef14dfebdf7c6",
       "materials": [
         "Brown2",
         "Brown_02",
@@ -32,8 +32,8 @@
     "female-Adventurer-torso": {
       "model": "female-Adventurer",
       "slot": "torso",
-      "source": "female-Adventurer-9aea8fc24192.glb.gz",
-      "sourceSha256": "9aea8fc2419253db9760f846e9af04b9093b322a2d6ca6ac5968befb860de019",
+      "source": "female-Adventurer-0b1ce06490cb.glb.gz",
+      "sourceSha256": "0b1ce06490cb88aac6b30bce9d9a89eb0d2a91da045f2bafaf5ef14dfebdf7c6",
       "materials": [
         "Brown2",
         "Gold",
@@ -41,7 +41,7 @@
         "LightGreen",
         "White"
       ],
-      "triangles": 2134
+      "triangles": 922
     },
     "female-Casual-feet": {
       "model": "female-Casual",

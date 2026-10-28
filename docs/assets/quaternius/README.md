@@ -102,6 +102,12 @@ weapons use small distinct metric silhouettes attached to the animated wrist.
 
 Starting clothing is now 45 individual inventory items (tops, bottoms and shoes)
 plus three separate headwear accessories. New survivors wear only underwear.
+The female Adventurer's original body mesh contained a complete shirt and 17
+disconnected backpack islands. `prepare-quaternius.py` now assigns those 1,212
+backpack triangles to a separate `Backpack` node, retaining all 2,854 shirt/skin
+triangles, vertex attributes, skin weights and animation keys exactly. Equipping
+the green outdoor top selects only the shirt. The existing hiking-pack item
+continues to use the male Adventurer's separate backpack on the back slot.
 `character-parts.js`, `character-body.js` and `character-legs.js` derive the bare
 body, dark boxer briefs, female short panties and cropped sports top from the
 existing CC0 Beach and Formal meshes. Sandals and the formal belt are removed.
