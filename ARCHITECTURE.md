@@ -101,6 +101,18 @@ und schützt langsame 15-Hz-Übergänge sowie die Rumpfkorrektur zusätzlich zu 
 lassen sich mit `scripts/prepare-g17-grasp.mjs` aus dem gespeicherten Review-10-
 Mesh und dessen Schulterbindung erneut aufbereiten.
 
+`weapon-motion.js` speichert nach der vollständigen Nachlade-/Rückkehrauswertung
+die tatsächlich erreichten Hand- und Waffenrahmen relativ zu ihren Schultern.
+Ein unterbrochener Pistolen-Haltungswechsel beginnt dort statt am alten
+Blend-Zwischenwert. Revolver und Langwaffen führen ihre Waffenbahn ebenfalls
+zwischen erreichten Rahmen; die Stützhand der Langwaffen bekommt pro Bild genau
+einen Weg-/Drehschritt, auch wenn mehrere Kontaktfits nötig sind. Der begrenzte
+Kontaktfit aus `pistol-pose.js` gilt auch für deren Stützarm. Der Revolver behält
+denselben Oberarmrahmen beim Grundhalten und Nachladen; direktes Überblenden
+fertiger Armknochen in die Neutralpose entfällt. `animation-continuity.test.mjs`
+reproduziert weibliches Revolver-Nachladen, Nachladeabbruch/Sprint-Rückkehr,
+Unterarmverdrehung und die kurze Sprintumkehr aller vier Pistolen.
+
 `interior-layout.js` ergänzt die vier Gebäude um einzeln adressierbare Möbel,
 Wandmontagen und Tischobjekte. `quaternius-catalog.js` liefert gedrehte physische
 Fußabdrücke und metrische Tischhöhen. `interaction.js` begrenzt Behälter auf 50 cm

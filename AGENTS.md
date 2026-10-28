@@ -209,6 +209,13 @@ Spielzielwinkel übernehmen. Oberkörper samt beiden Griffkontakten gemeinsam
 auf die Zielrichtung ausrichten; tatsächlichen Lauf-/Mündungsvektor und weiche
 Übergänge prüfen, die Original-Beinanimation erhalten.
 
+Animationskorrektur vom 28.10.2026: Nach der Prüfung präzise Korrektur der
+Revolver-Ladehand (besonders weibliches Rig), der Stützarm-Rückkehr nach
+Nachladeabbruch bei M4/Vector, der Langwaffen-Unterarmverdrehung, des Revolver-
+Armrückfalls nach kurzem Sprint und des unnötigen Abtauchens aller vier Pistolen
+beim Wiederanlegen beauftragt. Erreichte Handbahnen und Gelenkgrenzen schützen;
+G17-Referenz, Original-Beine, Griffkontakte und Munitionsereignisse erhalten.
+
 Release-Reparatur vom 23.10.2026: `docs/RELEASE.md` beschreibt den verbindlichen
 Abschluss. Nach dem Merge tatsächliche Merge-Commit-ID speichern. Main-/Pages-
 Läufe über die Repository-Actions-API abfragen; `fetch_commit_workflow_runs`

@@ -6,6 +6,7 @@ import {resolveAnimationEdits,editTarget,editBone,transitionDuration} from './an
 import {applyCharacterPose} from './character-pose.js';
 import {fitAuthoredElbow,hasElbowEdit} from './elbow-pose.js';
 import {PISTOL_POSES as POSES} from './weapon-poses.js';
+import {transitionWeaponMotion} from './weapon-motion.js';
 import {G17_GRASP,hasApprovedGrip,approvedHandFrame,approvedUpperRest,poseApprovedHand,approvedAimOrigin,approvedElbowPole} from './g17-grasp.js';
 
 const v=(x=0,y=0,z=0)=>new Vector3(x,y,z);
@@ -77,7 +78,7 @@ function frame(entity,side,hand,maxBend){
   const rig=entity.rifleHands;
   const approved=hasApprovedGrip(entity),palm=approved?point(entity,'Middle2'+side).sub(point(entity,'Wrist'+side)).applyQuaternion(bone(entity,'Wrist'+side).getWorldQuaternion(new Quaternion()).invert()).normalize():rig.get('Wrist'+side).palm;
   return{hand,axis:palm,rest:rig.get('Wrist'+side).rotation,lowerRest:rig.get('LowerArm'+side).rotation,
-    ...(approved&&side==='R'?{preserveUpperSwing:true,upperRest:approvedUpperRest(entity)}:{}),
+    ...(approved&&side==='R'?{preserveUpperSwing:true,upperRest:approvedUpperRest(entity)}:side==='R'&&entity.handgunUpperRest?{preserveUpperSwing:true,upperRest:entity.handgunUpperRest}:{}),
     hinge:rig.get('UpperArm'+side).hinge,maxTwist:Math.PI/3,maxBend:maxBend*Math.PI/180};
 }
 
@@ -97,7 +98,7 @@ function aimPoint(entity,rotation){
 function fitHandBase(entity,side,target,rotation,pole,maxBend,contact=null,delta=entity.pistolStep??1){
   if(entity.animationDirectEdit)delta=1;
   const hand=rotation.clone(),root=entity.root,yaw=root.getWorldQuaternion(new Quaternion()),start=point(entity,'UpperArm'+side),previous=entity.pistolPreviousFit?.[side];
-  if(previous&&delta<.5)hand.copy(yaw.clone().multiply(previous.hand).rotateTowards(hand,Math.max(0,delta)*5));
+  if(previous&&delta<.5&&!(side==='R'&&entity.handgunRecoil))hand.copy(yaw.clone().multiply(previous.hand).rotateTowards(hand,Math.max(0,delta)*5));
   const a=start.distanceTo(point(entity,'LowerArm'+side)),b=point(entity,'LowerArm'+side).distanceTo(point(entity,'Wrist'+side));
   const wristTarget=()=>{
     const goal=contact?contactWrist(entity,side,target,hand,contact):target.clone(),offset=goal.clone().sub(start);
@@ -163,11 +164,13 @@ function fitHand(entity,side,target,rotation,pole,maxBend,contact=null,delta=ent
   entity.pistolAutoFits||={};entity.pistolAutoFits[side]=entity.pistolFits[side];
   if(authored){
     const baseline=point(entity,'LowerArm'+side),wristTarget=point(entity,'Wrist'+side),reached=bone(entity,'Wrist'+side).getWorldQuaternion(new Quaternion());
-    fitAuthoredElbow(entity,side,arm(entity,side),wristTarget,pole,frame(entity,side,reached,maxBend),{maxBend:38,maxWristTwist:35,basePole:baseline});
+    fitAuthoredElbow(entity,side,arm(entity,side),wristTarget,pole,frame(entity,side,reached,maxBend),{maxBend:entity.weapon.userData.pistol?38:75,maxWristTwist:35,basePole:baseline});
     hand=bone(entity,'Wrist'+side).getWorldQuaternion(new Quaternion());
   }
   return hand;
 }
+
+export function fitHandTarget(entity,side,target,rotation,pole,maxBend){return fitHand(entity,side,target,rotation,pole,maxBend);}
 
 function fitRight(entity,origin,rotation,pole,maxBend=22){
   if(hasApprovedGrip(entity)&&maxBend===22)maxBend=24;
@@ -277,7 +280,8 @@ export function applyPistolPose(entity,player,delta,posture){
   const carryOrigin=weapon.getWorldPosition(v()),carryRotation=weapon.getWorldQuaternion(new Quaternion());
   carryOrigin.lerp(root.localToWorld(shoulder.clone().add(v(...POSES.crouchCarryPoint))),entity.pistolCrouch);
   carryRotation.slerp(yaw.clone().multiply(new Quaternion().setFromEuler(new Euler(...POSES.crouchCarryRotation,'YXZ'))),entity.pistolCrouch);
-  const targetPoint=carryOrigin.lerp(aimOrigin,active),targetRotation=carryRotation.slerp(aimRotation,active);
+  const endpoint=posture==='carry'?{point:carryOrigin,rotation:carryRotation}:{point:aimOrigin,rotation:aimRotation};
+  const {point:targetPoint,rotation:targetRotation}=transitionWeaponMotion(entity,carryOrigin.clone().lerp(aimOrigin,active),carryRotation.clone().slerp(aimRotation,active),delta,endpoint);
   editTarget(entity,'weapon',targetPoint,targetRotation);
   const held=guide(entity,'pistolWeaponPose','R',targetPoint,targetRotation,delta);
   const kick=recoilPose(player,weapon.userData.weaponId,true),pivot=held.point.clone().add(handOffset(entity,'R',held.rotation));
