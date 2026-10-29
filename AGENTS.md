@@ -196,6 +196,12 @@ mit Stofffarben verwenden; Bundanschlüsse und Verformung in Bewegung prüfen.
 
 ## Effizient entwickeln
 
+Outdooroberteil vom 28.10.2026: Den eingebauten Rucksack des weiblichen grünen
+Outdooroberteils abtrennen; das vollständige Oberteil behalten. Der vorhandene
+Wanderrucksack bleibt ein eigener, über den Rücken-Slot ausrüstbarer Gegenstand.
+Die Originalflächen und Gelenkgewichte erhalten; Inventarbild und getragene
+Kleidung verwenden dieselbe bereinigte Geometrie auf beiden Figuren.
+
 G17-Freigabe vom 27.10.2026: Schulterstellung aus Vorschau 10 und beide Hände
 aus deren Nahansicht sind freigegeben und zum Einbau beauftragt. Die freigegebene
 Fingerform erhalten; Haltung auf beiden Rigs kalibrieren und kontinuierliche

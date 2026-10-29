@@ -180,6 +180,11 @@ gehaltenes Auto-Feuer mit sicheren Abbrüchen, Rückstoß und geraden Durchschü
 aus. Der HUD-Abzug in `input.js` beendet Feuer auch bei Pointer-Abbruch/Blur.
 Lootkleidung verweist auf ihre tatsächlich vorhandenen Originalteile; Anlegen
 ersetzt nur den zugehörigen sichtbaren Kleidungsteil.
+`prepare-quaternius.py` trennt beim weiblichen Adventurer die 17 geometrisch
+unabhängigen Rucksackteile vom vollständigen Oberteil in einen eigenen
+`Backpack`-Knoten. Oberteil, Inventarbild und beide Rigs verwenden nur dessen
+ursprüngliche Kleidungsfläche; der Wanderrucksack nutzt weiterhin das separate
+männliche Originalmodell und den Rücken-Slot.
 
 `scripts/prepare-revolver.py` vereinheitlicht die Anschlüsse von R1/R2/R4 auf
 einem gemeinsamen Grundkörper; drei Laufmodule, zwei Griffe, Rotpunkt und Lampe

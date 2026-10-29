@@ -7,6 +7,7 @@ Original rigs, separate clothing meshes and all authored animation keys survive.
 """
 import argparse
 import base64
+import copy
 import gzip
 import hashlib
 import json
@@ -93,6 +94,76 @@ def furniture(path):
          'sourceDimensions':source_size.tolist(),'scale':scale.tolist(),'panelDepth':.04 if panel_depth else None,
          'triangles':sum(len(x) for x in groups.values()),'sourceSha256':hashlib.sha256(path.read_bytes()).hexdigest()}
 
+def separate_adventurer_backpack(g,binary):
+    """Separate the female pack's existing islands without changing its shirt.
+
+    The authored body is one connected surface, including the complete back.
+    The 17 backpack islands share its mesh but no edges. Keep every source
+    triangle, attribute and skin weight, assigning only those islands to Backpack.
+    """
+    if any(n.get('name')=='Backpack' for n in g['nodes']):return binary
+    node_index=next(i for i,n in enumerate(g['nodes']) if n.get('name')=='Adventurer_Body')
+    node=g['nodes'][node_index];mesh=g['meshes'][node['mesh']]
+    types={5120:'i1',5121:'u1',5122:'<i2',5123:'<u2',5125:'<u4',5126:'<f4'}
+    widths={'SCALAR':1,'VEC2':2,'VEC3':3,'VEC4':4}
+    def read(index):
+        a=g['accessors'][index];view=g['bufferViews'][a['bufferView']]
+        dtype=np.dtype(types[a['componentType']]);width=widths[a['type']]
+        return np.ndarray((a['count'],width),dtype=dtype,buffer=binary,
+            offset=view.get('byteOffset',0)+a.get('byteOffset',0),
+            strides=(view.get('byteStride',width*dtype.itemsize),dtype.itemsize))
+    faces=[];weld={};primitive_faces=[]
+    for primitive in mesh['primitives']:
+        positions=read(primitive['attributes']['POSITION']);vertices=[]
+        for position in positions:
+            key=tuple(np.round(position,6));vertices.append(weld.setdefault(key,len(weld)))
+        triangles=read(primitive['indices']).reshape(-1,3)
+        primitive_faces.append(triangles);faces.extend(np.array(vertices)[triangles].tolist())
+    parent=list(range(len(faces)))
+    def find(i):
+        while parent[i]!=i:parent[i]=parent[parent[i]];i=parent[i]
+        return i
+    edges={}
+    for i,face in enumerate(faces):
+        for a,b in zip(face,face[1:]+face[:1]):
+            edge=tuple(sorted((a,b)))
+            if edge in edges:parent[find(i)]=find(edges[edge])
+            else:edges[edge]=i
+    components={}
+    for i in range(len(faces)):components.setdefault(find(i),[]).append(i)
+    shirt=set(max(components.values(),key=len))
+    if len(shirt)!=2854 or len(faces)-len(shirt)!=1212 or len(components)!=18:
+        raise ValueError('Unexpected Adventurer topology; inspect the source before separating it')
+    output=bytearray(binary)
+    def append(values,source):
+        values=np.ascontiguousarray(values)
+        output.extend(b'\0'*(-len(output)%4))
+        view=len(g['bufferViews']);g['bufferViews'].append({'buffer':0,'byteOffset':len(output),'byteLength':values.nbytes})
+        output.extend(values.tobytes());accessor=copy.deepcopy(g['accessors'][source])
+        accessor.update(bufferView=view,byteOffset=0,count=len(values))
+        for key,fn in [('min',np.min),('max',np.max)]:
+            if key in accessor:accessor[key]=fn(values,axis=0).tolist()
+        index=len(g['accessors']);g['accessors'].append(accessor);return index
+    garments=[[],[]];offset=0
+    for primitive,triangles in zip(mesh['primitives'],primitive_faces):
+        mask=np.array([offset+i in shirt for i in range(len(triangles))]);offset+=len(triangles)
+        for part,selection in enumerate([mask,~mask]):
+            if not selection.any():continue
+            used,indices=np.unique(triangles[selection],return_inverse=True)
+            separated=copy.deepcopy(primitive)
+            separated['attributes']={name:append(read(index)[used],index) for name,index in primitive['attributes'].items()}
+            separated['indices']=append(indices.astype(read(primitive['indices']).dtype).reshape(-1,1),primitive['indices'])
+            garments[part].append(separated)
+    mesh['primitives']=garments[0]
+    backpack=copy.deepcopy(node);backpack.update(name='Backpack',mesh=len(g['meshes']))
+    g['meshes'].append({'name':'Backpack','primitives':garments[1]})
+    backpack_index=len(g['nodes']);g['nodes'].append(backpack)
+    owners=[n['children'] for n in g['nodes'] if node_index in n.get('children',[])]
+    owners.extend(scene['nodes'] for scene in g['scenes'] if node_index in scene.get('nodes',[]))
+    if len(owners)!=1:raise ValueError('Expected one Adventurer body parent')
+    owners[0].append(backpack_index)
+    return bytes(output)
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('source');args=parser.parse_args();source=Path(args.source)
     output=ROOT/'docs/assets/quaternius';output.mkdir(exist_ok=True)
@@ -104,6 +175,7 @@ def main():
             raw=path.read_bytes();g=json.loads(raw);assert len(g['buffers'])==1 and not g.get('images')
             binary=base64.b64decode(g['buffers'][0]['uri'].split(',')[1])
             key=sex+'-'+path.stem
+            if key=='female-Adventurer':binary=separate_adventurer_backpack(g,binary)
             parts={}
             for node in g['nodes']:
                 if 'mesh' not in node:continue
