@@ -250,7 +250,6 @@ export function fitWeaponPose(entity,point,rotation,amount=1,followSupport=false
   if(entity.weapon.userData.pistol){fitPistolWeaponPose(entity,point,rotation,amount);return;}
   point=point.clone();rotation=rotation.clone();editTarget(entity,'weapon',point,rotation,'reload');
   const bone=n=>entity.model.getObjectByName(n),arm=['UpperArmR','LowerArmR','WristR'].map(bone),weapon=entity.weapon;
-  if(!weapon.userData.grips?.handgun)amount=1;
   const offset=new Vector3().fromArray(weapon.userData.grips?.right||RIFLE_HANDS.right.toArray());
   const previous=entity.weaponPoles;
   const leftPole=entity.root.localToWorld(entity.root.worldToLocal(bone('UpperArmL').getWorldPosition(new Vector3())).add(new Vector3(.18,-.22,.13)));

@@ -169,7 +169,7 @@ test('pistol hands join and leave the grip without an overhead loop, including i
       }
       if(to==='crouchWalk'){
         const gun=f.entity.weapon,target=gun.localToWorld(new Vector3().fromArray(gun.userData.pistol.leftPalm));
-        assert.ok(position(f,'Middle2L').distanceTo(target)<.008,'support hand returns to the actual grip');
+        assert.ok(position(f,'Middle2L').distanceTo(target)<.008,`${sex} ${type} ${hz} ${from}>${to}: support hand returns to the actual grip (${position(f,'Middle2L').distanceTo(target)} m)`);
         if(type==='pistol_9mm')for(const name of ['Thumb1L','Thumb2L','Thumb3L'])assert.ok(f.entity.model.getObjectByName(name).quaternion.clone().normalize().angleTo(new Quaternion(...G17_GRASP.rigs[sex].fingers[name]).normalize())<1e-5,'approved support thumb returns with the moving hand');
         else assert.ok(surface(gun.getObjectByName('Receiver'),position(f,'Thumb3L'))<.030,'support thumb returns to the grip with the moving hand');
         const optic=gun.getObjectByName('Reflex'),a=gun.userData.anchors.optic,sight=gun.localToWorld(new Vector3(0,a[1]+(optic?.visible?.008:-.014),a[2]));

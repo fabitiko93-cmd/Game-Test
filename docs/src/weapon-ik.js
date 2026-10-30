@@ -64,6 +64,13 @@ export function fitArm(upper, lower, wrist, target, pole, frame) {
     const angle=Math.atan2(axis.dot(current.clone().cross(normal)),current.dot(normal));
     orientWorld(upper,new Quaternion().setFromAxisAngle(axis,angle).multiply(upper.getWorldQuaternion(new Quaternion())));
   }
+  if(frame?.upperFrom){
+    const axis=nextElbow.clone().sub(start).normalize(),wanted=upper.getWorldQuaternion(new Quaternion());
+    orientWorld(upper,frame.upperFrom);pointBone(upper,lower,nextElbow);
+    const transported=upper.getWorldQuaternion(new Quaternion()),turn=axialAngle(wanted.multiply(transported.clone().invert()),axis),limit=frame.upperStep;
+    orientWorld(upper,new Quaternion().setFromAxisAngle(axis,Math.max(-limit,Math.min(limit,turn))).multiply(transported));
+    frame.upperRemaining=Math.max(0,Math.abs(turn)-limit);
+  }
   // The elbow has one bending hinge. Start from its bind rotation each time:
   // retaining the previous grip's roll makes repeated IK fits accumulate twist.
   if(frame?.lowerRest){lower.quaternion.copy(frame.lowerRest);lower.updateMatrixWorld(true);}
@@ -76,7 +83,9 @@ export function fitArm(upper, lower, wrist, target, pole, frame) {
     const desired=new Quaternion().setFromUnitVectors(from,axis).multiply(rotation);
     let twist=axialAngle(desired.multiply(neutral.clone().invert()),axis);
     if(Math.abs(twist)>Math.PI*2/3&&frame.twistPreference&&Math.sign(twist)!==Math.sign(frame.twistPreference))twist-=Math.sign(twist)*Math.PI*2;
-    const limit=frame.maxTwist??Math.PI/3,actual=Math.max(-limit,Math.min(limit,twist));
+    const limit=frame.maxTwist??Math.PI/3;
+    let actual=Math.max(-limit,Math.min(limit,twist));
+    if(frame.twistFrom!==undefined)actual=Math.max(frame.twistFrom-frame.twistStep,Math.min(frame.twistFrom+frame.twistStep,actual));
     orientWorld(lower,new Quaternion().setFromAxisAngle(axis,actual).multiply(neutral));
     // The support-hand contact solver can turn a free hand instead of hiding
     // an impossible grip in a 150–180 degree forearm rotation.

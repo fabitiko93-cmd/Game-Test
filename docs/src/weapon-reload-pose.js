@@ -43,6 +43,7 @@ function placeLeft(entity,base,point,rotation,profile,weight,contact='Middle2',t
     entity.pistolReloadClearance=weight;
     if(weight<=0)return;
     const before=fingers(entity),palm=entity.model.getObjectByName(contact+'L').getWorldPosition(new Vector3()).lerp(point,weight);
+    palm.add(v(.10,.10,.15).multiplyScalar(Math.sin(Math.PI*weight)*entity.root.scale.x).applyQuaternion(entity.root.quaternion));
     const q=base.rotation.clone().slerp(rotation,weight);
     poseHand(entity,'L',profile,{thumbPoint});
     blendFingers(before,weight);fitPistolSupportContact(entity,palm,q,contact,{delta:base.step,key:'pistolReloadPose',clearance:weight,stage:'reload'});
@@ -63,7 +64,7 @@ function placeLeft(entity,base,point,rotation,profile,weight,contact='Middle2',t
 }
 function remember(entity,state,weight){
   const weapon=entity.weapon,wrist=entity.model.getObjectByName('WristL');
-  entity.reloadLast={id:state.weaponId,weight:weapon.userData.pistol?1:weight,elapsed:0,phaseTime:state.elapsed,point:weapon.getWorldPosition(new Vector3()),rotation:weapon.getWorldQuaternion(new Quaternion()),
+  entity.reloadLast={id:state.weaponId,weight:weapon.userData.pistol?1:weight,referenceWeight:entity.pistolReloadReferenceWeight??weight,elapsed:0,phaseTime:state.elapsed,point:weapon.getWorldPosition(new Vector3()),rotation:weapon.getWorldQuaternion(new Quaternion()),
     left:wrist.getWorldPosition(new Vector3()),palm:entity.model.getObjectByName('Middle2L').getWorldPosition(new Vector3()),leftRotation:wrist.getWorldQuaternion(new Quaternion()),fingers:fingers(entity),
     held:weapon.userData.pistol?{
       point:entity.root.worldToLocal(weapon.getWorldPosition(new Vector3())).sub(entity.root.worldToLocal(entity.model.getObjectByName('UpperArmR').getWorldPosition(new Vector3()))),
@@ -76,7 +77,7 @@ function remember(entity,state,weight){
 }
 function finishInterrupted(entity,delta){
   const last=entity.reloadLast,weapon=entity.weapon;if(!last||last.id!==weapon?.userData.weaponId){entity.reloadLast=null;return;}
-  last.elapsed+=Math.max(0,delta);const t=last.weight*(1-ease(last.elapsed/.28));if(t<.001){entity.reloadLast=null;return;}
+  last.elapsed+=Math.max(0,delta);const duration=weapon.userData.pistol?.28:.42,t=last.weight*(1-ease(last.elapsed/duration));if(t<.001){entity.reloadLast=null;return;}
   if(weapon.userData.pistol){
     const root=entity.root,yaw=root.getWorldQuaternion(new Quaternion());
     const at=(side,offset)=>root.localToWorld(root.worldToLocal(entity.model.getObjectByName('UpperArm'+side).getWorldPosition(new Vector3())).add(offset));
@@ -91,6 +92,7 @@ function finishInterrupted(entity,delta){
   const point=weapon.getWorldPosition(new Vector3()).lerp(last.point,t),rotation=weapon.getWorldQuaternion(new Quaternion()).slerp(last.rotation,t);
   const wrist=entity.model.getObjectByName('WristL'),q=wrist.getWorldQuaternion(new Quaternion()).slerp(last.leftRotation,t);
   const palm=entity.model.getObjectByName('Middle2L').getWorldPosition(new Vector3()).lerp(last.palm,t);
+  palm.addScaledVector(new Vector3(0,0,1).applyQuaternion(entity.root.quaternion),.18*Math.sin(Math.PI*t)*entity.root.scale.x);
   fitWeaponPose(entity,point,rotation,t);
   for(const [bone,old]of last.fingers)bone.quaternion.slerp(old,t);
   fitSupportContact(entity,palm,q);
@@ -113,9 +115,10 @@ function evaluateReloadPose(entity,player,delta){
   if(state.kind==='cylinder'&&last?.id===state.weaponId&&step>0&&step<.1){base.previous=last.leftRotation;base.step=step;}
   const shoulder=entity.root.worldToLocal(bone('UpperArmR').getWorldPosition(new Vector3()));
   const hips=entity.root.worldToLocal(bone('UpperLegL').getWorldPosition(new Vector3()).lerp(bone('UpperLegR').getWorldPosition(new Vector3()),.5));
-  const waist=entity.root.localToWorld(hips.add(v(.24,.04,.14)));
+  const waist=entity.root.localToWorld(hips.add(weapon.userData.pistol?v(.34,.14,.18):v(.24,.04,.14)));
   const cylinder=state.kind==='cylinder',handgun=Boolean(weapon.userData.grips?.handgun),pistol=Boolean(weapon.userData.pistol),motion=Math.sin(Math.PI*phase.progress)*.012;
   const goal=entity.root.localToWorld(v(handgun?.015:-.055,shoulder.y-(handgun?.27:.25)+motion,shoulder.z+(handgun?.29:.34)));
+  if(pistol){const crouch=entity.pistolCrouch||0;goal.add(v(0,hasApprovedGrip(entity)?.40:.22,.16).multiplyScalar(crouch*entity.root.scale.x).applyQuaternion(entity.root.quaternion));}
   const q=entity.root.getWorldQuaternion(new Quaternion()).multiply(new Quaternion().setFromEuler(new Euler(handgun?.48:.10,handgun?-.10:0,handgun?-.14:-.09,'YXZ')));
   const point=weapon.getWorldPosition(new Vector3()).lerp(goal,weight),rotation=weapon.getWorldQuaternion(new Quaternion()).slerp(q,weight);
   fitWeaponPose(entity,pistol?goal:point,pistol?q:rotation,weight,true);
