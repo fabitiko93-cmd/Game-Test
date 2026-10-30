@@ -46,6 +46,6 @@ export function fitAuthoredElbow(entity,side,arm,target,pole,frame,{maxBend=75,m
   }
   Object.assign(frame,{wristTwist:lastFrame.wristTwist,forearmTwist:lastFrame.forearmTwist});
   const circle=armCircle(...arm);entity.elbowConstraints||={};entity.elbowConstraints[side]={limited,requested:requested/radians,reached:chosen/radians,radius:circle.radius};
-  if(entity.pistolFits){const bend=circle.radial.clone().normalize().applyQuaternion(entity.root.getWorldQuaternion(new Quaternion()).invert()),flex=lower.getWorldPosition(v()).sub(start).angleTo(wrist.getWorldPosition(v()).sub(lower.getWorldPosition(v())));entity.pistolFits[side]={bend,hand:wrist.getWorldQuaternion(new Quaternion()).premultiply(entity.root.getWorldQuaternion(new Quaternion()).invert()),flex,twist:frame.forearmTwist};}
+  if(entity.pistolFits){const bend=circle.radial.clone().normalize().applyQuaternion(entity.root.getWorldQuaternion(new Quaternion()).invert()),flex=lower.getWorldPosition(v()).sub(start).angleTo(wrist.getWorldPosition(v()).sub(lower.getWorldPosition(v())));entity.pistolFits[side]={upper:upper.getWorldQuaternion(new Quaternion()).premultiply(entity.root.getWorldQuaternion(new Quaternion()).invert()),offset:wrist.getWorldPosition(v()).sub(start).applyQuaternion(entity.root.getWorldQuaternion(new Quaternion()).invert()),bend,hand:wrist.getWorldQuaternion(new Quaternion()).premultiply(entity.root.getWorldQuaternion(new Quaternion()).invert()),flex,twist:frame.forearmTwist};}
   return true;
 }

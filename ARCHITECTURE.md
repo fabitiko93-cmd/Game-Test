@@ -113,6 +113,15 @@ fertiger Armknochen in die Neutralpose entfällt. `animation-continuity.test.mjs
 reproduziert weibliches Revolver-Nachladen, Nachladeabbruch/Sprint-Rückkehr,
 Unterarmverdrehung und die kurze Sprintumkehr aller vier Pistolen.
 
+`arm-clearance.js` führt automatische Pistolen-Handgelenkbahnen oberhalb
+angewinkelter Beine, bevor die Hand seitlich zum Griff oder Magazin wechselt.
+Die G17 hat im Schleichstillstand eine freie linke Bereitschaftshand neben dem
+Knie und eine höhere Nachladeposition. Die rechte Oberarmführung endet erst
+beim tatsächlichen Erreichen ihres Zielrahmens. `weapon-clearance.test.mjs`
+prüft Drehwege, Nachladerückkehr und die Körperdurchdringungen unabhängig an
+verformten Körperdreiecken; dieselbe Fallmatrix nutzt
+`scripts/audit-weapon-clearance.mjs`. Status: `docs/WEAPON_ANIMATION_CORRECTION.md`.
+
 `interior-layout.js` ergänzt die vier Gebäude um einzeln adressierbare Möbel,
 Wandmontagen und Tischobjekte. `quaternius-catalog.js` liefert gedrehte physische
 Fußabdrücke und metrische Tischhöhen. `interaction.js` begrenzt Behälter auf 50 cm

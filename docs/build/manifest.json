@@ -1,6 +1,6 @@
 {
-  "id": "18f5cbb148af1de5659b",
-  "script": "build/main-7XOVSCVI.js",
+  "id": "d709fdba72496c6e26db",
+  "script": "build/main-7L6QN57R.js",
   "style": "build/style-JBULRKXC.css",
   "precache": [
     "assets/clothing/README.md",
@@ -287,9 +287,9 @@
     "build/assets/scorpion-icon-YGG7V2DW.svg",
     "build/assets/usp-icon-S7RTUW46.svg",
     "build/assets/vector-icon-DX6NJN2U.svg",
-    "build/chunks/animation-workshop-SC4254MP.js",
-    "build/chunks/chunk-ERRF6D5X.js",
-    "build/main-7XOVSCVI.js",
+    "build/chunks/animation-workshop-XFKRNXRG.js",
+    "build/chunks/chunk-ACWF7BJD.js",
+    "build/main-7L6QN57R.js",
     "build/style-JBULRKXC.css",
     "index.html",
     "manifest.webmanifest"

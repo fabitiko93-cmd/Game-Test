@@ -1,0 +1,14 @@
+{
+  "sourceHashes": {
+    "docs/src/arm-clearance.js": "2f319b4effd7dccb661800e90e55eceb201fa8ba370fe18f48a605a721a0cdeb",
+    "docs/src/pistol-pose.js": "48e86d31aec7b07a5796ddac75edd766145ae54c47a0f3b94d7fdd3c812d6155",
+    "docs/src/rifle-pose.js": "200cb95f1df375e4027283b862280b0d7c0899075648cefe8fbb25660c9851ed",
+    "docs/src/weapon-ik.js": "8ce533cccf45191a96e06cd57cdd7fc62e1683280245c35f1fa5f0f209d32816",
+    "docs/src/weapon-reload-pose.js": "b36d7e0a7920ccea768cee551011edc16efbb16cc549ac98a0ec9aa200e3e110",
+    "docs/src/elbow-pose.js": "cd92acd8a700fad6cfcf97921332f41e645d3f011ef8579a02a0d3b3e9df19a9"
+  },
+  "cases": 192,
+  "frames": 11840,
+  "failedCases": 0,
+  "failures": []
+}
