@@ -29,6 +29,7 @@ import { EquipmentViews } from './equipment-views.js';
 import { hasWeaponModel } from './weapon-catalog.js';
 
 const MOD_SLOT_LABELS = {
+  carrier:'PATRONENHALTER',
   mount: "MONTAGE",
   optic: "VISIERUNG",
   muzzle: "MÜNDUNG",
@@ -504,7 +505,7 @@ export class GameUI {
     }
     let extra = "";
     if (definition.weaponKind === "firearm") extra = ` · MUNITION ${ammoLabel(item)} · ZUSTAND ${Math.round(item.condition || 0)} %`;
-    else if (definition.type === "magazine") extra = ` · ${item.rounds || 0}/${definition.capacity}`;
+    else if (definition.type === "magazine"||definition.shellCarrier) extra = ` · ${item.rounds || 0}/${definition.capacity}`;
     else if ("condition" in item) extra = ` · ZUSTAND ${Math.round(item.condition)} %`;
     if (definition.needs) {
       const required = ITEMS[definition.needs]?.name || definition.needs;
@@ -689,7 +690,7 @@ export class GameUI {
       const label = document.createElement("small");
       label.textContent = MOD_SLOT_LABELS[slot] || slot.toUpperCase();
       const value = document.createElement("strong");
-      value.textContent = installed ? slot === "magazine" ? `${installed.rounds || 0}/${itemDefinition(installed).capacity}` : itemDefinition(installed).short : "LEER";
+      value.textContent = installed ? slot === "magazine"||slot==='carrier' ? `${installed.rounds || 0}/${itemDefinition(installed).capacity}` : itemDefinition(installed).short : "LEER";
       button.append(label, value);
       button.disabled = false;
       if (installed) {
@@ -699,15 +700,16 @@ export class GameUI {
       this.el.mod_slots.append(button);
     }
 
-    this.el.weapon_magazines.classList.toggle("hidden", definition.feed !== "magazine");
+    this.el.weapon_magazines.classList.toggle("hidden", definition.feed !== "magazine"&&!definition.shotgun);
     this.el.magazine_list.replaceChildren();
-    for (const magazine of player.inventory.filter(item => definition.magazineTypes?.includes(item.type))) {
+    const containers=definition.shotgun?[...player.inventory.filter(i=>itemDefinition(i).shellCarrier&&itemDefinition(i).compatible.includes(weapon.type)),...(weapon.mods?.carrier?[weapon.mods.carrier]:[])]:player.inventory.filter(item => definition.magazineTypes?.includes(item.type));
+    for (const magazine of containers) {
       const row = document.createElement("div"); row.className = "magazine-row";
       const name = document.createElement("span"), capacity = itemDefinition(magazine).capacity;
       name.textContent = `${itemDefinition(magazine).short} ${magazine.rounds || 0}/${capacity} · ${Math.round(itemWeight(magazine) * 1000)} g`;
       row.append(name);
       for (const [label, action, disabled] of [
-        ["EINSETZEN", () => this.callbacks.insertMagazine?.(weapon.id, magazine.id), false],
+        [definition.shotgun?'MONTIEREN':"EINSETZEN", () => definition.shotgun?this.callbacks.installMod?.(weapon.id,magazine.id):this.callbacks.insertMagazine?.(weapon.id, magazine.id), magazine.id===weapon.mods?.carrier?.id],
         ["BEFÜLLEN", () => this.callbacks.fillMagazine?.(magazine.id), magazine.rounds >= capacity || !countType(player, itemDefinition(magazine).ammoType)],
         ["ENTLEEREN", () => this.callbacks.emptyMagazine?.(magazine.id), !magazine.rounds],
       ]) {
@@ -716,7 +718,7 @@ export class GameUI {
       }
       this.el.magazine_list.append(row);
     }
-    if (!this.el.magazine_list.children.length) this.el.magazine_list.textContent = "KEIN PASSENDES WECHSELMAGAZIN IM RUCKSACK";
+    if (!this.el.magazine_list.children.length) this.el.magazine_list.textContent = definition.shotgun?'KEIN PASSENDER PATRONENHALTER':"KEIN PASSENDES WECHSELMAGAZIN IM RUCKSACK";
 
     this.el.available_mods.replaceChildren();
     const available = compatibleMods(player, weapon).filter(mod=>itemDefinition(mod).modSlot===this.equipmentViews.weaponSlot);

@@ -196,6 +196,43 @@ mit Stofffarben verwenden; Bundanschlüsse und Verformung in Bewegung prüfen.
 
 ## Effizient entwickeln
 
+Flintenabstimmung vom 01.11.2026: Benelli M4, Mossberg 590 und Ithaca Mag-10;
+kurze Ithaca als einhändige, fertige auffindbare Variante. Absäge-Crafting und
+Handwerkseinfluss ausdrücklich später, ebenso Akimbo, Chokes, optionaler Dämpfer
+und Vordergriffe. Alle drei erhalten Patronenhalter; bei der Ithaca kompakt mit
+drei Ersatzpatronen, niedriger Platte und mittigen Schlaufen vor dem Abzugsbereich.
+Einhand-Haltungsvorschau ist gesondert beauftragt; keine Freigabe zur vollständigen
+Flinten-Spielmechanik oder Veröffentlichung daraus ableiten. Originalbeine,
+bestehende freigegebene Waffenhaltungen und Modellfarben erhalten.
+
+Abgleich vom 02.11.2026: Die abgesenkte Ithaca-Einhandhaltung gefällt dem Nutzer;
+Hand und Finger nun gesondert in Nahansichten vergleichen. Verbliebene
+Kleidungskonturen am Bauch/Bund beider Figuren als geglätteten Geometrieentwurf
+rendern und vor dem Einbau vergleichen. Die Schulter-/Armhaltung erhalten;
+der Körperentwurf bleibt bis zu diesem Abgleich außerhalb der Laufzeit.
+
+Griffauftrag vom 02.11.2026: Die kurze Ithaca benötigt einen griffigeren,
+zur Hand passenden Schaft-/Griffabschluss. Diesen als Spielmodell neu formen
+und Handfläche, Daumen sowie einzelne Finger auf beiden Rigs daran anpassen.
+Die abgesenkte Ziel-/Schulterhöhe erhalten und den Griff erneut im Detail
+rendern. Keine Erweiterung der Flinten-Spielmechanik oder Veröffentlichung
+daraus ableiten; der separate Bauch-/Bundentwurf bleibt unverändert vorgemerkt.
+
+Griffrückmeldung vom 02.11.2026: Der eigenständige Pistolengriff aus dem letzten
+Entwurf folgt der Originalschaftform nicht mehr und ist verworfen. Die neue
+Form soll die Linie und den Übergang des Originalschafts bewahren. Die beiden
+Originalschaft-Varianten sind zunächst Formvergleiche mit erster Handeinpassung;
+den verworfenen Pistolengriff nicht als freigegebenen Einbaustand übernehmen.
+
+Maßgebliche Nutzerreferenz vom 02.11.2026: `ithaca.jpg` mit roter schräger
+Markierung. Den ursprünglichen Vollschaft dort ausschließlich digital kürzen
+und die neue Schnittfläche schließen. Erhaltene Originalflächen weder strecken
+noch verbreitern oder neu formen; keine weitere Griffvariante erfinden. Der
+verbleibende originale Schafthals soll den musketen-/revolverähnlichen Abschluss
+ergeben. Haltung und Optik haben jetzt Vorrang; eine Materialwicklung bleibt
+später. Aktuelle Modell-/Posereferenz: `tests/fixtures/ithaca-reference-cut.glb.gz`
+und `ithaca-reference-pose.json`. Die früheren A/B-Formen sind überholt.
+
 Outdooroberteil vom 28.10.2026: Den eingebauten Rucksack des weiblichen grünen
 Outdooroberteils abtrennen; das vollständige Oberteil behalten. Der vorhandene
 Wanderrucksack bleibt ein eigener, über den Rücken-Slot ausrüstbarer Gegenstand.
@@ -274,3 +311,12 @@ begrenzte Browserprüfung der geänderten Bedienung ergänzt die bestehenden Tes
 - Vor Spielreleases `npm run build`, `npm test` und `npm run build:check` ausführen.
   Nur geänderte Quellen und daraus erzeugte Ausgaben committen. Neue Module oder
   Assets benötigen keine manuell gepflegte Cacheliste.
+
+
+Freigabe vom 02.11.2026 nach der Originalschnitt-Vorschau: Alle vereinbarten
+Flinten implementieren (Ithaca Mag-10 lang/kurz, Benelli M4, Mossberg 590) und die
+Bauchfalten beider Figuren glätten. Weibliche Figur ausdrücklich mit Taille.
+Diese Freigabe ersetzt die vorherigen Beschränkungen auf reine Vorschauen.
+Die kurze Ithaca übernimmt die zuletzt freigegebene Originalschaftkürzung,
+keinen älteren Pistolengriff. Patronenhalter speichern separate Ersatzmunition;
+Ithaca bleibt bei 2+1. Crafting/Absägen und Akimbo bleiben spätere Arbeit.

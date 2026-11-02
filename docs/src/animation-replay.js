@@ -7,6 +7,7 @@ import {beginReload,cancelReload,updateReload} from './weapon-reload.js';
 import {kickWeapon} from './weapon-recoil.js';
 import {axialAngle} from './weapon-ik.js';
 import {transitionDuration} from './animation-targets.js';
+import {pinchPoint} from './weapon-hands.js';
 
 export const SCENARIOS={single:'Einzelne Haltung / Aktion',transitions:'Anlegen → Schleichen → Sprint',interrupt:'Nachladen → Abbruch → Anlegen',turn:'Anlegen mit Richtungswechsel'};
 export const MOVEMENTS={idle:'Stillstand',walk:'Gehen',crouch:'Schleichstillstand',crouchWalk:'Schleichen',sprint:'Sprinten'};
@@ -47,9 +48,11 @@ export class AnimationReplay{
     this.setMovement(this.options.movement);
     this.starting=true;this.evaluate(1);this.starting=false;
     if(this.options.track==='reload'&&this.options.scenario==='single'){
+      const weapon=activeWeapon(this.player),definition=ITEMS[weapon.type];
+      if(definition.shotgun&&weapon.rounds>=definition.capacity)weapon.rounds=definition.capacity-1;
       const started=beginReload(this.game);if(!started.ok)throw Error(started.message);this.duration=this.player.combat.reload.duration;
       const state=this.player.combat.reload;
-      if(state.kind==='cylinder')for(let i=0;i<state.planned;i++)this.markers.push({time:state.start+state.loop*(i+.7),label:`Patrone ${i+1}`});
+      if(state.kind==='cylinder'||state.kind==='tube')for(let i=0;i<state.planned;i++)this.markers.push({time:state.start+state.loop*(i+(state.insertAt??.7)),label:`Patrone ${i+1}`});
       else this.markers.push({time:state.commitTime,label:'Munition übernommen'});
     }
     if(this.options.track==='shot'&&this.options.scenario==='single'&&!this.fire())throw Error('Schuss nicht möglich. Munition, Laufmodul und Bewegung prüfen.');
@@ -90,7 +93,7 @@ export class AnimationReplay{
       this.eventAt(2.4,previous,'Gehen',()=>this.setMovement('walk'));
       this.eventAt(2.8,previous,'Stillstand',()=>this.setMovement('idle'));
     }else if(this.options.scenario==='interrupt'){
-      this.eventAt(.4,previous,'Nachladen',()=>beginReload(this.game));
+      this.eventAt(.4,previous,'Nachladen',()=>{const weapon=activeWeapon(this.player),definition=ITEMS[weapon.type];if(definition.shotgun&&weapon.rounds>=definition.capacity)weapon.rounds=definition.capacity-1;beginReload(this.game);});
       this.eventAt(1.1,previous,'Abbruch / Sprint',()=>{cancelReload(this.game);this.setMovement('sprint');});
       this.eventAt(1.4,previous,'Erneut anlegen',()=>this.setMovement('idle'));
       this.eventAt(2,previous,'Schuss',()=>this.fire());
@@ -156,7 +159,7 @@ export function measureAnimation(entity,player,previous=null,delta=0){
   for(const [side,limit]of Object.entries(entity.elbowConstraints||{}))if(limit.limited)warnings.push(`${side==='R'?'Rechter':'Linker'} Ellenbogen: Bewegungsgrenze bei festem Handkontakt`);
   for(const [channel,target]of Object.entries(entity.animationTargets||{})){
     if(channel==='weapon'||channel==='support'){
-      const actual=channel==='weapon'?entity.weapon.getWorldPosition(vec()):point('Middle2L');gaps[channel]=actual.distanceTo(target);
+      const actual=channel==='weapon'?entity.weapon.getWorldPosition(vec()):entity.animationSupportContact==='Index4'?pinchPoint(entity):point('Middle2L');gaps[channel]=actual.distanceTo(target);
       if(gaps[channel]>.08)warnings.push(channel==='weapon'?'Waffenziel noch nicht erreicht':'Stützhandziel noch nicht erreicht');
     }
   }

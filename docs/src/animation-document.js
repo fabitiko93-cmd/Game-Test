@@ -27,7 +27,7 @@ export const CHANNELS={
   pinR:{label:'Rechten Fuß fixieren',size:1,limit:[1],initial:[1],min:[0]},
   pinL:{label:'Linken Fuß fixieren',size:1,limit:[1],initial:[1],min:[0]},
 };
-export const WEAPON_TYPES=['pistol_9mm','usp_9mm','scorpion_45','desert_eagle_50','revolver_44','ak_762','m4_556','vector_9mm'];
+export const WEAPON_TYPES=['pistol_9mm','usp_9mm','scorpion_45','desert_eagle_50','revolver_44','ak_762','m4_556','vector_9mm','ithaca_mag10','ithaca_short','benelli_m4','mossberg_590'];
 export const emptyAnimation=()=>({format:ANIMATION_FORMAT,version:2,profiles:{}});
 export const emptyValues=()=>Object.fromEntries(Object.entries(CHANNELS).map(([name,c])=>[name,c.initial?.slice()||Array(c.size).fill(0)]));
 export const positionChannel=name=>['weapon','support','elbowR','elbowL','pelvis','footR','footL','kneeR','kneeL','freeHandL'].includes(name);

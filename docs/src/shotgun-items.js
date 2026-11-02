@@ -1,0 +1,16 @@
+// Initial gameplay profiles; shell carriers store spare ammunition separately
+// from the internal tube/chamber count. No crafting or extra barrel variants.
+const shotgun=(name,short,options)=>({name,short,type:'weapon',icon:'shotgun',weaponKind:'firearm',skill:'firearms',stack:1,condition:100,
+ hands:2,feed:'internal',shotgun:true,ammoType:'ammo_12g',modSlots:['carrier'],accuracy:.78,headshot:.06,noise:36,shotSound:'shotgun',pellets:8,spreadAngle:.055,damage:112,range:10.5,aimTime:1.3,recovery:.65,recoilPerShot:.8,recoilRecovery:.85,aimRetention:.18,mobility:.94,penetration:0,penetrationDamage:.3,reloadSpeed:1,...options});
+const carrier=(name,short,compatible,ammoType,capacity)=>({name,short,type:'mod',icon:'mod',modSlot:'carrier',compatible,ammoType,shellCarrier:true,capacity,weight:.1,stack:1,effects:{},description:`Abnehmbarer Patronenhalter mit ${capacity} einzeln sichtbaren Ersatzpatronen. Separat befüllbar; erhöht die interne Waffenkapazität nicht. Beim Nachladen werden zuerst die passenden Patronen aus dem Halter verwendet.`});
+export const SHOTGUN_ITEMS={
+ ithaca_mag10:shotgun('Ithaca Mag-10','Ithaca',{icon:'ithaca_mag10',weight:4.8,ammoType:'ammo_10g',capacity:3,fireInterval:.58,damage:125,recoilPerShot:.95,description:'Halbautomatische Flinte im Kaliber 10. 2+1 Schuss; einzelne Patronen nachladen. Kompakter, abnehmbarer Halter für drei Ersatzpatronen.'}),
+ ithaca_short:shotgun('Ithaca Mag-10 · abgesägt','Ithaca kurz',{icon:'ithaca_short',weight:3.65,hands:1,ammoType:'ammo_10g',capacity:3,fireInterval:.7,damage:125,range:5.5,aimTime:.85,spreadAngle:.12,recoilPerShot:1.15,recoilRecovery:.65,mobility:1.04,description:'Fertige kurze Ithaca mit freigegebenem gekürztem Originalschaft und Einhandhaltung. 2+1 Schuss Kaliber 10; größere Streuung und geringere Reichweite. Als eigenständige Variante auffindbar.'}),
+ benelli_m4:shotgun('Benelli M4 Super 90','Benelli M4',{icon:'benelli_m4',weight:3.8,capacity:8,fireInterval:.42,range:11.5,recoilPerShot:.7,recoilRecovery:1.05,description:'Halbautomatische Kaliber-12-Flinte mit 7+1 Schuss. Einzelpatronen nachladen; abnehmbarer Halter für fünf Ersatzpatronen.'}),
+ mossberg_590:shotgun('Mossberg 590','Mossberg 590',{icon:'mossberg_590',weight:3.3,capacity:9,fireInterval:.82,recovery:.82,pumpAction:true,description:'Kaliber-12-Pumpflinte mit 8+1 Schuss. Sichtbarer Pumpvorgang samt Stützhand und Hülsenauswurf; abnehmbarer Halter für fünf Ersatzpatronen.'}),
+ ammo_12g:{name:'Kaliber-12-Schrotpatronen',short:'Kaliber 12',type:'ammo',icon:'ammo',ammoType:'ammo_12g',weight:.045,stack:12,description:'Lose Schrotpatronen für Benelli M4 und Mossberg 590. Einzeln laden oder passende Halter separat befüllen.'},
+ ammo_10g:{name:'Kaliber-10-Schrotpatronen',short:'Kaliber 10',type:'ammo',icon:'ammo',ammoType:'ammo_10g',weight:.065,stack:10,description:'Schrotpatronen für beide Ithaca-Mag-10-Varianten. Nicht mit Kaliber 12 austauschbar.'},
+ ithaca_carrier:carrier('Ithaca-Patronenhalter · 3','Ithaca-Halter',['ithaca_mag10','ithaca_short'],'ammo_10g',3),
+ benelli_carrier:carrier('Benelli-M4-Patronenhalter · 5','M4-Halter',['benelli_m4'],'ammo_12g',5),
+ mossberg_carrier:carrier('Mossberg-590-Patronenhalter · 5','590-Halter',['mossberg_590'],'ammo_12g',5),
+};

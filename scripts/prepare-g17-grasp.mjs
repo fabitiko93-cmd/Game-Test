@@ -58,12 +58,13 @@ result.reference={scale,head:reference.joints.Head,weapon:reference.weaponOrigin
 await writeFile(new URL('../docs/assets/weapons/g17-grasp.json',import.meta.url),JSON.stringify(result,null,2)+'\n');
 if(process.argv[3]){
   const binding=JSON.parse(await readFile(process.argv[3],'utf8'));
-  const mesh=reference.meshes.find(m=>m.name===binding.meshName),handVertices={},shoulderVertices={},shoulderAimCorrections={};
+  const mesh=reference.meshes.find(m=>m.name===binding.meshName),handVertices={},shoulderVertices={},shoulderAimCorrections={},shoulderBindVertices={};
   const inverse=gunQ.clone().invert(),head=p('Head');
   for(let i=0;i<mesh.positions.length;i++){
     const names=[];for(let k=0;k<4;k++)if(binding.skinWeight[i*4+k]>1e-7)names.push(binding.boneNames[binding.skinIndex[i*4+k]]);
     if(names.length&&names.every(n=>/^(Wrist|Index|Middle|Ring|Pinky|Thumb).*[RL]$/.test(n)))handVertices[i]=new Vector3(...mesh.positions[i]).sub(new Vector3(...reference.weaponOrigin)).applyQuaternion(inverse).toArray().map(v=>Number(v.toFixed(8)));
     if(['ShoulderR','UpperArmR'].includes(mesh.boneNames[i])){
+      shoulderBindVertices[i]=new Vector3().fromArray(binding.positions,i*3).applyMatrix4(new Matrix4().fromArray(binding.bindMatrix)).toArray();
       shoulderVertices[i]=new Vector3(...mesh.positions[i]).sub(head).divideScalar(scale).toArray().map(v=>Number(v.toFixed(8)));
       // Two lower seam vertices also carry Body weight. Legs/Body stay on
       // their original heading when the spine turns. Derive their skinning
@@ -82,6 +83,6 @@ if(process.argv[3]){
       if(correction.length()>1e-8)shoulderAimCorrections[i]=correction.toArray().map(v=>Number(v.toFixed(8)));
     }
   }
-  await writeFile(new URL('../tests/fixtures/g17-approved-review10.json',import.meta.url),JSON.stringify({review:10,sourceCommit:result.sourceCommit,sourceSha256:result.sourceSha256,mesh:binding.meshName,handVertices,shoulderVertices,shoulderAimCorrections})+'\n');
+  await writeFile(new URL('../tests/fixtures/g17-approved-review10.json',import.meta.url),JSON.stringify({review:10,sourceCommit:result.sourceCommit,sourceSha256:result.sourceSha256,mesh:binding.meshName,handVertices,shoulderVertices,shoulderAimCorrections,shoulderBindVertices})+'\n');
 }
 console.log('Exported approved review-10 G17 grasp for both original rigs.');

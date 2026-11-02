@@ -7,7 +7,7 @@ import {AnimationReplay} from '../../docs/src/animation-replay.js';
 
 const cache=new Map();
 async function load(url){
-  const name=new URL(url).pathname.split('/').at(-1),folder=/^(g17|usp|scorpion|deagle|ak|m4|vector|revolver)-/.test(name)?'weapons':'quaternius';
+  const name=new URL(url).pathname.split('/').at(-1),folder=/^(g17|usp|scorpion|deagle|ak|m4|vector|revolver|ithaca_mag10|ithaca_short|benelli_m4|mossberg_590)-/.test(name)?'weapons':'quaternius';
   if(!cache.has(name))cache.set(name,(async()=>{
     const bytes=gunzipSync(await readFile(new URL('../../docs/assets/'+folder+'/'+name,import.meta.url)));
     return new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');

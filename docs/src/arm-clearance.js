@@ -13,7 +13,7 @@ export function armObstacles(e){
   ['LowerLegL','FootL',.12],['LowerLegR','FootR',.12],
  ].map(([a,b,r])=>{const leg=a.includes('Leg');return {a:obstaclePoint(a,leg),b:obstaclePoint(b,leg),radius:r*scale,leg};});
 }
-export function outsideBody(e,point,offsets=[new Vector3()],obstacles=armObstacles(e)){
+export function outsideBody(e,point,offsets=[new Vector3()],obstacles=armObstacles(e),side='L'){
  const result=point.clone();
  for(let iteration=0;iteration<8;iteration++){
   let changed=false;
@@ -22,7 +22,7 @@ export function outsideBody(e,point,offsets=[new Vector3()],obstacles=armObstacl
    const center=a.clone().addScaledVector(axis,t),away=p.sub(center),distance=away.length();
    if(distance>=radius)continue;
    if(leg){
-    const left=new Vector3(1,0,0).applyQuaternion(e.root.quaternion),along=away.dot(left),across=away.lengthSq()-along*along;
+    const left=new Vector3(side==='R'?-1:1,0,0).applyQuaternion(e.root.quaternion),along=away.dot(left),across=away.lengthSq()-along*along;
     result.addScaledVector(left,Math.sqrt(Math.max(0,radius*radius-across))-along);changed=true;continue;
    }
    if(distance<1e-6)away.set(0,0,1).applyQuaternion(e.root.quaternion);else away.divideScalar(distance);
@@ -80,14 +80,14 @@ export function routeSupportStep(e,from,to){
  return to.clone().setY(height);
 }
 
-export function clearForearm(e,start,goal,bend,a,b,obstacles,delta=1){
+export function clearForearm(e,start,goal,bend,a,b,obstacles,delta=1,side='L'){
  obstacles=obstacles.map(o=>({...o,radius:o.radius+.02*e.root.scale.x}));
  const offset=goal.clone().sub(start),distance=Math.max(Math.abs(a-b)+.001,Math.min(a+b-.001,offset.length())),axis=offset.normalize();
  const along=(a*a-b*b+distance*distance)/(2*distance),height=Math.sqrt(Math.max(0,a*a-along*along)),center=start.clone().addScaledVector(axis,along),direction=bend.clone();
  for(let pass=0;pass<6;pass++){
   const elbow=center.clone().addScaledVector(direction,height);let shift=new Vector3();
   for(const t of [0,.25,.5,.75]){
-   const p=elbow.clone().lerp(goal,t),safe=outsideBody(e,p,undefined,obstacles);
+   const p=elbow.clone().lerp(goal,t),safe=outsideBody(e,p,undefined,obstacles,side);
    shift.add(safe.sub(p).divideScalar(1-t));
   }
   if(shift.lengthSq()<1e-10)break;

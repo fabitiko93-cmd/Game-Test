@@ -57,7 +57,7 @@ async function replay(options,document=null){const models=new PlayerModels({},li
 const point=(r,name)=>r.entity.model.getObjectByName(name).getWorldPosition(new Vector3());
 function lengths(r){return ['R','L'].flatMap(s=>[['UpperLeg'+s,'LowerLeg'+s],['LowerLeg'+s,'Foot'+s],['UpperArm'+s,'LowerArm'+s],['LowerArm'+s,'Wrist'+s]].map(([a,b])=>point(r,a).distanceTo(point(r,b))));}
 
-test('static whole-body poses persist independently of the timeline on all eight weapons and both original rigs',async()=>{
+test('static whole-body poses persist independently of the timeline on all catalogued weapons and both original rigs',async()=>{
   for(const sex of ['male','female'])for(const type of WEAPON_TYPES){
     const key=sex+':'+type,v=emptyValues();v.head[1]=5;v.weapon[0]=.01;v.pelvis[1]=-.06;v.footR[0]=-.02;
     const doc=putPose(emptyAnimation(),key,'aim',v),r=await replay({sex,type,track:'aim'},parseAnimation(JSON.stringify(doc))),base=await replay({sex,type,track:'aim'});

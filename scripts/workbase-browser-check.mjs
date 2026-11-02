@@ -41,7 +41,7 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function until(fn,label,timeout=30000){const deadline=Date.now()+timeout;while(Date.now()<deadline){try{const value=await fn();if(value)return value;}catch(_){}await delay(100);}throw Error('Timed out: '+label+(errors.length?' · '+errors.join(' · '):''));}
 function send(method,params={}){const id=++sequence;return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{pending.delete(id);reject(Error('CDP timed out: '+method));},15000);pending.set(id,{resolve:value=>{clearTimeout(timer);resolve(value);},reject:error=>{clearTimeout(timer);reject(error);}});socket.send(JSON.stringify({id,method,params}));});}
 async function evaluate(expression){const r=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result.value;}
-async function ready(){await until(()=>evaluate('Boolean(window.workbase && !workbase.busy && workbase.replay.entity && workbase.camera && !workbase.cameraControl.pending && !workbase.pendingReset)'), 'workbase ready');}
+async function ready(){await until(()=>evaluate('Boolean(window.workbase && !workbase.busy && workbase.replay.entity && workbase.camera && workbase.viewKey && !workbase.cameraControl.pending && !workbase.pendingReset)'), 'workbase ready');}
 const click=selector=>evaluate(`document.querySelector(${JSON.stringify(selector)}).click()`);
 const select=(name,value)=>evaluate(`(()=>{const n=document.querySelector('[data-aw="${name}"]');n.value=${JSON.stringify(value)};n.dispatchEvent(new Event('change',{bubbles:true}));})()`);
 try{
@@ -57,7 +57,9 @@ try{
   await click('[data-aw="panel"]');
   const opened=await evaluate(`(()=>{const r=workbase.el.canvas.getBoundingClientRect(),e=workbase.el.panelBody.getBoundingClientRect();return{model:r.height,panel:e.height,overlap:e.top<r.bottom};})()`);
   assert.ok(opened.panel>100&&opened.model<layout.model&&!opened.overlap,JSON.stringify(opened));
-  await click('[data-aw="panelClose"]');
+  await click('[data-aw="panelClose"]');await ready();
+  // A panel resize invalidates the projected handles. Read touch coordinates
+  // only after the next render has rebuilt them for the full canvas.
   const start=await evaluate(`(()=>{const h=workbase.handles.find(h=>h.channel==='weapon'),r=workbase.el.canvas.getBoundingClientRect();return{x:h.x+r.left,y:h.y+r.top};})()`);
   await send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{...start,id:1}]});await send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:start.x+18,y:start.y-10,id:1}]});await send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await ready();
   assert.equal(await evaluate('workbase.project.undoStack.length'),1,'one touch drag is one undo operation');

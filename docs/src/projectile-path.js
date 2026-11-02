@@ -31,3 +31,18 @@ export function projectilePath(game,end,stats){
   }
   return{hits:hits.filter(h=>h.along<=stop+.001),end:point};
 }
+
+// A bounded fan of actual shot rays. Every pellet obeys the same wall/body
+// occlusion, and the aggregate damage cannot exceed one shell's damage budget.
+export function shotgunPath(game,end,stats){
+  const start=game.player,angle=Math.atan2(end.y-start.y,end.x-start.x),paths=[],contacts=new Map(),count=stats.pellets||8;
+  for(let i=0;i<count;i++){
+    const offset=((i+.5)/count*2-1)*stats.spreadAngle,a=angle+offset;
+    const path=projectilePath(game,{x:start.x+Math.cos(a)*stats.range,y:start.y+Math.sin(a)*stats.range},stats);paths.push(path);
+    for(const hit of path.hits){
+      const previous=contacts.get(hit.zombie.id)||{...hit,attenuation:0,pellets:0};
+      previous.attenuation+=hit.attenuation/count*Math.max(.35,1-hit.along/stats.range*.65);previous.pellets++;contacts.set(hit.zombie.id,previous);
+    }
+  }
+  return{end:projectilePath(game,end,stats).end,hits:[...contacts.values()].sort((a,b)=>a.along-b.along),pelletPaths:paths};
+}

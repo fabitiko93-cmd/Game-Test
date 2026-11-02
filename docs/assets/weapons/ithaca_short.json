@@ -1,0 +1,181 @@
+{
+  "file": "ithaca_short-2fde47a3ee14.glb.gz",
+  "sha256": "2fde47a3ee140a05e5b062c1c8c869fa9b06133c89724d8dafda112b87fe8759",
+  "author": "TastyTony",
+  "license": "CC BY 4.0",
+  "source": "https://sketchfab.com/3d-models/low-poly-ithaca-mag-10-f16977d768994b69be28c3a502b41c99",
+  "sourceSha256": "4a614d05af30469e68c4dc0c4961f8da65e005efb53e50d5e6dbf4e4547a9bfa",
+  "parts": {
+    "BarrelAndRib": {
+      "triangles": 287,
+      "source": "TastyTony original"
+    },
+    "ReceiverAndGrip": {
+      "triangles": 900,
+      "source": "TastyTony original"
+    },
+    "MagazineTube": {
+      "triangles": 104,
+      "source": "TastyTony original"
+    },
+    "WoodenForearm": {
+      "triangles": 132,
+      "source": "TastyTony original"
+    },
+    "Bolt": {
+      "triangles": 286,
+      "source": "TastyTony original"
+    },
+    "Lifter": {
+      "triangles": 120,
+      "source": "TastyTony original"
+    },
+    "Safety": {
+      "triangles": 20,
+      "source": "TastyTony original"
+    },
+    "Backing": {
+      "triangles": 128,
+      "source": "Sperrkreis authored carrier"
+    },
+    "EdgeBinding": {
+      "triangles": 32,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Stitching": {
+      "triangles": 88,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Loop_01": {
+      "triangles": 124,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_01_Brass": {
+      "triangles": 132,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_01_RedPlastic": {
+      "triangles": 66,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Loop_02": {
+      "triangles": 124,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_02_Brass": {
+      "triangles": 132,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_02_RedPlastic": {
+      "triangles": 66,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Loop_03": {
+      "triangles": 124,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_03_Brass": {
+      "triangles": 132,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_03_RedPlastic": {
+      "triangles": 66,
+      "source": "Sperrkreis authored carrier"
+    }
+  },
+  "grips": {
+    "right": [
+      -0.032,
+      0,
+      -0.14
+    ],
+    "left": [
+      0.145,
+      0.03,
+      0.32
+    ],
+    "rightThumb": [
+      0.015,
+      0.025,
+      -0.015
+    ],
+    "leftThumb": [
+      0.025,
+      0.055,
+      0.32
+    ],
+    "leftThumbPole": [
+      0.11,
+      0.12,
+      0.32
+    ]
+  },
+  "anchors": {
+    "stock": [
+      0,
+      -0.035,
+      -0.275
+    ],
+    "carrier": [
+      0.0187,
+      0.043,
+      0.148
+    ],
+    "muzzle": [
+      0,
+      0.05,
+      0.7
+    ],
+    "loading": [
+      0,
+      -0.004,
+      0.12
+    ],
+    "magazine": [
+      0,
+      -0.004,
+      0.12
+    ]
+  },
+  "stockContact": null,
+  "mechanism": {
+    "kind": "shotgun",
+    "cycle": 0.13,
+    "boltTravel": 0.075,
+    "pumpTravel": 0.085,
+    "ejectDelay": 0.025,
+    "ejection": [
+      -0.025,
+      0.05,
+      0.11
+    ]
+  },
+  "carrierParts": [
+    "Backing",
+    "EdgeBinding",
+    "Stitching",
+    "Loop_01",
+    "Shell_01_Brass",
+    "Shell_01_RedPlastic",
+    "Loop_02",
+    "Shell_02_Brass",
+    "Shell_02_RedPlastic",
+    "Loop_03",
+    "Shell_03_Brass",
+    "Shell_03_RedPlastic"
+  ],
+  "shellParts": [
+    [
+      "Shell_01_Brass",
+      "Shell_01_RedPlastic"
+    ],
+    [
+      "Shell_02_Brass",
+      "Shell_02_RedPlastic"
+    ],
+    [
+      "Shell_03_Brass",
+      "Shell_03_RedPlastic"
+    ]
+  ]
+}

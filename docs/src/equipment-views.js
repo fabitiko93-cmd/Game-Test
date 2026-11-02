@@ -1,7 +1,7 @@
 import { equipmentSummary, itemDefinition, itemWeight, weaponModSlots } from './inventory.js';
 import { hasWeaponModel } from './weapon-catalog.js';
 
-export const MOD_LABELS={optic:'VISIERUNG',muzzle:'MÜNDUNG',stock:'SCHAFT',barrel:'LAUFMODUL',grip:'GRIFF',foregrip:'VORDERGRIFF',utility:'ZUBEHÖR',magazine:'MAGAZIN'};
+export const MOD_LABELS={optic:'VISIERUNG',muzzle:'MÜNDUNG',stock:'SCHAFT',barrel:'LAUFMODUL',grip:'GRIFF',foregrip:'VORDERGRIFF',utility:'ZUBEHÖR',magazine:'MAGAZIN',carrier:'PATRONENHALTER'};
 const weightLabel=item=>`${itemWeight(item).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})} kg`;
 
 // Both inspectors own a single pointer; a second touch cannot steal an orbit or
@@ -103,7 +103,8 @@ export class EquipmentViews {
     detail.replaceChildren(element('strong','',`${MOD_LABELS[slot]||'ANBAUTEILE'} · ${installed?itemDefinition(installed).name:'LEER'}`));
     if(installed)detail.append(button('ENTFERNEN',()=>this.ui.callbacks.removeMod?.(weapon.id,slot)));
     if(itemDefinition(installed)?.light)detail.append(button(weapon.lightOn?'LAMPE AUSSCHALTEN':'LAMPE EINSCHALTEN',()=>this.ui.callbacks.toggleWeaponLight?.(weapon.id)));
-    this.ui.el.weapon_magazines.classList.toggle('hidden',slot!=='magazine');
+    this.ui.el.weapon_magazines.classList.toggle('hidden',!['magazine','carrier'].includes(slot));
+    this.ui.el.weapon_magazines.querySelector('h3').textContent=slot==='carrier'?'PATRONENHALTER · ERSATZPATRONEN':'MAGAZINE IM RUCKSACK';
     this.ui.el.available_mods.classList.toggle('hidden',slot==='magazine');
     this.el.weapon_parts_title.classList.toggle('hidden',slot==='magazine');
     this.el.weapon_parts_title.textContent=`${MOD_LABELS[slot]||'PASSENDE TEILE'} IM RUCKSACK`;

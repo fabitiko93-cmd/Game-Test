@@ -38,6 +38,7 @@ export function poseThumb(entity,side,profile,{weight=1,thumbPoint=null}={}){
     target=index.add(new Vector3(0,0,.011).applyQuaternion(entity.model.getObjectByName('Wrist'+side).getWorldQuaternion(new Quaternion())));
   }
   target ||= weapon.localToWorld(new Vector3().fromArray(side==='R'?(grips?.rightThumb||[.015,.025,-.015]):grips?.leftThumb||[.025,.105,.245]));
+  if(side==='L'&&!thumbPoint&&weapon.userData.pumpOffset)target.add(new Vector3(0,0,-weapon.userData.pumpOffset).multiply(weapon.getWorldScale(new Vector3())).applyQuaternion(weapon.getWorldQuaternion(new Quaternion())));
   const pole=weapon.localToWorld(side==='R'?new Vector3(-.01,.085,-.05):new Vector3().fromArray(grips?.leftThumbPole||[.11,.13,.27]));
   fitArm(...thumb.map(e=>e.bone),target,pole);
   if(weight<1)thumb.forEach((e,i)=>e.bone.quaternion.copy(before[i].slerp(e.bone.quaternion,weight)));

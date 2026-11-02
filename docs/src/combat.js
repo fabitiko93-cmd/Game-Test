@@ -1,4 +1,4 @@
-import {projectilePath} from './projectile-path.js';
+import {projectilePath,shotgunPath} from './projectile-path.js';
 import { gainSkill, skillValue } from "./character.js";
 import { activeWeapon, ammoLabel, consumeShot, itemDefinition, missingWeaponPart, weaponFireMode, weaponStats } from "./inventory.js";
 import {beginReload,cancelReload,updateReload} from './weapon-reload.js';
@@ -203,6 +203,7 @@ export class CombatSystem {
     const weapon = activeWeapon(player);
     const definition = itemDefinition(weapon);
     const stats = weaponStats(weapon);
+    if(combat.reload?.kind==='tube'&&weapon?.rounds>0){cancelReload(game);combat.attackCooldown=0;}
     if(combat.reload)return {ok:false,message:'WAFFE WIRD NACHGELADEN'};
     if(player.running)return {ok:false,message:'IM SPRINT KEIN SCHUSS'};
     if (!combat.enabled || !target || definition?.weaponKind !== "firearm") {
@@ -232,8 +233,8 @@ export class CombatSystem {
       x: target.x + (game.random() - 0.5) * (2.2 - combat.aim),
       y: target.y + (game.random() - 0.5) * (2.2 - combat.aim),
     };
-    const path=projectilePath(game,endPoint,stats);
-    if(game.renderer.firearmShot)game.renderer.firearmShot(game,weapon,path.end,path.hits.length>0);
+    const path=stats.shotgun?shotgunPath(game,endPoint,stats):projectilePath(game,endPoint,stats);
+    if(game.renderer.firearmShot)game.renderer.firearmShot(game,weapon,path.end,path.hits.length>0,path.pelletPaths);
     else game.renderer.trace(player,path.end,path.hits.length>0);
     game.world.emitNoise(player.x, player.y, stats.noise, "gunshot", 5.2, 1.3);
     game.attractMigration(Math.min(18, stats.noise * 0.42));
@@ -244,10 +245,10 @@ export class CombatSystem {
 
     if(path.hits.length){
       const headshotChance=clamp(stats.headshot+combat.aim*.4+skill*.0015,.08,.82);
-      const headshot=game.random()<headshotChance,baseDamage=stats.damage*(.9+game.random()*.2);
+      const headshot=!stats.shotgun&&game.random()<headshotChance,baseDamage=stats.damage*(.9+game.random()*.2);
       for(let i=0;i<path.hits.length;i++){
         const contact=path.hits[i];
-        this.damageZombie(game,contact.zombie,baseDamage*contact.attenuation*(i===0&&headshot?2.25:1),i>0?'DURCHSCHUSS':headshot?'KOPFTREFFER':null);
+        this.damageZombie(game,contact.zombie,baseDamage*contact.attenuation*(i===0&&headshot?2.25:1),i>0?(stats.shotgun?'STREUTREFFER':'DURCHSCHUSS'):headshot?'KOPFTREFFER':null);
       }
       gainSkill(player,"firearms",headshot?.68:.46);
     }else{
@@ -258,17 +259,6 @@ export class CombatSystem {
     kickWeapon(player,weapon);
     combat.aim = Math.max(0.04, combat.aim * (stats.aimRetention || .18));
     return { ok: true, message: `${ammoLabel(weapon)} · ${Math.round(hitChance * 100)} %` };
-  }
-
-  shotgunSplash(game, primary, stats, primaryDamage) {
-    const spread = stats.spread || 1;
-    for (const zombie of game.zombies) {
-      if (zombie.removed || zombie.id === primary.id) continue;
-      const separation = distance(zombie, primary);
-      const fromPlayer = distance(zombie, game.player);
-      if (separation > spread || fromPlayer > stats.range || !game.world.hasLineOfSight(game.player, zombie)) continue;
-      this.damageZombie(game, zombie, primaryDamage * clamp(0.5 - separation * 0.16, 0.18, 0.46), null);
-    }
   }
 
   reload(game, weapon = activeWeapon(game.player), magazineId = null) {

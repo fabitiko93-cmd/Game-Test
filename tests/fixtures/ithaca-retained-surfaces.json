@@ -1,0 +1,100 @@
+{
+  "sourceSha256": "9fdc035d6f918f902f7f82cc9195329e11b0fb0345fe64eaba89a0417491dc7d",
+  "retained": {
+    "BarrelAndRib": {
+      "POSITION": "ffc3ec57c8a702de3eb175eca8b1d455880aba0f4a3e608ffce3e1f68b08664a",
+      "NORMAL": "89a027c86e55adc4397ad7aaf0e61bd62b638fab10e8e936a2b2e27e62ac7459",
+      "COLOR_0": "462e55411225083ab00093b62d794196edb8e428d568d9f9381623971332a975"
+    },
+    "ReceiverAndGrip": {
+      "POSITION": "82ba6304010803a3d2e4bf15652d5e009266a706bc5ddecb0b6aa55e131ccec9",
+      "NORMAL": "5b0e6f8f7acaf47f9a964acd1550bf1594282a48c1ca7f4036632300f25a70a0",
+      "COLOR_0": "211dadb1d823fdd4f9222685bb81f55607f3d8dcb5999fc07afa9f307acc639d"
+    },
+    "MagazineTube": {
+      "POSITION": "c7e87cde1880de5d3d4dfd62597d8d9891688da000f802b6dcbd97ce333eed4c",
+      "NORMAL": "624a044763a879fd8adb0e1965a422c026fe12939ed47ae09998a23f52294966",
+      "COLOR_0": "f2dd657e56f02ecca9e222c020ff078bde0ce3d5c72fd76a1e2cab9272a47815"
+    },
+    "WoodenForearm": {
+      "POSITION": "e39dbbd008362ebad0a849f0826d5f002e1a1809b851bf376c27e3a5aa8686a9",
+      "NORMAL": "0c2e73874d6e6bf0f0b1d0c86cb9777eec16dba70d52abe14ff2c794cfabda8d",
+      "COLOR_0": "b1a15ff0b77de5e735b8f276fbb8c42671a6fdc1af8c15d1685c0722c0df0952"
+    },
+    "Bolt": {
+      "POSITION": "83cf24150beebdd7edaf28838e1caca0348cbc1600d8fdafef4cd3fe216b2d88",
+      "NORMAL": "5f2c6a8984163a12c5ccba5ffa392833898bc880fcdcce9fda918ab35b621f74",
+      "COLOR_0": "ea06abe21bd954c451a450c28c3aa15c25f0dbc2be7d84f110fbfddda28f59b7"
+    },
+    "Lifter": {
+      "POSITION": "5c9d3eef1f3e4b5eb6ab7b36c59b6e5c4bbd5cde386257e43bca6eb76a56735b",
+      "NORMAL": "e42b8f2c01d907be27c6fd61e9e48962753951fbde26ff3fdcc6d2a165942b68",
+      "COLOR_0": "5889e1e25f684c29a6c46ad0e63a20ac84a2644c5147a4979bc35855e22e37d6"
+    },
+    "Safety": {
+      "POSITION": "98ada6657347d8fbe8a2fb61684cee960d2238f7723adc5b01c04a58489e092d",
+      "NORMAL": "e2003686f954c0d964fdfb423c518e8f3b5c6e842bc73a0b7b59dca96309cce1",
+      "COLOR_0": "050e3d7fc2c57f1fb73dee9412d69df466e9b6b33f437f9d33e8c5f539f11fe8"
+    },
+    "Backing": {
+      "POSITION": "78bef78081522d0971252b73dc3b90c2d38b9fd728d248658246ed6d6697f5a5",
+      "NORMAL": "bb07a0c8c6f1df88fab8bb03d505d75c2c2d2d6b30dc1368fb757254412fd06c",
+      "COLOR_0": "5bd13f3fbbb3c785c90227e2d9c487b076f74792b3c08f9ef694208fa1de7ee9"
+    },
+    "EdgeBinding": {
+      "POSITION": "cb581e804347d8c06f5050780605438df545c5167858630752ccb577123e3218",
+      "NORMAL": "6afb86f8015ce9c57756e5352eb4b9e0e2b94a8be31965587706bdfc8057c02e",
+      "COLOR_0": "351b5ee5d90800181c8c05556de00a9245159d495881a0cdcf069a2f46919b00"
+    },
+    "Stitching": {
+      "POSITION": "177a4c2f6cffbc8e4b3c75de928469cfa18e1495a0e2f561f374a0bc1c089f34",
+      "NORMAL": "9d5c1ee2ff30cbd7f159b486a871679cccaadea766b32b3b9058d14b40c5f634",
+      "COLOR_0": "25f8a2b60955d367e94d385f2c64edc1c4823985b5bc4a0c929be278d8df8e7a"
+    },
+    "Loop_01": {
+      "POSITION": "e015d6735167bb9d2978ac3c6ec427d07b5d62c1fc38bffcb87cc62cd47b6047",
+      "NORMAL": "cc8cff2c8cc64487f3aeea3f0c6ac6c8f79df65fa8899a8d2db2f7a9af7d31fe",
+      "COLOR_0": "f57fda00aaf20d88ea4004ab8e84e1b59b59bb687871e1004ad856c66f833806"
+    },
+    "Shell_01_Brass": {
+      "POSITION": "f12e89a7f1f9a22202fc1ec5097c7fb84915bb14c062d4f65929ae8e77835084",
+      "NORMAL": "bd622a99b7ff82a0943b8731bd3a068dec54607d80af5f09e6d2bc6cd0deaa61",
+      "COLOR_0": "26ab55274e9561ebe813142a633b3efca263b6450954575f732dd81b0efd19ff"
+    },
+    "Shell_01_RedPlastic": {
+      "POSITION": "ecc0c9f0675685d99f8827378770a0effa45d94caa85cf15bbdd76f1dfee310c",
+      "NORMAL": "96ef909aa4670773cdcdf2594eaa5bf39fdae166f25ff855dcfae22b0f784e96",
+      "COLOR_0": "fe965a928313c7a577caac387ee8e41f7b0fafaa5c7166ae2853e286747628f3"
+    },
+    "Loop_02": {
+      "POSITION": "3ac8d20f077d7c03e16fb78d83276791ab55602e7e73efaa0b1c83e0df1b40cf",
+      "NORMAL": "cc8cff2c8cc64487f3aeea3f0c6ac6c8f79df65fa8899a8d2db2f7a9af7d31fe",
+      "COLOR_0": "fc682e12f9b5a5f7b4e07d6149c545c7225e0b8b28b3714c3d1e5460736a7771"
+    },
+    "Shell_02_Brass": {
+      "POSITION": "ad02cece141608ff132ef97a223a9100208be0e060289722e2cc84280b491a81",
+      "NORMAL": "bd622a99b7ff82a0943b8731bd3a068dec54607d80af5f09e6d2bc6cd0deaa61",
+      "COLOR_0": "26ab55274e9561ebe813142a633b3efca263b6450954575f732dd81b0efd19ff"
+    },
+    "Shell_02_RedPlastic": {
+      "POSITION": "f998cbcc70cd633e0efba47de9fe0b64421c9ee264c6da113c33c66a48f1570f",
+      "NORMAL": "96ef909aa4670773cdcdf2594eaa5bf39fdae166f25ff855dcfae22b0f784e96",
+      "COLOR_0": "fe965a928313c7a577caac387ee8e41f7b0fafaa5c7166ae2853e286747628f3"
+    },
+    "Loop_03": {
+      "POSITION": "3071f5429730a38f095c9ce55023fe2a9371c3cb5e5982d910f6676d134362ea",
+      "NORMAL": "cc8cff2c8cc64487f3aeea3f0c6ac6c8f79df65fa8899a8d2db2f7a9af7d31fe",
+      "COLOR_0": "3dd2dccfc78666fb0a6c816073eec6704d09f1330b39b9afec1a44011a8c921a"
+    },
+    "Shell_03_Brass": {
+      "POSITION": "252fcc407cc4767f06c9ddda16315562b93353c2d9315b4ddfeb0847c185eb75",
+      "NORMAL": "bd622a99b7ff82a0943b8731bd3a068dec54607d80af5f09e6d2bc6cd0deaa61",
+      "COLOR_0": "26ab55274e9561ebe813142a633b3efca263b6450954575f732dd81b0efd19ff"
+    },
+    "Shell_03_RedPlastic": {
+      "POSITION": "0aee989bf367111b0160349b946d19ed2187b3419f94ee4f064f64db219f3e3f",
+      "NORMAL": "96ef909aa4670773cdcdf2594eaa5bf39fdae166f25ff855dcfae22b0f784e96",
+      "COLOR_0": "fe965a928313c7a577caac387ee8e41f7b0fafaa5c7166ae2853e286747628f3"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { CLOTHING_ITEMS, CLOTHING_LOOT } from './clothing-catalog.js';
+import {SHOTGUN_ITEMS} from './shotgun-items.js';
 
 export const SKILLS = {
   stealth: { name: "Schleichen", description: "Leisere Bewegung und geringere Sichtbarkeit." },
@@ -66,6 +67,7 @@ const firearm = (name, short, options) => ({
 
 export const ITEMS = {
   ...CLOTHING_ITEMS,
+  ...SHOTGUN_ITEMS,
   kitchen_knife: melee("Küchenmesser", "Messer", "blades", 20, 1.13, 0.95, 0.84, 1.8, 0.35, 1, "Schnell und leise, aber ohne große Reichweite.", { execution: true }),
 
   ak_762: firearm("AK · 7,62×39", "AK", {
@@ -215,6 +217,7 @@ export const LOOT_TABLES = {
     ["bread", 0.4, 1, 1], ["apple", 0.48, 1, 2], ["can_opener", 0.22, 1, 1],
   ],
   police: [
+    ['benelli_m4',.035,1,1],['mossberg_590',.055,1,1],['ammo_12g',.3,3,8],['benelli_carrier',.04,1,1],['mossberg_carrier',.06,1,1],
     ["usp_9mm",.04,1,1],["mag_usp_15",.12,1,1],["mag_usp_22",.04,1,1],
     ["pistol_9mm",.08,1,1],["scorpion_45",.025,1,1],["mag_scorpion_8",.09,1,1],["ammo_45",.14,3,8],
     ["desert_eagle_50",.008,1,1],["mag_deagle_7",.025,1,1],["ammo_50ae",.035,2,5],
@@ -230,6 +233,7 @@ export const LOOT_TABLES = {
     ["bandage", 0.38, 1, 1], ["tactical_helmet", 0.18, 1, 1],
   ],
   hunting: [
+    ['ithaca_mag10',.10,1,1],['ithaca_short',.045,1,1],['mossberg_590',.04,1,1],['ammo_10g',.3,2,6],['ammo_12g',.22,3,7],['ithaca_carrier',.10,1,1],
     ["kitchen_knife", .3, 1, 1], ["hiking_pack", .18, 1, 1],
     ["outdoor_shirt", .22, 1, 1], ["hiking_boots_m", .22, 1, 1],
   ],
