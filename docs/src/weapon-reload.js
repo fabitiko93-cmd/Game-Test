@@ -1,4 +1,4 @@
-import {activeWeapon,consumeType,countType,findItem,insertMagazine,itemDefinition,weaponStats} from './inventory.js';
+import {activeWeapon,consumeType,countType,findItem,insertMagazine,itemDefinition,weaponStats,reloadAmmoCount,consumeReloadAmmo,shellCarrier} from './inventory.js';
 import MOTIONS from '../assets/quaternius/weapon-animations.json' with {type:'json'};
 
 const modKey=weapon=>Object.values(weapon.mods||{}).map(m=>m.id).sort().join('|');
@@ -12,6 +12,7 @@ export function beginReload(game,weapon=activeWeapon(game.player),magazineId=nul
   if(!weapon||definition?.weaponKind!=='firearm')return {ok:false,message:'KEINE SCHUSSWAFFE AUSGERÜSTET'};
   if(activeWeapon(player)?.id!==weapon.id)return {ok:false,message:'ZUM NACHLADEN IN DIE HAND NEHMEN'};
   if(player.running||player.dead)return {ok:false,message:'ZUM NACHLADEN SPRINT BEENDEN'};
+  if(definition.pumpAction&&combat.shotImpulse?.weaponId===weapon.id&&combat.shotImpulse.age<.68)return{ok:false,message:'PUMPVORGANG LÄUFT'};
   const state={weaponId:weapon.id,weaponType:weapon.type,modKey:modKey(weapon),elapsed:0,loaded:0,
     beforeMagazineId:weapon.magazine?.id||null,committed:false,spentCases:weapon.spentCases||0};
   const rate=(weaponStats(weapon).reloadSpeed||1)*.8;
@@ -24,9 +25,12 @@ export function beginReload(game,weapon=activeWeapon(game.player),magazineId=nul
   }else{
     const missing=definition.capacity-(weapon.rounds||0);
     if(missing<=0)return {ok:false,message:'WAFFE IST GELADEN'};
-    const planned=Math.min(missing,countType(player,definition.ammoType));
+    const planned=Math.min(missing,definition.shotgun?reloadAmmoCount(player,weapon):countType(player,definition.ammoType));
     if(!planned)return {ok:false,message:'KEINE PASSENDE MUNITION'};
-    if(weapon.type==='revolver_44'){
+    if(definition.shotgun){
+      Object.assign(state,{kind:'tube',planned,initialRounds:weapon.rounds||0,carrierRounds:shellCarrier(weapon)?.rounds||0,start:.45,loop:(definition.hands===1?1.4:1.25)/rate,end:.28,insertAt:.82});
+      state.duration=state.start+state.loop*planned+state.end;
+    }else if(weapon.type==='revolver_44'){
       Object.assign(state,{kind:'cylinder',planned,initialRounds:weapon.rounds||0,start:seconds('revolverStart',rate),loop:seconds('revolverLoad',rate),end:seconds('revolverEnd',rate)});
       state.duration=state.start+state.loop*planned+state.end;
     }else{
@@ -49,6 +53,12 @@ export function cancelReload(game){
 
 export function reloadPhase(state){
   if(!state)return null;
+  if(state.kind==='tube'){
+    if(state.elapsed<state.start)return{clip:'shellStart',progress:state.elapsed/state.start};
+    const time=state.elapsed-state.start;
+    if(time<state.loop*state.planned)return{clip:'shellLoad',progress:(time%state.loop)/state.loop,round:Math.floor(time/state.loop)};
+    return{clip:'shellEnd',progress:Math.min(1,(time-state.loop*state.planned)/state.end)};
+  }
   if(state.kind!=='cylinder')return {clip:state.clip,progress:Math.min(1,state.elapsed/state.duration)};
   if(state.elapsed<state.start)return {clip:'revolverStart',progress:state.elapsed/state.start};
   const time=state.elapsed-state.start;
@@ -71,11 +81,11 @@ export function updateReload(game,delta){
     weapon.spentCases=0;changed=true;
   }
 
-  if(state.kind==='cylinder'){
-    while(state.loaded<state.planned&&state.elapsed>=state.start+state.loop*(state.loaded+.7)){
-      const moved=consumeType(player,definition.ammoType,1);
+  if(state.kind==='cylinder'||state.kind==='tube'){
+    while(state.loaded<state.planned&&state.elapsed>=state.start+state.loop*(state.loaded+(state.insertAt??.7))){
+      const moved=state.kind==='tube'?consumeReloadAmmo(player,weapon):consumeType(player,definition.ammoType,1);
       if(!moved){cancelReload(game);return false;}
-      weapon.rounds=(weapon.rounds||0)+moved;state.loaded++;changed=true;game.sound('reload');
+      weapon.rounds=(weapon.rounds||0)+moved;if(state.kind==='tube')weapon.slideLocked=false;state.loaded++;changed=true;game.sound('reload');
     }
   }else if(!state.committed&&state.elapsed>=state.commitTime){
     if(state.kind==='magazine'){

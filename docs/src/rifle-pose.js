@@ -10,6 +10,8 @@ import {resolveAnimationEdits,editTarget,editBone,transitionDuration} from './an
 import {applyCharacterPose} from './character-pose.js';
 import {guideSupportMotion,transitionWeaponMotion} from './weapon-motion.js';
 import {fitAuthoredElbow,hasElbowEdit} from './elbow-pose.js';
+import {applyOneHandPose} from './one-hand-pose.js';
+import {shotgunCycle} from './shotgun-cycle.js';
 
 // The authored wrist's +Y follows the fingers; a rifle asset's +Z follows its
 // barrel. Keep the original body/leg animation and fit both arms to this grip.
@@ -75,11 +77,17 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   const handgun=Boolean(grips?.handgun),kick=recoilPose(player,weapon.userData.weaponId,handgun);
   const rightOffset=grips?new Vector3().fromArray(grips.right):RIFLE_HANDS.right;
   const leftOffset=grips?new Vector3().fromArray(grips.left):RIFLE_HANDS.left;
+  if(weapon.userData.mechanism?.kind==='pump'){
+    const shot=player.combat?.shotImpulse,age=shot?.weaponId===weapon.userData.weaponId?shot.age:Infinity;
+    weapon.userData.pumpOffset=weapon.userData.mechanism.pumpTravel*shotgunCycle(age,weapon.userData.mechanism);
+    leftOffset.z-=weapon.userData.pumpOffset;
+  }
   const bone = name => model.getObjectByName(name);
   const right = ["UpperArmR", "LowerArmR", "WristR"].map(bone), left = ["UpperArmL", "LowerArmL", "WristL"].map(bone);
   if ([...right, ...left].some(part => !part)) return;
   entity.rifleHands ||= captureRifleRig(model);
   restoreRiflePose(entity);
+  if(weapon.userData.oneHandPose){applyOneHandPose(entity,player,delta,posture);return;}
   if(weapon.userData.pistol){applyPistolPose(entity,player,delta,posture);return;}
   // Share the bounded contact fit; all passes read the previous displayed
   // frame rather than treating another IK pass as another animation step.
@@ -140,12 +148,14 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   editBone(entity,'Chest','chest');editBone(entity,'Head','head');
   if(handgun)bone('ShoulderR').quaternion.slerp(entity.handgunCarry.get(bone('ShoulderR')),blend.carry);
   editBone(entity,'ShoulderR','shoulderR');editBone(entity,'ShoulderL','shoulderL');
-  const pitch=posture==='carry'?(handgun?1.22:.80):posture==='hip'?(handgun?.30:.22):.015;
+  const shotgun=weapon.userData.shotgun;
+  const pitch=posture==='carry'?(shotgun?.65:handgun?1.22:.80):posture==='hip'?(handgun?.30:.22):.015;
   const yaw=root.getWorldQuaternion(new Quaternion());
-  const gunRotation=yaw.multiply(new Quaternion().setFromEuler(new Euler(pitch,handgun||posture!=='carry'?0:1.25,0,'YXZ')));
+  const gunRotation=yaw.multiply(new Quaternion().setFromEuler(new Euler(pitch,handgun||posture!=='carry'?0:shotgun?.4:1.25,0,'YXZ')));
   const shoulder = root.worldToLocal(right[0].getWorldPosition(new Vector3()));
   const scaled=point=>point.clone().multiply(root.getWorldScale(new Vector3())).applyQuaternion(gunRotation);
   let carryGoal=root.localToWorld(shoulder.clone().add(new Vector3(.14,-.30,.11))),carryElbow;
+  if(shotgun)carryGoal=root.localToWorld(shoulder.clone().add(new Vector3(.02,-.12,.32)));
   if(handgun&&entity.handgunCarry){
     const previous=new Map([...entity.handgunCarry.keys()].map(b=>[b,b.quaternion.clone()]));
     for(const[b,q]of entity.handgunCarry)b.quaternion.copy(q);
@@ -202,7 +212,7 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   entity.weaponPoles={right:rightPole.clone(),left:leftPole.clone()};
   if(delta<.5&&!entity.animationDirectEdit&&!hasElbowEdit(entity,'L')&&entity.supportElbow)entity.weaponPoles.left=root.localToWorld(entity.supportElbow.clone()).lerp(leftPole,Math.min(1,delta*8));
   const rightTarget=gunGoal.clone().add(offsets[0]),rightFrame=frame('R');
-  if(handgun){
+  if(handgun||shotgun){
     // Fit the palm that will actually be displayed, not metacarpals left by
     // the locomotion/revolver donor clip.
     poseHand(entity,'R','support');
@@ -263,7 +273,7 @@ export function fitWeaponPose(entity,point,rotation,amount=1,followSupport=false
   editTarget(entity,'elbowR',pole,null,'reload');editTarget(entity,'elbowL',leftPole,null,'reload');
   entity.weaponPoles={left:leftPole,right:pole};
   const armFrame={...handgunArmFrame(entity),hand,axis:entity.rifleHands.get('WristR').palm,rest:entity.rifleHands.get('WristR').rotation,lowerRest:entity.rifleHands.get('LowerArmR').rotation,hinge:entity.rifleHands.get('UpperArmR').hinge,maxTwist:weapon.userData.grips?.handgun?Math.PI/3:Math.PI,maxBend:75*Math.PI/180};
-  if(weapon.userData.grips?.handgun){
+  if(weapon.userData.grips?.handgun||weapon.userData.shotgun){
     entity.handgunUpperRest=armFrame.upperRest;fitHandTarget(entity,'R',target,hand,pole,75);
   }else{
     fitArm(...arm,target,hasElbowEdit(entity,'R')?(entity.animationTargetBases?.elbowR||pole):pole,armFrame);
@@ -276,12 +286,15 @@ export function fitWeaponPose(entity,point,rotation,amount=1,followSupport=false
 
 // Keep the contact fixed while finding an attainable hand orientation. A fixed
 // wrist marker alone can demand a 90° bend in carry/crouch even with perfect IK.
-export function fitSupportContact(entity,point,rotation,contact='Middle2',stage='reload'){
+export function fitSupportContact(entity,point,rotation,contact='Middle2',stage='reload',options={}){
+  entity.animationSupportContact=contact;
   if(entity.weapon.userData.pistol)return fitPistolSupportContact(entity,point,rotation,contact,{stage});
   point=point.clone();const hand=rotation.clone();editTarget(entity,'support',point,hand,stage);
-  const guided=entity.weapon.userData.grips?.handgun?{point,rotation:hand}:guideSupportMotion(entity,point,hand);
+  // Palm and cartridge pinch use their own reached-contact history.
+  const guided=entity.weapon.userData.grips?.handgun||options.pinContact?{point,rotation:hand}:guideSupportMotion(entity,point,hand,contact);
   const reached=fitPistolSupportContact(entity,guided.point,guided.rotation,contact,{
-    pole:entity.weaponPoles?.left,maxBend:60,clearance:0,
+    pole:entity.weaponPoles?.left,maxBend:60,clearance:options.clearance??0,
+    ...(entity.weapon.userData.shotgun&&stage!=='base'&&!options.directContact?{delta:entity.pistolStep,key:'shotgunSupportPose'}:{}),
   });
   entity.supportElbow=entity.root.worldToLocal(entity.model.getObjectByName('LowerArmL').getWorldPosition(new Vector3()));
   return reached;

@@ -15,6 +15,7 @@ export class AnimationController{
   evaluate(entity,player,pose,posture){
     resetWeaponParts(entity.weapon);
     entity.animationTargets={};
+    entity.animationSupportContact='Middle2';
     entity.animationTargetBases={};entity.characterGaps={};entity.elbowConstraints={};
     const weapon=activeWeapon(player),reload=player.combat?.reload;
     entity.animationOwners={legs:'Bewegung',body:'Haltung',right:'Waffenhaltung',left:'Waffenhaltung',weapon:'Schussmechanik'};
@@ -22,7 +23,7 @@ export class AnimationController{
     if(hasWeaponModel(weapon)){
       applyRiflePose(entity,player,pose.delta,posture);
       applyReloadPose(entity,player,pose.delta);
-      if(reload||entity.reloadLast){entity.animationOwners.right='Nachladen / Rückkehr';entity.animationOwners.left='Nachladen / Rückkehr';}
+      if(reload||entity.reloadLast||entity.shotgunReload){entity.animationOwners.right='Nachladen / Rückkehr';entity.animationOwners.left='Nachladen / Rückkehr';}
       editFingers(entity);
       alignApprovedAim(entity);
       applyWeaponCycle(entity,player);

@@ -216,11 +216,13 @@ export function changeMagazine(game, weaponId, magazineId) {
 
 export function loadMagazine(game, magazineId) {
   if (!game.canAct(true)) return;
+  cancelReload(game);
   finishWeaponAction(game, fillMagazine(game.player, magazineId));
 }
 
 export function unloadMagazine(game, magazineId) {
   if (!game.canAct(true)) return;
+  cancelReload(game);
   finishWeaponAction(game, emptyMagazine(game.player, magazineId));
 }
 

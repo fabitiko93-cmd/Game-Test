@@ -1,5 +1,7 @@
 import {Quaternion,Vector3} from 'three';
 import {activeWeapon,itemDefinition} from './inventory.js';
+import {shotgunCycle} from './shotgun-cycle.js';
+import {updateShellCarrier} from './weapon-models.js';
 
 export function slideCycle(age,duration=.085){
   if(age<0||age>=duration)return 0;
@@ -9,6 +11,13 @@ export function applyWeaponCycle(entity,player){
   const root=entity.weapon,item=activeWeapon(player);if(!root||!item)return;
   const impulse=player.combat?.shotImpulse,mechanism=root.userData.mechanism;
   const current=impulse?.weaponId===item.id,age=current?impulse.age:Infinity;
+  if(root.userData.shotgun){
+    updateShellCarrier(root,item);
+    const cycle=Math.max(shotgunCycle(age,mechanism),mechanism.kind!=='pump'&&item.slideLocked?1:0),bolt=root.getObjectByName('Bolt'),forearm=root.getObjectByName('Forearm');
+    if(bolt)bolt.position.z-=mechanism.boltTravel*cycle;
+    if(mechanism.kind==='pump'&&forearm)forearm.position.z-=mechanism.pumpTravel*cycle;
+    return;
+  }
   if(item.type==='revolver_44'){
     const cylinder=root.getObjectByName('Cylinder');if(!cylinder||player.combat?.reload)return;
     if(!cylinder.geometry.boundingBox)cylinder.geometry.computeBoundingBox();

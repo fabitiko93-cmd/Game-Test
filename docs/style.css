@@ -938,3 +938,8 @@ h1 span { color: var(--red-bright); }
   .aw-stage { height:auto; min-height:80px; }
   .aw-compact-header { height:48px; padding:2px 0; }
 }
+
+.item-icon.ithaca_mag10 { background: url("./assets/weapons/ithaca_mag10-icon.svg") center / contain no-repeat; width: 40px; }
+.item-icon.ithaca_short { background: url("./assets/weapons/ithaca_short-icon.svg") center / contain no-repeat; width: 40px; }
+.item-icon.benelli_m4 { background: url("./assets/weapons/benelli_m4-icon.svg") center / contain no-repeat; width: 40px; }
+.item-icon.mossberg_590 { background: url("./assets/weapons/mossberg_590-icon.svg") center / contain no-repeat; width: 40px; }

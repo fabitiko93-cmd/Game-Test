@@ -4,6 +4,8 @@ import {BufferGeometry,Float32BufferAttribute,Mesh,MeshStandardMaterial} from 't
 // primers and bottle necks are modelled; no projectile is left on spent cases.
 // Dimensions are visual approximations, not manufacturing specifications.
 export const CARTRIDGES=Object.freeze({
+  ammo_12g:{caseLength:.064,radius:.010,neck:.010,total:.064,impact:.45,plastic:true,rim:true},
+  ammo_10g:{caseLength:.068,radius:.0108,neck:.0108,total:.068,impact:.5,plastic:true,rim:true},
   ammo_9mm:{caseLength:.019,radius:.0049,neck:.0048,total:.029,impact:1},
   ammo_45:{caseLength:.023,radius:.006,neck:.0057,total:.032,impact:1.05},
   ammo_44:{caseLength:.033,radius:.0061,neck:.0057,total:.041,impact:1.15,rim:true},
@@ -17,14 +19,15 @@ export function cartridgeData(type='ammo_9mm',spent=true){
   const def=CARTRIDGES[type]||CARTRIDGES.ammo_9mm,L=def.caseLength,R=def.radius,N=def.neck;
   const rings=[[0,R*(def.rim?1.12:1)],[.001,R*(def.rim?1.12:1)],[.0015,R*.87],[.0025,R],
     [def.bottle?L*.72:L,R*.95],...(def.bottle?[[L*.84,N],[L,N]]:[])];
-  if(spent)rings.push([L,N*.8],[L-.003,N*.8]);
+  if(def.plastic){rings.splice(4,rings.length-4,[.012,R*.95],[L,R*.95]);if(spent)rings.push([L,N*.78],[L-.004,N*.78]);else rings.push([L,N*.74],[L-.002,0]);}
+  else if(spent)rings.push([L,N*.8],[L-.003,N*.8]);
   else rings.push([L,N*.92],[def.total-.004,N*.86],[def.total-.001,N*.45],[def.total,0]);
   const positions=[],colors=[],sides=10;
   const add=(a,b,c,color)=>{positions.push(...a,...b,...c);for(let i=0;i<3;i++)colors.push(...color);};
   const at=(ring,i)=>{const t=i/sides*Math.PI*2;return[Math.cos(t)*ring[1],Math.sin(t)*ring[1],ring[0]-L/2];};
   for(let j=0;j<rings.length-1;j++)for(let i=0;i<sides;i++){
     const a=at(rings[j],i),b=at(rings[j],i+1),c=at(rings[j+1],i),d=at(rings[j+1],i+1);
-    const color=spent&&j>=rings.length-2?[.11,.075,.026]:!spent&&rings[j][0]>=L?[.42,.19,.09]:[.53,.34,.10];
+    const color=spent&&j>=rings.length-2?[.11,.075,.026]:def.plastic&&rings[j][0]>=.012?[.30,.025,.016]:!spent&&rings[j][0]>=L?[.42,.19,.09]:[.53,.34,.10];
     add(a,b,c,color);add(b,d,c,color);
   }
   for(let i=0;i<sides;i++)add([0,0,-L/2],at(rings[0],i+1),at(rings[0],i),[.40,.27,.09]);

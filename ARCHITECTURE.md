@@ -37,6 +37,24 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
 
+`one-hand-pose.js` aktiviert das modellbezogene Einhandprofil der kurzen Ithaca
+über `weapon.userData.oneHandPose`. Die Laufzeit lädt `ithaca-one-hand.json` und
+den tatsächlichen Originalschnitt aus `ithaca_short.json`. Originalbeine und
+freier Arm bleiben erhalten; explizite Werkstatt-Ellenbogen und das Nachladen
+dürfen den freien Arm vorübergehend übernehmen. `one-hand-grasp.js` verwendet
+die freigegebenen Handrahmen/Fingerquaternionen beider Rigs samt Abzugsfinger.
+Die alten Griff-/A/B-Skripte und Vorschau-Fixtures bleiben historische Entwürfe;
+sie bestimmen die aktive Waffe nicht. `ithaca-reference.test.mjs` und
+`shotguns.test.mjs` schützen die erhaltenen Originalflächen.
+
+`character-abdomen.js` baut den geglätteten Bauch-/Bundbereich für beide Figuren.
+Weibliche Taille, gemeinsame Bundkante, Gelenkgewichte und Randnormalen werden
+zusammen vorbereitet, bevor die beiden unabhängigen Kleidungsslots gewählt werden.
+Arme und oberer Brustkorb bleiben erhalten. `scripts/lib/body-review.mjs` ruft
+jetzt dieselbe aktive Funktion auf; `body-review.test.mjs` schützt den geschlossenen
+Mantel, die sichtbare Taille und den lückenlosen bewegten Bund. Der native
+Vorschauexporter `scripts/lib/preview-mesh.mjs` bleibt außerhalb des Laufzeitimports.
+
 `asset-url.js` bindet öffentliche Modell-/Bilddateien an die Spielseite statt an
 die Tiefe eines Build-Chunks. `model-loading.js` teilt laufende Abrufe zwischen
 Aufrufern und begrenzt Wiederholungen; erfolgreiche Abrufe erhöhen die Modellrevision
@@ -362,3 +380,18 @@ Nachladen/Abbruch und maximalen Magnum-Rückstoß auf beiden Original-Rigs.
 Direkte Schleich-/Sprintwechsel und schnelle Unterbrechungen prüfen zusätzlich
 Handbahn, Ellenbogenhöhe und Griffwiederaufnahme. `clothing.test.mjs` prüft die
 einlagige Bauchfläche und die geschlossene innere/äußere BH-Stofffläche rundum.
+
+
+Flintenintegration vom 02.11.2026: `shotgun-items.js` definiert vier Ausführungen
+(3 Familien), Kaliber 10/12 und abnehmbare Ersatzpatronenhalter. Der gemeinsame
+Waffenkatalog und `WeaponModels` verwenden die tatsächlichen Originalmodelle.
+`shotgun-cycle.js` teilt die Pump-/Verschlussuhr zwischen Stützhand und Geometrie;
+`shotgun-reload-pose.js` führt Einzelpatronen und die Rückkehr nach Abbruch.
+`weapon-reload.js` überträgt `tube`-Patronen einzeln, zunächst aus dem Halter.
+`projectile-path.js` wertet begrenzte Schrotstrahlen mit denselben Hindernissen
+und einem gemeinsamen Schadensbudget aus. Testkiste, Loot, Zubehörmenü,
+Werkstatt und Hülsen teilen die vorhandenen Inventar-/Modellpfade.
+`character-abdomen.js` ersetzt den alten Kleidungsfaltenbereich im Laufzeitkörper;
+beide Bundhälften teilen Geometrie, Gewichte und Normalen. Die weibliche Taille
+bleibt eingezogen; Arme und oberer Brustkorb stammen weiter aus den Originalen.
+Der bisherige Körperexporter ruft jetzt dieselbe aktive Geometrie auf.

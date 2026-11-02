@@ -28,9 +28,12 @@ export function configureWeaponModel(root, weapon) {
   }
   const stock = root.getObjectByName(definition.mods[weapon.mods?.stock?.type]);
   if(stock?.visible){const bounds=weaponModelBounds(stock);root.userData.stockContact=bounds.getCenter(new Vector3()).setZ(bounds.min.z);}
-  else root.userData.stockContact=null;
+  else root.userData.stockContact=definition.stockContact?new Vector3().fromArray(definition.stockContact):null;
   root.userData.grips=definition.grips?Object.assign({verticalSupport:false,leftThumb:null,leftThumbPole:null},definition.grips,...setups.map(setup=>setup.grips)):null;
   root.userData.pistol=definition.pistol||null;
+  root.userData.oneHandPose=definition.oneHandPose||null;
+  root.userData.shotgun=definition.shotgun||false;
+  root.userData.shellParts=definition.asset.shellParts||null;
   root.userData.anchors=Object.assign({},definition.anchors,...setups.map(setup=>setup.anchors));
   root.userData.weaponId=weapon.id;root.userData.weaponType=weapon.type;root.userData.mechanism=definition.mechanism||null;
   root.userData.magazinePart=definition.magazines[weapon.magazine?.type]||Object.values(definition.magazines)[0]||null;
@@ -40,7 +43,14 @@ export function configureWeaponModel(root, weapon) {
   const flashlight=root.getObjectByName('Flashlight');
   root.userData.lightOrigin=flashlight?.visible?weaponTip(root,flashlight):null;
   root.userData.partPose=new Map(Object.keys(definition.asset.parts).map(name=>{const part=root.getObjectByName(name);return [name,{position:part.position.clone(),rotation:part.quaternion.clone(),visible:part.visible}];}));
+  updateShellCarrier(root,weapon);
   return root;
+}
+
+export function updateShellCarrier(root,weapon){
+  if(!root.userData.shellParts)return;
+  const carrier=weapon.mods?.carrier;
+  for(const[n,parts]of root.userData.shellParts.entries())for(const name of parts)root.getObjectByName(name).visible=Boolean(carrier)&&n<(carrier.rounds||0)&&n!==root.userData.heldShellSlot;
 }
 
 // Measure the actual front face, including the selected barrel/upper and any
@@ -97,7 +107,7 @@ export class WeaponInspection {
     if (!hasWeaponModel(weapon)) return;
     const rect = canvas.getBoundingClientRect();
     if (rect.width < 1 || rect.height < 1) return;
-    const drawKey = `${weaponModelSignature(weapon)}|${yaw}|${pitch}|${rect.width}|${rect.height}|${globalThis.devicePixelRatio}|${this.pass.status}`;
+    const drawKey = `${weaponModelSignature(weapon)}|${weapon.mods?.carrier?.rounds||0}|${yaw}|${pitch}|${rect.width}|${rect.height}|${globalThis.devicePixelRatio}|${this.pass.status}`;
     if (this.lastDrawKey === drawKey) return this.anchors;
     const ctx = canvas.getContext("2d");
     const signature = weaponModelSignature(weapon);
@@ -114,6 +124,7 @@ export class WeaponInspection {
       model.position.sub(center);
       this.root = new Group(); this.root.add(model);this.model=model; this.signature = signature;
     }
+    updateShellCarrier(this.model,weapon);
     this.root.rotation.set(pitch,yaw,0,'YXZ');
     const height=Math.max(.5,this.length/(rect.width/rect.height*.64));
     const project=this.pass.drawInspection(canvas,this.root,{height,center:new Vector3(),elevation:.05});

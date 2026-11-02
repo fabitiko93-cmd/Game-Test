@@ -17,13 +17,14 @@ export function rememberWeaponMotion(e){
  if(!e.weapon)return;
  e.weaponMotion||={};e.weaponMotion.last={posture:e.riflePosture,blending:blending(e),
   weapon:frame(e,'R',e.weapon.getWorldPosition(new Vector3()),e.weapon.getWorldQuaternion(new Quaternion())),
-  left:frame(e,'L',at(e,'Middle2L'),e.model.getObjectByName('WristL').getWorldQuaternion(new Quaternion()))
+  left:frame(e,'L',at(e,'Middle2L'),e.model.getObjectByName('WristL').getWorldQuaternion(new Quaternion())),
+  leftPinch:frame(e,'L',at(e,'Index4L').lerp(at(e,'Thumb3L'),.5),e.model.getObjectByName('WristL').getWorldQuaternion(new Quaternion()))
  };
 }
-export function guideSupportMotion(e,point,rotation){
- const previous=e.weaponMotion?.last?.left,dt=e.pistolStep;
+export function guideSupportMotion(e,point,rotation,contact='Middle2'){
+ const previous=e.weaponMotion?.last?.[contact==='Index4'?'leftPinch':'left'],dt=e.pistolStep;
  if(!previous||dt>=.5||e.animationDirectEdit)return {point,rotation};
- const motion=e.weaponMotion,action=e.animationEditingReload||e.reloadLast;
+ const motion=e.weaponMotion,action=e.animationEditingReload||e.reloadLast||e.shotgunReload;
  if(action)motion.joining=true;
  if(!motion.joining)return {point,rotation};
  // Follow the physical palm, not a wrist implied by an unattainable donor

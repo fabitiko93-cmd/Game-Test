@@ -12,12 +12,12 @@ export function casingSurface(world,c){
   if(world.insideBuilding?.(c)||['road','asphalt','pavement','concrete','floor'].includes(tile))return'hard';
   return tile==='gravel'?'gravel':'soft';
 }
-export function queueCasings(renderer,game,ammoType,socket,count=1,delay=.018){
+export function queueCasings(renderer,game,ammoType,socket,count=1,delay=.018,socketAtEjection=null){
   if(!socket)return;
   if(renderer.casingWorld!==game.world){renderer.casingWorld=game.world;renderer.casings=[];renderer.casingQueue=[];}
   renderer.casings||=[];renderer.casingQueue||=[];
   const queue=renderer.casingQueue;
-  for(let i=0;i<count;i++){renderer.casingSerial=(renderer.casingSerial||0)+1;queue.push({socket:{...socket,rotation:[...(socket.rotation||[0,0,0,1])]},ammoType,delay:delay+i*.012,seed:renderer.casingSerial});}
+  for(let i=0;i<count;i++){renderer.casingSerial=(renderer.casingSerial||0)+1;queue.push({socket:{...socket,rotation:[...(socket.rotation||[0,0,0,1])]},socketAtEjection,ammoType,delay:delay+i*.012,seed:renderer.casingSerial});}
   if(queue.length>CASING_LIMIT)queue.splice(0,queue.length-CASING_LIMIT);
 }
 function spawn(event){
@@ -28,7 +28,7 @@ function spawn(event){
 }
 function impact(renderer,game,c,speed,surface){
   const softness=surface==='hard'?1:surface==='gravel'?.45:.07;
-  const strength=Math.min(1,speed/4)*softness*(c.bounces===1?1:.30);
+  const strength=Math.min(1,speed/4)*softness*(c.bounces===1?1:.30)*(cartridgeData(c.ammoType).definition.plastic?.5:1);
   if(strength<.025)return;
   const radius=(surface==='hard'?.55:surface==='gravel'?.28:.07)*Math.sqrt(strength);
   const noises=game.world.noises||[];
@@ -58,7 +58,7 @@ export function updateCasings(renderer,game,delta){
   if(renderer.casingWorld&&renderer.casingWorld!==game.world){renderer.casings=[];renderer.casingQueue=[];renderer.casingWorld=game.world;}
   const dt=Math.max(0,delta);renderer.casings||=[];renderer.casingQueue||=[];
   for(const c of renderer.casings){advance(renderer,game,c,dt);c.elevationMeters=c.height;}
-  for(const e of renderer.casingQueue){e.delay-=dt;if(e.delay<=0){const c=spawn(e);advance(renderer,game,c,Math.min(dt,-e.delay));c.elevationMeters=c.height;renderer.casings.push(c);}}
+  for(const e of renderer.casingQueue){e.delay-=dt;if(e.delay<=0){if(e.socketAtEjection)e.socket=e.socketAtEjection()||e.socket;const c=spawn(e);advance(renderer,game,c,Math.min(dt,-e.delay));c.elevationMeters=c.height;renderer.casings.push(c);}}
   renderer.casingQueue=renderer.casingQueue.filter(e=>e.delay>0);
   renderer.casings=renderer.casings.filter(c=>c.age<CASING_LIFETIME);
   while(renderer.casings.length>CASING_LIMIT){const i=renderer.casings.findIndex(c=>c.settled);renderer.casings.splice(i<0?0:i,1);}

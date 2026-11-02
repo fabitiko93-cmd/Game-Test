@@ -1,0 +1,227 @@
+{
+  "file": "benelli_m4-5ccb8e62b58b.glb.gz",
+  "sha256": "5ccb8e62b58be681b4ee10b3d77e5354bf0cf6c181ba4c29a4a901b6128f0e6f",
+  "author": "TastyTony",
+  "license": "CC BY 4.0",
+  "source": "https://sketchfab.com/3d-models/low-poly-benelli-m4-super-90-caea90a9470143b69e6042f75b9c59cc",
+  "sourceSha256": "54ae0a37548f0da9a57fcf411e3aebc2286ec72290eb4664264519d2b7196623",
+  "parts": {
+    "ReceiverAndGrip": {
+      "triangles": 1443,
+      "source": "TastyTony original"
+    },
+    "Safety": {
+      "triangles": 20,
+      "source": "TastyTony original"
+    },
+    "BoltRelease": {
+      "triangles": 36,
+      "source": "TastyTony original"
+    },
+    "Bolt": {
+      "triangles": 316,
+      "source": "TastyTony original"
+    },
+    "Lifter": {
+      "triangles": 120,
+      "source": "TastyTony original"
+    },
+    "BarrelAndRib": {
+      "triangles": 908,
+      "source": "TastyTony original"
+    },
+    "Stock": {
+      "triangles": 812,
+      "source": "TastyTony original"
+    },
+    "Forearm": {
+      "triangles": 1870,
+      "source": "TastyTony original"
+    },
+    "Backing": {
+      "triangles": 128,
+      "source": "Sperrkreis authored carrier"
+    },
+    "EdgeBinding": {
+      "triangles": 32,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Stitching": {
+      "triangles": 88,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Loop_01": {
+      "triangles": 124,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_01_Brass": {
+      "triangles": 132,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_01_RedPlastic": {
+      "triangles": 66,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Loop_02": {
+      "triangles": 124,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_02_Brass": {
+      "triangles": 132,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_02_RedPlastic": {
+      "triangles": 66,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Loop_03": {
+      "triangles": 124,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_03_Brass": {
+      "triangles": 132,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_03_RedPlastic": {
+      "triangles": 66,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Loop_04": {
+      "triangles": 124,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_04_Brass": {
+      "triangles": 132,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_04_RedPlastic": {
+      "triangles": 66,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Loop_05": {
+      "triangles": 124,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_05_Brass": {
+      "triangles": 132,
+      "source": "Sperrkreis authored carrier"
+    },
+    "Shell_05_RedPlastic": {
+      "triangles": 66,
+      "source": "Sperrkreis authored carrier"
+    }
+  },
+  "grips": {
+    "right": [
+      -0.032,
+      0,
+      -0.14
+    ],
+    "left": [
+      0.145,
+      0.03,
+      0.3
+    ],
+    "rightThumb": [
+      0.015,
+      0.025,
+      -0.015
+    ],
+    "leftThumb": [
+      0.025,
+      0.055,
+      0.3
+    ],
+    "leftThumbPole": [
+      0.11,
+      0.12,
+      0.32
+    ]
+  },
+  "anchors": {
+    "stock": [
+      0,
+      -0.055,
+      -0.35
+    ],
+    "carrier": [
+      0.018,
+      0.047,
+      0.11
+    ],
+    "muzzle": [
+      0,
+      0.05,
+      0.7
+    ],
+    "loading": [
+      0,
+      -0.004,
+      0.065
+    ],
+    "magazine": [
+      0,
+      -0.004,
+      0.065
+    ]
+  },
+  "stockContact": [
+    0,
+    -0.055,
+    -0.35
+  ],
+  "mechanism": {
+    "kind": "shotgun",
+    "cycle": 0.13,
+    "boltTravel": 0.075,
+    "pumpTravel": 0.085,
+    "ejectDelay": 0.025,
+    "ejection": [
+      -0.025,
+      0.05,
+      0.11
+    ]
+  },
+  "carrierParts": [
+    "Backing",
+    "EdgeBinding",
+    "Stitching",
+    "Loop_01",
+    "Shell_01_Brass",
+    "Shell_01_RedPlastic",
+    "Loop_02",
+    "Shell_02_Brass",
+    "Shell_02_RedPlastic",
+    "Loop_03",
+    "Shell_03_Brass",
+    "Shell_03_RedPlastic",
+    "Loop_04",
+    "Shell_04_Brass",
+    "Shell_04_RedPlastic",
+    "Loop_05",
+    "Shell_05_Brass",
+    "Shell_05_RedPlastic"
+  ],
+  "shellParts": [
+    [
+      "Shell_01_Brass",
+      "Shell_01_RedPlastic"
+    ],
+    [
+      "Shell_02_Brass",
+      "Shell_02_RedPlastic"
+    ],
+    [
+      "Shell_03_Brass",
+      "Shell_03_RedPlastic"
+    ],
+    [
+      "Shell_04_Brass",
+      "Shell_04_RedPlastic"
+    ],
+    [
+      "Shell_05_Brass",
+      "Shell_05_RedPlastic"
+    ]
+  ]
+}

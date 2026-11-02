@@ -927,7 +927,7 @@ export class Renderer {
     this.tracers.push(createTracer(start,end));
   }
 
-  firearmShot(game,weapon,end){
+  firearmShot(game,weapon,end,hit,pelletPaths){
     this.playerModels.faceShot(game.player);
     const start=this.playerModels.shotMuzzle(game.player,game.elapsed);
     if(!start)return; // Models still loading: never invent a shot from the hitbox.
@@ -935,8 +935,13 @@ export class Renderer {
     const suppressed=weapon.mods?.muzzle?.type.includes('suppressor'),magnum=['revolver_44','desert_eagle_50'].includes(weapon.type);
     this.gunshots.push({start,age:0,fresh:true,direction:{x:dx/length,y:dy/length,height:0},
       size:(magnum?.24:.18)*(suppressed?.22:1),strength:suppressed?.35:1,flare:.65+Math.abs(Math.sin((game.player.shots+1)*12.9898))*.8});
-    this.trace(start,impact);
-    if(weapon.type!=='revolver_44')queueCasings(this,game,itemDefinition(weapon)?.ammoType||'ammo_9mm',this.playerModels.ejectionSocket?.(game.player,game.elapsed));
+    if(pelletPaths)for(const path of pelletPaths)this.trace(start,shotEnd(game.world,start,path.end));
+    else this.trace(start,impact);
+    if(weapon.type!=='revolver_44'){
+      const pump=itemDefinition(weapon)?.pumpAction;
+      queueCasings(this,game,itemDefinition(weapon)?.ammoType||'ammo_9mm',this.playerModels.ejectionSocket?.(game.player,game.elapsed),1,pump?.31:.018,
+        pump?()=>{if(activeWeapon(game.player)?.id!==weapon.id)return null;game.sound('pump');return this.playerModels.ejectionSocket?.(game.player,game.elapsed);}:null);
+    }
   }
 
   updateCasings(game,delta){updateCasings(this,game,delta);}

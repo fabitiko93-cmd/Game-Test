@@ -7,6 +7,11 @@ import AK from '../assets/weapons/ak.json' with { type: 'json' };
 import VECTOR from '../assets/weapons/vector.json' with { type: 'json' };
 import M4 from '../assets/weapons/m4.json' with { type: 'json' };
 import REVOLVER from '../assets/weapons/revolver.json' with { type: 'json' };
+import ITHACA from '../assets/weapons/ithaca_mag10.json' with {type:'json'};
+import ITHACA_SHORT from '../assets/weapons/ithaca_short.json' with {type:'json'};
+import ITHACA_HAND from '../assets/weapons/ithaca-one-hand.json' with {type:'json'};
+import BENELLI from '../assets/weapons/benelli_m4.json' with {type:'json'};
+import MOSSBERG from '../assets/weapons/mossberg_590.json' with {type:'json'};
 
 // One catalogue drives the held model, weapon bench, UI and upper-body motion.
 // Item compatibility and game values remain in data.js.
@@ -16,7 +21,14 @@ function pistol(name,asset,magazines,pose,mods=true){
     anchors:asset.anchors,grips:{...asset.grips,...pose,handgun:true,pistol:true},pistol:pose,
     mechanism:asset.mechanism,requires:mods?{optic:'mount'}:{}};
 }
+function shotgun(name,asset,carrier,oneHandPose=null){
+ return{name,asset,baseParts:Object.keys(asset.parts).filter(n=>!asset.carrierParts.includes(n)),muzzleParts:['BarrelAndRib'],magazines:{},mods:{[carrier]:asset.carrierParts},anchors:asset.anchors,grips:asset.grips,stockContact:asset.stockContact,mechanism:asset.mechanism,shotgun:true,oneHandPose};
+}
 const MODELS = {
+  ithaca_mag10:shotgun('Ithaca Mag-10',ITHACA,'ithaca_carrier'),
+  ithaca_short:shotgun('Ithaca kurz',ITHACA_SHORT,'ithaca_carrier',ITHACA_HAND),
+  benelli_m4:shotgun('Benelli M4',BENELLI,'benelli_carrier'),
+  mossberg_590:shotgun('Mossberg 590',MOSSBERG,'mossberg_carrier'),
   // Palm contacts are on each authored grip, not offsets to an AK wrist.
   // A modest, fixed presentation scale fits the stylised hands on both rigs.
   pistol_9mm:pistol('G17',G17,{mag_9mm_12:'Magazine',mag_9mm_18:'ExtendedMagazine'},

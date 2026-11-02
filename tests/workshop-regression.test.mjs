@@ -24,7 +24,7 @@ async function parse(url){
 const library=new QuaterniusAssets({loadAsset:parse});
 function models(){const m=new PlayerModels({},library);m.weapons.loadAsset=parse;return m;}
 
-test('all eight workshop weapons receive selected attachments and real loaded ammunition on both rigs',async()=>{
+test('all catalogued workshop weapons receive selected attachments and real loaded ammunition on both rigs',async()=>{
   for(const sex of ['male','female'])for(const type of WEAPON_TYPES){
     const mods=Object.fromEntries(Object.keys(weaponModelDefinition(type).mods).map(type=>[ITEMS[type].modSlot,type]));
     const r=new AnimationReplay(models());await r.configure({sex,type,mods});

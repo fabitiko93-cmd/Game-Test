@@ -22,7 +22,7 @@ export function createItem(type, count = 1, options = {}) {
       }
     }
   }
-  if (definition.type === "magazine") item.rounds = clamp(options.rounds ?? 0, 0, definition.capacity);
+  if (definition.type === "magazine" || definition.shellCarrier) item.rounds = clamp(options.rounds ?? 0, 0, definition.capacity);
   if (definition.uses) item.uses = options.uses ?? definition.uses;
   return item;
 }
@@ -46,7 +46,7 @@ export function itemWeight(item) {
   let weight = definition.weight * Math.max(1, item.count || 1);
   if (definition.roundWeight) weight = Math.ceil((definition.roundWeight * Math.max(1, item.count || 1) - 1e-9) / definition.weightStep) * definition.weightStep;
   if (item.magazine) weight += itemWeight(item.magazine);
-  if (definition.feed === "internal" && item.rounds) {
+  if ((definition.feed === "internal" || definition.shellCarrier) && item.rounds) {
     const ammo=ITEMS[definition.ammoType];
     weight += ammo?.roundWeight ? Math.ceil((ammo.roundWeight*item.rounds-1e-9)/ammo.weightStep)*ammo.weightStep : (ammo?.weight || 0)*item.rounds;
   }
@@ -307,12 +307,24 @@ export function removeMod(player, weaponId, slot) {
   return { ok: true, message: `${itemDefinition(mod).name.toUpperCase()} ENTFERNT` };
 }
 
+function ammunitionContainer(player,id){return findItem(player,id)||player.inventory.map(i=>i.mods?.carrier).find(i=>i?.id===id)||null;}
+export function shellCarrier(weapon){
+  const holder=weapon?.mods?.carrier,def=itemDefinition(holder),gun=itemDefinition(weapon);
+  return def?.shellCarrier&&def.compatible.includes(weapon.type)&&def.ammoType===gun.ammoType?holder:null;
+}
+export function reloadAmmoCount(player,weapon){return countType(player,itemDefinition(weapon).ammoType)+(shellCarrier(weapon)?.rounds||0);}
+export function consumeReloadAmmo(player,weapon,count=1){
+  const holder=shellCarrier(weapon),fromHolder=Math.min(count,holder?.rounds||0);
+  if(holder)holder.rounds-=fromHolder;
+  return fromHolder+consumeType(player,itemDefinition(weapon).ammoType,count-fromHolder);
+}
 export function fillMagazine(player, magazineId) {
-  const magazine = findItem(player, magazineId);
+  const magazine = ammunitionContainer(player, magazineId);
   const definition = itemDefinition(magazine);
-  if (definition?.type !== "magazine") return { ok: false, message: "SEPARATES MAGAZIN AUSWÄHLEN" };
+  if (definition?.type !== "magazine"&&!definition?.shellCarrier) return { ok: false, message: "SEPARATES MAGAZIN AUSWÄHLEN" };
+  const label=definition.shellCarrier?'PATRONENHALTER':'MAGAZIN';
   const missing = definition.capacity - (magazine.rounds || 0);
-  if (missing <= 0) return { ok: false, message: "MAGAZIN IST VOLL" };
+  if (missing <= 0) return { ok: false, message: `${label} IST VOLL` };
   const original = player.inventory.map(item => ({item, count: item.count})), previousRounds = magazine.rounds || 0, previousWeight = inventoryWeight(player);
   const moved = consumeType(player, definition.ammoType, missing);
   if (!moved) return { ok: false, message: "KEINE PASSENDE MUNITION" };
@@ -322,12 +334,12 @@ export function fillMagazine(player, magazineId) {
     player.inventory = original.map(({item, count}) => {item.count = count; return item;});
     return { ok: false, message: "ZU SCHWER FÜR DIE NÄCHSTE MAGAZIN-GEWICHTSSTUFE" };
   }
-  return { ok: true, message: `MAGAZIN BEFÜLLT · ${magazine.rounds}/${definition.capacity}` };
+  return { ok: true, message: `${label} BEFÜLLT · ${magazine.rounds}/${definition.capacity}` };
 }
 
 export function emptyMagazine(player, magazineId) {
-  const magazine = findItem(player, magazineId), definition = itemDefinition(magazine);
-  if (definition?.type !== "magazine" || !magazine.rounds) return { ok: false, message: "MAGAZIN IST LEER" };
+  const magazine = ammunitionContainer(player, magazineId), definition = itemDefinition(magazine);
+  if ((definition?.type !== "magazine"&&!definition?.shellCarrier) || !magazine.rounds) return { ok: false, message: "MAGAZIN / HALTER IST LEER" };
   const rounds = magazine.rounds;
   magazine.rounds = 0;
   if (!addItem(player, createItem(definition.ammoType, rounds))) {
@@ -374,7 +386,7 @@ export function reloadWeapon(player, weapon = activeWeapon(player)) {
 
   const missing = definition.capacity - (weapon.rounds || 0);
   if (missing <= 0) return { ok: false, message: "WAFFE IST GELADEN" };
-  const moved = consumeType(player, definition.ammoType, missing);
+  const moved = consumeReloadAmmo(player, weapon, missing);
   if (!moved) return { ok: false, message: "KEINE PASSENDE MUNITION" };
   weapon.rounds = (weapon.rounds || 0) + moved;
   return { ok: true, message: `NACHGELADEN · ${weapon.rounds}/${definition.capacity}` };
@@ -402,6 +414,7 @@ export function consumeShot(weapon) {
   } else {
     if (!weapon.rounds) return false;
     weapon.rounds -= 1;
+    if(definition.shotgun&&!definition.pumpAction)weapon.slideLocked=weapon.rounds===0;
     if(weapon.type==='revolver_44'){
       weapon.spentCases=Math.min(definition.capacity-weapon.rounds,(weapon.spentCases||0)+1);
       weapon.cylinderIndex=((weapon.cylinderIndex||0)+1)%definition.capacity;

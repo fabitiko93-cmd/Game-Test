@@ -26,6 +26,8 @@ export function sound(game, kind) {
     swing: [180, 0.05, "sawtooth"],
     gunshot: [52, 0.2, "square"],
     magnum: [74, 0.32, "sawtooth"],
+    shotgun: [43, .32, 'sawtooth'],
+    pump: [165, .10, 'square'],
     reload: [320, 0.07, "square"],
     hit: [72, 0.1, "square"],
     execution: [110, 0.16, "triangle"],
@@ -49,7 +51,7 @@ export function sound(game, kind) {
     oscillator.connect(gain).connect(game.audio.destination);
     oscillator.start();
     oscillator.stop(game.audio.currentTime + preset[1]);
-    if(kind === "magnum") {
+    if(kind === "magnum"||kind==='shotgun') {
       const buffer=game.audio.createBuffer(1,Math.floor(game.audio.sampleRate*.16),game.audio.sampleRate),samples=buffer.getChannelData(0);
       for(let i=0;i<samples.length;i++)samples[i]=(Math.random()*2-1)*(1-i/samples.length);
       const noise=game.audio.createBufferSource(),filter=game.audio.createBiquadFilter(),crack=game.audio.createGain();
@@ -73,7 +75,8 @@ export function casingImpactSound(game,position,strength=1,surface='hard'){
     const pan=audio.createStereoPanner?.();
     if(pan){pan.pan.value=Math.max(-.85,Math.min(.85,((position.x-game.player.x)-(position.y-game.player.y))*.28));bus.connect(pan).connect(audio.destination);}else bus.connect(audio.destination);
     const now=audio.currentTime;
-    for(const [hz,level,life]of [[3300,1,.055],[5700,.40,.035],[8200,.20,.022]]){
+    const plastic=['ammo_12g','ammo_10g'].includes(position.ammoType);
+    for(const [hz,level,life]of plastic?[[1100,1,.035],[2600,.25,.02]]:[[3300,1,.055],[5700,.40,.035],[8200,.20,.022]]){
       const oscillator=audio.createOscillator(),gain=audio.createGain();oscillator.type='sine';oscillator.frequency.value=hz*(surface==='gravel'?.82:1);
       gain.gain.setValueAtTime(level,now);gain.gain.exponentialRampToValueAtTime(.001,now+life);
       oscillator.connect(gain).connect(bus);oscillator.start(now);oscillator.stop(now+life);

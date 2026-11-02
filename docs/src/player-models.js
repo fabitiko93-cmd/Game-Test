@@ -12,6 +12,8 @@ import { createSoleProbes, drawSoleShadows, sampleSoleContacts } from "./charact
 import {metersToTiles} from './world-scale.js';
 import { rebindPart, disposeClothing } from './character-parts.js';
 import {bareWaist} from './character-legs.js';
+import {smoothBareBody} from './character-abdomen.js';
+import {BODY_SOURCES} from './clothing-catalog.js';
 import {restoreCharacterPose} from './character-pose.js';
 
 const PARTS=["head","torso","legs","feet"];
@@ -41,13 +43,17 @@ export class PlayerModels {
     const clothing={};
     const bodyLegs=needsBody?rebindPart(beach.scene.getObjectByName(QUATERNIUS_MODELS.characters['male-Beach'].parts.legs),model,{sourceSex:'male',targetSex:appearance.sex,slot:'legs',bare:true}):null;
     const waist=bodyLegs?bareWaist(bodyLegs):null;
+    const bodyKey=BODY_SOURCES[appearance.sex].torso;
+    const bodyTorso=needsBody?rebindPart(this.library.get(bodyKey).scene.getObjectByName(QUATERNIUS_MODELS.characters[bodyKey].parts.torso),model,{sourceSex:appearance.sex,targetSex:appearance.sex,slot:'torso',bare:true,waist}):null;
+    if(bodyTorso)smoothBareBody(bodyTorso,bodyLegs,appearance.sex);
     for(let i=0;i<PARTS.length;i++) {
       const slot=PARTS[i],name=QUATERNIUS_MODELS.characters[appearance[slot]].parts[slot];
-      const part=slot==='legs'&&appearance.bare?.includes(slot)?bodyLegs:rebindPart(needed[i].scene.getObjectByName(name),model,{sourceSex:QUATERNIUS_MODELS.characters[appearance[slot]].sex,targetSex:appearance.sex,slot,bare:appearance.bare?.includes(slot),coverHair:slot==='head'&&appearance.headwear==='male-Swat',waist});
+      const part=appearance.bare?.includes(slot)&&slot==='torso'?bodyTorso:slot==='legs'&&appearance.bare?.includes(slot)?bodyLegs:rebindPart(needed[i].scene.getObjectByName(name),model,{sourceSex:QUATERNIUS_MODELS.characters[appearance[slot]].sex,targetSex:appearance.sex,slot,bare:appearance.bare?.includes(slot),coverHair:slot==='head'&&appearance.headwear==='male-Swat',waist});
       clothing[slot]=part;
       part.traverse(o=>{o.visible=true;});armature.add(part);
     }
     if(bodyLegs!==clothing.legs&&bodyLegs){bodyLegs.traverse(m=>m.skeleton?.dispose());disposeClothing(bodyLegs);}
+    if(bodyTorso!==clothing.torso&&bodyTorso){bodyTorso.traverse(m=>m.skeleton?.dispose());disposeClothing(bodyTorso);}
     if(hat){
       const definition=QUATERNIUS_MODELS.characters[appearance.headwear];
       const part=rebindPart(hat.scene.getObjectByName(definition.parts.head),model,{sourceSex:definition.sex,targetSex:appearance.sex,headwear:true,sourceKey:appearance.headwear});
@@ -79,6 +85,8 @@ export class PlayerModels {
     entity.animationEvaluationKey=null;
     entity.reloadLast=null;entity.supportElbow=null;entity.supportTwist=null;entity.handgunCrouchBlend=null;entity.handgunCrouchHold=0;
     entity.weaponMotion=null;entity.handgunUpperRest=null;entity.handgunRecoil=false;
+    entity.oneHandMotion=null;entity.oneHandCrouch=null;entity.oneHandTrigger=null;
+    entity.shotgunReload=null;entity.shotgunSupportPose=null;
     entity.pistolCrouch=null;entity.pistolCrouchHold=0;entity.pistolWeaponPose=null;entity.pistolSupportPose=null;entity.pistolBodyPose=null;entity.pistolContactPole=null;entity.pistolReloadPose=null;
     entity.pistolFits=null;entity.pistolPreviousFit=null;entity.pistolAutoFits=null;entity.pistolReloadClearance=0;
     entity.pistolSupportReachAngle=null;entity.pistolSupportShoulder=null;entity.pistolReferenceWeight=null;

@@ -1,4 +1,90 @@
+## Eingebaute Flinten · 02.11.2026
+
+Ithaca Mag-10 lang und kurz, Benelli M4 Super 90 und Mossberg 590 sind Spielgegenstände.
+Die aktuelle kurze Ithaca übernimmt exakt die freigegebene originale Schaftkontur
+und `ithaca-one-hand.json`; frühere Griffprototypen unten sind historische Entwürfe.
+`ithaca_mag10.json`, `ithaca_short.json`, `benelli_m4.json` und `mossberg_590.json`
+verknüpfen Originalflächen, einzelne Mechanikteile, Halter, Griffkontakte und Mündung.
+Alle drei Originalmodelle: **TastyTony / CC BY 4.0**, Quellen:
+
+- [Ithaca Mag-10](https://sketchfab.com/3d-models/low-poly-ithaca-mag-10-f16977d768994b69be28c3a502b41c99)
+- [Benelli M4 Super 90](https://sketchfab.com/3d-models/low-poly-benelli-m4-super-90-caea90a9470143b69e6042f75b9c59cc)
+- [Mossberg 590](https://sketchfab.com/3d-models/low-poly-mossberg-590-c0551a6b841145f7a8e59e9304728f1f)
+- [Lizenz CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+
+Änderungen: Bindpose und metrischer Darstellungsmaßstab gebacken, Originalfarben
+als Vertexfarben übernommen, bewegliche Originalflächen getrennt. Kurze Ithaca:
+freigegebene digitale Lauf-/Schaftkürzung samt geschlossenen Schnittflächen.
+Drei-/Fünf-Patronenhalter: eigene textile Spielmodell-Geometrie; einzeln sichtbare,
+abnehmbare Ersatzpatronen. Die Inventar-SVGs stammen aus denselben Modellflächen.
+Aufbereitung: `prepare-shotgun-sources.mjs`, dann `prepare-shotguns.py`.
+Quell- und Ausgabedateien sind in den JSON-Metadaten mit SHA-256 dokumentiert.
+
+Spielprofile: Ithaca Kaliber 10, 2+1; Benelli Kaliber 12, 7+1; Mossberg Kaliber 12,
+8+1. Kapazität zählt Rohr und Lager zusammen; Ersatzhalter erhöhen sie nicht.
+Einzelpatronen werden zeitlich beim Einsetzen übertragen. Die Mossberg pumpt,
+die Halbautomaten bewegen nur den Verschluss. Crafting, Akimbo und weitere
+Lauf-/Griff-/Choke- oder Dämpfermods bleiben später.
+
+### Historische Ithaca-Vorschauen
+
 # Waffenmodelle
+
+## Ithaca Mag-10 kurz · Einhand-Haltungsvorschau
+
+`ithaca-short-stance.glb.gz` ist eine Haltungsvorschau, kein bereits spielbarer
+Flinten-Gegenstand. Originalwaffe: TastyTony, **Low-Poly Ithaca Mag-10**, CC BY 4.0.
+Quelle: https://sketchfab.com/3d-models/low-poly-ithaca-mag-10-f16977d768994b69be28c3a502b41c99
+Lizenz: https://creativecommons.org/licenses/by/4.0/
+Änderungen: Im Chat abgestimmte digitale Kurzvariante mit geschlossenen neuen
+Schnittflächen; kompakter selbst erstellter Dreier-Patronenhalter (CC0), niedrige
+Montageplatte und mittig angeordnete Schlaufen. Die übrigen Originalflächen und
+Farben bleiben erhalten. Vorschau-Modell für ein Spiel, keine Fertigungsvorlage.
+
+Verworfener Griffentwurf vom 02.11.2026: Den kurzen Holzstummel samt dessen altem
+Zierbeschlag durch einen gerundeten, längeren Spielmodell-Griff ersetzen.
+Die neue geschlossene Außenfläche ist separat als `CustomGrip` modelliert
+(eigene Geometrie, CC0). Gehäuse, Lauf, bewegliche Teile und Patronenhalter
+bleiben erhalten; `ithaca-retained-surfaces.json` hält deren Quellflächen fest.
+`scripts/prepare-ithaca-grip.py QUELLVORSCHAU.glb AUSGABE.glb.gz` reproduziert
+die Modellbearbeitung aus der vorherigen kreditierten Halter-Vorschau.
+Diese eigenständige Pistolengriff-Form wurde im anschließenden Abgleich
+verworfen und ist keine freigegebene Gestaltung für den Einbau.
+
+Überholte Zwischenentwürfe: `scripts/preview-ithaca-stock-variants.py` erhält die
+Originalflächen am Schafthals und formt zwei alternative Enden. A bleibt näher
+am kurzen Schaftrest, B führt dessen Linie länger nach hinten aus. Der passende
+`.mjs`-Exporter und `scripts/lib/ithaca-stock-options.json` bilden eine erste
+Handeinpassung auf beiden Rigs ab. Die Varianten sind ausschließlich Entwürfe;
+Fingerkontakte und Bewegungen werden nach der Formwahl endgültig kalibriert.
+
+Aktuelle Referenz vom 02.11.2026: Die Nutzerdatei `ithaca.jpg` markiert eine
+schräge Kürzung des Originalschafts. `tests/fixtures/ithaca-reference-cut.glb.gz`
+enthält diese digitale Kürzung mit geschlossener neuer Schnittfläche. Die
+erhaltenen Originalflächen bleiben unverformt; der vorherige kurze Lauf und
+der kompakte Halter bleiben erhalten. Originalmodell TastyTony / CC BY 4.0,
+Quellen-/Lizenzlink wie oben. Keine Wicklung, Streckung oder neue Griffform.
+`ithaca-reference-pose.json` enthält die passende Einhandkalibrierung beider
+Rigs samt gesonderter Abzugsfingerpose. `scripts/preview-ithaca-reference.mjs`
+rendert diese aktuelle Referenz; weiterhin kein spielbarer Flinten-Gegenstand.
+
+`ithaca-short-pose.json` enthält die Kalibrierung für Tragen, Hüfthaltung,
+einhändiges Zielen auf Schulterhöhe und den sichtbaren Schussimpuls. Der linke Arm folgt weiterhin
+der Originalanimation; Nachladen, Akimbo und die Absäge-Mechanik sind nicht Teil
+dieser Haltungsvorschau. Das Modell wird noch nicht vom Waffen-Katalog angeboten.
+Die beiden `rigs` enthalten eigene Handflächenkontakte, Handrahmen und Finger-
+quaternionen. Die Metakarpal-/Daumenbasis stammt aus der freigegebenen G17-
+Kalibrierung; Fingerkrümmungen, Daumenöffnung und Kontakte sind auf diesen Griff
+angepasst. Der Zeigefinger wechselt weich zur getrennten Abzugspose. Im Ducken
+führt die Tragehand etwas weiter nach vorn, damit das Handgelenk innerhalb
+seiner Grenzen bleibt und der Lauf weiterhin abgesenkt ist.
+`node scripts/preview-ithaca-stance.mjs /pfad/zur/ausgabe` erzeugt die tatsächlich
+verformten Original-Figurenoberflächen beider Rigs für Render und Kontrolle.
+`node scripts/preview-ithaca-grip.mjs /pfad/zur/ausgabe QUELLVORSCHAU.glb`
+exportiert den Griffvergleich sowie Handdetails beider Rigs mit Hautnormalen.
+
+Die kurze Variante soll später als fertiger Loot eingebaut werden. Eine
+Crafting-Aktion zum Absägen und der Einfluss des Handwerksskills bleiben später.
 
 ## Revolver · R1/R2/R4 · .44 Magnum
 
