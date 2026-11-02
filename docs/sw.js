@@ -1,5 +1,5 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "324f53678afb02741c7f";
+const BUILD_ID = "5ea40964d92d029625b3";
 const FILES = [
   "./assets/clothing/README.md",
   "./assets/clothing/icons-90973c06703c.svg",
@@ -158,6 +158,7 @@ const FILES = [
   "./assets/quaternius/player-animations.json",
   "./assets/quaternius/player-crouch-68cf13051891.glb.gz",
   "./assets/quaternius/rifle-animations.json",
+  "./assets/quaternius/stance-kit.json",
   "./assets/quaternius/weapon-animations.json",
   "./assets/reference-scale.json",
   "./assets/scale-reference/README.md",

@@ -27,6 +27,17 @@ https://quaternius.itch.io/universal-animation-library (free download, CC0).
 `player-animations.json` records the source hash and original clip names.
 Additional animation credits: Quaternius and Gonzalo Furnier; see `ANIMATION-LICENSE.txt`.
 
+`stance-kit.json` is experimental upper-body stance data, not an activated game
+controller. `scripts/prepare-stance-kit.mjs /path/to/UAL1_Standard.glb /path/to/fbx-samples`
+bakes UAL's pistol clips and the modular characters' original `Idle_Gun` /
+`Idle_Gun_Pointing`. The optional FBX sample directory contains `ShotgunAimIdle`,
+`ShotgunAimWalk`, and `RevolverAimIdle`, each as original FBX plus sampler JSON.
+These ZenXChaos clips use the existing Unlicense grant below. Per-source SHA-256
+hashes and original names accompany the data. No finger tracks are transferred;
+the relative wrist retarget accounts for the different forearm axes and twist bones.
+The tested static G17/short-Ithaca comparison and integration limits are documented
+in `docs/WEAPON_STANCE_KIT_REVIEW.md` at the repository root.
+
 Rifle upper-body motion comes from Kay Lousberg's **KayKit Character Animations
 FREE 1.1**, https://kaylousberg.itch.io/kaykit-character-animations, CC0;
 see `KAYKIT-LICENSE.txt`. Run `node scripts/prepare-rifle-animations.mjs

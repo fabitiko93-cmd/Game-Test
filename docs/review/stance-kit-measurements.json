@@ -1,0 +1,62 @@
+[
+  {
+    "sex": "male",
+    "type": "pistol_9mm",
+    "before": {
+      "elbow": 27.839776207887738,
+      "palmAngle": 24.000010110087118
+    },
+    "after": {
+      "elbow": 14.318831019027508,
+      "palmAngle": 15.476429642322788
+    },
+    "kind": "pistol",
+    "sourceClip": "Pistol_Aim_Neutral",
+    "supportGap": 9.703284296009878e-8
+  },
+  {
+    "sex": "male",
+    "type": "ithaca_short",
+    "before": {
+      "elbow": 53.19806488313727,
+      "palmAngle": 34.084799665705795
+    },
+    "after": {
+      "elbow": 24.66099644439081,
+      "palmAngle": 7.0760538386475025
+    },
+    "kind": "oneHand",
+    "sourceClip": "Idle_Gun_Pointing",
+    "supportGap": 0
+  },
+  {
+    "sex": "female",
+    "type": "pistol_9mm",
+    "before": {
+      "elbow": 27.83990316036503,
+      "palmAngle": 23.999993075079285
+    },
+    "after": {
+      "elbow": 14.318782496132561,
+      "palmAngle": 14.515403272015003
+    },
+    "kind": "pistol",
+    "sourceClip": "Pistol_Aim_Neutral",
+    "supportGap": 4.67619522511767e-8
+  },
+  {
+    "sex": "female",
+    "type": "ithaca_short",
+    "before": {
+      "elbow": 68.736421342862,
+      "palmAngle": 44.065848073073674
+    },
+    "after": {
+      "elbow": 25.893308268272285,
+      "palmAngle": 7.502558300310093
+    },
+    "kind": "oneHand",
+    "sourceClip": "Idle_Gun_Pointing",
+    "supportGap": 0
+  }
+]

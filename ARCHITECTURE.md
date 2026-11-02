@@ -37,6 +37,13 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
 
+`kit-stance.js` und `scripts/preview-stance-kit.mjs` bilden einen isolierten,
+statischen Kit-Vergleich für G17/kurze Ithaca auf beiden Figuren. Freigegebene
+Finger-/Griffprofile bleiben getrennt von den importierten Armrotationen.
+Das Modul ist noch nicht an den Spielcontroller angeschlossen; die Importgraph-
+Prüfung in `stance-kit.test.mjs` sichert diese Grenze. Quellen, Vergleich und
+offene Nachlade-/Übergangsprobleme stehen in `docs/WEAPON_STANCE_KIT_REVIEW.md`.
+
 `one-hand-pose.js` aktiviert das modellbezogene Einhandprofil der kurzen Ithaca
 über `weapon.userData.oneHandPose`. Die Laufzeit lädt `ithaca-one-hand.json` und
 den tatsächlichen Originalschnitt aus `ithaca_short.json`. Originalbeine und

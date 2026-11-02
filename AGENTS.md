@@ -320,3 +320,11 @@ Diese Freigabe ersetzt die vorherigen Beschränkungen auf reine Vorschauen.
 Die kurze Ithaca übernimmt die zuletzt freigegebene Originalschaftkürzung,
 keinen älteren Pistolengriff. Patronenhalter speichern separate Ersatzmunition;
 Ithaca bleibt bei 2+1. Crafting/Absägen und Akimbo bleiben spätere Arbeit.
+
+Haltungsauftrag vom 02.11.2026: Bestehende Animationskits als Grundlage nutzen
+und die übermäßigen eigenen Schulter-/Armkorrekturen zurücknehmen. Die bereits
+finalisierten Finger und Handgriffe, besonders bei Pistolen, erhalten. Erste
+Prüfreferenz sind G17 und kurze Ithaca auf beiden Rigs; der Gesamtauftrag bleibt
+der Wechsel der Waffenhaltungen. Der statische Vergleich ist vorbereitet, die
+Laufzeitübernahme wegen neuer Nachlade-/Übergangsregressionen noch offen.
+Keinen bestandenen Vorschautest als abgeschlossenen Controllerwechsel ausgeben.

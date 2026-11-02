@@ -1,5 +1,5 @@
 {
-  "id": "324f53678afb02741c7f",
+  "id": "5ea40964d92d029625b3",
   "script": "build/main-KTHEFDII.js",
   "style": "build/style-47ZEQVKU.css",
   "precache": [
@@ -160,6 +160,7 @@
     "assets/quaternius/player-animations.json",
     "assets/quaternius/player-crouch-68cf13051891.glb.gz",
     "assets/quaternius/rifle-animations.json",
+    "assets/quaternius/stance-kit.json",
     "assets/quaternius/weapon-animations.json",
     "assets/reference-scale.json",
     "assets/scale-reference/README.md",
