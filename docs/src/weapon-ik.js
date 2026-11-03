@@ -8,7 +8,9 @@ export function axialAngle(rotation,axis){
 
 export function orientWorld(bone, rotation) {
   const parent = bone.parent.getWorldQuaternion(new Quaternion()).invert();
-  bone.quaternion.copy(parent.multiply(rotation)); bone.updateMatrixWorld(true);
+  // Imported bind scales have floating-point noise. Repeated contact solves
+  // must keep a unit rotation or they gradually shrink the whole arm chain.
+  bone.quaternion.copy(parent.multiply(rotation)).normalize(); bone.updateMatrixWorld(true);
 }
 
 function pointBone(bone, child, target) {

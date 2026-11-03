@@ -25,7 +25,7 @@ export class AnimationController{
       applyReloadPose(entity,player,pose.delta);
       if(reload||entity.reloadLast||entity.shotgunReload){entity.animationOwners.right='Nachladen / Rückkehr';entity.animationOwners.left='Nachladen / Rückkehr';}
       editFingers(entity);
-      alignApprovedAim(entity);
+      if(!entity.weapon?.userData.stanceKit)alignApprovedAim(entity);
       applyWeaponCycle(entity,player);
     }else if(itemDefinition(weapon)?.weaponKind==='firearm'){
       const phase=reloadPhase(reload),affected=['Torso','Chest','ShoulderL','ShoulderR','UpperArmL','UpperArmR','LowerArmL','LowerArmR','WristL','WristR'].map(n=>entity.model.getObjectByName(n)).filter(Boolean);

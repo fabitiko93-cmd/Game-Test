@@ -3,27 +3,27 @@
     "sex": "male",
     "type": "pistol_9mm",
     "before": {
-      "elbow": 27.839776207887738,
-      "palmAngle": 24.000010110087118
+      "elbow": 27.83982482644106,
+      "palmAngle": 24.00001631121646
     },
     "after": {
-      "elbow": 14.318831019027508,
-      "palmAngle": 15.476429642322788
+      "elbow": 14.318860714148393,
+      "palmAngle": 15.476413646601262
     },
     "kind": "pistol",
     "sourceClip": "Pistol_Aim_Neutral",
-    "supportGap": 9.703284296009878e-8
+    "supportGap": 4.080104790379814e-8
   },
   {
     "sex": "male",
     "type": "ithaca_short",
     "before": {
-      "elbow": 53.19806488313727,
-      "palmAngle": 34.084799665705795
+      "elbow": 53.19808390307312,
+      "palmAngle": 34.084809121851585
     },
     "after": {
-      "elbow": 24.66099644439081,
-      "palmAngle": 7.0760538386475025
+      "elbow": 24.661052854401923,
+      "palmAngle": 7.0760130138068424
     },
     "kind": "oneHand",
     "sourceClip": "Idle_Gun_Pointing",
@@ -33,27 +33,27 @@
     "sex": "female",
     "type": "pistol_9mm",
     "before": {
-      "elbow": 27.83990316036503,
-      "palmAngle": 23.999993075079285
+      "elbow": 27.839891415490293,
+      "palmAngle": 23.999993446416767
     },
     "after": {
-      "elbow": 14.318782496132561,
-      "palmAngle": 14.515403272015003
+      "elbow": 14.31878714732034,
+      "palmAngle": 14.51547654932418
     },
     "kind": "pistol",
     "sourceClip": "Pistol_Aim_Neutral",
-    "supportGap": 4.67619522511767e-8
+    "supportGap": 3.611809434456622e-8
   },
   {
     "sex": "female",
     "type": "ithaca_short",
     "before": {
-      "elbow": 68.736421342862,
-      "palmAngle": 44.065848073073674
+      "elbow": 68.73636285365264,
+      "palmAngle": 44.0658024761834
     },
     "after": {
-      "elbow": 25.893308268272285,
-      "palmAngle": 7.502558300310093
+      "elbow": 25.893307970886557,
+      "palmAngle": 7.502644232536748
     },
     "kind": "oneHand",
     "sourceClip": "Idle_Gun_Pointing",

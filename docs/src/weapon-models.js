@@ -33,6 +33,7 @@ export function configureWeaponModel(root, weapon) {
   root.userData.pistol=definition.pistol||null;
   root.userData.oneHandPose=definition.oneHandPose||null;
   root.userData.shotgun=definition.shotgun||false;
+  root.userData.stanceKit=true;
   root.userData.shellParts=definition.asset.shellParts||null;
   root.userData.anchors=Object.assign({},definition.anchors,...setups.map(setup=>setup.anchors));
   root.userData.weaponId=weapon.id;root.userData.weaponType=weapon.type;root.userData.mechanism=definition.mechanism||null;

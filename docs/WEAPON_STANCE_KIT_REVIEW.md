@@ -1,76 +1,84 @@
-# Waffenhaltungen aus vorhandenen Kits — Vergleich, noch kein Laufzeitwechsel
+# Waffenhaltungen aus vorhandenen Kits
 
-Der abgesägte Ithaca-Arm wird durch die bisherigen Ziel-/Ellenbogen-/
-Handgelenkvorgaben unnötig stark gebogen. Der neue Auftrag ersetzt diese
-Grundhaltungen durch vorhandene Kits und erhält die finalisierten Finger-/
-Griffprofile. Dieser Entwurf enthält den geprüften statischen Vergleich für
-G17 und kurze Ithaca auf beiden Originalfiguren. Der Spielcontroller ist
-unverändert; der vollständige Wechsel bleibt offen.
+Alle modellierten Schusswaffen verwenden jetzt importierte Kit-Grundhaltungen
+im gemeinsamen Spiel-/Werkstattcontroller. Die übermäßigen eigenen Schulter-,
+Augen- und Schaftsockelkorrekturen sind aus diesem Pfad entfernt. Die finalisierten
+Finger und modellbezogenen Handgriffe bleiben erhalten. Bauchglättung und
+weibliche Taille stammen weiterhin aus der bereits eingebauten Körpergeometrie.
 
-![Aktuelle Haltung links, Kit-Kandidat rechts](review/stance-kit-comparison.png)
+![Bisherige Haltung links, aktive Kit-Haltung rechts](review/stance-kit-comparison.png)
 
-## Geprüfter Teil
+## Zuordnung
 
-| Waffe | Neue Basis | Ellenbogen männlich, vorher → Kit | Weiblich, vorher → Kit |
-|---|---|---:|---:|
-| G17 | Quaternius UAL `Pistol_Aim_Neutral` | 27,8° → 14,3° | 27,8° → 14,3° |
-| Ithaca kurz | Quaternius `Idle_Gun_Pointing` | 53,2° → 24,7° | 68,7° → 25,9° |
+| Waffen | Grundhaltung |
+|---|---|
+| G17, USP, SIG Emperor Scorpion, Desert Eagle | Quaternius UAL: `Pistol_Idle_Loop`, `Pistol_Aim_Down`, `Pistol_Aim_Neutral` |
+| Revolver .44 | Quaternius `Idle_Neutral` beim Tragen, ZenXChaos `RevolverAimIdle` beim Anlegen |
+| AK, M4, Vector, Ithaca Mag-10, Benelli M4, Mossberg 590 | KayKit FREE 1.1: `Ranged_2H_Aiming`; abgesenktes Tragen aus derselben Armform |
+| Kurze Ithaca | Quaternius `Idle_Gun` / `Idle_Gun_Pointing`, einhändig mit freiem linken Arm |
 
-Die Werte messen den Winkel zwischen Ober- und Unterarm. Der ergänzende Winkel
-zwischen Unterarm und Mittelhand sinkt bei der kurzen Ithaca von 34,1°/44,1°
-auf 7,1°/7,5°. Das ist eine geometrische Diagnose, keine anatomische Messung.
-Die vollständigen Messwerte stehen in [stance-kit-measurements.json](review/stance-kit-measurements.json).
+## Vergleich der ersten Prüfreferenz
 
-Die Kandidaten verwenden die tatsächlichen geglätteten Spielkörper und die
-eingebauten Waffenmodelle. Die Hand-/Fingerquaternionen stammen unverändert
-aus `g17-grasp.json` bzw. `ithaca-one-hand.json`. Eine starre Ausrichtung des
-gesamten Waffenarms erhält die importierte Ellenbogen-/Handgelenkform. Der
-Kontaktfit betrifft die Stützhand sowie begrenzte Unterschiede der Reichweite.
+| Waffe | Ellenbogen männlich, vorher → Kit | Weiblich, vorher → Kit |
+|---|---:|---:|
+| G17 | 27,8° → 14,3° | 27,8° → 14,3° |
+| Ithaca kurz | 53,2° → 24,7° | 68,7° → 25,9° |
 
-`tests/stance-kit.test.mjs` prüft beide Figuren: identische freigegebene
-Fingerrotationen, echte Hand-/Waffenkontakte, unveränderte Beinrotationen und
-Weltpunkte, keine Armdurchdringung der verformten Körperdreiecke in der geprüften
-Zielpose sowie die tatsächliche Laufachse. Ein Importgraphtest hält das noch
-nicht integrierte Modul aus dem Player-Laufzeitpfad heraus. Die Zusicherung gilt
-für diese Zielpose, nicht für vollständige Bewegungs- oder Nachladezyklen.
+Der Winkel zwischen Unterarm und Mittelhand der kurzen Ithaca sinkt von
+34,1°/44,1° auf 7,1°/7,5°. Die Armform ist damit deutlich weniger geknickt.
+Das sind geometrische Diagnosen, keine anatomischen Messungen.
+Vollständige Werte: [stance-kit-measurements.json](review/stance-kit-measurements.json).
+
+Der Vergleich exportiert tatsächlich verformte Spieloberflächen aus dem
+gemeinsamen Controller mit identischer Kamera und Beleuchtung. Finger aus
+`g17-grasp.json` und `ithaca-one-hand.json` werden nicht aus dem Kit importiert.
+
+## Laufzeit und technische Abdeckung
+
+`kit-stance.js` überträgt Oberkörper und Arme. Der separate Wirbelsäulenursprung
+`Hips` gleicht die alte `Body`-Drehung des Bewegungsclips aus; beide Beinketten
+behalten ihre Originalbewegung. Ein starrer Schwenk richtet den Waffenarm auf
+die Spielzielrichtung aus. Die Achsennormalisierung erhält dabei die importierten
+Ellenbogen-/Handpunkte und verhindert Verdrehungen aus unterschiedlichen Rigachsen.
+
+`kit-stance-controller.js` verbindet die Grundhaltungen mit dem zuletzt tatsächlich
+erreichten Nachladebild. Kontaktfits halten die Stützhand am realen Griff und
+begrenzen gleichzeitig Rollbewegungen. Wiederholte IK-Auswertungen normalisieren
+Quaternionen, damit Rundungsfehler die Armlängen nicht verändern. Rückstoß dreht
+die Waffe am Handgelenk. Im weiblichen Schleich-Nachladen liegt der Haltepunkt
+moderner langer Flinten etwas höher, damit Ladeöffnung und Knie frei bleiben.
+
+Bestehende Nachlade-, Pump-, Auswurf- und Munitionsabläufe bleiben zuständig.
+Es gibt keine neue Absäge-, Akimbo-, Mod- oder Balancemechanik.
+
+Die technischen Prüfungen umfassen beide Rigs, originale Beinweltpunkte und
+Armlängen, freigegebene skinned Hände, echte Lauf-/Griffkontakte, Rückstoß,
+Haltungswechsel und schnelle Unterbrechungen bei 15/30/60 Hz. Die Flintenprüfung
+verfolgt vollständige Ladeschleifen, Patronenhalter und den tatsächlichen
+Einsetzpunkt. Kollisionsprüfungen verwenden die verformten Körperdreiecke.
+Werkstatt und Spiel verwenden denselben Controller; den optischen Spieltest
+übernimmt wie vereinbart der Nutzer.
 
 ## Quellen und Reproduktion
 
 - Quaternius / Gonzalo Furnier, Universal Animation Library Standard, CC0:
   https://quaternius.itch.io/universal-animation-library.
-- Quaternius Ultimate Modular Characters, vorhandene Originalclips, CC0:
+- Quaternius Ultimate Modular Characters, Originalclips, CC0:
   https://quaternius.com/packs/ultimatemodularcharacters.html.
-- Zusätzlich vorbereitete, noch nicht freigegebene Langwaffen-/Revolverclips:
-  ZenXChaos, ThirdPersonShooter-AnimationSets, Unlicense:
+- Kay Lousberg / KayKit Character Animations FREE 1.1, CC0:
+  https://kaylousberg.itch.io/kaykit-character-animations.
+- ZenXChaos, ThirdPersonShooter-AnimationSets, Unlicense:
   https://github.com/ZenXChaos/ThirdPersonShooter-AnimationSets.
 
-Die jeweiligen Originaldatei-Hashes stehen in `assets/quaternius/stance-kit.json`.
-Die vorhandenen Lizenztexte im selben Ordner gelten weiter. Das Aufbereitungsskript
-überträgt ausschließlich Oberkörperknochen, keine Finger oder Beine. Die
-Handgelenkdrehung wird relativ zum bereits übertragenen Unterarm abgebildet;
-ein direktes Kopieren der globalen Handrotation mischt die Achsen beider Rigs.
+Originaldatei-Hashes, Clipnamen und getrennte Quellen stehen in
+`assets/quaternius/stance-kit.json`; die Lizenztexte liegen daneben.
+Der FBX-Sampleordner enthält `RevolverAimIdle.fbx` und dessen Sampler-JSON.
 
 ```sh
-node scripts/prepare-stance-kit.mjs /path/to/UAL1_Standard.glb /path/to/fbx-samples
+node scripts/prepare-stance-kit.mjs /path/to/UAL1_Standard.glb /path/to/revolver-samples /path/to/Rig_Medium_CombatRanged.glb
 node scripts/preview-stance-kit.mjs /tmp/sperrkreis-kit-review
 node --test tests/stance-kit.test.mjs
+npm run build
+npm test
+npm run build:check
 ```
-
-Der Export liefert acht tatsächliche verformte Dreiecksoberflächen einschließlich
-Farben/Normalen und Messwerten. Das Vergleichsbild verwendet dieselbe Kamera und
-Beleuchtung je Vorher-/Nachher-Paar. Es ist kein generiertes Ersatzmodell.
-
-## Offener Teil des Auftrags
-
-Die erprobten direkten Controllerwechsel sind nicht übernommen. Ihre Ablaufprüfungen
-haben unter anderem Arm-/Rollsprünge nach Nachladeabbruch, unvollständige Rückkehr
-bei schnellen Haltungswechseln sowie verfehlte Patronen-/Magazinkontakte gezeigt.
-Ein bestandener statischer Griffvergleich deckt diese Fälle nicht ab.
-
-Für die Übernahme müssen die Kit-Grundposen mit den tatsächlich zuletzt erreichten
-Handrahmen verbunden werden. Nachladen, Pumpen, Auswurf, Munition und die
-freigegebenen Finger bleiben dabei erhalten. Vor einem vollständigen Wechsel sind
-die bestehenden Tests für Pistolen, Langwaffen, Flinten, Kollisionsfreiheit und
-Nachladeabbruch auf beiden Figuren sowie die Werkstattprüfung erneut zu bestehen.
-Die vorbereiteten Langwaffen-/Revolverretargets sind dafür Ausgangsdaten, kein
-Nachweis fertiger Waffenhaltungen. Es gibt keine Veröffentlichung dieses Umstiegs.

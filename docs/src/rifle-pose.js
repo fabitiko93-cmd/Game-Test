@@ -12,12 +12,14 @@ import {guideSupportMotion,transitionWeaponMotion} from './weapon-motion.js';
 import {fitAuthoredElbow,hasElbowEdit} from './elbow-pose.js';
 import {applyOneHandPose} from './one-hand-pose.js';
 import {shotgunCycle} from './shotgun-cycle.js';
+import {applyWeaponKitPose} from './kit-stance-controller.js';
 
 // The authored wrist's +Y follows the fingers; a rifle asset's +Z follows its
 // barrel. Keep the original body/leg animation and fit both arms to this grip.
 export const RIFLE_GRIP_ROTATION = new Quaternion().setFromEuler(new Euler(-Math.PI / 2, 0, Math.PI / 2));
 const inverseGrip = RIFLE_GRIP_ROTATION.clone().invert();
 function handgunArmFrame(entity){
+  if(entity.weapon.userData.stanceKit)return {};
   if(!entity.weapon.userData.grips?.handgun)return {};
   const upper=entity.rifleHands.get('UpperArmR');
   return {preserveUpperSwing:true,upperRest:entity.handgunCarry.get(upper.bone).clone().slerp(upper.rotation,1-entity.rifleBlend.carry)};
@@ -35,6 +37,12 @@ export const RIFLE_HANDS = Object.freeze({
 export function captureRifleRig(model) {
   const hands = new Map();
   model.updateMatrixWorld(true);
+  // GLB's default scene can already contain Idle_Gun_Pointing's Body yaw.
+  // The upper-body layer inherits the model frame, never that clip offset.
+  const body=model.getObjectByName('Body'),bodyRotation=body.quaternion.clone();
+  body.quaternion.identity();model.updateMatrixWorld(true);
+  hands.hipFrame=model.getWorldQuaternion(new Quaternion()).invert().multiply(model.getObjectByName('Hips').getWorldQuaternion(new Quaternion()));
+  body.quaternion.copy(bodyRotation);model.updateMatrixWorld(true);
   for (const side of ["L","R"]) for (const finger of ["Index","Middle","Ring","Pinky","Thumb"])
     for (let i=1;i<=(finger==="Thumb"?3:4);i++) {
       const bone=model.getObjectByName(`${finger}${i}${side}`);
@@ -87,6 +95,7 @@ export function applyRiflePose(entity, player, delta=1, posture=riflePosture(pla
   if ([...right, ...left].some(part => !part)) return;
   entity.rifleHands ||= captureRifleRig(model);
   restoreRiflePose(entity);
+  if(weapon.userData.stanceKit){applyWeaponKitPose(entity,player,delta,posture);return;}
   if(weapon.userData.oneHandPose){applyOneHandPose(entity,player,delta,posture);return;}
   if(weapon.userData.pistol){applyPistolPose(entity,player,delta,posture);return;}
   // Share the bounded contact fit; all passes read the previous displayed

@@ -325,6 +325,8 @@ Haltungsauftrag vom 02.11.2026: Bestehende Animationskits als Grundlage nutzen
 und die übermäßigen eigenen Schulter-/Armkorrekturen zurücknehmen. Die bereits
 finalisierten Finger und Handgriffe, besonders bei Pistolen, erhalten. Erste
 Prüfreferenz sind G17 und kurze Ithaca auf beiden Rigs; der Gesamtauftrag bleibt
-der Wechsel der Waffenhaltungen. Der statische Vergleich ist vorbereitet, die
-Laufzeitübernahme wegen neuer Nachlade-/Übergangsregressionen noch offen.
-Keinen bestandenen Vorschautest als abgeschlossenen Controllerwechsel ausgeben.
+der Wechsel der Waffenhaltungen. `kit-stance.js` ist jetzt die gemeinsame
+Laufzeitgrundlage; `kit-stance-controller.js` verbindet Kit und tatsächlich
+erreichte Nachlade-/Rückkehrrahmen. Finger-/Griffprofile getrennt erhalten.
+Keinen bestandenen Vorschautest als Nachweis vollständiger Bewegungszyklen ausgeben;
+Nachladen, Abbruch, Rückstoß, Körperfreiheit und Originalbeine weiterhin prüfen.

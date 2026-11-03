@@ -84,7 +84,8 @@ export function applyShotgunReload(e,player,delta){
  const baseHand=e.model.getObjectByName('WristL').getWorldQuaternion(new Quaternion()),before=fingers(e);
  const reachedElbow=at(e,'LowerArmL');
  const short=Boolean(weapon.userData.oneHandPose),female=e.modelSex==='female';
- const hold=short?[.04,-.12,.46]:female?[.12,-.1,item.type==='ithaca_mag10'?.24:.36]:[0,-.1,.36];
+ const raised=weapon.userData.stanceKit&&female&&player.stance==='sneak'&&item.type!=='ithaca_mag10';
+ const hold=short?[.04,-.12,.46]:female?[.12,raised?-.02:-.1,item.type==='ithaca_mag10'?.24:.36]:[0,-.1,.36];
  const turn=short?[.1,0,0]:female&&item.type==='ithaca_mag10'?[-.2,0,-.5]:[-.2,0,-1];
  const shoulder=root.worldToLocal(at(e,'UpperArmR')),goal=root.localToWorld(shoulder.add(v(hold))),rotation=yaw.clone().multiply(new Quaternion().setFromEuler(new Euler(...turn,'YXZ')));
  poseHand(e,'L','pinch');for(const[b,q]of before)b.quaternion.copy(q.clone().slerp(b.quaternion,leftWeight));

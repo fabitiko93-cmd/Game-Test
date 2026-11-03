@@ -8,6 +8,7 @@ import {fitPistolSupportContact,PISTOL_SUPPORT_ROTATION} from './pistol-pose.js'
 import {rememberWeaponMotion} from './weapon-motion.js';
 import {hasApprovedGrip,poseApprovedHand} from './g17-grasp.js';
 import {applyShotgunReload} from './shotgun-reload-pose.js';
+import {rememberKitAction} from './kit-stance-controller.js';
 
 const ease=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
 
@@ -101,8 +102,8 @@ function finishInterrupted(entity,delta){
   entity.root.updateMatrixWorld(true);
 }
 export function applyReloadPose(entity,player,delta=1/60){
-  if(entity.weapon?.userData.shotgun){applyShotgunReload(entity,player,delta);rememberWeaponMotion(entity);return;}
-  evaluateReloadPose(entity,player,delta);rememberWeaponMotion(entity);
+  if(entity.weapon?.userData.shotgun){applyShotgunReload(entity,player,delta);rememberWeaponMotion(entity);rememberKitAction(entity);return;}
+  evaluateReloadPose(entity,player,delta);rememberWeaponMotion(entity);rememberKitAction(entity);
 }
 function evaluateReloadPose(entity,player,delta){
   const state=player.combat?.reload,weapon=entity.weapon;

@@ -5,7 +5,7 @@ const at=(e,n)=>e.model.getObjectByName(n).getWorldPosition(new Vector3());
 // Body volumes follow the original leg/spine animation. Radii include room
 // for the hand/forearm; only procedural arm targets move, never the body.
 export function armObstacles(e){
- const scale=e.root.scale.x,pivot=at(e,'Hips'),undo=hasApprovedGrip(e)?approvedAimTurn(e).invert():null;
+ const scale=e.root.scale.x,pivot=at(e,'Hips'),undo=hasApprovedGrip(e)&&!e.weapon?.userData.stanceKit?approvedAimTurn(e).invert():null;
  const obstaclePoint=(name,leg)=>{const p=at(e,name);return leg&&undo?p.sub(pivot).applyQuaternion(undo).add(pivot):p;};
  return [
   ['Hips','Torso',.15],['Torso','Chest',.15],
@@ -93,6 +93,6 @@ export function clearForearm(e,start,goal,bend,a,b,obstacles,delta=1,side='L'){
   if(shift.lengthSq()<1e-10)break;
   direction.copy(elbow.add(shift).sub(center));direction.addScaledVector(axis,-direction.dot(axis)).normalize();
  }
- const turn=Math.atan2(axis.dot(bend.clone().cross(direction)),bend.dot(direction)),step=Math.max(0,delta)*6;
+ const turn=Math.atan2(axis.dot(bend.clone().cross(direction)),bend.dot(direction)),step=Math.max(0,delta)*(e.weapon?.userData.stanceKit?9:6);
  return bend.clone().applyAxisAngle(axis,Math.max(-step,Math.min(step,turn)));
 }

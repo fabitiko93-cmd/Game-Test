@@ -35,7 +35,7 @@ export function editTarget(entity,channel,point,rotation=null,stage='base'){
   // Editor values use the displayed facing frame. G17 solves in its authored
   // review frame and aligns the complete spine afterward, so map user edits
   // back into that frame before solving; final handles remain in world space.
-  const turn=hasApprovedGrip(entity)?approvedAimTurn(entity):null,inverse=turn?.clone().invert();
+  const turn=hasApprovedGrip(entity)&&!entity.weapon?.userData.stanceKit?approvedAimTurn(entity):null,inverse=turn?.clone().invert();
   entity.animationTargetBases||={};entity.animationTargetBases[channel]=point.clone();
   if(channel==='support'){
     const contact=entity.animationEdits.contactL[0];

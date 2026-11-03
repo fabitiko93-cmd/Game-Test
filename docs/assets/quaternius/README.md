@@ -27,16 +27,20 @@ https://quaternius.itch.io/universal-animation-library (free download, CC0).
 `player-animations.json` records the source hash and original clip names.
 Additional animation credits: Quaternius and Gonzalo Furnier; see `ANIMATION-LICENSE.txt`.
 
-`stance-kit.json` is experimental upper-body stance data, not an activated game
-controller. `scripts/prepare-stance-kit.mjs /path/to/UAL1_Standard.glb /path/to/fbx-samples`
-bakes UAL's pistol clips and the modular characters' original `Idle_Gun` /
-`Idle_Gun_Pointing`. The optional FBX sample directory contains `ShotgunAimIdle`,
-`ShotgunAimWalk`, and `RevolverAimIdle`, each as original FBX plus sampler JSON.
-These ZenXChaos clips use the existing Unlicense grant below. Per-source SHA-256
-hashes and original names accompany the data. No finger tracks are transferred;
-the relative wrist retarget accounts for the different forearm axes and twist bones.
-The tested static G17/short-Ithaca comparison and integration limits are documented
-in `docs/WEAPON_STANCE_KIT_REVIEW.md` at the repository root.
+`stance-kit.json` supplies the active upper-body stances for all modeled firearms.
+Run `node scripts/prepare-stance-kit.mjs /path/to/UAL1_Standard.glb
+/path/to/revolver-samples /path/to/Rig_Medium_CombatRanged.glb` to regenerate it.
+The middle directory contains the original ZenXChaos `RevolverAimIdle.fbx` and
+its sampler JSON; the third input is KayKit FREE 1.1's CombatRanged GLB.
+UAL supplies pistol carry/hip/aim, the modular characters supply the short
+Ithaca's original `Idle_Gun` / `Idle_Gun_Pointing`, KayKit supplies long guns,
+and ZenXChaos supplies revolver aim; its carry uses native `Idle_Neutral`. Each source retains its own provenance,
+SHA-256 and license. Only upper-body tracks are retargeted; finalized finger
+and grasp profiles and original locomotion legs remain separate runtime inputs.
+The relative wrist retarget accounts for different forearm axes and twist bones.
+`kit-stance-controller.js` handles continuous transitions and reached action
+history, while existing reload/cycle modules keep gameplay events and contacts.
+The actual-controller comparison is documented in `docs/WEAPON_STANCE_KIT_REVIEW.md`.
 
 Rifle upper-body motion comes from Kay Lousberg's **KayKit Character Animations
 FREE 1.1**, https://kaylousberg.itch.io/kaykit-character-animations, CC0;

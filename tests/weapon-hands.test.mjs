@@ -86,6 +86,7 @@ test('the equipment preview uses the original relaxed revolver arm from every si
    inspection.draw({getBoundingClientRect:()=>({width:440,height:370})},f.player,yaw);
    const e=inspection.entity;assert.equal(e.clip,'Idle_Neutral');assert.ok(e.backpack);
    for(const[b,q]of e.handgunCarry)assert.ok(b.quaternion.clone().normalize().angleTo(q.clone().normalize())<1e-6,'relaxed arm preserves its authored joint rotations');
+   assert.equal(e.kitStance.sourceClip,'Idle_Neutral');
    assert.ok(rolls(e,'R')[0]<3,'no twisted forearm hidden behind a straight wrist');
    const axis=new Vector3(0,0,1).applyQuaternion(e.weapon.getWorldQuaternion(new Quaternion()));assert.ok(axis.y<-.95);
   }

@@ -6,7 +6,7 @@ import {g17Fixture} from './helpers/g17-fixture.mjs';
 import {G17_GRASP} from '../docs/src/g17-grasp.js';
 import {emptyAnimation,emptyValues,putPose} from '../docs/src/animation-document.js';
 
-test('runtime G17 reproduces the approved review-10 shoulder and both actual skinned hands',async()=>{
+test('runtime G17 retains both approved skinned hands while the kit owns the shoulder',async()=>{
   const reference=JSON.parse(await readFile(new URL('./fixtures/g17-approved-review10.json',import.meta.url),'utf8'));
   const f=await g17Fixture(),e=f.entity;
   e.root.updateMatrixWorld(true);let mesh;e.root.traverseVisible(m=>{if(m.name===reference.mesh)mesh=m;});assert.ok(mesh);mesh.skeleton.update();
@@ -15,20 +15,12 @@ test('runtime G17 reproduces the approved review-10 shoulder and both actual ski
   // shoulder surfaces must retain every measured review point exactly.
   const world=Array.from({length:mesh.geometry.attributes.position.count},(_,i)=>mesh.getVertexPosition(i,new Vector3()).applyMatrix4(mesh.matrixWorld));
   const handPoints=world.map(p=>e.weapon.worldToLocal(p.clone()).multiply(e.weapon.getWorldScale(new Vector3())));
-  const shoulderPoints=world.map(p=>p.clone().sub(head).divideScalar(e.root.scale.x).applyAxisAngle(new Vector3(0,1,0),G17_GRASP.weaponYaw));
   for(const [id,expected]of Object.entries(reference.handVertices)){
     assert.ok(handPoints.some(p=>p.distanceTo(new Vector3(...expected))<2e-6),'approved skinned hand vertex '+id);
   }
-  for(const [id,expected]of Object.entries(reference.shoulderVertices)){
-    const bind=reference.shoulderBindVertices[id];
-    // The source's ShoulderR weights extend into the abdomen. That surface
-    // is intentionally rebuilt; actual shoulders, chest and arms stay exact.
-    if(bind[1]<1.361&&Math.abs(bind[0])<.19)continue;
-    // Compare shape in the authored review frame, independently of the
-    // upper body's world heading used to point the barrel at the game target.
-    const target=new Vector3(...expected).add(new Vector3(...(reference.shoulderAimCorrections[id]||[0,0,0])));
-    assert.ok(shoulderPoints.some(p=>p.distanceTo(target)<2e-6),'approved shoulder volume vertex '+id);
-  }
+  // The later kit mandate explicitly replaces the old shoulder reference.
+  // Keep the independent hand surface reference and actual muzzle direction.
+  assert.equal(e.kitStance.sourceClip,'Pistol_Aim_Neutral');
   const gun=e.weapon.getWorldQuaternion(new Quaternion()).normalize();
   assert.ok(gun.angleTo(new Quaternion())<1e-6,'approved pose is aligned with the actual target');
   f.replay.dispose();

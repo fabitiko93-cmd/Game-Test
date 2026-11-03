@@ -85,6 +85,7 @@ export class PlayerModels {
     entity.animationEvaluationKey=null;
     entity.reloadLast=null;entity.supportElbow=null;entity.supportTwist=null;entity.handgunCrouchBlend=null;entity.handgunCrouchHold=0;
     entity.weaponMotion=null;entity.handgunUpperRest=null;entity.handgunRecoil=false;
+    entity.kitPose=null;entity.kitBasePose=null;entity.kitStance=null;entity.kitTransition=null;entity.kitReturning=false;entity.kitReturnElapsed=0;
     entity.oneHandMotion=null;entity.oneHandCrouch=null;entity.oneHandTrigger=null;
     entity.shotgunReload=null;entity.shotgunSupportPose=null;
     entity.pistolCrouch=null;entity.pistolCrouchHold=0;entity.pistolWeaponPose=null;entity.pistolSupportPose=null;entity.pistolBodyPose=null;entity.pistolContactPole=null;entity.pistolReloadPose=null;
