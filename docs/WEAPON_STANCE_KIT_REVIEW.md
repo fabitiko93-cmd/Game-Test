@@ -17,6 +17,14 @@ weibliche Taille stammen weiterhin aus der bereits eingebauten Körpergeometrie.
 | AK, M4, Vector, Ithaca Mag-10, Benelli M4, Mossberg 590 | KayKit FREE 1.1: `Ranged_2H_Aiming`; abgesenktes Tragen aus derselben Armform |
 | Kurze Ithaca | Quaternius `Idle_Gun` / `Idle_Gun_Pointing`, einhändig mit freiem linken Arm |
 
+Die Laufzeit entnimmt den Clips feste Grundposen. Zeitliche Übergänge,
+Rückstoß und die bestehenden Nachladebewegungen werden damit verbunden;
+die importierten Clips ersetzen diese Aktionen nicht vollständig. Die
+Spielzielrichtung bleibt verbindlich. Die alte G17-Schulterreferenz,
+Augen-/Visierlinienzwänge und erzwungener Schaftkontakt gehören nicht mehr
+zur neuen Haltung. Im Schleichstillstand verwenden Pistolen und Langwaffen
+eine angehobene Bereitschaft; der Revolver bleibt abgesenkt und einhändig.
+
 ## Vergleich der ersten Prüfreferenz
 
 | Waffe | Ellenbogen männlich, vorher → Kit | Weiblich, vorher → Kit |
@@ -48,6 +56,12 @@ Quaternionen, damit Rundungsfehler die Armlängen nicht verändern. Rückstoß d
 die Waffe am Handgelenk. Im weiblichen Schleich-Nachladen liegt der Haltepunkt
 moderner langer Flinten etwas höher, damit Ladeöffnung und Knie frei bleiben.
 
+Beim geduckten Revolver hält eine begrenzte Körperfreihaltung die freie Hand
+neben dem angewinkelten Bein. In Hüfthaltung wird die Waffe bei Bedarf mit
+beiden Griffkontakten gemeinsam über den Beinkorridor angehoben. Finger,
+Armlängen und die originale Beinbewegung bleiben erhalten. Explizite
+Werkstattziele haben weiterhin Vorrang vor der automatischen Hüftkorrektur.
+
 Bestehende Nachlade-, Pump-, Auswurf- und Munitionsabläufe bleiben zuständig.
 Es gibt keine neue Absäge-, Akimbo-, Mod- oder Balancemechanik.
 
@@ -56,6 +70,19 @@ Armlängen, freigegebene skinned Hände, echte Lauf-/Griffkontakte, Rückstoß,
 Haltungswechsel und schnelle Unterbrechungen bei 15/30/60 Hz. Die Flintenprüfung
 verfolgt vollständige Ladeschleifen, Patronenhalter und den tatsächlichen
 Einsetzpunkt. Kollisionsprüfungen verwenden die verformten Körperdreiecke.
+Der freie linke Tragearm behält über das vollständige Lösen des Griffs
+seine Bewegungsreferenz; die Griffbindung wird erst nach tatsächlicher
+Ankunft der Hand aktiviert. 36 zusätzliche geduckte Haltungswechsel
+werden bei 15/30/60 Hz auf Körperfreiheit und kurze, kontinuierliche
+Gelenk-/Handwege geprüft.
+
+Eine zusätzliche Matrix prüft alle zwölf Waffen auf beiden Rigs in Trage-,
+Hüft- und Zielhaltung, stehend und geduckt, an zwei Clipphasen und in zwei
+Ausrichtungen: insgesamt 576 Posen samt Körperfreiheit, Beinweltpunkten,
+Armlängen und tatsächlicher Mündungsrichtung beim Anlegen. Der Test des
+erzeugten Builds lädt Figuren und Waffen vollständig über echtes HTTP unter
+Root- und Unterpfad-Hosting; getrennte Testverbindungen verhindern das
+Wiederverwenden abgelaufener lokaler Keep-alive-Sockets bei hoher CPU-Last.
 Werkstatt und Spiel verwenden denselben Controller; den optischen Spieltest
 übernimmt wie vereinbart der Nutzer.
 

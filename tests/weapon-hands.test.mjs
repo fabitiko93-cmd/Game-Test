@@ -99,14 +99,16 @@ test('stationary crouched revolvers stay one-handed in front of the body with a 
   for(const yaw of [0,Math.PI/2,Math.PI,-Math.PI/2])for(const progress of [0,.25,.5,.75]){
    models.pose(f.entity,{clip:'Crouch_Idle',progress,delta:1,yaw});
    const legs=['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].map(n=>pos(f,n));
-   const free=['ShoulderL','UpperArmL','LowerArmL','WristL'].map(n=>f.entity.model.getObjectByName(n)).map(b=>[b,b.quaternion.clone()]);
+   const free=[...f.entity.rifleHands].filter(([name])=>/^(Index|Middle|Ring|Pinky|Thumb).*L$/.test(name)).map(([,entry])=>[entry.bone,entry.bone.quaternion.clone()]);
    assert.equal(riflePosture(f.player),'carry');applyRiflePose(f.entity,f.player,1);
    const local=n=>f.entity.root.worldToLocal(pos(f,n)),wrist=local('WristR'),shoulder=local('UpperArmR');
    assert.ok(wrist.z>shoulder.z+.12,`${sex} ${barrel}: firing hand stays in front of the shoulder`);
    const axis=new Vector3(0,0,1).applyQuaternion(f.entity.weapon.getWorldQuaternion(new Quaternion())).applyQuaternion(f.entity.root.getWorldQuaternion(new Quaternion()).invert());
    assert.ok(axis.z>.6&&axis.y<-.6,'barrel points forward/down instead of behind the body');
    assert.ok(bends(f)[1]<78);const[fore,roll]=rolls(f.entity,'R');assert.ok(fore<60.01&&roll<30,`${sex}: forearm/wrist roll ${fore}/${roll}`);
-   for(const[b,q]of free)assert.ok(b.quaternion.clone().normalize().angleTo(q.normalize())<1e-6,'left arm remains free');
+   for(const[b,q]of free)assert.ok(b.quaternion.clone().normalize().angleTo(q.normalize())<1e-6,'free left fingers retain their original pose');
+   const support=f.entity.weapon.localToWorld(new Vector3(...f.entity.weapon.userData.grips.left));
+   assert.ok(pos(f,'Middle2L').distanceTo(support)>.08,'free left hand does not join the revolver grip');
    ['UpperLegL','LowerLegL','UpperLegR','LowerLegR'].forEach((n,i)=>assert.ok(pos(f,n).distanceTo(legs[i])<1e-7));
   }
  }

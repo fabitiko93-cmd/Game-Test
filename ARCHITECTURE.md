@@ -45,6 +45,8 @@ tatsächlich erreichten Aktionsrahmen; Nachlade-/Schussmechanik bleibt in ihren
 bestehenden Modulen. Der separate Wirbelsäulenursprung `Hips` gleicht die
 `Body`-Rotation des Bewegungsclips aus, ohne dessen Beine zu verändern. Keine
 zusätzliche Augen-/Schaftsockel-Ausrichtung verformt den importierten Waffenarm.
+Die geduckte Revolverhaltung hält die freie Hand neben dem Knie; nötige
+Höhenkorrekturen in Hüfthaltung verschieben beide Griffkontakte gemeinsam.
 `scripts/preview-stance-kit.mjs` exportiert denselben Spielcontroller.
 Quellen und Vergleich stehen in `docs/WEAPON_STANCE_KIT_REVIEW.md`.
 

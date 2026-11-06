@@ -106,7 +106,7 @@ function fitHandBase(entity,side,target,rotation,pole,maxBend,contact=null,delta
   if(previous&&delta<.5&&!(side==='R'&&entity.handgunRecoil))hand.copy(yaw.clone().multiply(previous.hand).rotateTowards(hand,Math.max(0,delta)*5));
   const a=start.distanceTo(point(entity,'LowerArm'+side)),b=point(entity,'LowerArm'+side).distanceTo(point(entity,'Wrist'+side));
   const manual=entity.animationDirectEdit||hasElbowEdit(entity,side)||entity.animationEdits?.support?.some(Boolean)||entity.animationEdits?.contactL?.some(Boolean);
-  const obstacles=!manual&&(side==='L'&&(entity.weapon.userData.pistol||entity.weapon.userData.shotgun)||side==='R'&&entity.weapon.userData.shotgun&&entity.shotgunReload)?armObstacles(entity):null;
+  const obstacles=!manual&&(side==='L'&&(entity.weapon.userData.pistol||entity.weapon.userData.shotgun||entity.pistolAvoidBody)||side==='R'&&entity.weapon.userData.shotgun&&entity.shotgunReload)?armObstacles(entity,entity.pistolAvoidBody ? .02 : 0):null;
   const inverseHand=bone(entity,'Wrist'+side).getWorldQuaternion(new Quaternion()).invert();
   const handPoints=obstacles?['Middle2','Middle4','Index4','Pinky4'].map(n=>point(entity,n+side).sub(point(entity,'Wrist'+side)).applyQuaternion(inverseHand)):[];
   const shotgunLoading=entity.weapon.userData.shotgun&&(entity.animationEditingReload||entity.shotgunReload);
@@ -240,8 +240,8 @@ export function fitPistolSupportContact(entity,palm,rotation,contact='Middle2',o
   palm=frontPoint(entity,palm,options.clearance??1);
   if(options.delta!==undefined&&!options.pinned){
     let wrist=contactWrist(entity,'L',palm,hand,contact);
-    if(entity.weapon.userData.pistol||entity.weapon.userData.shotgun)wrist=routeSupportWrist(entity,outsideBody(entity,wrist));
-    const target=guide(entity,options.key||'pistolContactPose','L',wrist,hand,options.delta);
+    if(entity.weapon.userData.pistol||entity.weapon.userData.shotgun||options.avoidBody){const obstacles=armObstacles(entity,options.avoidBody ? .02 : 0);wrist=routeSupportWrist(entity,outsideBody(entity,wrist,undefined,obstacles),obstacles);}
+    const target=guide(entity,options.key||'pistolContactPose','L',wrist,hand,options.delta,options.avoidBody);
     hand.copy(target.rotation);palm=target.point.sub(contactWrist(entity,'L',v(),hand,contact));
   }
   const editedPole=options.stage==='reload'&&entity.animationEdits?.elbowL.some(Boolean);
@@ -249,8 +249,8 @@ export function fitPistolSupportContact(entity,palm,rotation,contact='Middle2',o
   if(options.stage==='reload'&&entity.weapon.userData.pistol&&!editedPole)pole.lerp(entity.root.localToWorld(shoulder.clone().add(v(.20,.20,.25))),entity.pistolCrouch||0);
   if(options.stage==='reload')editTarget(entity,'elbowL',pole,null,'reload');
   const maxBend=options.maxBend??48;
-  const pinned=entity.pistolPinnedContact;entity.pistolPinnedContact=Boolean(options.pinned);
-  try{fitHand(entity,'L',palm,hand,pole,maxBend,contact,options.delta??entity.pistolStep??1);}finally{entity.pistolPinnedContact=pinned;}
+  const pinned=entity.pistolPinnedContact,avoid=entity.pistolAvoidBody;entity.pistolPinnedContact=Boolean(options.pinned);entity.pistolAvoidBody=Boolean(options.avoidBody);
+  try{fitHand(entity,'L',palm,hand,pole,maxBend,contact,options.delta??entity.pistolStep??1);}finally{entity.pistolPinnedContact=pinned;entity.pistolAvoidBody=avoid;}
   entity.pistolContactPole=entity.root.worldToLocal(point(entity,'LowerArmL'));
   return bone(entity,'WristL').getWorldQuaternion(new Quaternion());
 }
@@ -267,14 +267,14 @@ function frontPoint(entity,palm,amount){
 // Follow a hand target relative to its shoulder. Joint-space crossfades between
 // different clavicle frames can lift the hand over the head even though both
 // endpoints are sound. A target path also survives interrupted transitions.
-function guide(entity,key,side,pointTarget,rotation,delta){
+function guide(entity,key,side,pointTarget,rotation,delta,avoidBody=false){
   const root=entity.root,yaw=root.getWorldQuaternion(new Quaternion()),anchor=root.worldToLocal(point(entity,'UpperArm'+side));
   let wanted=pointTarget;
-  const reached=side==='L'&&entity.weapon.userData.pistol?entity.pistolPreviousFit?.L:null;
+  const reached=side==='L'&&(entity.weapon.userData.pistol||avoidBody)?entity.pistolPreviousFit?.L:null;
   const previous=reached?{offset:reached.offset.clone().divideScalar(root.scale.x),rotation:reached.hand}:entity[key];
-  if(previous&&delta<.5&&!entity.animationDirectEdit&&side==='L'&&entity.weapon.userData.pistol){
+  if(previous&&delta<.5&&!entity.animationDirectEdit&&side==='L'&&(entity.weapon.userData.pistol||avoidBody)){
     const from=root.localToWorld(anchor.clone().add(previous.offset));
-    wanted=routeSupportStep(entity,from,pointTarget);
+    wanted=routeSupportStep(entity,from,pointTarget,avoidBody ? .02 : 0);
   }
   const offset=root.worldToLocal(wanted.clone()).sub(anchor),q=yaw.clone().invert().multiply(rotation);
   if(previous&&delta<.5&&!entity.animationDirectEdit){

@@ -53,6 +53,10 @@ try {
   const createItem=exported('createItem'),addItem=exported('addItem'),equipItem=exported('equipItem');
   const requests=[];
   const server=createServer(async(request,response)=>{
+    // CPU-heavy rig evaluation can outlive Node's idle keep-alive window.
+    // Each fixture fetch gets its own connection, so the next hosting prefix
+    // cannot reuse a socket that the local server has just expired.
+    response.setHeader('Connection','close');
     const pathname=new URL(request.url,'http://localhost').pathname;requests.push(pathname);
     const relative=pathname.replace(/^\/Game-Test\//,'/').slice(1);
     if(!changed.precache.includes(relative)){response.writeHead(404);response.end();return;}
@@ -63,10 +67,12 @@ try {
   try{
     for(const prefix of ['/','/Game-Test/']){
       globalThis.document={baseURI:`http://127.0.0.1:${server.address().port}${prefix}`};
-      const assets=new QuaterniusAssets({loadAsset}),models=new Models({},assets);await models.ready;
+      const assets=new QuaterniusAssets({loadAsset}),models=new Models({},assets);
+      assert.ok((await models.ready).every(Boolean),`${prefix}: all emitted character assets load over HTTP`);
       for(const sex of ['male','female'])for(const type of WEAPON_TYPES){
         const player=createPlayer({appearance:{sex}}),item=createItem(type,1,{loadedRounds:3,rounds:3});
-        addItem(player,item);equipItem(player,item.id);await models.weapons.request(type);
+        addItem(player,item);equipItem(player,item.id);
+        assert.ok(await models.weapons.request(type),`${prefix} ${type}: emitted weapon asset loads over HTTP`);
         player.combat.enabled=true;player.combat.targetId='build-test';player.combat.aim=1;
         const entity=models.prepare(player,1);assert.ok(entity?.weapon,`${prefix} ${sex} ${type}: emitted build attaches the original weapon`);
         assert.equal(entity.animationOwners.right,'Waffenhaltung');

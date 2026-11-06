@@ -4,14 +4,14 @@ import {approvedAimTurn,hasApprovedGrip} from './g17-grasp.js';
 const at=(e,n)=>e.model.getObjectByName(n).getWorldPosition(new Vector3());
 // Body volumes follow the original leg/spine animation. Radii include room
 // for the hand/forearm; only procedural arm targets move, never the body.
-export function armObstacles(e){
+export function armObstacles(e,margin=0){
  const scale=e.root.scale.x,pivot=at(e,'Hips'),undo=hasApprovedGrip(e)&&!e.weapon?.userData.stanceKit?approvedAimTurn(e).invert():null;
  const obstaclePoint=(name,leg)=>{const p=at(e,name);return leg&&undo?p.sub(pivot).applyQuaternion(undo).add(pivot):p;};
  return [
   ['Hips','Torso',.15],['Torso','Chest',.15],
   ['UpperLegL','LowerLegL',.15],['UpperLegR','LowerLegR',.15],
   ['LowerLegL','FootL',.12],['LowerLegR','FootR',.12],
- ].map(([a,b,r])=>{const leg=a.includes('Leg');return {a:obstaclePoint(a,leg),b:obstaclePoint(b,leg),radius:r*scale,leg};});
+ ].map(([a,b,r])=>{const leg=a.includes('Leg');return {a:obstaclePoint(a,leg),b:obstaclePoint(b,leg),radius:(r+margin)*scale,leg};});
 }
 export function outsideBody(e,point,offsets=[new Vector3()],obstacles=armObstacles(e),side='L'){
  const result=point.clone();
@@ -63,8 +63,8 @@ function segmentDistance(a,b,c,d){
  return w.addScaledVector(u,s).addScaledVector(v,-t).length();
 }
 
-export function routeSupportStep(e,from,to){
- const legs=armObstacles(e).filter(o=>o.leg);
+export function routeSupportStep(e,from,to,margin=0){
+ const legs=armObstacles(e,margin).filter(o=>o.leg);
  const blocked=(a,b)=>legs.some(o=>segmentDistance(a,b,o.a,o.b)<o.radius-.0005);
  if(!blocked(from,to))return to;
  const height=Math.max(from.y,to.y,...legs.map(o=>Math.max(o.a.y,o.b.y)+o.radius))+.015*e.root.scale.x;

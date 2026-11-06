@@ -7,7 +7,7 @@ import {applyKitStance,sampleKitStance,STANCE_KIT} from '../docs/src/kit-stance.
 import G17 from '../docs/assets/weapons/g17-grasp.json' with {type:'json'};
 import ITHACA from '../docs/assets/weapons/ithaca-one-hand.json' with {type:'json'};
 import {readFile} from 'node:fs/promises';
-import {emptyAnimation,emptyValues,putPose} from '../docs/src/animation-document.js';
+import {emptyAnimation,emptyValues,putPose,WEAPON_TYPES} from '../docs/src/animation-document.js';
 const at=(e,n)=>e.model.getObjectByName(n).getWorldPosition(new Vector3());
 test('the active kits carry original clip provenance and leave fingers out of the stance data',()=>{
  assert.equal(STANCE_KIT.sources.pistol.license,'CC0-1.0');assert.match(STANCE_KIT.sources.pistol.sha256,/^[a-f0-9]{64}$/);
@@ -16,10 +16,48 @@ test('the active kits carry original clip provenance and leave fingers out of th
  assert.ok(STANCE_KIT.bones.every(n=>!/Index|Middle|Ring|Pinky|Thumb/.test(n)));
  for(const sex of ['male','female']){assert.equal(STANCE_KIT.rigs[sex].pistol.aim.sourceClip,'Pistol_Aim_Neutral');assert.equal(STANCE_KIT.rigs[sex].oneHand.aim.sourceClip,'Idle_Gun_Pointing');}
 });
+
+test('all twelve kit weapons clear both bodies in carry, hip and aim without changing the source legs or arm lengths',async()=>{
+ const legs=['UpperLegL','LowerLegL','FootL','UpperLegR','LowerLegR','FootR'];
+ const lengths=e=>['L','R'].flatMap(s=>[at(e,'UpperArm'+s).distanceTo(at(e,'LowerArm'+s)),at(e,'LowerArm'+s).distanceTo(at(e,'Wrist'+s))]);
+ for(const sex of ['male','female'])for(const type of WEAPON_TYPES)for(const movement of ['idle','crouch'])for(const posture of ['carry','hip','aim']){
+  const f=await weaponFixture({sex,type,movement,track:posture}),e=f.entity,probe=bodyIntersections(e);
+  try{
+   for(const progress of [0,.5])for(const yaw of [0,.7]){
+    const tag=`${sex} ${type} ${movement} ${posture} ${progress} ${yaw}`;
+    f.models.pose(e,{clip:movement==='crouch'?'Crouch_Idle':'Idle_Gun_Pointing',progress,delta:1,yaw});
+    const before=legs.map(n=>at(e,n)),arms=lengths(e);
+    f.models.controller.evaluate(e,f.player,{delta:1},posture);
+    assert.deepEqual(probe(),[],tag+': arms and fingers clear the deformed body');
+    legs.forEach((n,i)=>assert.ok(at(e,n).distanceTo(before[i])<1e-7,tag+': original '+n));
+    lengths(e).forEach((n,i)=>assert.ok(Math.abs(n-arms[i])<1e-7,tag+': unchanged arm length'));
+    for(const side of ['L','R'])for(const name of ['UpperArm','LowerArm','Wrist'])assert.ok(Math.abs(e.model.getObjectByName(name+side).quaternion.length()-1)<1e-6,tag+': normalized '+name+side);
+    if(posture==='aim')assert.ok(new Vector3(0,0,1).applyQuaternion(e.weapon.getWorldQuaternion(new Quaternion())).dot(new Vector3(Math.sin(yaw),0,Math.cos(yaw)))>.999999,tag+': actual muzzle heading');
+   }
+  }finally{f.replay.dispose();}
+ }
+});
 test('the player controller uses the shared kit evaluator',async()=>{
  const pending=[new URL('../docs/src/player-models.js',import.meta.url)],seen=new Set();
  while(pending.length){const url=pending.pop();if(seen.has(url.href))continue;seen.add(url.href);const source=await readFile(url,'utf8');for(const m of source.matchAll(/(?:from\s*|import\s*)['"](\.[^'"]+\.js)['"]/g))pending.push(new URL(m[1],url));}
  assert.ok([...seen].some(n=>n.endsWith('/kit-stance.js')),'actual player runtime uses the reviewed evaluator');
+});
+test('crouched revolver transitions keep both arm paths clear and continuous at 15/30/60 Hz',async()=>{
+ const names=['UpperArmL','LowerArmL','WristL','UpperArmR','LowerArmR','WristR'];
+ for(const sex of ['male','female'])for(const movement of ['crouch','crouchWalk'])for(const track of ['toAim','toCarry','toHip'])for(const fps of [15,30,60]){
+  const f=await weaponFixture({sex,type:'revolver_44',movement,track,fps}),e=f.entity,probe=bodyIntersections(e);
+  let previous=names.map(n=>e.model.getObjectByName(n).quaternion.clone()),wrists=['L','R'].map(s=>at(e,'Wrist'+s));
+  try{
+   for(let i=0;i<Math.ceil((f.replay.duration+.6)*fps);i++){
+    f.replay.step(1/fps);const tag=`${sex} ${movement} ${track} ${fps} frame ${i}`;
+    assert.deepEqual(probe(),[],tag+': limbs clear the deformed body');
+    const now=names.map(n=>e.model.getObjectByName(n).quaternion.clone()),points=['L','R'].map(s=>at(e,'Wrist'+s));
+    now.forEach((q,j)=>assert.ok(q.angleTo(previous[j])<36/fps+.01,tag+': short '+names[j]+' rotation'));
+    points.forEach((p,j)=>assert.ok(p.distanceTo(wrists[j])<4/fps+.004,tag+': continuous hand path'));
+    previous=now;wrists=points;
+   }
+  }finally{f.replay.dispose();}
+ }
 });
 test('steady authored chest and head edits remain stable across repeated runtime frames and editor draws',async()=>{
  for(const sex of ['male','female']){

@@ -8,6 +8,7 @@ import {fitArm,orientWorld} from './weapon-ik.js';
 import {editTarget,editBone} from './animation-targets.js';
 import {fitAuthoredElbow,hasElbowEdit} from './elbow-pose.js';
 import {guideSupportMotion} from './weapon-motion.js';
+import {armObstacles,outsideBody,routeSupportWrist} from './arm-clearance.js';
 
 export const STANCE_KIT=KIT;
 export function sampleKitStance(sex,kind,posture='aim',phase=.5){
@@ -43,7 +44,9 @@ export function applyKitStance(e,{posture='aim',phase=.5,prepare=null,delta=null
  const crouchReady=posture==='carry'&&e.clip?.startsWith('Crouch'),clipPosture=crouchReady&&!revolver?'aim':posture,pose=sampleKitStance(e.modelSex,kind,clipPosture,revolver&&clipPosture==='carry'?.2:phase);
  const pelvis=e.animationEdits?.pelvis?.slice(3)||[0,0,0];
  orientWorld(e.model.getObjectByName('Hips'),e.model.getWorldQuaternion(new Quaternion()).multiply(new Quaternion().setFromEuler(new Euler(...pelvis.map(n=>n*Math.PI/180),'YXZ'))).multiply(e.rifleHands.hipFrame));
- for(const[name,q]of pose)if(!(revolver&&oneHand&&name.endsWith('L'))){const bone=e.model.getObjectByName(name);bone.quaternion.copy(revolver&&clipPosture==='carry'?e.handgunCarry?.get(bone)||q:q);}
+ // Keep the free carry reference during the entire support-grip release,
+ // including the last frame when the support weight reaches zero.
+ for(const[name,q]of pose)if(!(revolver&&clipPosture==='carry'&&name.endsWith('L'))){const bone=e.model.getObjectByName(name);bone.quaternion.copy(revolver&&clipPosture==='carry'?e.handgunCarry?.get(bone)||q:q);}
  e.root.updateMatrixWorld(true);
  if(pistol){if(approved){poseApprovedHand(e,'R');poseApprovedHand(e,'L',weight);}else{poseHand(e,'R','pistol',{trigger});poseHand(e,'L','pistol',{weight});}}
  else if(short)poseOneHandFingers(e,trigger);
@@ -65,18 +68,43 @@ export function applyKitStance(e,{posture='aim',phase=.5,prepare=null,delta=null
   const turn=rotation.clone().multiply(weapon.getWorldQuaternion(new Quaternion()).invert()),hand=turn.clone().multiply(e.model.getObjectByName('WristR').getWorldQuaternion(new Quaternion()));
   fit(e,'R',at(e,'WristR').sub(from).applyQuaternion(turn).add(point),hand,poles.right);attach(e);
  }
+ const clearRevolver=revolver&&e.clip?.startsWith('Crouch')&&!e.animationEditingReload&&!e.reloadLast&&!e.animationEdits?.weapon?.some(Boolean)&&!e.animationEdits?.support?.some(Boolean)&&!hasElbowEdit(e,'R')&&!hasElbowEdit(e,'L');
+ if(clearRevolver){
+  // A continuous knee-height envelope avoids a late collision correction
+  // midway through a step. Both weapon contacts retain the same orientation.
+  const wrist=at(e,'WristR'),safe=wrist.clone(),kneeHeight=Math.max(at(e,'LowerLegL').y,at(e,'LowerLegR').y)+.17*e.root.scale.x;
+  for(const offset of [new Vector3(),...['Middle4','Index4','Pinky4'].map(n=>at(e,n+'R').sub(wrist))]){
+   safe.y=Math.max(safe.y,kneeHeight-offset.y);
+  }
+  if(safe.y>wrist.y+1e-6){fit(e,'R',safe,e.model.getObjectByName('WristR').getWorldQuaternion(new Quaternion()),poles.right);attach(e);}
+ }
  let supportGap=0;
  if(!oneHand){
   const gripHand=weapon.getWorldQuaternion(new Quaternion()).multiply(pistol?(approved?approvedHandFrame(e,'L'):PISTOL_SUPPORT_ROTATION):supportHandRotation(weapon)),hand=e.model.getObjectByName('WristL').getWorldQuaternion(new Quaternion()).slerp(gripHand,weight),free=at(e,'Middle2L'),profile=weapon.userData.pistol;
   const anchor=()=>{if(pistol)return weapon.localToWorld(new Vector3(...profile.leftPalm));const p=new Vector3(...(weapon.userData.grips?.left||[.145,.03,.255]));p.z-=weapon.userData.pumpOffset||0;return weapon.localToWorld(p);};
   const palm=()=>free.clone().lerp(pistol?anchor():anchor().sub(contactWrist(e,'L',new Vector3(),gripHand)),weight);
+  if(clearRevolver&&posture==='hip'){
+   // Lift the joined weapon only as far as the bent-leg corridor requires.
+   // Moving both grip contacts together avoids detaching the support hand.
+   const target=contactWrist(e,'L',palm(),hand),safe=routeSupportWrist(e,target,armObstacles(e,.02)),lift=safe.y-target.y;
+   if(lift>1e-6){fit(e,'R',at(e,'WristR').add(new Vector3(0,lift,0)),e.model.getObjectByName('WristR').getWorldQuaternion(new Quaternion()),poles.right);attach(e);}
+  }
   const target=contactWrist(e,'L',palm(),hand),start=at(e,'UpperArmL'),reach=start.distanceTo(at(e,'LowerArmL'))+at(e,'LowerArmL').distanceTo(at(e,'WristL'))-.004,excess=Math.max(0,target.distanceTo(start)-reach);
   if(excess>0){fit(e,'R',at(e,'WristR').add(start.clone().sub(target).setLength(Math.min(.14,excess)*weight)),e.model.getObjectByName('WristR').getWorldQuaternion(new Quaternion()),poles.right);attach(e);}
   const contact=palm();editTarget(e,'support',contact,hand);
   if(delta!==null){const guided=guideSupportMotion(e,contact,hand);contact.copy(guided.point);hand.copy(guided.rotation);}
-  if(delta!==null)fitPistolSupportContact(e,contact,hand,'Middle2',{pole:poles.left,maxBend:pistol?28:60,clearance:0,delta,pinned:weight>.999&&!e.animationEditingReload&&!e.reloadLast&&!e.shotgunReload&&!e.weaponMotion?.joining});else fit(e,'L',contactWrist(e,'L',contact,hand),hand,poles.left);
+  const previous=e.weaponMotion?.last?.left,joined=!clearRevolver||delta>=.5||previous&&e.root.localToWorld(e.root.worldToLocal(at(e,'UpperArmL')).add(previous.offset)).distanceTo(contact)<.005;
+  if(delta!==null)fitPistolSupportContact(e,contact,hand,'Middle2',{pole:poles.left,maxBend:pistol?28:60,clearance:0,delta,avoidBody:clearRevolver,pinned:joined&&weight>.999&&!e.animationEditingReload&&!e.reloadLast&&!e.shotgunReload&&!e.weaponMotion?.joining});else fit(e,'L',contactWrist(e,'L',contact,hand),hand,poles.left);
   supportGap=at(e,'Middle2L').distanceTo(contact);
  }else if(hasElbowEdit(e,'L')){const hand=e.model.getObjectByName('WristL').getWorldQuaternion(new Quaternion());fit(e,'L',at(e,'WristL'),hand,poles.left);}
+ else if(clearRevolver&&crouchReady){
+  // Keep the free hand beside the bent leg instead of through its knee.
+  // The original free-arm pose remains the target; it never joins the grip.
+  const wrist=at(e,'WristL'),hand=e.model.getObjectByName('WristL').getWorldQuaternion(new Quaternion());
+  const offsets=[new Vector3(),...['Middle4','Index4','Pinky4'].map(n=>at(e,n+'L').sub(wrist))],safe=outsideBody(e,wrist,offsets);
+  const contact=at(e,'Middle2L').add(safe.sub(wrist));
+  fitPistolSupportContact(e,contact,hand,'Middle2',{pole:poles.left,maxBend:60,clearance:0,delta:delta??1,avoidBody:true});
+ }
  if(pistol&&!approved){poseHand(e,'R','pistol',{trigger});poseThumb(e,'L','pistol',{weight});}else if(short)poseOneHandThumb(e);else if(!pistol){poseHand(e,'R','support',{trigger});if(!oneHand)poseThumb(e,'L',revolver?'revolver':weapon.userData.grips?.verticalSupport?'vertical':'support',{weight});}
  e.weaponPoles=poles;e.root.updateMatrixWorld(true);
  return{kind,sourceClip:KIT.rigs[e.modelSex][kind][clipPosture].sourceClip,supportGap};
