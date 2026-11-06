@@ -52,7 +52,7 @@ function eyeLocal(entity,player){
   return entity.pistolEye=points.length?new Box3().setFromPoints(points).getCenter(v()):v(-.034,player.appearance?.sex==='female'?.104:.109,.106);
 }
 
-export function pistolEye(entity){return bone(entity,'Head').localToWorld(entity.pistolEye.clone());}
+export function pistolEye(entity){if(!entity.pistolEye)eyeLocal(entity,{appearance:{sex:entity.modelSex}});return bone(entity,'Head').localToWorld(entity.pistolEye.clone());}
 export function pistolSight(entity){
   const weapon=entity.weapon,optic=weapon.getObjectByName('Reflex'),a=weapon.userData.anchors.optic;
   return v(0,a[1]+(optic?.visible ? .008 : -.014),a[2]);
@@ -80,8 +80,8 @@ function frame(entity,side,hand,maxBend){
   const approved=hasApprovedGrip(entity),authored=approved||side==='R'&&entity.weapon.userData.oneHandPose?.rigs?.[entity.modelSex]?.boneRotations;
   const palm=authored?point(entity,'Middle2'+side).sub(point(entity,'Wrist'+side)).applyQuaternion(bone(entity,'Wrist'+side).getWorldQuaternion(new Quaternion()).invert()).normalize():rig.get('Wrist'+side).palm;
   return{hand,axis:palm,rest:rig.get('Wrist'+side).rotation,lowerRest:rig.get('LowerArm'+side).rotation,
-    ...(approved&&side==='R'?{preserveUpperSwing:true,upperRest:approvedUpperRest(entity)}:side==='R'&&entity.handgunUpperRest?{preserveUpperSwing:true,upperRest:entity.handgunUpperRest}:{}),
-    hinge:rig.get('UpperArm'+side).hinge,maxTwist:Math.PI/3,maxBend:maxBend*Math.PI/180};
+    ...(approved&&side==='R'&&!entity.weapon.userData.stanceKit?{preserveUpperSwing:true,upperRest:approvedUpperRest(entity)}:side==='R'&&entity.handgunUpperRest?{preserveUpperSwing:true,upperRest:entity.handgunUpperRest}:{}),
+    hinge:rig.get('UpperArm'+side).hinge,maxTwist:(entity.weapon.userData.stanceKit?59:60)*Math.PI/180,maxBend:maxBend*Math.PI/180};
 }
 
 function aimPoint(entity,rotation){
@@ -99,39 +99,42 @@ function aimPoint(entity,rotation){
 
 function fitHandBase(entity,side,target,rotation,pole,maxBend,contact=null,delta=entity.pistolStep??1){
   if(entity.animationDirectEdit)delta=1;
-  const hand=rotation.clone(),root=entity.root,yaw=root.getWorldQuaternion(new Quaternion()),start=point(entity,'UpperArm'+side),previous=entity.pistolPreviousFit?.[side],boundedFlex=Boolean(entity.weapon.userData.pistol||entity.weapon.userData.shotgun);
+  // A joined grip owns its exact palm position. Keep temporal roll/rotation
+  // limits, but do not delay its contact behind the moving weapon.
+  const pinned=side==='L'&&Boolean(entity.pistolPinnedContact);
+  const hand=rotation.clone(),root=entity.root,yaw=root.getWorldQuaternion(new Quaternion()),start=point(entity,'UpperArm'+side),previous=entity.pistolPreviousFit?.[side],boundedFlex=Boolean(entity.weapon.userData.pistol||entity.weapon.userData.shotgun||entity.weapon.userData.stanceKit);
   if(previous&&delta<.5&&!(side==='R'&&entity.handgunRecoil))hand.copy(yaw.clone().multiply(previous.hand).rotateTowards(hand,Math.max(0,delta)*5));
   const a=start.distanceTo(point(entity,'LowerArm'+side)),b=point(entity,'LowerArm'+side).distanceTo(point(entity,'Wrist'+side));
   const manual=entity.animationDirectEdit||hasElbowEdit(entity,side)||entity.animationEdits?.support?.some(Boolean)||entity.animationEdits?.contactL?.some(Boolean);
-  const obstacles=!manual&&(side==='L'&&(entity.weapon.userData.pistol||entity.weapon.userData.shotgun)||side==='R'&&entity.weapon.userData.shotgun&&entity.shotgunReload)?armObstacles(entity):null;
+  const obstacles=!manual&&(side==='L'&&(entity.weapon.userData.pistol||entity.weapon.userData.shotgun||entity.pistolAvoidBody)||side==='R'&&entity.weapon.userData.shotgun&&entity.shotgunReload)?armObstacles(entity,entity.pistolAvoidBody ? .02 : 0):null;
   const inverseHand=bone(entity,'Wrist'+side).getWorldQuaternion(new Quaternion()).invert();
   const handPoints=obstacles?['Middle2','Middle4','Index4','Pinky4'].map(n=>point(entity,n+side).sub(point(entity,'Wrist'+side)).applyQuaternion(inverseHand)):[];
   const shotgunLoading=entity.weapon.userData.shotgun&&(entity.animationEditingReload||entity.shotgunReload);
-  const loading=entity.weapon.userData.pistol&&(entity.pistolReloadReferenceWeight>0||entity.reloadLast)||shotgunLoading;
+  const loading=entity.weapon.userData.pistol&&(entity.pistolReloadReferenceWeight>0||entity.reloadLast)||shotgunLoading||entity.weapon.userData.stanceKit&&(entity.animationEditingReload||entity.reloadLast);
   // Finishing the action does not mean the anatomical arm frame has arrived.
   // Release its transport only after the last displayed frame joined the rest.
-  const recovering=(side==='R'||entity.weapon.userData.shotgun)&&(loading||previous?.recovering);
+  const recovering=(side==='R'||entity.weapon.userData.shotgun||entity.weapon.userData.stanceKit)&&(loading||previous?.recovering);
   const wristTarget=()=>{
     const goal=contact?contactWrist(entity,side,target,hand,contact):target.clone(),offset=goal.clone().sub(start);
-    if(previous&&delta<.5){
+    if(previous&&delta<.5&&!pinned){
       const wanted=Math.acos(Math.max(-1,Math.min(1,(offset.lengthSq()-a*a-b*b)/(2*a*b)))),step=Math.max(0,delta)*(boundedFlex&&side==='L'?6:4);
       // Pistols bound opening and closing around the reached elbow angle.
       // The shared revolver/rifle fit retains its calibrated retraction.
       const flex=Math.max(previous.flex-step,(boundedFlex?Math.min(previous.flex+step,wanted):wanted));
       goal.copy(start).add(offset.setLength(Math.sqrt(Math.max(.000001,a*a+b*b+2*a*b*Math.cos(flex)))));
     }
-    if(recovering&&previous&&delta<.5){
+    if(recovering&&previous&&delta<.5&&!pinned){
       const reached=start.clone().add(previous.offset.clone().applyQuaternion(yaw)),movement=goal.clone().sub(reached).clampLength(0,Math.max(0,delta)*2.5);
       goal.copy(reached).add(movement);
     }
-    if(obstacles&&contact){
+    if(obstacles&&contact&&!pinned){
       const offsets=[v(),...handPoints.map(p=>p.clone().applyQuaternion(hand))];
       for(let pass=0;pass<8;pass++){
         goal.copy(outsideBody(entity,goal,offsets,obstacles));
         const reach=goal.clone().sub(start);if(reach.length()<=a+b-.001)break;
         goal.copy(start).add(reach.setLength(a+b-.001));
       }
-      if(previous&&delta<.5){
+      if(previous&&delta<.5&&!pinned){
         const reached=start.clone().add(previous.offset.clone().applyQuaternion(yaw));
         const movement=goal.clone().sub(reached).clampLength(0,Math.max(0,delta)*2.5);
         goal.copy(reached).add(movement);
@@ -146,7 +149,7 @@ function fitHandBase(entity,side,target,rotation,pole,maxBend,contact=null,delta
   };
   const twistFrame=()=>{
     const result={twistPreference:previous?.twist};
-    if((entity.weapon.userData.pistol||entity.weapon.userData.shotgun)&&previous&&delta<.5){
+    if((entity.weapon.userData.pistol||entity.weapon.userData.shotgun||entity.weapon.userData.stanceKit)&&previous&&delta<.5){
       Object.assign(result,{twistFrom:previous.twist,twistStep:Math.max(0,delta)*8});
       if(side==='L'||recovering)Object.assign(result,{upperFrom:yaw.clone().multiply(previous.upper),upperStep:Math.max(0,delta)*6});
     }
@@ -198,6 +201,7 @@ function fitHandBase(entity,side,target,rotation,pole,maxBend,contact=null,delta
 
 function fitHand(entity,side,target,rotation,pole,maxBend,contact=null,delta=entity.pistolStep??1){
   const authored=hasElbowEdit(entity,side),previous=entity.pistolPreviousFit;
+  if(authored&&entity.weapon.userData.stanceKit)delta=1;
   if(authored)entity.pistolPreviousFit={...previous,[side]:entity.pistolAutoFits?.[side]};
   let hand;
   try{hand=fitHandBase(entity,side,target,rotation,authored?(entity.animationTargetBases?.['elbow'+side]||pole):pole,maxBend,contact,delta);}
@@ -234,10 +238,10 @@ export function fitPistolSupportContact(entity,palm,rotation,contact='Middle2',o
   const hand=rotation.clone(),shoulder=entity.root.worldToLocal(point(entity,'UpperArmL'));
   palm=palm.clone();if(options.stage==='reload')editTarget(entity,'support',palm,hand,'reload');
   palm=frontPoint(entity,palm,options.clearance??1);
-  if(options.delta!==undefined){
+  if(options.delta!==undefined&&!options.pinned){
     let wrist=contactWrist(entity,'L',palm,hand,contact);
-    if(entity.weapon.userData.pistol||entity.weapon.userData.shotgun)wrist=routeSupportWrist(entity,outsideBody(entity,wrist));
-    const target=guide(entity,options.key||'pistolContactPose','L',wrist,hand,options.delta);
+    if(entity.weapon.userData.pistol||entity.weapon.userData.shotgun||options.avoidBody){const obstacles=armObstacles(entity,options.avoidBody ? .02 : 0);wrist=routeSupportWrist(entity,outsideBody(entity,wrist,undefined,obstacles),obstacles);}
+    const target=guide(entity,options.key||'pistolContactPose','L',wrist,hand,options.delta,options.avoidBody);
     hand.copy(target.rotation);palm=target.point.sub(contactWrist(entity,'L',v(),hand,contact));
   }
   const editedPole=options.stage==='reload'&&entity.animationEdits?.elbowL.some(Boolean);
@@ -245,7 +249,8 @@ export function fitPistolSupportContact(entity,palm,rotation,contact='Middle2',o
   if(options.stage==='reload'&&entity.weapon.userData.pistol&&!editedPole)pole.lerp(entity.root.localToWorld(shoulder.clone().add(v(.20,.20,.25))),entity.pistolCrouch||0);
   if(options.stage==='reload')editTarget(entity,'elbowL',pole,null,'reload');
   const maxBend=options.maxBend??48;
-  fitHand(entity,'L',palm,hand,pole,maxBend,contact,options.delta??entity.pistolStep??1);
+  const pinned=entity.pistolPinnedContact,avoid=entity.pistolAvoidBody;entity.pistolPinnedContact=Boolean(options.pinned);entity.pistolAvoidBody=Boolean(options.avoidBody);
+  try{fitHand(entity,'L',palm,hand,pole,maxBend,contact,options.delta??entity.pistolStep??1);}finally{entity.pistolPinnedContact=pinned;entity.pistolAvoidBody=avoid;}
   entity.pistolContactPole=entity.root.worldToLocal(point(entity,'LowerArmL'));
   return bone(entity,'WristL').getWorldQuaternion(new Quaternion());
 }
@@ -262,14 +267,14 @@ function frontPoint(entity,palm,amount){
 // Follow a hand target relative to its shoulder. Joint-space crossfades between
 // different clavicle frames can lift the hand over the head even though both
 // endpoints are sound. A target path also survives interrupted transitions.
-function guide(entity,key,side,pointTarget,rotation,delta){
+function guide(entity,key,side,pointTarget,rotation,delta,avoidBody=false){
   const root=entity.root,yaw=root.getWorldQuaternion(new Quaternion()),anchor=root.worldToLocal(point(entity,'UpperArm'+side));
   let wanted=pointTarget;
-  const reached=side==='L'&&entity.weapon.userData.pistol?entity.pistolPreviousFit?.L:null;
+  const reached=side==='L'&&(entity.weapon.userData.pistol||avoidBody)?entity.pistolPreviousFit?.L:null;
   const previous=reached?{offset:reached.offset.clone().divideScalar(root.scale.x),rotation:reached.hand}:entity[key];
-  if(previous&&delta<.5&&!entity.animationDirectEdit&&side==='L'&&entity.weapon.userData.pistol){
+  if(previous&&delta<.5&&!entity.animationDirectEdit&&side==='L'&&(entity.weapon.userData.pistol||avoidBody)){
     const from=root.localToWorld(anchor.clone().add(previous.offset));
-    wanted=routeSupportStep(entity,from,pointTarget);
+    wanted=routeSupportStep(entity,from,pointTarget,avoidBody ? .02 : 0);
   }
   const offset=root.worldToLocal(wanted.clone()).sub(anchor),q=yaw.clone().invert().multiply(rotation);
   if(previous&&delta<.5&&!entity.animationDirectEdit){

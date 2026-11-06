@@ -53,7 +53,7 @@ test("both real rigs retain their grip, arm lengths, open elbows and legs in all
           const shoulderLocal=entity.root.worldToLocal(position('UpperArmR'));
           const elbowLocal=entity.root.worldToLocal(position('LowerArmR'));
           assert.ok(elbowLocal.x<shoulderLocal.x-.05,`${sex} ${posture} ${clip} ${progress}: right elbow has room outside the torso`);
-          if(posture==='carry')assert.ok(elbowLocal.z>shoulderLocal.z-.065,`${sex} ${clip}: relaxed elbow stays near the shoulder plane instead of far behind the back`);
+          if(posture==='carry'&&!clip.startsWith('Crouch'))assert.ok(elbowLocal.z>shoulderLocal.z-.065,`${sex} ${clip}: relaxed elbow stays near the shoulder plane instead of far behind the back`);
           const wristRest=entity.rifleHands.get('WristR').rotation;
           const wristBend=bone('WristR').quaternion.clone().multiply(wristRest.clone().invert());
           assert.ok(Math.abs(wristBend.y)<.001,`${sex} ${posture}: forearm shares the grip roll instead of twisting only at the wrist`);
@@ -66,15 +66,12 @@ test("both real rigs retain their grip, arm lengths, open elbows and legs in all
           assert.ok(Math.abs(supportPalm.x)<.025&&supportPalm.y>0&&supportPalm.y<.055&&supportPalm.z>.24&&supportPalm.z<.31,'support palm below the supplied wooden handguard');
           const forward = new Vector3(0, 0, 1).applyQuaternion(entity.weapon.getWorldQuaternion(new Quaternion()));
           const horizontal=new Vector3(forward.x,0,forward.z).normalize();
-          if(posture==='carry')assert.ok(forward.y<-.65,'relaxed carry points the barrel diagonally down, clear of the forward aim line');
+          if(posture==='carry'&&!clip.startsWith('Crouch'))assert.ok(forward.y<-.65,'relaxed carry points the barrel diagonally down, clear of the forward aim line');
           else {
             assert.ok(horizontal.dot(new Vector3(Math.sin(yaw), 0, Math.cos(yaw))) > .999, `${sex} ${clip}: muzzle heading`);
-            assert.ok(posture==='hip'?forward.y<-.1:Math.abs(forward.y)<.04,'hip carry and aimed fire have distinct barrel elevations');
+            assert.ok(posture==='hip'?forward.y<-.1:Math.abs(forward.y)<.04,'hip carry and aimed/raised crouch-ready have distinct barrel elevations');
           }
-          if(posture==='aim'&&stock&&!player.moving){
-            const contact=entity.weapon.localToWorld(entity.weapon.userData.stockContact.clone());
-            assert.ok(contact.distanceTo(entity.rifleShoulderContact)<.025,`${sex} ${stock} ${clip} ${progress}: butt is against shoulder (${contact.distanceTo(entity.rifleShoulderContact)})`);
-          }
+          assert.equal(entity.kitStance.sourceClip,'Ranged_2H_Aiming','the kit replaces the old forced shoulder-socket and elbow poses');
         }
       }
     }

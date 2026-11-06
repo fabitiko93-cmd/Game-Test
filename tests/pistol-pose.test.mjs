@@ -67,7 +67,7 @@ function eye(f){
 function bodyLengths(f){return['R','L'].flatMap(s=>[position(f,'UpperArm'+s).distanceTo(position(f,'LowerArm'+s)),position(f,'LowerArm'+s).distanceTo(position(f,'Wrist'+s))]);}
 const legNames=['UpperLegL','LowerLegL','FootL','UpperLegR','LowerLegR','FootR'];
 
-test('both real rigs keep an extended pistol arm, aligned eye/sights, intact legs and limited forearm/wrist twist through locomotion',async()=>{
+test('both real rigs keep the kit pistol arm, actual target heading, intact legs and limited forearm/wrist twist through locomotion',async()=>{
   for(const sex of ['male','female'])for(const type of types)for(const mods of type==='desert_eagle_50'?[false]:[false,true]){
     const f=await fixture(type,sex,mods);
     for(const yaw of [0,Math.PI/2,Math.PI,-Math.PI/2])for(const clip of ['Idle_Gun_Pointing','Walk','Crouch_Idle','Crouch_Walk'])for(const progress of [0,.25,.5,.75]){
@@ -84,11 +84,9 @@ test('both real rigs keep an extended pistol arm, aligned eye/sights, intact leg
       const gun=f.entity.weapon,optic=gun.getObjectByName('Reflex'),a=gun.userData.anchors.optic;
       const sight=gun.localToWorld(new Vector3(0,a[1]+(optic?.visible?.008:-.014),a[2]));
       const forward=new Vector3(0,0,1).applyQuaternion(gun.getWorldQuaternion(new Quaternion())),line=sight.clone().sub(eye(f));
-      // This raw solver retains the oblique review-10 authoring frame. The
-      // shared controller then aligns the complete pose with gameplay aim;
-      // g17-approved.test.mjs checks that final barrel and live shot socket.
-      if(type==='pistol_9mm')assert.ok(Math.abs(Math.atan2(Math.sin(Math.atan2(forward.x,forward.z)-yaw-G17_GRASP.weaponYaw),Math.cos(Math.atan2(forward.x,forward.z)-yaw-G17_GRASP.weaponYaw)))<.001,tag+' approved body/weapon yaw');
-      else assert.ok(line.clone().addScaledVector(forward,-line.dot(forward)).length()<.004,tag+' eye on actual sight line');
+      // The kit replaces the hand-tuned eye/shoulder alignment. The visible
+      // barrel itself must still follow the actual game target on every rig.
+      assert.ok(forward.dot(new Vector3(Math.sin(yaw),0,Math.cos(yaw)))>.999999,tag+' kit barrel follows game heading');
       assert.ok(line.dot(forward)>.20&&Math.abs(forward.y)<.001,tag+' raised and level barrel');
     }
   }
@@ -174,7 +172,7 @@ test('pistol hands join and leave the grip without an overhead loop, including i
         else assert.ok(surface(gun.getObjectByName('Receiver'),position(f,'Thumb3L'))<.030,'support thumb returns to the grip with the moving hand');
         const optic=gun.getObjectByName('Reflex'),a=gun.userData.anchors.optic,sight=gun.localToWorld(new Vector3(0,a[1]+(optic?.visible?.008:-.014),a[2]));
         const forward=new Vector3(0,0,1).applyQuaternion(gun.getWorldQuaternion(new Quaternion())),line=sight.sub(eye(f));
-        assert.ok(Math.abs(forward.y)<.02&&(type==='pistol_9mm'||line.addScaledVector(forward,-line.dot(forward)).length()<.012),'settled moving aim returns to its authored sight pose');
+        assert.ok(forward.dot(new Vector3(f.player.facingX||0,0,f.player.facingY??1))>.999,'settled moving aim returns to the kit target heading');
       }
       models.release(f.entity);models.entities.delete(f.player);models.prepared.delete(f.player);models.used.delete(f.player);
     }

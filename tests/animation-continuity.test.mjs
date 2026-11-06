@@ -39,18 +39,19 @@ test('revolver firing hand does not drop on interrupted sprint-to-aim transition
  }
 });
 
-test('all four pistols reverse a short sprint directly into raising the reached weapon',async()=>{
+test('all four pistols reverse a short sprint directly toward their authored aiming grip',async()=>{
  for(const sex of ['male','female'])for(const type of ['pistol_9mm','usp_9mm','scorpion_45','desert_eagle_50'])for(const fps of [15,30,60]){
-  const f=await weaponFixture({sex,type,scenario:'transitions',fps});let previous,first,last;
+  const reference=await weaponFixture({sex,type}),aim=reference.entity.weapon.getWorldPosition(new Vector3()).sub(reference.entity.model.getObjectByName('UpperArmR').getWorldPosition(new Vector3()));reference.replay.dispose();
+  const f=await weaponFixture({sex,type,scenario:'transitions',fps});let first,last;
   for(let i=0;i<=f.replay.frameCount;i++){
    f.replay.seek(f.replay.frameTime(i));if(f.replay.time<1.55||f.replay.time>1.95)continue;
-   const e=f.entity,height=e.weapon.getWorldPosition(new Vector3()).y;
-   // The reached gun can settle a few millimetres as wrist constraints fit;
-   // the old extra lowering arc was about fourteen centimetres.
-   if(previous!==undefined)assert.ok(height>=previous-.005,`${sex} ${type} ${fps} ${i}: continued lowering after re-aim`);
-   first??=height;last=height;previous=height;
+   const e=f.entity,offset=e.weapon.getWorldPosition(new Vector3()).sub(e.model.getObjectByName('UpperArmR').getWorldPosition(new Vector3()));
+   // The kit's compact ready can be higher than its extended aim. Protect
+   // against the old extra lowering arc using the actual authored endpoint.
+   first??=offset.clone();last=offset;
+   assert.ok(offset.y>=Math.min(first.y,aim.y)-.005,`${sex} ${type} ${fps} ${i}: lowered below both endpoints`);
   }
-  assert.ok(last>first+.02,`${sex} ${type} ${fps}: weapon must rise after reversal`);f.replay.dispose();
+  assert.ok(last.distanceTo(aim)<first.distanceTo(aim)-.02,`${sex} ${type} ${fps}: weapon must approach aim after reversal`);f.replay.dispose();
  }
 });
 

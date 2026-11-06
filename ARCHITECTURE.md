@@ -37,8 +37,21 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
 
-`one-hand-pose.js` aktiviert das modellbezogene Einhandprofil der kurzen Ithaca
-über `weapon.userData.oneHandPose`. Die Laufzeit lädt `ithaca-one-hand.json` und
+`kit-stance.js` liefert die aktive Grundhaltung aller modellierten Schusswaffen:
+Quaternius UAL für Pistolen, Originalclips für die kurze Ithaca, KayKit für
+Langwaffen und ZenXChaos für Revolver-Anlegen. Finger-/Griffprofile bleiben
+getrennt. `kit-stance-controller.js` führt zeitliche Übergänge und die zuletzt
+tatsächlich erreichten Aktionsrahmen; Nachlade-/Schussmechanik bleibt in ihren
+bestehenden Modulen. Der separate Wirbelsäulenursprung `Hips` gleicht die
+`Body`-Rotation des Bewegungsclips aus, ohne dessen Beine zu verändern. Keine
+zusätzliche Augen-/Schaftsockel-Ausrichtung verformt den importierten Waffenarm.
+Die geduckte Revolverhaltung hält die freie Hand neben dem Knie; nötige
+Höhenkorrekturen in Hüfthaltung verschieben beide Griffkontakte gemeinsam.
+`scripts/preview-stance-kit.mjs` exportiert denselben Spielcontroller.
+Quellen und Vergleich stehen in `docs/WEAPON_STANCE_KIT_REVIEW.md`.
+
+`weapon.userData.oneHandPose` wählt das modellbezogene Einhandprofil der kurzen
+Ithaca; `one-hand-pose.js` hält dessen Nachlade-Kontaktfit. Die Laufzeit lädt `ithaca-one-hand.json` und
 den tatsächlichen Originalschnitt aus `ithaca_short.json`. Originalbeine und
 freier Arm bleiben erhalten; explizite Werkstatt-Ellenbogen und das Nachladen
 dürfen den freien Arm vorübergehend übernehmen. `one-hand-grasp.js` verwendet
@@ -101,20 +114,18 @@ unten, unabhängig von der Vorneigung des Rumpfes; die linke Hand bleibt frei.
 Handgelenkdrehung beim Reload getrennt von der Handgelenkbeugung.
 Ein Patch erfordert nicht automatisch das Lesen jeder Datei in seiner Tabellenzeile.
 
-`g17-grasp.js` nutzt die am 27.10. freigegebene Schulter-/Griffreferenz 10 aus
+`g17-grasp.js` nutzt die am 27.10. freigegebene Griffreferenz 10 aus
 `docs/assets/weapons/g17-grasp.json`. Kalibrierte Finger und Handrahmen sind für
 beide Original-Rigs aufbereitet. `pistol-pose.js` führt weiter die gemeinsamen
-Zielbahnen, Kontakte und Unterbrechungen aus; die G17 blendet ihre Oberarmreferenz
-zwischen Tragen/Nachladen und Anlegen in Weltkoordinaten. Der Stützarm gewinnt
-bei Bedarf Reichweite über das Schlüsselbein. Nach der vollständigen Hand-/
-Nachladeauswertung richtet `alignApprovedAim` die ganze Wirbelsäulenkette auf
-die Spielzielrichtung aus: Der seitliche Referenzwinkel gehört zur Körperhaltung,
-nicht als zusätzlicher Winkel zur Schussrichtung. Die Original-Beinketten bleiben
-unverändert; Werkstattziele folgen derselben Korrektur. `weapon-ik.js` kann für diesen
-Arm die kürzeste Oberarmschwenkung erhalten. Keine Preview-/Editor-Imports im
+Zielbahnen, Kontakte und Unterbrechungen aus. Die Kit-Laufzeit verwendet weder
+die alte Oberarmbindung noch `alignApprovedAim`; der Kit-Waffenarm wird gemeinsam
+auf die tatsächliche Zielrichtung gedreht. Der Stützhandfit erhält den Griff
+auch beim Rückstoß und begrenzt Rollbewegungen anhand des letzten Bildes.
+`weapon-ik.js` normalisiert jede geschriebene Rotation, damit wiederholte
+Kontaktfits keine Armlängen durch Rundungsdrift verändern. Keine Preview-/Editor-Imports im
 Laufzeitpfad. `g17-approved.test.mjs` vergleicht echte Hautpunkte mit dem
-freigegebenen Render, prüft Lauf und Live-Mündung gegen die Spielzielrichtung
-und schützt langsame 15-Hz-Übergänge sowie die Rumpfkorrektur zusätzlich zu den
+freigegebenen Handrender, prüft Lauf und Live-Mündung gegen die Spielzielrichtung
+und schützt langsame 15-Hz-Übergänge zusätzlich zu den
 30-/60-Hz-Pistolenprüfungen. Die Kalibrierung und die unabhängigen Testpunkte
 lassen sich mit `scripts/prepare-g17-grasp.mjs` aus dem gespeicherten Review-10-
 Mesh und dessen Schulterbindung erneut aufbereiten.
@@ -133,8 +144,8 @@ Unterarmverdrehung und die kurze Sprintumkehr aller vier Pistolen.
 
 `arm-clearance.js` führt automatische Pistolen-Handgelenkbahnen oberhalb
 angewinkelter Beine, bevor die Hand seitlich zum Griff oder Magazin wechselt.
-Die G17 hat im Schleichstillstand eine freie linke Bereitschaftshand neben dem
-Knie und eine höhere Nachladeposition. Die rechte Oberarmführung endet erst
+Die G17 nutzt den Kit-Griff auch im Schleichstillstand und eine höhere
+Nachladeposition. Die rechte Oberarmführung endet erst
 beim tatsächlichen Erreichen ihres Zielrahmens. `weapon-clearance.test.mjs`
 prüft Drehwege, Nachladerückkehr und die Körperdurchdringungen unabhängig an
 verformten Körperdreiecken; dieselbe Fallmatrix nutzt
