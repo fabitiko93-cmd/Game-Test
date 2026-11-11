@@ -1,6 +1,6 @@
 {
-  "id": "721d7fa2e20e0aac4e45",
-  "script": "build/main-V2HOALS3.js",
+  "id": "7b104fd0a07ab432e82f",
+  "script": "build/main-MGQBDKJ7.js",
   "style": "build/style-47ZEQVKU.css",
   "precache": [
     "assets/clothing/README.md",
@@ -309,7 +309,7 @@
     "build/assets/vector-icon-DX6NJN2U.svg",
     "build/chunks/animation-workshop-LHHHFIRB.js",
     "build/chunks/chunk-I6ONMBLG.js",
-    "build/main-V2HOALS3.js",
+    "build/main-MGQBDKJ7.js",
     "build/style-47ZEQVKU.css",
     "index.html",
     "manifest.webmanifest"
