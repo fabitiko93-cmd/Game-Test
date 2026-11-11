@@ -70,7 +70,7 @@ test('all furnished rooms, mission objects and outdoor storage remain reachable 
 
 test('real melee events use the authored punch and weapon clips; crouch switches to its own idle and walking clips',()=>{
  const player=createPlayer(),motion=new PlayerMotion(),combat=new CombatSystem();let time=0;motion.sample(player,time);
- const game={player,world:{emitNoise(){}},sound(){}};combat.beginMelee(game,{id:'target'},null,null);assert.equal(motion.sample(player,time+=.01).clip,'Punch_Right');
+ const game={player,world:{emitNoise(){}},sound(){}};combat.beginMelee(game,{id:'target'},null,null);assert.equal(motion.sample(player,time+=.01).clip,'Punch_OneTwo');
  const knife=createItem('kitchen_knife');addItem(player,knife);equipItem(player,knife.id);
  const stats=weaponStats(knife);
  player.combat.attackTimer=0;motion.sample(player,time+=2);
