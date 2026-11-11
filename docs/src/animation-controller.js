@@ -50,6 +50,7 @@ export function presentFreshShot(player){
 export function animationInputKey(player,time,revision=0){
   const c=player.combat||{},w=activeWeapon(player),r=c.reload,s=c.shotImpulse;
   return JSON.stringify([time,revision,player.x,player.y,player.facingX,player.facingY,player.moving,player.running,player.stance,player.dead,player.shots,
-    c.enabled,c.targetId,c.aim,c.triggerHeld,c.attackTimer,w?.id,w?.type,w?.magazine?.id,w?.magazine?.rounds,w?.rounds,w?.slideLocked,w?.cylinderIndex,
+    c.enabled,c.targetId,c.aim,c.triggerHeld,c.attackTimer,c.knifeAttack?.sequence,c.knifeAttack?.weaponId,
+    w?.id,w?.type,w?.magazine?.id,w?.magazine?.rounds,w?.rounds,w?.slideLocked,w?.cylinderIndex,
     r?.weaponId,r?.elapsed,r?.loaded,r?.committed,s?.weaponId,s?.age,s?.power,s?.fresh,player.appearance,player.equipment,w?.mods]);
 }

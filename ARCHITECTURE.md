@@ -37,6 +37,12 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
 
+`combat.js` kennzeichnet normale Küchenmesserangriffe für `player-motion.js`.
+Stich und Schnitt wechseln pro Angriff und passen in dessen vorhandenen
+Zeitabstand. `player-models.js` bindet den passenden Clip und den gemeinsamen
+Messergriff an das jeweilige Figurenrig. Die Animationsdaten und ihre
+Aufbereitung stehen im Quaternius-Asset-README.
+
 `kit-stance.js` liefert die aktive Grundhaltung aller modellierten Schusswaffen:
 Quaternius UAL für Pistolen, Originalclips für die kurze Ithaca, KayKit für
 Langwaffen und ZenXChaos für Revolver-Anlegen. Finger-/Griffprofile bleiben
