@@ -137,3 +137,19 @@ panels coloured as fabric, without an added band or thickness. Generated body
 templates are cached before rebinding and cloned when equipment changes.
 This is a runtime geometry adaptation; the original compressed assets are intact.
 Empty slots restore this body. Headwear overlays the independently selected face.
+
+## Kitchen knife
+
+`knife-animations.js` binds the embedded motions and right-hand grip to each
+modular rig. The stab is based on Kevin Iglesias's `Attack1H01_R` from
+[Human Melee Animations FREE](https://www.keviniglesias.com/assets/meleeWarriorAnimationsFREE.html)
+under the [Standard Asset Store EULA](https://unity.com/legal/as-terms) for
+embedded game use. The cut uses the modular characters' original CC0
+`Sword_Slash`. The stab was retargeted and its wrist was adjusted. Both clips
+use the fitted knife attachment and the revised finger pose for each rig.
+
+Run `node scripts/prepare-knife-animations.mjs /path/to/approved-knife-previews`
+with the male and female `knife-stab-grip-*.glb` and
+`knife-cut-compact-*.glb` files. The script fits the finger joints to the knife
+mesh and emits runtime pose data bundled into the game JavaScript. Keep the
+vendor downloads and preview GLBs outside the published repository.

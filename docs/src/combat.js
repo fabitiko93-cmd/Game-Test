@@ -45,6 +45,7 @@ export class CombatSystem {
     combat.enabled = false;
     combat.pendingTargetId = null; combat.pendingAttack = 0;
     combat.attackTimer = 0; combat.aim = 0;
+    if (combat.knifeAttack) combat.knifeAttack.weaponId = null;
     combat.hadPursuit = false; combat.waitingForTarget = false;
     if (!keepTarget) {
       combat.targetId = null;
@@ -132,6 +133,10 @@ export class CombatSystem {
     const combat = game.player.combat;
     combat.attackCooldown = stats?.cooldown || 1.2;
     combat.attackTimer = 0.32;
+    if (weapon?.type === "kitchen_knife") {
+      const sequence = (combat.knifeAttack?.sequence ?? 0) + 1;
+      combat.knifeAttack = { sequence, weaponId: weapon.id, duration: combat.attackCooldown };
+    } else if (combat.knifeAttack) combat.knifeAttack.weaponId = null;
     combat.pendingAttack = 0.14;
     combat.pendingTargetId = target.id;
     game.world.emitNoise(game.player.x, game.player.y, stats?.noise || 2.7, "melee", 2.4);

@@ -3,13 +3,15 @@ import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { gunzipSync } from "node:zlib";
-import { Box3, Vector3 } from "three";
+import { Box3, Quaternion, Vector3 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { ModelPass } from "../docs/src/model-pass.js";
 import { PlayerModels } from "../docs/src/player-models.js";
 import { PlayerMotion } from "../docs/src/player-motion.js";
+import { CombatSystem } from "../docs/src/combat.js";
 import { QuaterniusAssets } from "../docs/src/quaternius-assets.js";
 import { WorldModels } from "../docs/src/world-models.js";
+import { KNIFE_ANIMATIONS } from "../docs/src/knife-animations.js";
 import { QUATERNIUS_MODELS as metadata, createPlayerAppearance, playerHeight,
   playerModelAppearance, FURNITURE_MODELS, furnishingDimensions, furnishingFootprint } from "../docs/src/quaternius-catalog.js";
 import { World } from "../docs/src/world.js";
@@ -103,6 +105,61 @@ test("authored crouch clips retarget to both modular rigs with grounded shoes an
         assert.ok(foot.distanceTo(knee)>.25&&foot.distanceTo(knee)<.6,'the separate foot bone follows its shin');
       }
     }
+  }
+});
+
+test("normal knife attacks load both approved clips and keep their fitted grip on both rigs", async () => {
+  const library = new QuaterniusAssets({ loadAsset: load });
+  const models = new PlayerModels({}, library);
+  const combat = new CombatSystem();
+  await models.ready;
+  for (const sex of ['male', 'female']) {
+    const player = createPlayer({ appearance: { sex } });
+    const knife = createItem('kitchen_knife');
+    addItem(player, knife);
+    equipItem(player, knife.id);
+    const target = { id: 'target', x: player.x, y: player.y - .4, state: 'chase' };
+    Object.assign(player.combat, { enabled: true, targetId: target.id });
+    const game = {
+      player, zombies: [target], world: { emitNoise() {}, hasLineOfSight: () => true },
+      ui: { showMessage() {} }, random: () => 1, sound() {}, elapsed: 0,
+    };
+    const entity = models.prepare(player, 0);
+    const { grip, clips } = KNIFE_ANIMATIONS.rigs[sex];
+    const wrist = entity.model.getObjectByName('WristR');
+    assert.equal(entity.weapon.parent, wrist);
+    assert.deepEqual(entity.weapon.position.toArray(), grip.position);
+    assert.deepEqual(entity.weapon.quaternion.toArray(), grip.rotation);
+    assert.deepEqual(entity.weapon.scale.toArray(), grip.scale);
+    const playedClips = [];
+    for (let frame = 1; frame <= 90; frame++) {
+      game.elapsed = frame / 60;
+      combat.update(game, 1 / 60);
+      assert.equal(models.prepare(player, game.elapsed), entity);
+      const source = clips[entity.clip];
+      if (!source) continue;
+      if (playedClips.at(-1) !== entity.clip) playedClips.push(entity.clip);
+      assert.equal(entity.current.getClip().name, source.name);
+      assert.equal(entity.current.getClip().duration, source.duration);
+      for (const [name, rotation] of Object.entries(grip.fingers)) {
+        assert.deepEqual(entity.model.getObjectByName(name).quaternion.toArray(), rotation);
+      }
+      const thumb = entity.model.getObjectByName('Thumb3R').getWorldPosition(new Vector3());
+      assert.ok(entity.weapon.worldToLocal(thumb).distanceTo(new Vector3(.010,.011,.025)) < .002, sex);
+      if (entity.current.getEffectiveWeight() > .999) {
+        const track = entity.current.getClip().tracks.find(track => track.name === 'WristR.quaternion');
+        const expected = new Quaternion().fromArray(track.createInterpolant().evaluate(entity.current.time)).normalize();
+        assert.ok(wrist.quaternion.clone().normalize().angleTo(expected) < 1e-4, sex);
+      }
+    }
+    assert.deepEqual(playedClips, ['Knife_Stab', 'Knife_Cut']);
+    Object.assign(player, { moving: true, running: true });
+    player.navigation.source = 'manual';
+    models.prepare(player, game.elapsed + 1 / 60);
+    assert.equal(entity.clip, 'Run');
+    player.equipment.mainHand = null;
+    models.prepare(player, game.elapsed + 2 / 60);
+    assert.equal(entity.weapon, null);
   }
 });
 

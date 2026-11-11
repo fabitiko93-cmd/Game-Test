@@ -4,6 +4,7 @@ import { AnimationMixer, Box3, Group, LoopOnce, Quaternion, Vector3 } from "thre
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { defaultStyle, playerModelScale, QUATERNIUS_MODELS } from "./quaternius-catalog.js";
+import { KNIFE_ANIMATIONS, bindKnifeAnimations } from './knife-animations.js';
 import { PlayerMotion } from "./player-motion.js";
 import { WeaponModels, weaponModelSignature } from "./weapon-models.js";
 import { hasWeaponModel } from './weapon-catalog.js';
@@ -80,6 +81,7 @@ export class PlayerModels {
 
   equip(entity,player) {
     const item=activeWeapon(player),definition=itemDefinition(item),kind=definition?.weaponKind||null;
+    if(item?.type==='kitchen_knife')bindKnifeAnimations(entity);
     const bag=Boolean(player.equipment?.back),key=`${kind}-${weaponModelSignature(item)}-${bag}`;
     if(entity.weaponKind===key)return;
     entity.animationEvaluationKey=null;
@@ -102,7 +104,11 @@ export class PlayerModels {
       entity.weapon=model;entity.model.getObjectByName("WristR").add(model);
     } else if(item?.type==='kitchen_knife') {
       const knife=this.library.get("Knife");if(!knife)return;
-      entity.weapon=clone(knife.scene);entity.weapon.position.set(0,.035,.08);
+      const grip=KNIFE_ANIMATIONS.rigs[entity.modelSex].grip;
+      entity.weapon=clone(knife.scene);
+      entity.weapon.position.fromArray(grip.position);
+      entity.weapon.quaternion.fromArray(grip.rotation);
+      entity.weapon.scale.fromArray(grip.scale);
       entity.model.getObjectByName("WristR").add(entity.weapon);
     }
     if(bag) {
@@ -117,11 +123,21 @@ export class PlayerModels {
   pose(entity,pose) {
     restoreRiflePose(entity);
     restoreCharacterPose(entity);
-    const action=entity.actions.get(pose.clip);
-    if(entity.clip!==pose.clip){action.reset().setEffectiveTimeScale(0).setEffectiveWeight(1).play();if(entity.current)entity.current.crossFadeTo(action,.16,false);entity.current=action;entity.clip=pose.clip;}
+    const knife=KNIFE_ANIMATIONS.rigs[entity.modelSex];
+    const clip=pose.clip;
+    const action=entity.actions.get(clip);
+    if(entity.clip!==clip){action.reset().setEffectiveTimeScale(0).setEffectiveWeight(1).play();if(entity.current)entity.current.crossFadeTo(action,.16,false);entity.current=action;entity.clip=clip;}
     action.time=Math.min(.999999,pose.progress)*action.getClip().duration;entity.mixer.update(pose.delta);
     entity.poseProgress=pose.progress;
     for(const other of entity.actions.values())if(other!==action&&other.getEffectiveWeight()===0)other.stop();
+    if(entity.weapon?.userData.weaponType==='kitchen_knife'){
+      entity.rifleRestore=new Map();
+      for(const [name,rotation] of Object.entries(knife.grip.fingers)){
+        const {bone}=entity.rifleHands.get(name);
+        entity.rifleRestore.set(bone,bone.quaternion.clone());
+        bone.quaternion.fromArray(rotation);
+      }
+    }
     entity.root.rotation.y=pose.yaw;entity.root.updateMatrixWorld(true);
   }
 
