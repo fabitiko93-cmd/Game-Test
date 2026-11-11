@@ -43,6 +43,12 @@ Zeitabstand. `player-models.js` bindet den passenden Clip und den gemeinsamen
 Messergriff an das jeweilige Figurenrig. Die Animationsdaten und ihre
 Aufbereitung stehen im Quaternius-Asset-README.
 
+`player-motion.js` spielt bei einem unbewaffneten Angriff die 1–2-Folge
+innerhalb der vorhandenen Abklingzeit. `player-models.js` bindet die fertige
+Bewegung für das jeweilige Rig beim ersten Faustangriff.
+`combat.js` prüft Jab und Cross zu ihren jeweiligen Kontaktzeiten. Jeder
+Schlag erhält die Hälfte des Grundschadens sowie eine eigene Trefferprüfung.
+
 `kit-stance.js` liefert die aktive Grundhaltung aller modellierten Schusswaffen:
 Quaternius UAL für Pistolen, Originalclips für die kurze Ithaca, KayKit für
 Langwaffen und ZenXChaos für Revolver-Anlegen. Finger-/Griffprofile bleiben

@@ -1,6 +1,7 @@
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { defaultStyle, playerModelAppearance, playerModelScale, QUATERNIUS_MODELS, PLAYER_ANIMATIONS } from "./quaternius-catalog.js";
 import { KNIFE_ANIMATIONS } from './knife-animations.js';
+import { PUNCH_ANIMATION } from './punch-animations.js';
 import { WORLD_SCALE } from "./world-scale.js";
 import { hasWeaponModel } from './weapon-catalog.js';
 
@@ -31,24 +32,27 @@ export class PlayerMotion {
     if(freshKnife){
       record.attackStart=time;
       record.attackClip=knifeAttack.sequence%2?"Knife_Stab":"Knife_Cut";
-      record.knifeWeaponId=item.id;
+      record.attackWeaponId=item.id;
       const source=KNIFE_ANIMATIONS.rigs[appearance.sex].clips[record.attackClip];
-      record.knifeDuration=Math.min(source.duration,knifeAttack.duration);
+      record.attackDuration=Math.min(source.duration,knifeAttack.duration);
     }else if((combat.attackTimer||0)>record.attackTimer+.05){
-      record.attackStart=time;record.attackClip=weapon?"Sword_Slash":"Punch_Right";record.knifeWeaponId=null;
+      record.attackStart=time;
+      record.attackClip=weapon?"Sword_Slash":PUNCH_ANIMATION.name;
+      record.attackWeaponId=item?.id;
+      record.attackDuration=weapon?0:Math.min(PUNCH_ANIMATION.duration,combat.attackCooldown||0);
     }
     if((player.shots||0)>record.shots){
-      record.attackStart=time;record.attackClip=hasWeaponModel(item)?null:"Gun_Shoot";record.knifeWeaponId=null;
+      record.attackStart=time;record.attackClip=hasWeaponModel(item)?null:"Gun_Shoot";record.attackDuration=0;
     }
-    if(record.knifeWeaponId&&(item?.id!==record.knifeWeaponId||player.running||(player.moving&&player.navigation?.source==="manual"))){
-      record.attackClip=null;record.knifeWeaponId=null;
+    if(record.attackDuration&&(item?.id!==record.attackWeaponId||player.running||(player.moving&&player.navigation?.source==="manual"))){
+      record.attackClip=null;record.attackDuration=0;
     }
     const attackAge=time-record.attackStart,attackData=clipData(record.attackClip),crouched=player.stance==='sneak'&&!player.running;
     let clip=player.moving?(player.running?'Run':crouched?'Crouch_Walk':'Walk'):(crouched?'Crouch_Idle':firearm?(combat.enabled?'Idle_Gun_Pointing':'Idle_Gun'):'Idle_Neutral');
     if(!player.moving&&!crouched&&!combat.enabled&&['revolver_44','pistol_9mm'].includes(item?.type))clip='Idle_Neutral';
     let progress;
     if(player.dead){clip="Death";progress=1;}
-    else if(record.knifeWeaponId&&attackAge<record.knifeDuration){clip=record.attackClip;progress=attackAge/record.knifeDuration;}
+    else if(record.attackDuration&&attackAge<record.attackDuration){clip=record.attackClip;progress=attackAge/record.attackDuration;}
     else if(attackData&&attackAge<attackData.duration-.1){clip=record.attackClip;progress=Math.min(1,(attackAge+.1)/attackData.duration);}
     else {
       const data=clipData(clip);

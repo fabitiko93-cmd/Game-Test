@@ -5,6 +5,7 @@ import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { defaultStyle, playerModelScale, QUATERNIUS_MODELS } from "./quaternius-catalog.js";
 import { KNIFE_ANIMATIONS, bindKnifeAnimations } from './knife-animations.js';
+import { PUNCH_ANIMATION, bindPunchAnimation } from './punch-animations.js';
 import { PlayerMotion } from "./player-motion.js";
 import { WeaponModels, weaponModelSignature } from "./weapon-models.js";
 import { hasWeaponModel } from './weapon-catalog.js';
@@ -125,6 +126,7 @@ export class PlayerModels {
     restoreCharacterPose(entity);
     const knife=KNIFE_ANIMATIONS.rigs[entity.modelSex];
     const clip=pose.clip;
+    if(clip===PUNCH_ANIMATION.name)bindPunchAnimation(entity);
     const action=entity.actions.get(clip);
     if(entity.clip!==clip){action.reset().setEffectiveTimeScale(0).setEffectiveWeight(1).play();if(entity.current)entity.current.crossFadeTo(action,.16,false);entity.current=action;entity.clip=clip;}
     action.time=Math.min(.999999,pose.progress)*action.getClip().duration;entity.mixer.update(pose.delta);

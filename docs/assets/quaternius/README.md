@@ -153,3 +153,15 @@ with the male and female `knife-stab-grip-*.glb` and
 `knife-cut-compact-*.glb` files. The script fits the finger joints to the knife
 mesh and emits runtime pose data bundled into the game JavaScript. Keep the
 vendor downloads and preview GLBs outside the published repository.
+
+## Unarmed attacks
+
+`punch-animations.js` embeds the approved 1–2 preview for each modular rig.
+It combines `Punch_Jab` and `Punch_Cross` from the
+[Quaternius Universal Animation Library](https://quaternius.com/packs/universalanimationlibrary.html)
+(CC0 1.0), sourced from KinemIQ's public clip exports, with the fitted fists
+and corrected leg recovery from the final preview.
+
+Run `node scripts/prepare-punch-animations.mjs /path/to/approved-punch-previews`
+with the final `soft-legs-male.glb` and `soft-legs-female.glb` files to regenerate
+the embedded tracks.

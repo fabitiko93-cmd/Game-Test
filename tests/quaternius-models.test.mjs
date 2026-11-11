@@ -108,6 +108,60 @@ test("authored crouch clips retarget to both modular rigs with grounded shoes an
   }
 });
 
+test("an unarmed attack plays the 1–2 on both rigs at 20 FPS and resolves each hit at contact", async () => {
+  const library = new QuaterniusAssets({ loadAsset: load });
+  const models = new PlayerModels({}, library);
+  const combat = new CombatSystem();
+  const step = 1 / 20;
+  await models.ready;
+  for (const sex of ['male', 'female']) {
+    const player = createPlayer({ appearance: { sex } });
+    const target = { id: 'target', x: player.x, y: player.y + .4, state: 'chase', hp: 100 };
+    Object.assign(player.combat, { enabled: true, targetId: target.id });
+    const sounds = [], hitTimes = [], damage = [];
+    const game = {
+      player, zombies: [target], world: { emitNoise() {}, hasLineOfSight: () => true, blood: [] },
+      renderer: { burst() {} }, random: () => .25, sound: name => sounds.push(name), elapsed: 0,
+    };
+    const entity = models.prepare(player, 0);
+    const chest = entity.model.getObjectByName('Chest');
+    const leftWrist = entity.model.getObjectByName('WristL');
+    const rightWrist = entity.model.getObjectByName('WristR');
+    let sawJab = false, sawCross = false;
+    for (let frame = 1; frame <= 24; frame++) {
+      game.elapsed = frame * step;
+      const hp = target.hp;
+      combat.update(game, step);
+      assert.equal(models.prepare(player, game.elapsed), entity);
+      assert.equal(entity.clip, 'Punch_OneTwo');
+      assert.equal(entity.current.getClip().name, `Punch_OneTwo_${sex}`);
+      const chestZ = entity.root.worldToLocal(chest.getWorldPosition(new Vector3())).z;
+      const leftReach = entity.root.worldToLocal(leftWrist.getWorldPosition(new Vector3())).z - chestZ;
+      const rightReach = entity.root.worldToLocal(rightWrist.getWorldPosition(new Vector3())).z - chestZ;
+      if (entity.current.time < .38 && leftReach > .45 && rightReach < .25) sawJab = true;
+      if (entity.current.time > .55 && rightReach > .45 && leftReach < .3) sawCross = true;
+      if (hp !== target.hp) {
+        hitTimes.push(entity.current.time);
+        damage.push(hp - target.hp);
+      }
+    }
+    assert.ok(sawJab && sawCross, sex);
+    assert.ok(entity.poseProgress > .95, sex);
+    assert.deepEqual(sounds, ['swing', 'hit', 'hit']);
+    assert.equal(game.world.blood.length, 2);
+    assert.ok(hitTimes[0] >= .19 && hitTimes[0] < .29, sex);
+    assert.ok(hitTimes[1] >= .62 && hitTimes[1] < .74, sex);
+    for (const hit of damage) assert.ok(hit > 4 && hit < 6, sex);
+
+    game.elapsed = 25 * step;
+    combat.update(game, step);
+    models.prepare(player, game.elapsed);
+    assert.equal(entity.clip, 'Punch_OneTwo');
+    assert.equal(entity.poseProgress, 0);
+    assert.deepEqual(sounds, ['swing', 'hit', 'hit', 'swing']);
+  }
+});
+
 test("normal knife attacks load both approved clips and keep their fitted grip on both rigs", async () => {
   const library = new QuaterniusAssets({ loadAsset: load });
   const models = new PlayerModels({}, library);
