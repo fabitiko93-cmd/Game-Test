@@ -12,6 +12,7 @@ import { CombatSystem } from "../docs/src/combat.js";
 import { QuaterniusAssets } from "../docs/src/quaternius-assets.js";
 import { WorldModels } from "../docs/src/world-models.js";
 import { KNIFE_ANIMATIONS } from "../docs/src/knife-animations.js";
+import { MELEE_GRIPS } from '../docs/src/melee-models.js';
 import { QUATERNIUS_MODELS as metadata, createPlayerAppearance, playerHeight,
   playerModelAppearance, FURNITURE_MODELS, furnishingDimensions, furnishingFootprint } from "../docs/src/quaternius-catalog.js";
 import { World } from "../docs/src/world.js";
@@ -179,7 +180,8 @@ test("normal knife attacks load both approved clips and keep their fitted grip o
       ui: { showMessage() {} }, random: () => 1, sound() {}, elapsed: 0,
     };
     const entity = models.prepare(player, 0);
-    const { grip, clips } = KNIFE_ANIMATIONS.rigs[sex];
+    const { clips } = KNIFE_ANIMATIONS.rigs[sex];
+    const grip = MELEE_GRIPS.kitchen_knife[sex];
     const wrist = entity.model.getObjectByName('WristR');
     assert.equal(entity.weapon.parent, wrist);
     assert.deepEqual(entity.weapon.position.toArray(), grip.position);
@@ -199,7 +201,8 @@ test("normal knife attacks load both approved clips and keep their fitted grip o
         assert.deepEqual(entity.model.getObjectByName(name).quaternion.toArray(), rotation);
       }
       const thumb = entity.model.getObjectByName('Thumb3R').getWorldPosition(new Vector3());
-      assert.ok(entity.weapon.worldToLocal(thumb).distanceTo(new Vector3(.010,.011,.025)) < .002, sex);
+      const approvedThumb = sex === 'male' ? [.02501518,.01958633,-.00059391] : [.01897040,.02508692,-.00193990];
+      assert.ok(entity.weapon.worldToLocal(thumb).distanceTo(new Vector3(...approvedThumb)) < .00001, sex);
       if (entity.current.getEffectiveWeight() > .999) {
         const track = entity.current.getClip().tracks.find(track => track.name === 'WristR.quaternion');
         const expected = new Quaternion().fromArray(track.createInterpolant().evaluate(entity.current.time)).normalize();

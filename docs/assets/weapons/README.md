@@ -288,3 +288,38 @@ Strahl-/Körpertest. Jede weitere durchdrungene Figur erhält kumulativ weniger
 Schaden. Wände stoppen sämtliche Kaliber; kein Materialdurchschlag. Schussknall,
 Migration und übrige Geräusch-/Ausdauerregeln bleiben bestehen. Alle Werte sind
 vorläufige Spielbalance, keine reale ballistische Simulation.
+
+## Klauenhammer und Küchenmesser
+
+Der Klauenhammer stammt von [LonesomeDucky, Claw Hammer](https://opengameart.org/content/claw-hammer-0),
+das Küchenmesser aus dem [Kenney Food Kit](https://kenney.nl/assets/food-kit).
+Beide Originalmodelle sind CC0 1.0. `melee-models.json` enthält die unveränderten
+Dreiecksflächen im freigegebenen Maßstab (Hammer 34 cm, Messer 28,5 cm) und die
+übernommenen Texturfarben als Vertexfarben. Die Hand sitzt am Hammerstiel;
+Klingenlage, Finger und Daumen des Messers entsprechen der freigegebenen Probe.
+Die handbezogenen Transformationen beider Rigs stehen in `melee-grips.json`.
+Modelle und Griffdaten werden ins Spiel gebündelt und brauchen keinen separaten
+Waffendownload. Ursprüngliche Blender-/GLB-Quelldateien bleiben außerhalb des
+veröffentlichten Repositories.
+
+Geometrie regenerieren mit
+`blender -b -P scripts/prepare-melee-models.py -- HAMMER.blend COOKING-KNIFE.glb`.
+Die Datei `Hammer` der Original-Blenderdatei ist das Low-Poly-Modell.
+
+Der selbst erstellte Einzelhieb `Hammer_Slash` wurde am 17.11.2026 als Vorschau
+auf beiden Sperrkreis-Figuren freigegeben. `scripts/lib/hammer-motion.mjs`
+bewahrt die verwendeten Schlüssel und die Offline-Einpassung. Die kompakten
+Griffreferenzen liegen in `scripts/fixtures/melee-grip-reference.json`.
+`node scripts/prepare-hammer-animations.mjs` erzeugt daraus den fertigen Hieb,
+die Bereitschaftspose und beide Griffprofile. Die Laufzeit spielt die gebackenen
+Knochenbahnen; Geh-/Schleich-/Sprintclips behalten außerhalb des Angriffs ihre
+Beinbewegung. `tests/fixtures/melee-approved.json` hält Gelenk- und Hammerpositionen
+der freigegebenen Bewegung für den Abgleich mit der Laufzeit fest.
+
+Der Schadenstick des Hammers liegt bei 0,50 s seines 1,08-s-Clips. Beim Messer
+liegen die Kontakte bei 35 % (Stich) und 33 % (Schnitt) des abgespielten Clips.
+Jeder Kontakt prüft das ursprüngliche Ziel, Waffen-ID, Distanz und Sichtlinie.
+Abbruch, Sprint, manuelles Weglaufen, Tod oder Waffen-/Zielwechsel verwerfen
+noch ausstehende Treffer. Die erste Spielbalance des Hammers verwendet 28
+Grundschaden, 1,05 Tiles Reichweite, 1,08 s Schlagabstand, 4,5 Ausdauer pro
+Treffer und den vorhandenen Skill `blunt`; das Modell wiegt im Spiel 650 g.

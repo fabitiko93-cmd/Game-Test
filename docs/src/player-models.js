@@ -4,8 +4,10 @@ import { AnimationMixer, Box3, Group, LoopOnce, Quaternion, Vector3 } from "thre
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { defaultStyle, playerModelScale, QUATERNIUS_MODELS } from "./quaternius-catalog.js";
-import { KNIFE_ANIMATIONS, bindKnifeAnimations } from './knife-animations.js';
+import { bindKnifeAnimations } from './knife-animations.js';
 import { PUNCH_ANIMATION, bindPunchAnimation } from './punch-animations.js';
+import { HAMMER_ANIMATION, bindHammerAnimation } from './hammer-animations.js';
+import { createMeleeModel, MELEE_GRIPS } from './melee-models.js';
 import { PlayerMotion } from "./player-motion.js";
 import { WeaponModels, weaponModelSignature } from "./weapon-models.js";
 import { hasWeaponModel } from './weapon-catalog.js';
@@ -83,6 +85,7 @@ export class PlayerModels {
   equip(entity,player) {
     const item=activeWeapon(player),definition=itemDefinition(item),kind=definition?.weaponKind||null;
     if(item?.type==='kitchen_knife')bindKnifeAnimations(entity);
+    if(item?.type==='claw_hammer')bindHammerAnimation(entity);
     const bag=Boolean(player.equipment?.back),key=`${kind}-${weaponModelSignature(item)}-${bag}`;
     if(entity.weaponKind===key)return;
     entity.animationEvaluationKey=null;
@@ -103,13 +106,8 @@ export class PlayerModels {
     if(hasWeaponModel(item)) {
       const model=this.weapons.create(item);if(!model)return;
       entity.weapon=model;entity.model.getObjectByName("WristR").add(model);
-    } else if(item?.type==='kitchen_knife') {
-      const knife=this.library.get("Knife");if(!knife)return;
-      const grip=KNIFE_ANIMATIONS.rigs[entity.modelSex].grip;
-      entity.weapon=clone(knife.scene);
-      entity.weapon.position.fromArray(grip.position);
-      entity.weapon.quaternion.fromArray(grip.rotation);
-      entity.weapon.scale.fromArray(grip.scale);
+    } else if(MELEE_GRIPS[item?.type]) {
+      entity.weapon=createMeleeModel(item.type,entity.modelSex);
       entity.model.getObjectByName("WristR").add(entity.weapon);
     }
     if(bag) {
@@ -124,17 +122,19 @@ export class PlayerModels {
   pose(entity,pose) {
     restoreRiflePose(entity);
     restoreCharacterPose(entity);
-    const knife=KNIFE_ANIMATIONS.rigs[entity.modelSex];
     const clip=pose.clip;
     if(clip===PUNCH_ANIMATION.name)bindPunchAnimation(entity);
+    if(clip===HAMMER_ANIMATION.name||clip==='Hammer_Idle')bindHammerAnimation(entity);
     const action=entity.actions.get(clip);
     if(entity.clip!==clip){action.reset().setEffectiveTimeScale(0).setEffectiveWeight(1).play();if(entity.current)entity.current.crossFadeTo(action,.16,false);entity.current=action;entity.clip=clip;}
     action.time=Math.min(.999999,pose.progress)*action.getClip().duration;entity.mixer.update(pose.delta);
     entity.poseProgress=pose.progress;
     for(const other of entity.actions.values())if(other!==action&&other.getEffectiveWeight()===0)other.stop();
-    if(entity.weapon?.userData.weaponType==='kitchen_knife'){
+    const grip=MELEE_GRIPS[entity.weapon?.userData.weaponType]?.[entity.modelSex];
+    if(grip){
       entity.rifleRestore=new Map();
-      for(const [name,rotation] of Object.entries(knife.grip.fingers)){
+      const carry=entity.weapon.userData.weaponType==='claw_hammer'&&!clip.startsWith('Hammer_')?grip.carry:{};
+      for(const [name,rotation] of Object.entries({...carry,...grip.fingers})){
         const {bone}=entity.rifleHands.get(name);
         entity.rifleRestore.set(bone,bone.quaternion.clone());
         bone.quaternion.fromArray(rotation);

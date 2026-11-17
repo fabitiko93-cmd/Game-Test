@@ -737,6 +737,7 @@ export class Game {
 
   setPaused(paused) {
     this.combat.stopFiring(this);
+    if (paused) this.combat.cancelMeleeAttack(this);
     this.input.cancelPointer?.();
     this.paused = paused;
     this.input.enabled = !paused && !this.dead;

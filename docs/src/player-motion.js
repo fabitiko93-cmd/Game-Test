@@ -1,6 +1,5 @@
 import { activeWeapon, itemDefinition } from "./inventory.js";
 import { defaultStyle, playerModelAppearance, playerModelScale, QUATERNIUS_MODELS, PLAYER_ANIMATIONS } from "./quaternius-catalog.js";
-import { KNIFE_ANIMATIONS } from './knife-animations.js';
 import { PUNCH_ANIMATION } from './punch-animations.js';
 import { WORLD_SCALE } from "./world-scale.js";
 import { hasWeaponModel } from './weapon-catalog.js';
@@ -26,15 +25,14 @@ export class PlayerMotion {
     if(!record||time<record.time){record={time,x:player.x,y:player.y,yaw:targetYaw,phase:0,attackStart:-Infinity,attackTimer:0,shots:player.shots||0};this.entities.set(player,record);}
     const delta=Math.max(0,time-record.time),combat=player.combat||{},item=activeWeapon(player),weapon=itemDefinition(item);
     const firearm=weapon?.weaponKind==="firearm";
-    const knifeAttack=combat.knifeAttack;
-    const freshKnife=knifeAttack?.sequence!==record.knifeSequence&&combat.attackTimer>0
-      && item?.type==="kitchen_knife"&&item.id===knifeAttack?.weaponId;
-    if(freshKnife){
-      record.attackStart=time;
-      record.attackClip=knifeAttack.sequence%2?"Knife_Stab":"Knife_Cut";
-      record.attackWeaponId=item.id;
-      const source=KNIFE_ANIMATIONS.rigs[appearance.sex].clips[record.attackClip];
-      record.attackDuration=Math.min(source.duration,knifeAttack.duration);
+    const attack=combat.meleeAttack;
+    const freshAttack=attack&&attack.sequence!==record.meleeSequence&&!attack.cancelled
+      && (item?.id??null)===attack.weaponId&&attack.elapsed<attack.duration;
+    if(freshAttack){
+      record.attackStart=time-attack.elapsed;
+      record.attackClip=attack.clip;
+      record.attackWeaponId=item?.id;
+      record.attackDuration=attack.duration;
     }else if((combat.attackTimer||0)>record.attackTimer+.05){
       record.attackStart=time;
       record.attackClip=weapon?"Sword_Slash":PUNCH_ANIMATION.name;
@@ -44,18 +42,19 @@ export class PlayerMotion {
     if((player.shots||0)>record.shots){
       record.attackStart=time;record.attackClip=hasWeaponModel(item)?null:"Gun_Shoot";record.attackDuration=0;
     }
-    if(record.attackDuration&&(item?.id!==record.attackWeaponId||player.running||(player.moving&&player.navigation?.source==="manual"))){
+    if(record.attackDuration&&(attack?.cancelled||item?.id!==record.attackWeaponId||player.running||(player.moving&&player.navigation?.source==="manual"))){
       record.attackClip=null;record.attackDuration=0;
     }
     const attackAge=time-record.attackStart,attackData=clipData(record.attackClip),crouched=player.stance==='sneak'&&!player.running;
     let clip=player.moving?(player.running?'Run':crouched?'Crouch_Walk':'Walk'):(crouched?'Crouch_Idle':firearm?(combat.enabled?'Idle_Gun_Pointing':'Idle_Gun'):'Idle_Neutral');
+    if(item?.type==='claw_hammer'&&!player.moving&&!crouched)clip='Hammer_Idle';
     if(!player.moving&&!crouched&&!combat.enabled&&['revolver_44','pistol_9mm'].includes(item?.type))clip='Idle_Neutral';
     let progress;
     if(player.dead){clip="Death";progress=1;}
     else if(record.attackDuration&&attackAge<record.attackDuration){clip=record.attackClip;progress=attackAge/record.attackDuration;}
     else if(attackData&&attackAge<attackData.duration-.1){clip=record.attackClip;progress=Math.min(1,(attackAge+.1)/attackData.duration);}
     else {
-      const data=clipData(clip);
+      const data=clip==='Hammer_Idle'?{duration:1}:clipData(clip);
       if(player.moving) {
         const travel=Math.hypot(player.x-record.x,player.y-record.y)*WORLD_SCALE.metersPerTile;
         if(delta>0&&travel<3)record.phase=modulo(record.phase+travel/(data.distance*scale));
@@ -69,7 +68,7 @@ export class PlayerMotion {
       record.yaw+=Math.max(-9*delta,Math.min(9*delta,turn*(1-Math.exp(-14*delta))));
       record.yaw=Math.atan2(Math.sin(record.yaw),Math.cos(record.yaw));
     }
-    Object.assign(record,{time,x:player.x,y:player.y,attackTimer:combat.attackTimer||0,shots:player.shots||0,knifeSequence:knifeAttack?.sequence});
+    Object.assign(record,{time,x:player.x,y:player.y,attackTimer:combat.attackTimer||0,shots:player.shots||0,meleeSequence:attack?.sequence});
     return {appearance,scale,clip,progress,delta:Math.min(.1,delta),yaw:record.yaw,crouched};
   }
 }

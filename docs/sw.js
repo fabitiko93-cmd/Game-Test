@@ -1,5 +1,5 @@
 // Source template. Build ID and complete asset list are generated automatically.
-const BUILD_ID = "7b104fd0a07ab432e82f";
+const BUILD_ID = "64e62b3ccc282b06f214";
 const FILES = [
   "./assets/clothing/README.md",
   "./assets/clothing/icons-90973c06703c.svg",
@@ -192,6 +192,8 @@ const FILES = [
   "./assets/weapons/m4-376c5a4243d9.glb.gz",
   "./assets/weapons/m4-icon.svg",
   "./assets/weapons/m4.json",
+  "./assets/weapons/melee-grips.json",
+  "./assets/weapons/melee-models.json",
   "./assets/weapons/mossberg_590-ae102bdd20fb.glb.gz",
   "./assets/weapons/mossberg_590-icon.svg",
   "./assets/weapons/mossberg_590.json",
@@ -305,9 +307,9 @@ const FILES = [
   "./build/assets/scorpion-icon-YGG7V2DW.svg",
   "./build/assets/usp-icon-S7RTUW46.svg",
   "./build/assets/vector-icon-DX6NJN2U.svg",
-  "./build/chunks/animation-workshop-LHHHFIRB.js",
-  "./build/chunks/chunk-I6ONMBLG.js",
-  "./build/main-MGQBDKJ7.js",
+  "./build/chunks/animation-workshop-DWWVKMA2.js",
+  "./build/chunks/chunk-RKZGTWG7.js",
+  "./build/main-W5ABOROO.js",
   "./build/style-47ZEQVKU.css",
   "./index.html",
   "./manifest.webmanifest"

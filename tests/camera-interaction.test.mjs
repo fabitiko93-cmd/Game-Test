@@ -11,6 +11,7 @@ import {takeItem} from '../docs/src/item-actions.js';
 import {createItem,addItem,equipItem,weaponStats} from '../docs/src/inventory.js';
 import {PlayerMotion} from '../docs/src/player-motion.js';
 import {CombatSystem} from '../docs/src/combat.js';
+import {meleeAttack} from '../docs/src/melee-attacks.js';
 import {furnishingDimensions} from '../docs/src/quaternius-catalog.js';
 
 function camera(zoom=VIEW.zoomDefault){const renderer=Object.create(Renderer.prototype);Object.assign(renderer,{zoom,width:812,height:375,scale:3,camera:{x:0,y:0},cameraTarget:{x:0,y:0},cameraFollowing:true,cameraPanning:false});return renderer;}
@@ -75,7 +76,7 @@ test('real melee events use the authored punch and weapon clips; crouch switches
  const stats=weaponStats(knife);
  player.combat.attackTimer=0;motion.sample(player,time+=2);
  combat.beginMelee(game,{id:'target'},knife,stats);
- assert.equal(player.combat.pendingAttack,.14);
+ assert.equal(player.combat.pendingAttack,meleeAttack(knife.type,1).contact*stats.cooldown);
  assert.equal(player.combat.attackCooldown,stats.cooldown);
  assert.equal(motion.sample(player,time+=.01).clip,'Knife_Stab');
  // A subsequent attack is still a new event when no frame saw the old timer decay.
