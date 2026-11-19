@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {ITEMS,LOOT_TABLES} from '../docs/src/data.js';
 import {hasWeaponModel,weaponModelDefinition} from '../docs/src/weapon-catalog.js';
+import {MELEE_GRIPS} from '../docs/src/melee-models.js';
 import {clothingModelFor,CLOTHING_ITEMS} from '../docs/src/clothing-catalog.js';
 import {QUATERNIUS_MODELS} from '../docs/src/quaternius-catalog.js';
 import {World} from '../docs/src/world.js';
@@ -13,7 +14,7 @@ test('unmodelled weapons and borrowed equipment substitutes are removed with the
     'short_stock','weapon_sling','shell_holder','outfit_top','outfit_trousers','leather_jacket',
     'jeans','motorcycle_helmet','canvas_bag'])assert.equal(ITEMS[type],undefined,type);
   for(const [type,definition] of Object.entries(ITEMS)){
-    if(definition.type==='weapon')assert.ok(hasWeaponModel(type)||['kitchen_knife','pistol_9mm'].includes(type),type);
+    if(definition.type==='weapon')assert.ok(hasWeaponModel(type)||MELEE_GRIPS[type],type);
     if(definition.type==='mod')for(const compatible of definition.compatible){
       assert.ok(ITEMS[compatible]?.modSlots.includes(definition.modSlot),`${type}: ${compatible}`);
       assert.ok(weaponModelDefinition(compatible)?.mods[type],`${type}: original model part`);

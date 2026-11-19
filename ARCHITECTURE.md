@@ -37,11 +37,22 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
 
-`combat.js` kennzeichnet normale Küchenmesserangriffe für `player-motion.js`.
-Stich und Schnitt wechseln pro Angriff und passen in dessen vorhandenen
-Zeitabstand. `player-models.js` bindet den passenden Clip und den gemeinsamen
-Messergriff an das jeweilige Figurenrig. Die Animationsdaten und ihre
-Aufbereitung stehen im Quaternius-Asset-README.
+`combat.js` führt normale Nahkampfangriffe mit Clip, Waffen-ID und verstrichener
+Zeit für `player-motion.js`. `melee-attacks.js` ordnet den Messerstich/-schnitt
+und den Hammerhieb ihrem Kontaktzeitpunkt zu. Simulation und Darstellung verwenden
+dieselbe Zeitleiste; Waffen-/Zielwechsel und manuelle Unterbrechungen verwerfen
+ausstehende Treffer. `melee-models.js` hält die ausgewählten eingebetteten
+Waffenmodelle und beide Griffprofile. `hammer-animations.js` enthält den fertigen
+Hammerhieb und die Bereitschaft für beide Rigs; die Laufzeit benötigt dafür
+keinen Handbahn-IK-Solver. `scripts/prepare-hammer-animations.mjs` backt die
+freigegebenen Schlüssel aus `scripts/lib/hammer-motion.mjs` samt Griffreferenzen.
+Quellen und Aufbereitung stehen im Waffen-Asset-README.
+
+`player-motion.js` spielt bei einem unbewaffneten Angriff die 1–2-Folge
+innerhalb der vorhandenen Abklingzeit. `player-models.js` bindet die fertige
+Bewegung für das jeweilige Rig beim ersten Faustangriff.
+`combat.js` prüft Jab und Cross zu ihren jeweiligen Kontaktzeiten. Jeder
+Schlag erhält die Hälfte des Grundschadens sowie eine eigene Trefferprüfung.
 
 `kit-stance.js` liefert die aktive Grundhaltung aller modellierten Schusswaffen:
 Quaternius UAL für Pistolen, Originalclips für die kurze Ithaca, KayKit für

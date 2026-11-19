@@ -147,9 +147,25 @@ under the [Standard Asset Store EULA](https://unity.com/legal/as-terms) for
 embedded game use. The cut uses the modular characters' original CC0
 `Sword_Slash`. The stab was retargeted and its wrist was adjusted. Both clips
 use the fitted knife attachment and the revised finger pose for each rig.
+The selected Kenney cooking knife and the subsequently approved grip replace
+the original held mesh through `melee-models.js`; its source and preparation
+are documented in `../weapons/README.md`. The older grip in the animation
+module remains the authoring reference for the existing clip generator.
 
 Run `node scripts/prepare-knife-animations.mjs /path/to/approved-knife-previews`
 with the male and female `knife-stab-grip-*.glb` and
 `knife-cut-compact-*.glb` files. The script fits the finger joints to the knife
 mesh and emits runtime pose data bundled into the game JavaScript. Keep the
 vendor downloads and preview GLBs outside the published repository.
+
+## Unarmed attacks
+
+`punch-animations.js` embeds the approved 1–2 preview for each modular rig.
+It combines `Punch_Jab` and `Punch_Cross` from the
+[Quaternius Universal Animation Library](https://quaternius.com/packs/universalanimationlibrary.html)
+(CC0 1.0), sourced from KinemIQ's public clip exports, with the fitted fists
+and corrected leg recovery from the final preview.
+
+Run `node scripts/prepare-punch-animations.mjs /path/to/approved-punch-previews`
+with the final `soft-legs-male.glb` and `soft-legs-female.glb` files to regenerate
+the embedded tracks.

@@ -1,18 +1,11 @@
-import { AnimationClip, LoopOnce } from 'three';
-import { gunzipSync } from 'three/addons/libs/fflate.module.js';
+import { bindOneShotAnimation, unpackAnimationClips } from './packed-animation.js';
 
 let clips;
 export function bindKnifeAnimations(entity) {
   if (entity.actions.has('Knife_Stab')) return;
-  if (!clips) {
-    const packed = Uint8Array.from(atob(PACKED_KNIFE_CLIPS), char => char.charCodeAt(0));
-    const poses = JSON.parse(new TextDecoder().decode(gunzipSync(packed)));
-    clips = new Map(poses.map(pose => [pose.name, AnimationClip.parse(pose)]));
-  }
+  clips ??= unpackAnimationClips(PACKED_KNIFE_CLIPS);
   for (const [name, source] of Object.entries(KNIFE_ANIMATIONS.rigs[entity.modelSex].clips)) {
-    const action = entity.mixer.clipAction(clips.get(source.name)).setEffectiveTimeScale(0).setLoop(LoopOnce, 1);
-    action.clampWhenFinished = true;
-    entity.actions.set(name, action);
+    bindOneShotAnimation(entity, name, clips.get(source.name));
   }
 }
 

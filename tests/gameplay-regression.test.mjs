@@ -334,6 +334,32 @@ test("disabled HUD controls and a stale target never issue a movement or attack"
   });
 });
 
+test("the cross can hit after a missed jab and is cancelled when the player equips a weapon", () => {
+  for (const equipBetweenStrikes of [false, true]) {
+    const { game, messages } = fixture();
+    Object.assign(game.player, { x: 10, y: 10 });
+    const target = createZombie(10, 10.6);
+    target.state = "chase";
+    game.zombies.push(target);
+    Object.assign(game.player.combat, { enabled: true, targetId: target.id });
+    const initialHp = target.hp;
+    game.random = () => 1;
+    game.combat.update(game, .01);
+    game.combat.update(game, .19);
+    assert.equal(target.hp, initialHp);
+    assert.ok(messages.includes("Verfehlt"));
+    if (equipBetweenStrikes) {
+      const knife = createItem("kitchen_knife");
+      addItem(game.player, knife);
+      equipItem(game.player, knife.id);
+    }
+    game.random = () => .25;
+    game.combat.update(game, .4);
+    assert.equal(game.player.combat.pendingAttack, 0);
+    assert.equal(target.hp < initialHp, !equipBetweenStrikes);
+  }
+});
+
 test("combat ends on a kill or lost pursuit and does not attack a later selected zombie", () => {
   const { game, target } = executionFixture();
   Object.assign(game.player.combat, { enabled: true, pendingAttack: .1, pendingTargetId: target.id });

@@ -69,6 +69,8 @@ export const ITEMS = {
   ...CLOTHING_ITEMS,
   ...SHOTGUN_ITEMS,
   kitchen_knife: melee("Küchenmesser", "Messer", "blades", 20, 1.13, 0.95, 0.84, 1.8, 0.35, 1, "Schnell und leise, aber ohne große Reichweite.", { execution: true }),
+  claw_hammer: melee("Klauenhammer", "Hammer", "blunt", 28, 1.05, 1.08, 0.78, 3.4, 0.65, 1,
+    "Einhändiger Hieb von oben. Kräftiger als das Küchenmesser, mit längerer Erholung.", { staminaCost: 4.5 }),
 
   ak_762: firearm("AK · 7,62×39", "AK", {
     icon: "ak", weight: 3, hands: 2, damage: 62, range: 13, aimTime: 1.15, recovery: .24,
@@ -206,7 +208,7 @@ export const LOOT_TABLES = {
   ],
   fridge: [["water", 0.78, 1, 2], ["soda", 0.62, 1, 2], ["apple", 0.58, 1, 2], ["bread", 0.35, 1, 1]],
   tools: [
-    ["lockpick", 0.2, 1, 1], ["batteries", 0.55, 1, 2], ["cloth", 0.45, 1, 2],
+    ["lockpick", 0.2, 1, 1], ["batteries", 0.55, 1, 2], ["cloth", 0.45, 1, 2], ["claw_hammer", .28, 1, 1],
   ],
   pharmacy: [
     ["bandage", 0.86, 1, 2], ["disinfectant", 0.65, 1, 1], ["painkillers", 0.68, 1, 2],

@@ -11,6 +11,7 @@ import {takeItem} from '../docs/src/item-actions.js';
 import {createItem,addItem,equipItem,weaponStats} from '../docs/src/inventory.js';
 import {PlayerMotion} from '../docs/src/player-motion.js';
 import {CombatSystem} from '../docs/src/combat.js';
+import {meleeAttack} from '../docs/src/melee-attacks.js';
 import {furnishingDimensions} from '../docs/src/quaternius-catalog.js';
 
 function camera(zoom=VIEW.zoomDefault){const renderer=Object.create(Renderer.prototype);Object.assign(renderer,{zoom,width:812,height:375,scale:3,camera:{x:0,y:0},cameraTarget:{x:0,y:0},cameraFollowing:true,cameraPanning:false});return renderer;}
@@ -70,12 +71,12 @@ test('all furnished rooms, mission objects and outdoor storage remain reachable 
 
 test('real melee events use the authored punch and weapon clips; crouch switches to its own idle and walking clips',()=>{
  const player=createPlayer(),motion=new PlayerMotion(),combat=new CombatSystem();let time=0;motion.sample(player,time);
- const game={player,world:{emitNoise(){}},sound(){}};combat.beginMelee(game,{id:'target'},null,null);assert.equal(motion.sample(player,time+=.01).clip,'Punch_Right');
+ const game={player,world:{emitNoise(){}},sound(){}};combat.beginMelee(game,{id:'target'},null,null);assert.equal(motion.sample(player,time+=.01).clip,'Punch_OneTwo');
  const knife=createItem('kitchen_knife');addItem(player,knife);equipItem(player,knife.id);
  const stats=weaponStats(knife);
  player.combat.attackTimer=0;motion.sample(player,time+=2);
  combat.beginMelee(game,{id:'target'},knife,stats);
- assert.equal(player.combat.pendingAttack,.14);
+ assert.equal(player.combat.pendingAttack,meleeAttack(knife.type,1).contact*stats.cooldown);
  assert.equal(player.combat.attackCooldown,stats.cooldown);
  assert.equal(motion.sample(player,time+=.01).clip,'Knife_Stab');
  // A subsequent attack is still a new event when no frame saw the old timer decay.
