@@ -4,18 +4,21 @@ import { activeWeapon, itemDefinition, inventoryWeight, carryCapacity, weaponSta
 import { clamp, distance } from "./util.js";
 import { findPlayerPath, pathToPlayerInteraction } from "./player-navigation.js";
 import { canInteract } from "./interaction.js";
-import { zombieStep } from "./zombie-collision.js";
+import { playerRetreatStep, zombieStep } from "./zombie-collision.js";
 import { PLAYER_BODY_RADIUS } from "./world-scale.js";
+import { CONTACT_EPSILON, meleeMobility } from "./melee-attacks.js";
 
 export function updateMovement(game, delta) {
   const player = game.player, navigation = player.navigation;
-  if (navigation.source === "combat" && !game.combat.target(game)) game.clearNavigation();
+  const target = game.combat.target(game), weapon = activeWeapon(player);
+  if (navigation.source === "combat" && !target) game.clearNavigation();
   const keyboard = game.input.keyboardMovement();
   if (keyboard.magnitude <= 0 && navigation.source === "execution") game.stealth.updateExecution?.(game);
   if (!navigation.path.length && keyboard.magnitude <= 0 && navigation.source === "manual"
     && game.elapsed >= navigation.manualUntil) navigation.source = null;
   let dx = 0, dy = 0, waypoint = null, requestedRun = navigation.runRequested;
   if (keyboard.magnitude > 0) {
+    game.combat.cancelRetreat?.(game);
     game.stealth.cancelExecution?.(game);
     game.clearNavigation();
     navigation.source = "manual";
@@ -24,7 +27,7 @@ export function updateMovement(game, delta) {
     const length = Math.hypot(dx, dy) || 1;
     dx /= length; dy /= length; requestedRun = keyboard.run;
   } else {
-    const target = game.combat.target(game), weapon = activeWeapon(player), stats = itemDefinition(weapon);
+    const stats = itemDefinition(weapon);
     if (target && navigation.source === "combat" && distance(player, target) <= (stats?.range || .88) + .08) game.clearNavigation();
     while (navigation.path?.length && distance(player, navigation.path[0]) < .003) {
       const next = navigation.path.shift();
@@ -42,13 +45,39 @@ export function updateMovement(game, delta) {
   // as walking recovers enough stamina for one more sprint frame.
   if (!requestedRun) navigation.sprintExhausted = false;
   if (requestedRun && player.stamina <= 4) navigation.sprintExhausted = true;
-  const canRun = requestedRun && !navigation.sprintExhausted && player.stance !== "sneak" && player.stamina > 4;
+  const sprintRequested = requestedRun && !navigation.sprintExhausted && player.stance !== "sneak" && player.stamina > 4;
+  const melee = game.combat.meleeContext?.(game, target);
+  let attack = melee && game.combat.activeMelee(game);
+  if (sprintRequested && attack && !attack.direction) {
+    game.combat.cancelMeleeAttack(game);
+    attack = null;
+  }
+  const canRun = sprintRequested && (!attack || attack.elapsed + CONTACT_EPSILON >= attack.releaseAt);
   const mode = player.stance === "sneak" ? "sneak" : canRun ? "run" : "walk", stance = STANCES[mode];
+  const retreat = melee && player.combat.meleeAttack?.weaponId === (weapon?.id ?? null)
+    && !waypoint && keyboard.magnitude <= 0 && player.combat.retreat;
+  if (retreat) { dx = retreat.x; dy = retreat.y; }
+  const trackTarget = melee && mode !== "run";
+  if (trackTarget) {
+    if (attack?.direction && attack.nextContact < attack.contacts.length) {
+      player.facingX = attack.direction.x;
+      player.facingY = attack.direction.y;
+    } else game.combat.facePlayer(player, target);
+  }
   const previous = { x: player.x, y: player.y };
   if (Math.hypot(dx, dy) > 0) {
     const burden = inventoryWeight(player) / Math.max(1, carryCapacity(player));
-    let budget = stance.speed * clamp(1.08 - burden * .16, .72, 1) * (weaponStats(activeWeapon(player))?.mobility || 1) * delta;
-    if (waypoint) {
+    const footwork = trackTarget && !retreat ? .82 + .18 * clamp(dx * player.facingX + dy * player.facingY, -1, 1) : 1;
+    let budget = stance.speed * clamp(1.08 - burden * .16, .72, 1)
+      * (weaponStats(weapon)?.mobility || 1) * footwork * meleeMobility(attack, delta) * delta;
+    if (retreat) {
+      const travel = Math.min(budget, retreat.remaining);
+      const end = playerRetreatStep(game, { x: player.x + dx * travel, y: player.y + dy * travel }, PLAYER_BODY_RADIUS);
+      Object.assign(player, end);
+      const moved = distance(previous, player);
+      retreat.remaining -= moved;
+      if (retreat.remaining < CONTACT_EPSILON || moved + CONTACT_EPSILON < travel) player.combat.retreat = null;
+    } else if (waypoint) {
       for (let leg = 0; leg < 6 && budget > .00001 && navigation.path.length; leg++) {
         const next = navigation.path[0], door = game.world.doorAtCell(next.x, next.y)
           || game.world.objectsNear(player.x, player.y, GAME.interactionRange + .2).find(object => {
@@ -85,7 +114,7 @@ export function updateMovement(game, delta) {
   player.moving = movedDistance > .000001;
   player.running = player.moving && mode === "run";
   if (player.moving) {
-    player.facingX = dx; player.facingY = dy;
+    if (!trackTarget) { player.facingX = dx; player.facingY = dy; }
     const stealthFactor = 1 - skillValue(player, "stealth") * .003;
     const hiddenNoise = game.stealth.hiddenNoiseMultiplier(player);
     player.noiseRadius = stance.noise * stealthFactor * hiddenNoise;
@@ -130,6 +159,7 @@ export function moveEntity(game, entity, dx, dy, radius) {
 
 export function setDestination(game, requestedPoint, options = {}) {
   if (!game.canAct()) return false;
+  game.combat.cancelRetreat?.(game);
   const point = game.world.clampPoint(requestedPoint);
   const navigation = game.player.navigation;
   const path = findPlayerPath(game.world, game.player, point, { allowDoors: true, preferCover: game.player.stance === "sneak" });
@@ -184,6 +214,7 @@ export function arriveAtDestination(game) {
 
 export function queueInteraction(game, object) {
   if (!object?.interactable) return;
+  game.combat.cancelRetreat?.(game);
   game.stealth.cancelExecution?.(game);
   game.renderer.selectedId = object.id;
   if (canInteract(game.world, game.player, object)) {

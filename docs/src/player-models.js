@@ -21,6 +21,28 @@ import {BODY_SOURCES} from './clothing-catalog.js';
 import {restoreCharacterPose} from './character-pose.js';
 
 const PARTS=["head","torso","legs","feet"];
+const LEG_ROTATION = /^(UpperLeg|LowerLeg|Foot|Toe)[LR]\.quaternion$/;
+
+function applyMeleeFootwork(entity, footwork) {
+  if (!footwork) return;
+  entity.gaitTracks ??= new Map();
+  const clip = entity.actions.get(footwork.clip).getClip();
+  if (!entity.gaitTracks.has(clip)) {
+    const tracks = clip.tracks.filter(track => LEG_ROTATION.test(track.name)).map(track => ({
+      bone: entity.model.getObjectByName(track.name.split('.')[0]),
+      sample: track.createInterpolant(),
+      original: new Quaternion(),
+    }));
+    entity.gaitTracks.set(clip, tracks);
+  }
+  const rotation = entity.gaitRotation ??= new Quaternion();
+  entity.appliedGaitTracks = entity.gaitTracks.get(clip);
+  for (const { bone, sample, original } of entity.appliedGaitTracks) {
+    original.copy(bone.quaternion);
+    rotation.fromArray(sample.evaluate(footwork.progress * clip.duration));
+    bone.quaternion.slerp(rotation, footwork.weight);
+  }
+}
 
 export class PlayerModels {
   constructor(pass,library) {
@@ -122,12 +144,17 @@ export class PlayerModels {
   pose(entity,pose) {
     restoreRiflePose(entity);
     restoreCharacterPose(entity);
+    if (entity.appliedGaitTracks) {
+      for (const { bone, original } of entity.appliedGaitTracks) bone.quaternion.copy(original);
+      entity.appliedGaitTracks = null;
+    }
     const clip=pose.clip;
     if(clip===PUNCH_ANIMATION.name)bindPunchAnimation(entity);
     if(clip===HAMMER_ANIMATION.name||clip==='Hammer_Idle')bindHammerAnimation(entity);
     const action=entity.actions.get(clip);
-    if(entity.clip!==clip){action.reset().setEffectiveTimeScale(0).setEffectiveWeight(1).play();if(entity.current)entity.current.crossFadeTo(action,.16,false);entity.current=action;entity.clip=clip;}
+    if(entity.clip!==clip){action.reset().setEffectiveTimeScale(0).setEffectiveWeight(1).play();if(entity.current)entity.current.crossFadeTo(action,pose.blendDuration??.16,false);entity.current=action;entity.clip=clip;}
     action.time=Math.min(.999999,pose.progress)*action.getClip().duration;entity.mixer.update(pose.delta);
+    applyMeleeFootwork(entity, pose.footwork);
     entity.poseProgress=pose.progress;
     for(const other of entity.actions.values())if(other!==action&&other.getEffectiveWeight()===0)other.stop();
     const grip=MELEE_GRIPS[entity.weapon?.userData.weaponType]?.[entity.modelSex];

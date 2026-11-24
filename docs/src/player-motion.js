@@ -3,8 +3,10 @@ import { defaultStyle, playerModelAppearance, playerModelScale, QUATERNIUS_MODEL
 import { PUNCH_ANIMATION } from './punch-animations.js';
 import { WORLD_SCALE } from "./world-scale.js";
 import { hasWeaponModel } from './weapon-catalog.js';
+import { meleeProgress } from './melee-attacks.js';
 
 const modulo = value => ((value%1)+1)%1;
+const clamp01 = value => Math.max(0, Math.min(1, value));
 
 export class PlayerMotion {
   constructor() { this.entities=new WeakMap(); }
@@ -42,23 +44,38 @@ export class PlayerMotion {
     if((player.shots||0)>record.shots){
       record.attackStart=time;record.attackClip=hasWeaponModel(item)?null:"Gun_Shoot";record.attackDuration=0;
     }
-    if(record.attackDuration&&(attack?.cancelled||item?.id!==record.attackWeaponId||player.running||(player.moving&&player.navigation?.source==="manual"))){
+    const releasedIntoMotion = player.moving && attack && time - record.attackStart >= attack.releaseAt;
+    if(record.attackDuration&&(attack?.cancelled||item?.id!==record.attackWeaponId||player.running||releasedIntoMotion)){
       record.attackClip=null;record.attackDuration=0;
     }
     const attackAge=time-record.attackStart,attackData=clipData(record.attackClip),crouched=player.stance==='sneak'&&!player.running;
-    let clip=player.moving?(player.running?'Run':crouched?'Crouch_Walk':'Walk'):(crouched?'Crouch_Idle':firearm?(combat.enabled?'Idle_Gun_Pointing':'Idle_Gun'):'Idle_Neutral');
+    const gait = player.running ? 'Run' : crouched ? 'Crouch_Walk' : 'Walk';
+    let clip=player.moving?gait:(crouched?'Crouch_Idle':firearm?(combat.enabled?'Idle_Gun_Pointing':'Idle_Gun'):'Idle_Neutral');
     if(item?.type==='claw_hammer'&&!player.moving&&!crouched)clip='Hammer_Idle';
     if(!player.moving&&!crouched&&!combat.enabled&&['revolver_44','pistol_9mm'].includes(item?.type))clip='Idle_Neutral';
-    let progress;
+    if (player.moving && delta > 0) {
+      const dx = player.x - record.x, dy = player.y - record.y, distance = Math.hypot(dx, dy);
+      const travel = distance * WORLD_SCALE.metersPerTile;
+      const backwards = !player.running && dx * (player.facingX ?? 0) + dy * (player.facingY ?? 1) < -.2 * distance;
+      if (travel < 3) record.phase = modulo(record.phase + (backwards ? -1 : 1) * travel / (clipData(gait).distance * scale));
+    }
+    let progress, footwork, blendDuration;
     if(player.dead){clip="Death";progress=1;}
-    else if(record.attackDuration&&attackAge<record.attackDuration){clip=record.attackClip;progress=attackAge/record.attackDuration;}
+    else if(record.attackDuration&&attackAge<record.attackDuration){
+      clip=record.attackClip;
+      progress=attack?.contacts?meleeProgress(attack,attackAge):attackAge/record.attackDuration;
+      if (attack?.contacts) blendDuration = Math.min(.16, attack.contacts[0] / 2);
+      if (attack?.contacts && player.moving) {
+        const last = attack.contacts.at(-1);
+        const weight = attackAge < last ? clamp01((attack.lockAt - attackAge) / .10)
+          : clamp01((attackAge - last) / Math.min(.12, attack.releaseAt - last));
+        if (weight > 0) footwork = { clip: gait, progress: record.phase, weight };
+      }
+    }
     else if(attackData&&attackAge<attackData.duration-.1){clip=record.attackClip;progress=Math.min(1,(attackAge+.1)/attackData.duration);}
     else {
       const data=clip==='Hammer_Idle'?{duration:1}:clipData(clip);
-      if(player.moving) {
-        const travel=Math.hypot(player.x-record.x,player.y-record.y)*WORLD_SCALE.metersPerTile;
-        if(delta>0&&travel<3)record.phase=modulo(record.phase+travel/(data.distance*scale));
-      } else if(delta>0)record.phase=modulo(record.phase+delta/data.duration);
+      if(!player.moving&&delta>0)record.phase=modulo(record.phase+delta/data.duration);
       progress=record.phase;
     }
     // A new path changes the destination immediately, not the body's orientation
@@ -69,6 +86,6 @@ export class PlayerMotion {
       record.yaw=Math.atan2(Math.sin(record.yaw),Math.cos(record.yaw));
     }
     Object.assign(record,{time,x:player.x,y:player.y,attackTimer:combat.attackTimer||0,shots:player.shots||0,meleeSequence:attack?.sequence});
-    return {appearance,scale,clip,progress,delta:Math.min(.1,delta),yaw:record.yaw,crouched};
+    return {appearance,scale,clip,progress,delta:Math.min(.1,delta),yaw:record.yaw,crouched,footwork,blendDuration};
   }
 }

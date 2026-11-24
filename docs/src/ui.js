@@ -51,7 +51,7 @@ export class GameUI {
       "awareness-state", "noise-state", "cover-fill", "cover-state", "location", "clock", "message", "target-label",
       "enemy-target", "enemy-state", "enemy-name", "enemy-hp-fill", "aim-meter", "aim-fill", "ammo-label",
       "execute-button", "execute-label", "execute-hint",
-      "action-button", "action-label", "attack-button", "stance-button", "stance-label", "reload-button", "fire-mode-button",
+      "action-button", "action-label", "attack-button", "retreat-button", "stance-button", "stance-label", "reload-button", "fire-mode-button",
       "mission-button", "mission-indicator", "status-button", "inventory-button", "inventory-count", "character-button",
       "recenter-button", "pause-button", "quickbar", "debug-stats",
       "zoom-in-button", "zoom-out-button", "zoom-label",
@@ -278,7 +278,15 @@ export class GameUI {
   updateAction(player, game) {
     this.contextInfo = null;
     const weapon = activeWeapon(player);
-    const firearmTarget = itemDefinition(weapon)?.weaponKind === "firearm" && player.combat.enabled && game.combat.target(game);
+    const target = player.combat.enabled && game.combat.target(game);
+    const firearmTarget = itemDefinition(weapon)?.weaponKind === "firearm" && target;
+    const melee = game.combat.meleeContext(game, target);
+    const meleeAttack = game.combat.activeMelee(game);
+    const readyRetreat = Boolean(meleeAttack && meleeAttack.elapsed < meleeAttack.releaseAt);
+    this.el.action_button.classList.toggle("melee-ready", Boolean(melee));
+    this.el.retreat_button.classList.toggle("hidden", !game.combat.canRetreat(game, melee));
+    this.el.retreat_button.classList.toggle("ready", readyRetreat);
+    this.el.retreat_button.setAttribute("aria-pressed", String(Boolean(meleeAttack?.retreatQueued || player.combat.retreat)));
     if (firearmTarget) {
       this.el.action_button.classList.add("fire-ready");
       this.el.action_button.classList.toggle("ready", player.combat.aim > 0.72);
@@ -288,6 +296,16 @@ export class GameUI {
       return;
     }
     this.el.action_button.classList.remove("fire-ready");
+    if (melee) {
+      const reach = melee.stats?.range ?? .88;
+      const d = Math.hypot(target.x - player.x, target.y - player.y);
+      const ready = player.combat.attackCooldown <= .000001 && d <= reach && !player.running;
+      this.el.action_button.classList.toggle("ready", ready);
+      this.el.action_button.querySelector("span").textContent = "⚔";
+      this.el.action_label.textContent = "SCHLAGEN";
+      this.el.target_label.classList.remove("show");
+      return;
+    }
     this.el.action_button.querySelector("span").textContent = "✦";
     const context = game.contextObject();
     const selected = game.selectedObject();
@@ -319,7 +337,8 @@ export class GameUI {
       search: "SUCHT",
       chase: "VERFOLGT DICH",
     };
-    this.el.enemy_state.textContent = stateNames[enemy.state] || "ZIEL";
+    this.el.enemy_state.textContent = enemy.attackWindup > 0 ? "HOLT AUS"
+      : enemy.attack ? "ERHOLT SICH" : stateNames[enemy.state] || "ZIEL";
     this.el.enemy_name.textContent = enemy.name || "INFIZIERTER";
     this.el.enemy_hp_fill.style.width = `${Math.max(0, enemy.hp / enemy.maxHp * 100)}%`;
     const weapon = activeWeapon(player);

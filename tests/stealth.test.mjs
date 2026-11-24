@@ -175,7 +175,9 @@ scenario("combat denies perk without cost; manually enabled war mode alone does 
 
 scenario("incoming attack damages without cancelling perk or reacquiring player", () => {
   const g = fixture("burglar"), z = watcher(g, 11, 9.6); duck(g); g.stealth.activateOpenfield(g);
-  z.attackWindup = .01; g.zombieSystem.update(g, .03);
+  z.attack = { contactAt: .01, readyAt: 1, direction: { x: 0, y: 1 } };
+  g.elapsed = .03; g.zombieSystem.resolveAttacks(g);
+  g.zombieSystem.update(g, .03);
   assert.ok(g.player.hp < 100);
   assert.equal(g.player.stealthState.openfieldRemaining, 10);
   assert.equal(g.player.stealthState.hidden, true); assert.equal(z.sightMemory.visible, false);

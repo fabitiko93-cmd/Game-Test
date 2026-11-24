@@ -76,16 +76,20 @@ test('rendering and damage share the hammer and alternating knife timeline at lo
     models.prepare(player, 0);
     const hits = [], clips = [];
     let previousHp = target.hp;
+    assert.equal(combat.strike(game, combat.meleeContext(game)).ok, true);
     for (let frame = 1; frame <= Math.floor(weaponStats(weapon).cooldown * 1.9 * fps); frame++) {
       game.elapsed = frame / fps;
       combat.update(game, 1 / fps);
+      if (player.combat.meleeAttack.sequence === 1 && player.combat.attackCooldown <= 1e-7) {
+        assert.equal(combat.strike(game, combat.meleeContext(game)).ok, true);
+      }
       const entity = models.prepare(player, game.elapsed), attack = player.combat.meleeAttack;
       if (clips.at(-1) !== entity.clip) clips.push(entity.clip);
       if (target.hp !== previousHp) {
         const profile = meleeAttack(type, attack.variant);
         assert.equal(entity.clip, profile.clip);
         assert.ok(entity.poseProgress >= profile.contact - 1e-6);
-        assert.ok(entity.poseProgress < profile.contact + 1 / fps / attack.duration + 1e-6);
+        assert.ok(entity.poseProgress < profile.contact + 1 / fps / (attack.duration * attack.startupScale) + 1e-6);
         hits.push(attack.sequence);
         previousHp = target.hp;
       }
@@ -104,7 +108,6 @@ test('a pending melee hit is discarded after interruptions, weapon swaps, or los
     swap({ player }) { const knife = createItem('kitchen_knife'); addItem(player, knife); equipItem(player, knife.id); },
     unequip({ player }) { player.equipment.mainHand = null; },
     run({ player }) { player.running = true; player.moving = true; },
-    manual({ player }) { player.moving = true; player.navigation.source = 'manual'; },
     select({ game, combat, target }) { const next = { ...target, id: 'other' }; game.zombies.push(next); combat.selectTarget(game, next); },
     pause({ game }) { Game.prototype.setPaused.call(game, true); },
     death({ player }) { player.dead = true; },
@@ -115,9 +118,12 @@ test('a pending melee hit is discarded after interruptions, weapon swaps, or los
   };
   for (const type of ['claw_hammer', 'kitchen_knife']) for (const [name, interrupt] of Object.entries(scenarios)) {
     const state = fixture(type), { game, combat, target } = state;
+    assert.equal(combat.strike(game, combat.meleeContext(game)).ok, true);
+    game.elapsed = .01;
     combat.update(game, .01);
-    assert.ok(game.player.combat.pendingAttack > 0);
+    assert.equal(game.player.combat.meleeAttack.nextContact, 0);
     interrupt(state);
+    game.elapsed += .6;
     combat.update(game, .6);
     assert.equal(target.hp, 1000, `${type} ${name}`);
     assert.equal(game.world.blood.length, 0, `${type} ${name}`);
@@ -130,10 +136,19 @@ test('hammer grip survives locomotion, crouching, aborts and a subsequent bare-h
   for (const sex of ['male', 'female']) {
     const { game, player, weapon, combat } = fixture('claw_hammer', sex);
     const entity = models.prepare(player, 0);
-    combat.update(game, .01);
+    assert.equal(combat.strike(game, combat.meleeContext(game)).ok, true);
+    game.elapsed = .01; combat.update(game, .01);
     models.prepare(player, .01);
-    combat.update(game, .4);
+    player.x -= .05; player.moving = true;
+    game.elapsed = .16; combat.update(game, .15);
+    models.prepare(player, .16);
+    assert.equal(entity.clip, "Hammer_Slash");
+    assert.ok(entity.appliedGaitTracks.length >= 6, "legs follow travel during early windup");
+    assert.ok(entity.appliedGaitTracks.some(({ bone, original }) => bone.quaternion.angleTo(original) > 1e-4));
+    game.elapsed = .41; combat.update(game, .25);
     models.prepare(player, .41);
+    assert.equal(entity.appliedGaitTracks, null, "the authored leg pose owns the committed contact");
+    combat.cancelMeleeAttack(game);
     const fingers = MELEE_GRIPS.claw_hammer[sex].fingers;
     for (const [stance, moving, running, clip] of [
       ['walk', true, false, 'Walk'], ['walk', true, true, 'Run'],
@@ -155,7 +170,8 @@ test('hammer grip survives locomotion, crouching, aborts and a subsequent bare-h
     Object.assign(player, { moving: false, running: false, stance: 'walk' });
     player.navigation.source = null;
     player.combat.attackCooldown = 0;
-    combat.update(game, .01);
+    assert.equal(combat.strike(game, combat.meleeContext(game)).ok, true);
+    game.elapsed += .01; combat.update(game, .01);
     models.prepare(player, game.elapsed + .01);
     assert.equal(entity.weapon, null);
     assert.equal(entity.clip, 'Punch_OneTwo');

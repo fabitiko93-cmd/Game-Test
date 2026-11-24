@@ -1,5 +1,4 @@
-import { zombieAnimationState, zombieVariant, ZOMBIE_ANIMATION } from "./zombie-animation.js";
-import { ZOMBIE_ATTACK } from "./ai.js";
+import { zombieAnimationState, zombieAttackProgress, zombieVariant } from "./zombie-animation.js";
 import { WORLD_SCALE } from "./world-scale.js";
 import { zombieBodyProfile } from "./zombie-appearance.js";
 
@@ -32,9 +31,7 @@ export class ZombieMotion {
       // not navigation speed; larger people consequently take fewer steps.
       if (delta > 0 && distance < 3) record.phase = modulo(record.phase + distance/(data.distance*body.scale));
     } else if (key === "attack") {
-      const age = zombie.attackCooldown > 0 ? ZOMBIE_ATTACK.cooldown-zombie.attackCooldown
-        : ZOMBIE_ATTACK.windup-zombie.attackWindup;
-      record.phase = Math.max(0, Math.min(.999999, age/ZOMBIE_ANIMATION.attackDuration));
+      record.phase = zombieAttackProgress(zombie);
     } else if (delta > 0) record.phase = modulo(record.phase + delta/data.duration);
     Object.assign(record, { time, x: zombie.x, y: zombie.y, key, cooldown: zombie.attackCooldown || 0 });
     return { variant, clip, progress: record.phase, delta: Math.min(.1, delta),

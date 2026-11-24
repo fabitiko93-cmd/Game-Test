@@ -129,7 +129,8 @@ test("an unarmed attack plays the 1–2 on both rigs at 20 FPS and resolves each
     const leftWrist = entity.model.getObjectByName('WristL');
     const rightWrist = entity.model.getObjectByName('WristR');
     let sawJab = false, sawCross = false;
-    for (let frame = 1; frame <= 24; frame++) {
+    assert.equal(combat.strike(game, combat.meleeContext(game)).ok, true);
+    for (let frame = 1; frame < 24; frame++) {
       game.elapsed = frame * step;
       const hp = target.hp;
       combat.update(game, step);
@@ -154,8 +155,9 @@ test("an unarmed attack plays the 1–2 on both rigs at 20 FPS and resolves each
     assert.ok(hitTimes[1] >= .62 && hitTimes[1] < .74, sex);
     for (const hit of damage) assert.ok(hit > 4 && hit < 6, sex);
 
-    game.elapsed = 25 * step;
+    game.elapsed = 24 * step;
     combat.update(game, step);
+    assert.equal(combat.strike(game, combat.meleeContext(game)).ok, true);
     models.prepare(player, game.elapsed);
     assert.equal(entity.clip, 'Punch_OneTwo');
     assert.equal(entity.poseProgress, 0);
@@ -173,11 +175,11 @@ test("normal knife attacks load both approved clips and keep their fitted grip o
     const knife = createItem('kitchen_knife');
     addItem(player, knife);
     equipItem(player, knife.id);
-    const target = { id: 'target', x: player.x, y: player.y - .4, state: 'chase' };
+    const target = { id: 'target', x: player.x, y: player.y - .4, state: 'chase', hp: 100 };
     Object.assign(player.combat, { enabled: true, targetId: target.id });
     const game = {
-      player, zombies: [target], world: { emitNoise() {}, hasLineOfSight: () => true },
-      ui: { showMessage() {} }, random: () => 1, sound() {}, elapsed: 0,
+      player, zombies: [target], world: { emitNoise() {}, hasLineOfSight: () => true, blood: [] },
+      renderer: { burst() {} }, ui: { showMessage() {} }, random: () => .99, sound() {}, elapsed: 0,
     };
     const entity = models.prepare(player, 0);
     const { clips } = KNIFE_ANIMATIONS.rigs[sex];
@@ -188,9 +190,13 @@ test("normal knife attacks load both approved clips and keep their fitted grip o
     assert.deepEqual(entity.weapon.quaternion.toArray(), grip.rotation);
     assert.deepEqual(entity.weapon.scale.toArray(), grip.scale);
     const playedClips = [];
+    assert.equal(combat.strike(game, combat.meleeContext(game)).ok, true);
     for (let frame = 1; frame <= 90; frame++) {
       game.elapsed = frame / 60;
       combat.update(game, 1 / 60);
+      if (player.combat.meleeAttack.sequence === 1 && player.combat.attackCooldown <= 1e-7) {
+        assert.equal(combat.strike(game, combat.meleeContext(game)).ok, true);
+      }
       assert.equal(models.prepare(player, game.elapsed), entity);
       const source = clips[entity.clip];
       if (!source) continue;

@@ -4,8 +4,8 @@ import {SHOTGUN_ITEMS} from './shotgun-items.js';
 export const SKILLS = {
   stealth: { name: "Schleichen", description: "Leisere Bewegung und geringere Sichtbarkeit." },
   perception: { name: "Wahrnehmung", description: "Gefahren und Geräuschrichtungen früher erkennen." },
-  blades: { name: "Klingenwaffen", description: "Sicherer Umgang mit Messern und Äxten." },
-  blunt: { name: "Schlagwaffen", description: "Kontrollierte, kraftsparende stumpfe Treffer." },
+  blades: { name: "Klingenwaffen", description: "Kürzeres Ausholen und frühere freie Bewegung nach einem Klingenhieb. Rückschritt ab 30." },
+  blunt: { name: "Schlagwaffen", description: "Schneller ausholen und nach Schlägen mit Hammer oder Faust früher lösen. Rückschritt ab 30." },
   firearms: { name: "Schusswaffen", description: "Schneller und stabiler auf ein Ziel einrichten." },
   search: { name: "Durchsuchen", description: "Behälter schneller und leiser ausräumen." },
   firstAid: { name: "Erste Hilfe", description: "Wunden früher erkennen und besser versorgen." },
