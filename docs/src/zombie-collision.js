@@ -38,6 +38,25 @@ function worldFree(game, start, end, radius) {
     && game.world.canWalkSegment(start, end, radius, { ignoreId: start.id });
 }
 
+function clearPartOfStep(start, end, free) {
+  if (free(end)) return end;
+  const dx = end.x - start.x, dy = end.y - start.y;
+  let low = 0, high = 1;
+  for (let i = 0; i < 12; i++) {
+    const amount = (low + high) / 2;
+    if (free({ x: start.x + dx * amount, y: start.y + dy * amount })) low = amount;
+    else high = amount;
+  }
+  return { x: start.x + dx * low, y: start.y + dy * low };
+}
+
+export function playerRetreatStep(game, requested, radius) {
+  const player = game.player;
+  const free = point => worldFree(game, player, point, radius)
+    && game.zombies.every(other => other.removed || !bodyBlocks(player, point, other, radius));
+  return clearPartOfStep(player, requested, free);
+}
+
 // Hard, swept body contacts plus local sidestepping. No forces that accelerate
 // a crowd, no random steering, and no change to player movement or perception.
 export function zombieStep(game, zombie, requested, worldRadius) {
@@ -68,13 +87,7 @@ export function zombieStep(game, zombie, requested, worldRadius) {
   }
   // A tight passage can require waiting. Use the remaining clear distance
   // without jumping into the body that blocks the end of this frame's step.
-  let low = 0, high = 1;
-  for (let i = 0; i < 12; i++) {
-    const amount = (low+high)/2;
-    if (free({ x: zombie.x+dx*amount, y: zombie.y+dy*amount })) low = amount;
-    else high = amount;
-  }
-  return { x: zombie.x+dx*low, y: zombie.y+dy*low };
+  return clearPartOfStep(zombie, requested, free);
 }
 
 // Repair pre-patch stacks gently in place. Corrections are bounded per body

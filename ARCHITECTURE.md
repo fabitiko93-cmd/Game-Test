@@ -21,7 +21,7 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 | Player-Modelle, Kleidung und menschliche Leichen | `player-models.js`, `character-parts.js`, `character-body.js`, `character-legs.js`, `character-surface.js`, `clothing-catalog.js`, `corpse-appearance.js`, `player-motion.js`, `quaternius-catalog.js` | Start in Unterwäsche ohne Ausrüstung. 45 einzeln lootbare Kleidungs-/Schuhteile und drei Kopfbedeckungen; Gesicht/Haare bleiben unabhängig. `character-parts.js` passt Originalkleidung an beide Rigs an. Körperflächen tragen Panty/Boxer/Sport-BH als Vertexfarben; `character-legs.js` entfernt alte Shorts-Säume, `character-body.js` verbindet den Bauch mit derselben Bundkante und passenden Gelenkgewichten. `character-surface.js` erhält Schnittkanten beim Verbinden. `corpse-appearance.js` wählt passende Originalteile für platzierte Personen; `PlayerModels.drawCorpse` friert die Todespose ein und leitet Bodenlage/Antippmaße aus sichtbaren Meshes ab. 24 Originalclips plus zwei Schleichclips; Aufbereitung: `scripts/prepare-player-animations.mjs`. |
 | Gemeinsamer Modellpass und Einrichtung | `model-pass.js`, `quaternius-assets.js`, `world-models.js`, `docs/assets/quaternius/` | Ein WebGL-Kontext für Zombies, Player und statische Einrichtung; gleiche 2:1-Kamera und Meterprojektion. Neue Farbmodelle können ohne WebGL als echte animierte Canvas-Dreiecke erscheinen. Möbel/Blätter einmal pro Ausrichtung und Geräteauflösung zwischengespeichert. Maße aus Assetmetadaten gelten auch in `world.js` für Kollision und Wege. Aufbereitung: `scripts/prepare-quaternius.py`, danach `scripts/measure-quaternius.mjs`; Quellen/Maße im Asset-README. |
 | Größenmaßstab und Körperhöhen | `world-scale.js`, `zombie-appearance.js`, `locomotion.js`, `docs/assets/reference-scale.json` | Gemeinsamer Metermaßstab für Player, DIN-Türblatt, Kühlgerät und Zombie-Modelle. ID-stabile Zombie-Körperhöhen; Player 1,80 m männlich / 1,68 m weiblich. `locomotion.js` hält Geschwindigkeiten in m/s und die Umrechnung in vorhandene Tiles. Vergleich/Quellen: `docs/assets/scale-reference/`; Generator `scripts/prepare-scale-reference.py`. |
-| Kampf und Exekution | `combat.js`, `stealth.js` | Aufruf über `game.js`; Ansatz prüft Ziel vor Bewegung in `movement.js`, verdeckte Wege und Zielumfahrung über `player-navigation.js`; Waffenwerte in `inventory.js`, Verletzungen in `character.js` |
+| Kampf und Exekution | `combat.js`, `melee-attacks.js`, `stealth.js` | Aktionsknopf und gemeinsame Kontaktuhr in `game.js`, Zombie-Angriff in `ai.js`, beweglicher Hieb und Rückschritt in `movement.js`, verdeckte Exekutionswege in `player-navigation.js` |
 | Wunden, Behandlung, Bedürfnisse, Fähigkeiten | `character.js`, `item-actions.js` | Bedürfnisablauf in `game.js`; Status-/Medizinanzeige in `ui.js` |
 | Gegenstände, Ausrüstung, Munition, Waffenmods | `inventory.js`, `data.js`, `item-actions.js` | Rucksack-/Waffenmenüs in `ui.js` |
 | Weltobjekte, Gebäude, Fahrzeuge, Loot | `world.js`, `building-geometry.js`, `data.js`, `interaction.js` | Metrische Wanddicke/-höhe, Rahmen und Türsturz, kompakte Grundrisse und 50-cm-Innenboden unabhängig vom 2-m-Terrainraster. Gemeinsame Rechtecke für Darstellung, Sicht und Kollision; Körperradien in `world-scale.js`. Gemeinsame Zugangsprüfung für Anzeige, Annäherung und Benutzung; Punkt-/Streckenkollision in `collision.js`, Fußabdrücke in `cover.js`. |
@@ -37,11 +37,13 @@ Alle JavaScript-Pfade in der Tabelle liegen unter `docs/src/`.
 
 Die Tabelle grenzt die Suche ein; nur tatsächlich betroffene Verbindungen verfolgen.
 
-`combat.js` führt normale Nahkampfangriffe mit Clip, Waffen-ID und verstrichener
-Zeit für `player-motion.js`. `melee-attacks.js` ordnet den Messerstich/-schnitt
-und den Hammerhieb ihrem Kontaktzeitpunkt zu. Simulation und Darstellung verwenden
-dieselbe Zeitleiste; Waffen-/Zielwechsel und manuelle Unterbrechungen verwerfen
-ausstehende Treffer. `melee-models.js` hält die ausgewählten eingebetteten
+`combat.js` startet Nahkampfangriffe über die Aktionstaste und prüft Reichweite,
+Richtung und Sichtlinie an den Kontaktmarken. `melee-attacks.js` passt Ausholen,
+Bewegungsfreigabe und Clipfortschritt gemeinsam an den Skill an. `game.js` teilt
+Simulationsschritte an den Kontaktmarken von Spieler und Zombies. Bewegung
+steuert den Abstand, ein früher Sprint bricht den Hieb ab. Der vorgemerkte
+Rückschritt ab Skill 30 prüft feste Hindernisse und andere Körper.
+`melee-models.js` hält die ausgewählten eingebetteten
 Waffenmodelle und beide Griffprofile. `hammer-animations.js` enthält den fertigen
 Hammerhieb und die Bereitschaft für beide Rigs; die Laufzeit benötigt dafür
 keinen Handbahn-IK-Solver. `scripts/prepare-hammer-animations.mjs` backt die

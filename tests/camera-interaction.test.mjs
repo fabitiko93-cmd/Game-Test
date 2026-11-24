@@ -71,16 +71,17 @@ test('all furnished rooms, mission objects and outdoor storage remain reachable 
 
 test('real melee events use the authored punch and weapon clips; crouch switches to its own idle and walking clips',()=>{
  const player=createPlayer(),motion=new PlayerMotion(),combat=new CombatSystem();let time=0;motion.sample(player,time);
- const game={player,world:{emitNoise(){}},sound(){}};combat.beginMelee(game,{id:'target'},null,null);assert.equal(motion.sample(player,time+=.01).clip,'Punch_OneTwo');
+ const game={player,elapsed:0,world:{emitNoise(){}},sound(){}},target={id:'target',x:player.x,y:player.y+.6};
+ combat.beginMelee(game,target,null,null);assert.equal(motion.sample(player,time+=.01).clip,'Punch_OneTwo');
  const knife=createItem('kitchen_knife');addItem(player,knife);equipItem(player,knife.id);
  const stats=weaponStats(knife);
  player.combat.attackTimer=0;motion.sample(player,time+=2);
- combat.beginMelee(game,{id:'target'},knife,stats);
- assert.equal(player.combat.pendingAttack,meleeAttack(knife.type,1).contact*stats.cooldown);
+ combat.beginMelee(game,target,knife,stats);
+ assert.equal(player.combat.meleeAttack.contacts[0],meleeAttack(knife.type,1).contact*stats.cooldown);
  assert.equal(player.combat.attackCooldown,stats.cooldown);
  assert.equal(motion.sample(player,time+=.01).clip,'Knife_Stab');
  // A subsequent attack is still a new event when no frame saw the old timer decay.
- combat.beginMelee(game,{id:'target'},knife,stats);
+ combat.beginMelee(game,target,knife,stats);
  assert.equal(motion.sample(player,time+=stats.cooldown).clip,'Knife_Cut');
  player.combat.attackTimer=0;player.stance='sneak';assert.equal(motion.sample(player,time+=2).clip,'Crouch_Idle');player.moving=true;assert.equal(motion.sample(player,time+=.01).clip,'Crouch_Walk');player.running=true;assert.equal(motion.sample(player,time+=.01).clip,'Run');
 });

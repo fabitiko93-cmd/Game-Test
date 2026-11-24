@@ -62,6 +62,7 @@ export class TargetLayout {
   measure(game) {
     const width = game.renderer.width, height = game.renderer.height;
     const signature = `${width}:${height}:${this.el.openfield_button.className}:${this.el.reload_button.className}`
+      + `:${this.el.retreat_button?.classList.contains("hidden")}`
       + `:${this.el.quickbar.childElementCount}:${this.el.inventory_count.textContent}`
       + `:${this.el.object_picker?.className}:${this.el.message.className}:${this.el.message.textContent}:${this.el.toast.className}:${this.el.toast.textContent}`;
     if (this.geometry?.signature === signature) return this.geometry;

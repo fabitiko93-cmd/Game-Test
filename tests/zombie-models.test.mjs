@@ -8,6 +8,7 @@ import { AnimationClip, AnimationMixer, Bone, Box3, BufferGeometry, Float32Buffe
   Uint16BufferAttribute, Vector3, VectorKeyframeTrack } from "three";
 import { ZombieModels } from "../docs/src/zombie-models.js";
 import { ZombieMotion, zombieModelYaw } from "../docs/src/zombie-motion.js";
+import { ZOMBIE_ANIMATION } from "../docs/src/zombie-animation.js";
 import { createZombie, ZOMBIE_ATTACK } from "../docs/src/ai.js";
 import { zombieBodyProfile, zombieCorpseAppearance } from "../docs/src/zombie-appearance.js";
 import { WORLD_SCALE, pixelsPerMeter } from "../docs/src/world-scale.js";
@@ -85,7 +86,7 @@ test("all ten real skinned models retain metric height, ground contact and autho
       const spec=metadata.variants[variant].clips[clip.name];assert.ok(Math.abs(clip.duration-spec.duration)<1e-6);
       assert.ok(clip.tracks.some(t=>t.times.length>30),'real skeletal keys, not a small pose atlas');
       if(spec.distance)assert.ok(spec.distance>.5&&spec.distance<3.5);
-      if(clip.name.startsWith('attack'))assert.ok(clip.tracks.some(t=>[...t.times].some(t=>Math.abs(t-ZOMBIE_ATTACK.windup)<1e-6)));
+      if(clip.name.startsWith('attack'))assert.ok(clip.tracks.some(t=>[...t.times].some(t=>Math.abs(t-ZOMBIE_ANIMATION.authoredContactAt)<1e-6)));
     }
   }
 });
@@ -164,7 +165,7 @@ test("subframe poses are genuinely evaluated and every render clears old color/d
   Object.assign(z,{state:'chase',moving:false,attackCooldown:ZOMBIE_ATTACK.cooldown,attackWindup:ZOMBIE_ATTACK.windup});
   models.draw(ctx,z,.02,{x:100,y:100});assert.match(entity.clip,/^attack_/);
   z.attackCooldown=ZOMBIE_ATTACK.cooldown-ZOMBIE_ATTACK.windup;z.attackWindup=0;
-  models.draw(ctx,z,.30,{x:100,y:100});assert.ok(Math.abs(entity.current.time-ZOMBIE_ATTACK.windup)<1e-7);
+  models.draw(ctx,z,ZOMBIE_ATTACK.windup+.02,{x:100,y:100});assert.ok(Math.abs(entity.current.time-ZOMBIE_ANIMATION.authoredContactAt)<1e-7);
   models.beginFrame(3);models.endFrame();assert.equal(models.entities.size,0,'departed entities release independent skeleton state');
 });
 

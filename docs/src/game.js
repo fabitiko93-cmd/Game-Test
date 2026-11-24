@@ -65,6 +65,13 @@ export class Game {
       combat: () => this.combat.toggle(this),
       action: () => this.primaryAction(),
       actionEnd: () => this.combat.stopFiring(this),
+      meleeMovement: () => Boolean(this.combat.meleeContext(this)),
+      retreat: () => {
+        if (!this.canAct()) return;
+        const result = this.combat.queueRetreat(this);
+        if (!result.ok) this.ui.showToast(result.message);
+        this.ui.refreshAll(this.player, this);
+      },
       fireMode: () => ItemActions.toggleFireMode(this),
       execute: command => this.executeAction(command),
       stance: () => this.toggleStance(),
@@ -244,6 +251,18 @@ export class Game {
   }
 
   update(delta) {
+    const end = this.elapsed + delta;
+    // Split only at attack events so movement is sampled exactly at contact.
+    // When contacts coincide, the zombie's strike has priority.
+    while (this.elapsed < end) {
+      const next = Math.min(this.combat.nextMeleeEventAt(this), this.zombieSystem.nextAttackAt(this));
+      const stepEnd = next > this.elapsed ? Math.min(end, next) : end;
+      this.updateStep(stepEnd - this.elapsed);
+      if (this.dead || this.paused) break;
+    }
+  }
+
+  updateStep(delta) {
     const gameDeltaMinutes = delta * GAME.timeScale;
     this.elapsed += delta;
     this.minutes += gameDeltaMinutes;
@@ -253,6 +272,7 @@ export class Game {
     this.player.hitKick = Math.max(0, (this.player.hitKick || 0) - delta * 8);
     this.updateMovement(delta);
     this.playerVisibility.update(this.player);
+    this.zombieSystem.resolveAttacks(this);
     this.combat.update(this, delta);
     this.renderer.updateCasings?.(this,delta);
     this.stealth.update(this, delta);
@@ -406,6 +426,13 @@ export class Game {
     const weapon = activeWeapon(this.player);
     if (itemDefinition(weapon)?.weaponKind === "firearm" && this.player.combat.enabled && this.combat.target(this)) {
       const result = this.combat.beginFiring(this);
+      if (!result.ok) this.ui.showToast(result.message);
+      this.ui.refreshAll(this.player, this);
+      return;
+    }
+    const melee = this.combat.meleeContext(this);
+    if (melee) {
+      const result = this.combat.strike(this, melee);
       if (!result.ok) this.ui.showToast(result.message);
       this.ui.refreshAll(this.player, this);
       return;

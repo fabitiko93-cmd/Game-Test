@@ -6,6 +6,7 @@ import { updateIdleZombie, ZOMBIE_IDLE } from "./zombie-idle.js";
 import { LOCOMOTION, speedInTiles } from "./locomotion.js";
 import { PLAYER_VIEW } from "./player-visibility.js";
 import { separateZombieBodies, zombieBodyRadius, zombieSpaceFree } from "./zombie-collision.js";
+import { CONTACT_EPSILON, inStrikeArc } from "./melee-attacks.js";
 
 const INITIAL_POSITIONS = [
   [14, 18], [9, 21], [24, 20], [36, 20], [43, 18], [31, 10],
@@ -13,7 +14,9 @@ const INITIAL_POSITIONS = [
   [20, 16], [40, 15], [26, 42], [46, 42], [5, 26], [22, 27],
 ];
 
-export const ZOMBIE_ATTACK = Object.freeze({ cooldown: 1.42, windup: .28 });
+export const ZOMBIE_ATTACK = Object.freeze({
+  cooldown: 1.42, windup: .75, triggerRange: .82, reach: 1.02, halfAngle: Math.PI * .30,
+});
 
 export function createZombie(x, y, index = 0, id = null) {
   const maxHp = 62 + (index % 4) * 6;
@@ -68,18 +71,17 @@ export class ZombieSystem {
       if (zombie.removed) continue;
       zombie.hurtFlash = Math.max(0, (zombie.hurtFlash || 0) - delta);
       zombie.hitKick = Math.max(0, (zombie.hitKick || 0) - delta * 7.5);
-      zombie.attackCooldown = Math.max(0, (zombie.attackCooldown || 0) - delta);
       zombie.stateTime = (zombie.stateTime || 0) + delta;
       zombie.stateTimer = Math.max(0, (zombie.stateTimer || 0) - delta);
       zombie.repathTimer = Math.max(0, (zombie.repathTimer || 0) - delta);
-      this.updateFacing(zombie, delta);
+      if (!zombie.attack) this.updateFacing(zombie, delta);
       const playerDistance = distance(zombie, game.player);
       this.updateHearing(zombie, game);
       const exposure = coverAwareExposure(zombie, game, delta);
       this.updateAwareness(zombie, game, delta, exposure);
       if (!updateCoverSearch(zombie, game, delta)) this.updateState(zombie, game, exposure);
       this.updateMovement(zombie, game, delta);
-      this.updateAttack(zombie, game, delta, playerDistance, exposure);
+      this.updateAttack(zombie, game, exposure);
 
       if (playerDistance < 5.5 && exposure > 0 && zombie.state !== "chase" && zombie.awareness < 0.7) {
         nearbyUndetected = true;
@@ -172,6 +174,10 @@ export class ZombieSystem {
   }
 
   updateMovement(zombie, game, delta) {
+    if (zombie.attack) {
+      zombie.moving = false;
+      return;
+    }
     if (zombie.state !== "idle" && zombie.migrationTarget) {
       zombie.migrationTarget = null;
       zombie.spawnX = zombie.x; zombie.spawnY = zombie.y;
@@ -235,20 +241,61 @@ export class ZombieSystem {
     if (!zombie.moving) zombie.repathTimer = Math.min(zombie.repathTimer, 0.35);
   }
 
-  updateAttack(zombie, game, delta, playerDistance, exposure) {
-    if (zombie.attackWindup > 0) {
-      zombie.attackWindup -= delta;
-      if (zombie.attackWindup <= 0 && !game.player.dead && distance(zombie, game.player) < 1.02
-          && game.world.hasLineOfSight(zombie, game.player)) {
-        game.onZombieAttack(zombie);
-      }
-      return;
-    }
-    if (zombie.state !== "chase" || playerDistance >= 0.82 || exposure <= 0 || zombie.attackCooldown > 0) return;
+  updateAttack(zombie, game, exposure) {
+    if (zombie.state !== "chase" || exposure <= 0 || zombie.attack || game.player.dead
+        || distance(zombie, game.player) >= ZOMBIE_ATTACK.triggerRange) return;
+    const now = game.elapsed ?? 0;
+    this.face(zombie, game.player);
+    zombie.facingX = zombie.desiredFacingX;
+    zombie.facingY = zombie.desiredFacingY;
+    zombie.attack = {
+      contactAt: now + ZOMBIE_ATTACK.windup,
+      readyAt: now + ZOMBIE_ATTACK.cooldown,
+      direction: { x: zombie.facingX, y: zombie.facingY },
+      resolved: false,
+      interrupted: false,
+    };
     zombie.moving = false;
     zombie.attackCooldown = ZOMBIE_ATTACK.cooldown;
     zombie.attackWindup = ZOMBIE_ATTACK.windup;
-    this.face(zombie, game.player);
+  }
+
+  nextAttackAt(game) {
+    let next = Infinity;
+    for (const zombie of game.zombies) {
+      if (zombie.removed || !zombie.attack) continue;
+      next = Math.min(next, zombie.attack.resolved ? zombie.attack.readyAt : zombie.attack.contactAt);
+    }
+    return next;
+  }
+
+  resolveAttacks(game) {
+    for (const zombie of game.zombies) {
+      const attack = zombie.attack;
+      if (zombie.removed || !attack) continue;
+      zombie.attackCooldown = Math.max(0, attack.readyAt - game.elapsed);
+      if (!attack.resolved) {
+        zombie.attackWindup = Math.max(0, attack.contactAt - game.elapsed);
+        if (zombie.attackWindup <= CONTACT_EPSILON) {
+          attack.resolved = true;
+          zombie.attackWindup = 0;
+          if (!game.player.dead
+              && inStrikeArc(zombie, game.player, attack.direction, ZOMBIE_ATTACK.reach, Math.cos(ZOMBIE_ATTACK.halfAngle))
+              && game.world.hasLineOfSight(zombie, game.player)) game.onZombieAttack(zombie);
+        }
+      }
+      if (zombie.attackCooldown <= CONTACT_EPSILON) {
+        zombie.attack = null;
+        zombie.attackCooldown = 0;
+      }
+    }
+  }
+
+  interruptAttack(zombie) {
+    if (!zombie.attack || zombie.attack.resolved) return;
+    zombie.attack.resolved = true;
+    zombie.attack.interrupted = true;
+    zombie.attackWindup = 0;
   }
 
   face(zombie, target) {

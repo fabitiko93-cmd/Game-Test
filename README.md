@@ -36,7 +36,9 @@ die Cacheliste wird aus den erzeugten Dateien und öffentlichen Assets abgeleite
 - Mit zwei Fingern ziehen: den Bildausschnitt verschieben; `◎` zentriert wieder auf die Figur.
 - Objekt oder Zombie antippen: auswählen.
 - Dasselbe Objekt erneut oder doppelt antippen: hinlaufen und benutzen.
-- Kampfmodus: Nahkampf läuft im Waffenrhythmus; Schusswaffen werden bewusst über den Aktionsknopf abgefeuert.
+- Kampfmodus: Ziel auswählen und mit **SCHLAGEN** einen Nahkampfangriff auslösen. Bodentipps steuern den Abstand, gehend hält die Figur das Ziel im Blick. Doppeltippen auf den Boden bricht frühes Ausholen zum Sprint ab.
+- Ab Kampfskill 30 lässt sich beim Hieb **RÜCKSCHRITT** (Tastatur: Q) vormerken. Nach dem Schlag folgt ein kurzer Schritt vom Ziel weg. Ein neuer Laufbefehl hat Vorrang.
+- Schusswaffen werden im Kampfmodus über den Aktionsknopf abgefeuert.
 - Haltung wechseln: Schleichen, Gehen und Rennen verändern Tempo, Sichtbarkeit und Geräusch.
 - Geduckt in nutzbare Deckung gehen: sofort verborgen, ohne Knopfdruck oder Schrittlimit.
 - Einbrecher: `◈ TARNEN` gewährt geduckt 10 Sekunden Freifeldtarnung (30 Sekunden Cooldown).

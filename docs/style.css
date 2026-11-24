@@ -342,6 +342,7 @@ h1 span { color: var(--red-bright); }
 .round.attack.combat-active { background: rgba(145,43,35,.96); border-color: #e2c68a; box-shadow: inset 0 0 18px #0008, 0 0 22px rgba(199,66,53,.62); }
 .round.action { right: 86px; top: 0; }
 .round.action.fire-ready { background: rgba(101,72,31,.94); border-color: #dbc981; }
+.round.action.melee-ready { background: rgba(93,34,30,.9); border-color: #bc8172; }
 .round.stance { left: 0; bottom: 0; width: 59px; height: 59px; }
 .round.stance.active { background: rgba(48,77,65,.96); border-color: #a9c7ab; }
 .round.openfield { left: -66px; bottom: 0; width: 59px; height: 59px; border-color: #9275a4; }
@@ -368,6 +369,9 @@ h1 span { color: var(--red-bright); }
 .reload span { font-size: 16px; }
 .reload small { font: 600 7px "IBM Plex Mono", monospace; }
 .fire-mode { position: absolute; right: 86px; bottom: 38px; width: 72px; min-height: 36px; border: 1px solid var(--line); background: #26372e; color: #e2c581; font: 700 11px "IBM Plex Mono", monospace; }
+.retreat { position: absolute; right: 86px; bottom: 0; width: 72px; min-height: 46px; border: 1px solid var(--line); background: #273730; color: #d1c5a6; font: 700 8px "IBM Plex Mono", monospace; }
+.retreat.ready, .retreat[aria-pressed="true"] { border-color: #d8be83; }
+.retreat[aria-pressed="true"] { background: #515940; color: #fff0bd; }
 @keyframes ready { 50% { box-shadow: inset 0 0 18px #0008, 0 0 18px rgba(198,164,93,.52); } }
 
 .utility { position: absolute; top: calc(9px + var(--safe-top)); right: calc(11px + var(--safe-right)); display: flex; gap: 5px; pointer-events: auto; }

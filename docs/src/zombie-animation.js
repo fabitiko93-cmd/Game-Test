@@ -1,7 +1,7 @@
 import { ZOMBIE_ATTACK } from "./ai.js";
 
 export const ZOMBIE_ANIMATION = Object.freeze({
-  variants: 10, directions: 8, attackDuration: 1.4,
+  variants: 10, directions: 8, attackDuration: 1.4, authoredContactAt: .28,
   // Fractions of the authored clip speed, never multiplied by travel speed.
   gaitRate: Object.freeze({ idle: .5, search: .65, investigate: .75, chase: .8 }),
 });
@@ -18,13 +18,21 @@ export function zombieVariant(zombie) {
 }
 
 export function zombieAnimationState(zombie) {
-  const attackAge = ZOMBIE_ATTACK.cooldown - (zombie.attackCooldown || 0);
-  if (zombie.attackWindup > 0 || (attackAge >= 0 && attackAge < ZOMBIE_ANIMATION.attackDuration)) return "attack";
+  if (!zombie.attack?.interrupted && (zombie.attackWindup > 0 || zombie.attackCooldown > 0)) return "attack";
   if (zombie.moving) {
     if (zombie.state === "chase" || zombie.state === "investigate") return "walk";
     return "shuffle";
   }
   return zombie.state === "idle" ? "rest" : "alert";
+}
+
+export function zombieAttackProgress(zombie) {
+  const age = zombie.attackCooldown > 0 ? ZOMBIE_ATTACK.cooldown - zombie.attackCooldown
+    : ZOMBIE_ATTACK.windup - zombie.attackWindup;
+  const authoredContact = ZOMBIE_ANIMATION.authoredContactAt / ZOMBIE_ANIMATION.attackDuration;
+  if (age <= ZOMBIE_ATTACK.windup) return Math.max(0, age / ZOMBIE_ATTACK.windup * authoredContact);
+  const recovery = (age - ZOMBIE_ATTACK.windup) / (ZOMBIE_ATTACK.cooldown - ZOMBIE_ATTACK.windup);
+  return Math.min(.999999, authoredContact + (1 - authoredContact) * recovery);
 }
 
 export function zombieDirection(zombie, previous = null) {
@@ -60,9 +68,7 @@ export class ZombieAnimator {
       const delta = Math.max(0, Math.min(.1, time-record.time));
       if (zombie.moving) record.progress += delta*(ZOMBIE_ANIMATION.gaitRate[zombie.state] ?? .65)/duration;
     } else if (key === "attack") {
-      const age = zombie.attackCooldown > 0 ? ZOMBIE_ATTACK.cooldown-zombie.attackCooldown
-        : ZOMBIE_ATTACK.windup-zombie.attackWindup;
-      record.progress = Math.max(0, Math.min(.999999, age/ZOMBIE_ANIMATION.attackDuration));
+      record.progress = zombieAttackProgress(zombie);
     } else {
       record.progress = (time-record.start)/(221/30) + (zombie.phase || 0)/6;
     }

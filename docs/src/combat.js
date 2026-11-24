@@ -7,23 +7,18 @@ import { behindTarget } from "./perception.js";
 import { clamp, distance, vibrate } from "./util.js";
 import { executionBlockReason, STEALTH_RULES } from "./stealth.js";
 import { playerCanSee } from "./player-visibility.js";
-import { meleeAttack } from './melee-attacks.js';
-
-// Contact times in the 1–2 clip played across the existing 1.2 s cooldown.
-const UNARMED_CONTACT = { jab: 0.18, cross: 0.56 };
-
-function clearPendingMelee(combat) {
-  combat.pendingAttack = 0;
-  combat.pendingTargetId = null;
-  combat.pendingUnarmedStrike = null;
-  combat.pendingWeaponId = null;
-}
+import { CONTACT_EPSILON, RETREAT_DISTANCE, RETREAT_SKILL, inStrikeArc, meleeAttack, meleeTiming } from './melee-attacks.js';
 
 function cancelMelee(combat) {
-  clearPendingMelee(combat);
+  combat.retreat = null;
   combat.attackTimer = 0;
-  if (combat.meleeAttack) combat.meleeAttack.cancelled = true;
+  if (combat.meleeAttack) {
+    combat.meleeAttack.cancelled = true;
+    combat.meleeAttack.retreatQueued = false;
+  }
 }
+
+const meleeSkill = definition => definition?.skill || "blunt";
 
 export class CombatSystem {
   target(game) {
@@ -76,7 +71,6 @@ export class CombatSystem {
     const combat = player.combat;
     combat.attackCooldown = combat.triggerHeld ? combat.attackCooldown - delta : Math.max(0, combat.attackCooldown - delta);
     combat.attackTimer = Math.max(0, combat.attackTimer - delta);
-    if (combat.meleeAttack) combat.meleeAttack.elapsed = Math.min(combat.meleeAttack.duration, combat.meleeAttack.elapsed + delta);
     combat.recoil = Math.max(0, combat.recoil - delta * (weaponStats(activeWeapon(player))?.recoilRecovery || 1.5));
     if(combat.shotImpulse)combat.shotImpulse.age+=delta;
     if(updateReload(game,delta)){this.stopFiring(game);combat.aim=0;return;}
@@ -88,16 +82,15 @@ export class CombatSystem {
     const pursuit = game.zombies.some(z => !z.removed && (z.state === "chase" || z.sightMemory?.visible));
     if (combat.enabled && pursuit) combat.hadPursuit = true;
     if (combat.enabled && ((!this.target(game) && !combat.waitingForTarget) || (combat.hadPursuit && !pursuit))) this.end(game);
-    const attack = combat.meleeAttack;
-    const interrupted = manualMovement || player.running || player.dead || game.dead || game.paused || game.ui?.hasBlockingPanel?.()
-      || !combat.enabled || (attack && (attack.weaponId !== (activeWeapon(player)?.id ?? null) || attack.targetId !== combat.targetId));
+    const attack = this.activeMelee(game);
+    const committed = attack || (combat.retreat && combat.meleeAttack);
+    const interrupted = player.dead || game.dead || game.paused || game.ui?.hasBlockingPanel?.()
+      || !combat.enabled || (committed && (committed.weaponId !== (activeWeapon(player)?.id ?? null)
+        || committed.targetId !== combat.targetId || (player.running && !committed.direction)));
     if (interrupted) {
       cancelMelee(combat);
-    }
-
-    if (combat.pendingAttack > 0) {
-      combat.pendingAttack -= delta;
-      while (combat.pendingTargetId && combat.pendingAttack <= 0) this.resolveMelee(game);
+    } else if (attack) {
+      this.advanceMelee(game, attack);
     }
 
     const target = this.target(game);
@@ -110,15 +103,8 @@ export class CombatSystem {
     const weapon = activeWeapon(player);
     const definition = itemDefinition(weapon);
     const stats = weaponStats(weapon);
-    if (!weapon || definition?.weaponKind === "melee") {
+    if (definition?.weaponKind !== "firearm") {
       combat.aim = 0;
-      if (player.running) return;
-      const range = stats?.range || 0.88;
-      const d = distance(player, target);
-      if (d > range + 0.1) game.approachCombatTarget(target, range);
-      if (d <= range + 0.12 && combat.attackCooldown <= 0 && combat.pendingAttack <= 0) {
-        this.beginMelee(game, target, weapon, stats);
-      }
       return;
     }
 
@@ -157,67 +143,127 @@ export class CombatSystem {
     cancelMelee(game.player.combat);
   }
 
-  beginMelee(game, target, weapon, stats) {
-    const combat = game.player.combat;
-    combat.attackCooldown = stats?.cooldown || 1.2;
-    combat.attackTimer = 0.32;
-    const previous = combat.meleeAttack, weaponId = weapon?.id ?? null;
-    const variant = previous?.weaponId === weaponId ? previous.variant + 1 : 1;
-    const profile = meleeAttack(weapon?.type ?? 'unarmed', variant);
-    combat.meleeAttack = {
-      sequence: (previous?.sequence ?? 0) + 1, variant, weaponId, targetId: target.id,
-      clip: profile?.clip ?? 'Sword_Slash', duration: combat.attackCooldown, elapsed: 0, cancelled: false,
-    };
-    combat.pendingUnarmedStrike = weapon ? null : "jab";
-    combat.pendingAttack = profile ? profile.contact * combat.attackCooldown : .14;
-    combat.pendingTargetId = target.id;
-    combat.pendingWeaponId = weaponId;
-    game.world.emitNoise(game.player.x, game.player.y, stats?.noise || 2.7, "melee", 2.4);
-    game.player.noisePulse = Math.max(game.player.noisePulse, Math.min(1, (stats?.noise || 2.7) / 8));
-    game.sound("swing");
-    vibrate(10);
+  meleeContext(game, target = this.target(game)) {
+    if (!game.player.combat.enabled || !target) return null;
+    const weapon = activeWeapon(game.player);
+    const definition = itemDefinition(weapon);
+    if (weapon && definition?.weaponKind !== "melee") return null;
+    return { target, weapon, definition, stats: weaponStats(weapon) };
   }
 
-  resolveMelee(game) {
+  activeMelee(game) {
+    const attack = game.player.combat.meleeAttack;
+    return attack && !attack.cancelled && attack.elapsed < attack.duration ? attack : null;
+  }
+
+  nextMeleeEventAt(game) {
+    const attack = this.activeMelee(game);
+    if (!attack) return Infinity;
+    const offset = !attack.direction ? attack.lockAt
+      : attack.contacts[attack.nextContact] ?? (attack.elapsed < attack.releaseAt ? attack.releaseAt : attack.duration);
+    return attack.startedAt + offset;
+  }
+
+  strike(game, context) {
+    const { player } = game;
+    if (player.combat.attackCooldown > CONTACT_EPSILON) return { ok: false, message: "NOCH IN ERHOLUNG" };
+    if (player.running) return { ok: false, message: "ZUM SCHLAGEN GEHEN ODER STEHEN" };
+    return this.beginMelee(game, context.target, context.weapon, context.stats);
+  }
+
+  beginMelee(game, target, weapon, stats) {
+    const { player } = game, { combat } = player;
+    const definition = itemDefinition(weapon);
+    const cost = definition?.staminaCost ?? (definition?.hands === 2 ? 6.5 : 3.5);
+    if (player.stamina < cost) return { ok: false, message: "ZU WENIG AUSDAUER" };
+    const previous = combat.meleeAttack, weaponId = weapon?.id ?? null;
+    const variant = previous?.weaponId === weaponId ? previous.variant + 1 : 1;
+    const duration = stats?.cooldown ?? 1.2;
+    const profile = meleeAttack(weapon?.type ?? 'unarmed', variant)
+      || { clip: 'Sword_Slash', contact: .14 / duration };
+    const timing = meleeTiming(profile, duration, skillValue(player, meleeSkill(definition)));
+    combat.retreat = null;
+    combat.attackCooldown = duration;
+    combat.attackTimer = timing.contacts.at(-1) + .12;
+    this.facePlayer(player, target);
+    combat.meleeAttack = {
+      ...timing,
+      sequence: (previous?.sequence ?? 0) + 1, variant, weaponId, targetId: target.id,
+      clip: profile.clip, interrupts: profile.interrupts === true,
+      startedAt: game.elapsed ?? 0, elapsed: 0, nextContact: 0,
+      direction: timing.lockAt > 0 ? null : { x: player.facingX, y: player.facingY },
+      retreatQueued: false, cancelled: false,
+    };
+    player.stamina -= cost;
+    game.world.emitNoise(player.x, player.y, stats?.noise || 2.7, "melee", 2.4);
+    player.noisePulse = Math.max(player.noisePulse, Math.min(1, (stats?.noise || 2.7) / 8));
+    game.sound("swing");
+    vibrate(10);
+    return { ok: true };
+  }
+
+  advanceMelee(game, attack) {
     const player = game.player;
-    const combat = player.combat;
-    const strike = combat.pendingUnarmedStrike;
-    const target = game.zombies.find(zombie => zombie.id === combat.pendingTargetId && !zombie.removed);
+    const target = this.target(game);
+    if (!target) return;
+    attack.elapsed = clamp(game.elapsed - attack.startedAt, 0, attack.duration);
+    if (!attack.direction) {
+      this.facePlayer(player, target);
+      if (attack.elapsed + CONTACT_EPSILON >= attack.lockAt) {
+        attack.direction = { x: player.facingX, y: player.facingY };
+      }
+    }
+    while (!attack.cancelled && attack.contacts[attack.nextContact] <= attack.elapsed + CONTACT_EPSILON) {
+      attack.nextContact++;
+      this.resolveMelee(game, target, attack);
+    }
+    if (!attack.cancelled && attack.retreatQueued && attack.elapsed + CONTACT_EPSILON >= attack.releaseAt) {
+      attack.retreatQueued = false;
+      const dx = player.x - target.x, dy = player.y - target.y;
+      const length = Math.hypot(dx, dy);
+      if (length <= CONTACT_EPSILON) return;
+      game.clearNavigation();
+      game.renderer.destination = null;
+      player.combat.retreat = { x: dx / length, y: dy / length, remaining: RETREAT_DISTANCE };
+    }
+    if (attack.elapsed + CONTACT_EPSILON >= attack.duration) attack.elapsed = attack.duration;
+  }
+
+  canRetreat(game, context = this.meleeContext(game)) {
+    return !!context && skillValue(game.player, meleeSkill(context.definition)) >= RETREAT_SKILL;
+  }
+
+  queueRetreat(game) {
+    if (!this.canRetreat(game)) return { ok: false, message: "RÜCKSCHRITT AB KAMPFSKILL 30" };
+    const attack = this.activeMelee(game);
+    if (!attack || attack.elapsed >= attack.releaseAt) return { ok: false, message: "RÜCKSCHRITT WÄHREND DES HIEBS WÄHLEN" };
+    attack.retreatQueued = true;
+    return { ok: true };
+  }
+
+  cancelRetreat(game) {
+    const { combat } = game.player;
+    combat.retreat = null;
+    if (combat.meleeAttack) combat.meleeAttack.retreatQueued = false;
+  }
+
+  resolveMelee(game, target, attack) {
+    const player = game.player;
     const weapon = activeWeapon(player);
-    if ((weapon?.id ?? null) !== combat.pendingWeaponId) {
-      cancelMelee(combat);
-      return;
-    }
-    if (strike === "jab" && target && !weapon) {
-      combat.pendingUnarmedStrike = "cross";
-      combat.pendingAttack += UNARMED_CONTACT.cross - UNARMED_CONTACT.jab;
-    } else {
-      clearPendingMelee(combat);
-    }
-    if (!target || (strike && weapon)) return;
     const definition = itemDefinition(weapon);
     const stats = weaponStats(weapon);
-    const range = stats?.range || 0.88;
-    if (distance(player, target) > range + 0.28 || !game.world.hasLineOfSight(player, target)) return;
-    game.stealth?.onAttack(game);
-
-    this.facePlayer(player, target);
-    const skill = skillValue(player, definition?.skill || "blunt");
-    const stealthStrike = target.state !== "chase" && behindTarget(player, target);
-    const staminaPenalty = player.stamina < 25 ? 0.14 : 0;
-    const painPenalty = player.pain * 0.0012;
-    const chance = clamp((stats?.accuracy || 0.74) + skill * 0.0018 - staminaPenalty - painPenalty + (stealthStrike ? 0.12 : 0), 0.38, 0.97);
-    const strikeShare = strike ? 0.5 : 1;
-    if (game.random() > chance) {
-      game.ui.showMessage("Verfehlt", 0.7);
-      gainSkill(player, definition?.skill || "blunt", 0.08 * strikeShare);
+    if (!inStrikeArc(player, target, attack.direction, stats?.range ?? .88, .5)
+        || !game.world.hasLineOfSight(player, target)) {
+      game.ui.showMessage("HIEB GEHT INS LEERE", .7);
       return;
     }
-    const variance = 0.88 + game.random() * 0.22;
-    const damage = (stats?.damage || 10) * strikeShare * variance * (1 + skill * 0.0025) * (stealthStrike ? 1.65 : 1);
+    const stealthStrike = target.state !== "chase" && behindTarget(player, target);
+    const strikeShare = 1 / attack.contacts.length;
+    game.stealth?.onAttack(game);
+    if (attack.interrupts) game.zombieSystem?.interruptAttack(target);
+    const damage = (stats?.damage ?? 10) * strikeShare * (stealthStrike ? 1.65 : 1);
     this.damageZombie(game, target, damage, stealthStrike ? "HINTERHALT" : null);
-    player.stamina = Math.max(0, player.stamina - (definition?.staminaCost ?? (definition?.hands === 2 ? 6.5 : 3.5)) * strikeShare);
-    gainSkill(player, definition?.skill || "blunt", (stealthStrike ? 0.7 : 0.42) * strikeShare);
+    gainSkill(player, meleeSkill(definition), (stealthStrike ? 2.8 : 2.4) * strikeShare);
     if (weapon) weapon.condition = Math.max(0, (weapon.condition ?? 100) - 0.07);
   }
 

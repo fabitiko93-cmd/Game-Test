@@ -42,6 +42,7 @@ export class InputController {
       if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)) event.preventDefault();
       if (key === " " && !event.repeat) this.callbacks.combat?.();
       if (key === "e" && !event.repeat) this.callbacks.action?.();
+      if (key === "q" && !event.repeat) this.callbacks.retreat?.();
       if (key === "x" && !event.repeat) this.callbacks.execute?.();
       if (key === "c" && !event.repeat) this.callbacks.stance?.();
       if (key === "r" && !event.repeat) this.callbacks.reload?.();
@@ -67,7 +68,9 @@ export class InputController {
     }
 
     this.button("attack-button", () => this.callbacks.combat?.());
-    this.button("action-button", () => this.callbacks.action?.(), () => this.callbacks.actionEnd?.());
+    const keepMeleeMovement = () => this.callbacks.meleeMovement?.();
+    this.button("action-button", () => this.callbacks.action?.(), () => this.callbacks.actionEnd?.(), keepMeleeMovement);
+    this.button("retreat-button", () => this.callbacks.retreat?.(), null, keepMeleeMovement);
     this.button("fire-mode-button", () => this.callbacks.fireMode?.());
     this.button("execute-button", element => this.callbacks.execute?.({
       mode: element.dataset.executionAction, targetId: element.dataset.executionTarget,
@@ -85,16 +88,15 @@ export class InputController {
     this.button("pause-button", () => this.callbacks.pause?.());
   }
 
-  button(id, callback, release) {
+  button(id, callback, release, keepHold) {
     const element = document.getElementById(id);
     if (!element) return;
     element.addEventListener("pointerdown", event => {
       event.preventDefault();
       event.stopPropagation();
       if (!this.enabled || element.disabled) return;
-      // A HUD command replaces any still-held world gesture. The old finger's
-      // move/up must never overwrite the command or become a ground double tap.
-      this.cancelPointer();
+      // Combat can use the HUD thumb while the other thumb is guiding a step.
+      if (!(this.holding && keepHold?.())) this.cancelPointer();
       this.lastTap.time = 0;
       if (release) {
         this.buttonRelease = release;

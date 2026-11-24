@@ -6,7 +6,11 @@ import { CoverMap } from "../docs/src/cover.js";
 import { createPlayer, totalBleeding, updateCharacter, woundTreatmentOptions } from "../docs/src/character.js";
 import { CombatSystem } from "../docs/src/combat.js";
 import { StealthSystem } from "../docs/src/stealth.js";
-import { createZombie, ZombieSystem } from "../docs/src/ai.js";
+import { createZombie, ZombieSystem, ZOMBIE_ATTACK } from "../docs/src/ai.js";
+import { PlayerVisibility } from "../docs/src/player-visibility.js";
+import { RETREAT_DISTANCE, RETREAT_SKILL } from "../docs/src/melee-attacks.js";
+import { PLAYER_BODY_RADIUS } from "../docs/src/world-scale.js";
+import { zombieBodyRadius } from "../docs/src/zombie-collision.js";
 import { Navigator } from "../docs/src/navigation.js";
 import { addItem, createItem, equipItem } from "../docs/src/inventory.js";
 import { canInteract } from "../docs/src/interaction.js";
@@ -153,14 +157,124 @@ function executionFixture() {
   return { game, world, target, messages };
 }
 
+function beginSwing(game) {
+  game.player.combat.enabled = true;
+  game.primaryAction();
+  const attack = game.combat.activeMelee(game);
+  assert.ok(attack);
+  return attack;
+}
+
+function meleeDuel(background = "citizen") {
+  const { game, world } = fixture();
+  game.player = createPlayer({ background });
+  Object.assign(game.player, { x: 10, y: 10 });
+  const hammer = createItem("claw_hammer");
+  addItem(game.player, hammer); equipItem(game.player, hammer.id);
+  const target = createZombie(10, 10.76);
+  Object.assign(target, { state: "chase", stateTimer: 1.1, awareness: 1, facingX: 0, facingY: -1 });
+  game.zombies.push(target);
+  Object.assign(game, { aiAccumulator: 0, lastAiResult: {}, playerVisibility: new PlayerVisibility(),
+    migrationTimer: 90, autosaveTick: 0 });
+  game.playerVisibility.update(game.player);
+  game.combat.selectTarget(game, target);
+  game.player.combat.enabled = true;
+  game.zombieSystem.updateAttack(target, game, 1);
+  return { game, world, target };
+}
+
+function advanceTo(game, time, fps = 60) {
+  while (game.elapsed < time - 1e-8) game.update(Math.min(1 / fps, time - game.elapsed));
+}
+
+test("manual hammer contact and zombie contact follow the same clock at 15, 20 and 60 FPS", () => {
+  for (const fps of [15, 20, 60]) {
+    for (const [background, attackAt, order] of [
+      ["citizen", .30, ["zombie", "hammer"]],
+      ["handyman", .30, ["hammer"]],
+      ["citizen", .25, ["zombie", "hammer"]],
+    ]) {
+      const { game, target } = meleeDuel(background);
+      const events = [];
+      game.onZombieAttack = () => events.push(["zombie", game.elapsed]);
+      const damageZombie = game.combat.damageZombie.bind(game.combat);
+      game.combat.damageZombie = (...args) => { events.push(["hammer", game.elapsed]); damageZombie(...args); };
+      game.random = () => .999;
+      advanceTo(game, attackAt, fps);
+      assert.equal(game.combat.activeMelee(game), null);
+      assert.equal(game.player.y, 10, "selecting a target does not advance the player");
+      const stamina = game.player.stamina, skill = game.player.skills.blunt, hp = target.hp;
+      const attack = beginSwing(game);
+      assert.equal(game.player.stamina, stamina - 4.5);
+      advanceTo(game, 1, fps);
+      assert.deepEqual(events.map(event => event[0]), order, `${background} at ${fps} FPS`);
+      for (const [actor, time] of events) {
+        assert.ok(Math.abs(time - (actor === "zombie" ? ZOMBIE_ATTACK.windup : attackAt + attack.contacts[0])) < 1e-7);
+      }
+      assert.equal(target.hp, hp - 28);
+      assert.ok(game.player.skills.blunt > skill + 1.5);
+      assert.equal(game.combat.canRetreat(game), background === "handyman");
+    }
+  }
+});
+
+test("walking during windup keeps the hit while an early sprint aborts and escapes the zombie arc", () => {
+  const walking = meleeDuel(), { game, target } = walking;
+  const attack = beginSwing(game), hp = target.hp;
+  assert.ok(game.setDestination({ x: 9.55, y: 10 }));
+  advanceTo(game, .2);
+  assert.ok(game.player.x < 10);
+  assert.ok(game.player.facingY > .85, "the player keeps looking toward the selected zombie");
+  advanceTo(game, .51);
+  assert.equal(attack.cancelled, false);
+  assert.equal(target.hp, hp - 28);
+
+  const sprint = meleeDuel(), sprintGame = sprint.game;
+  const cancelled = beginSwing(sprintGame);
+  const initialHp = sprintGame.player.hp, zombieHp = sprint.target.hp;
+  assert.ok(sprintGame.setDestination({ x: 10, y: 8 }, { run: true }));
+  advanceTo(sprintGame, .8);
+  assert.equal(cancelled.cancelled, true);
+  assert.equal(sprintGame.player.running, true);
+  assert.equal(sprintGame.player.hp, initialHp);
+  assert.equal(sprint.target.hp, zombieHp);
+});
+
+test("an earned retreat is one collision-limited step and a new ground command supersedes it", () => {
+  for (const mode of ["open", "wall", "zombie", "manual"]) {
+    const { game, world } = meleeDuel("handyman");
+    assert.equal(game.combat.canRetreat(game), false, "skill 29 does not grant a queued retreat");
+    game.player.skills.blunt = RETREAT_SKILL;
+    const attack = beginSwing(game);
+    assert.equal(game.combat.queueRetreat(game).ok, true);
+    if (mode === "wall") world.addObject("wall", 10, 9.66, { solid: true, footprint: { x: .6, y: .04 } });
+    const other = mode === "zombie" ? createZombie(10, 9.55) : null;
+    if (other) {
+      Object.assign(other, { state: "suspicious", awareness: .4, stateTimer: 5 });
+      game.zombies.push(other);
+    }
+    advanceTo(game, attack.releaseAt - .02);
+    assert.equal(game.player.y, 10);
+    if (mode === "manual") assert.ok(game.setDestination({ x: 9.7, y: 10 }));
+    advanceTo(game, 1.25);
+    const travelled = 10 - game.player.y;
+    assert.equal(game.player.combat.retreat, null);
+    if (mode === "open") assert.ok(Math.abs(travelled - RETREAT_DISTANCE) < 1e-6);
+    if (mode === "manual") assert.ok(travelled < 1e-6 && game.player.x < 10);
+    if (mode === "wall") assert.ok(travelled > 0 && travelled < RETREAT_DISTANCE && world.isWalkable(10, game.player.y, PLAYER_BODY_RADIUS));
+    if (other) assert.ok(travelled < RETREAT_DISTANCE
+      && Math.hypot(other.x - game.player.x, other.y - game.player.y) >= PLAYER_BODY_RADIUS + zombieBodyRadius(other) - 1e-6);
+  }
+});
+
 test("the ready execution kills immediately at the advertised range and cancels a pending normal swing", () => {
   const { game, target } = executionFixture();
-  Object.assign(game.player.combat, { enabled: true, pendingAttack: .001, pendingTargetId: target.id });
+  const attack = beginSwing(game);
   const context = game.stealth.executionContext(game), hp = game.player.hp;
   assert.equal(context.label, "AUSSCHALTEN"); assert.equal(context.ready, true);
   game.executeAction();
   assert.equal(target.removed, true);
-  assert.equal(game.player.combat.enabled, false); assert.equal(game.player.combat.pendingAttack, 0);
+  assert.equal(game.player.combat.enabled, false); assert.equal(attack.cancelled, true);
   game.combat.update(game, .1); game.zombieSystem.update(game, .1);
   assert.equal(game.player.hp, hp);
 });
@@ -168,10 +282,10 @@ test("the ready execution kills immediately at the advertised range and cancels 
 test("execution approach can be cancelled by a new manual destination", () => {
   const { game, world, target } = executionFixture();
   world.addObject("bush", 10, 8.5, { cover: .74 }); game.player.y = 8.5; game.stealth.refresh(game);
-  Object.assign(game.player.combat, { enabled: true, pendingAttack: .001, pendingTargetId: target.id });
+  const attack = beginSwing(game);
   assert.equal(game.stealth.executionContext(game).label, "ANSCHLEICHEN");
   assert.equal(game.stealth.executionAction(game), true);
-  assert.equal(game.player.combat.pendingAttack, 0);
+  assert.equal(attack.cancelled, true);
   assert.equal(game.player.navigation.source, "execution");
   game.setDestination({ x: 9, y: 8.5 });
   assert.equal(game.player.stealthState.execution, null);
@@ -200,10 +314,10 @@ test("automatic approach stays put when reaching the target's back would lose hi
   const { game, target, messages } = executionFixture(), start = { x: game.player.x, y: game.player.y };
   target.y = 10.8; target.facingY = -1;
   game.setDestination({ x: 9, y: 10 });
-  Object.assign(game.player.combat, { enabled: true, pendingAttack: .001, pendingTargetId: target.id });
+  const attack = beginSwing(game);
   assert.equal(game.stealth.executionAction(game), false);
   assert.equal(game.player.navigation.path.length, 0); assert.equal(game.player.stealthState.execution, null);
-  assert.equal(game.player.combat.enabled, false); assert.equal(game.player.combat.pendingAttack, 0);
+  assert.equal(game.player.combat.enabled, false); assert.equal(attack.cancelled, true);
   assert.deepEqual({ x: game.player.x, y: game.player.y }, start);
   assert.ok(messages.some(message => message.includes("WEG")));
 });
@@ -338,41 +452,43 @@ test("the cross can hit after a missed jab and is cancelled when the player equi
   for (const equipBetweenStrikes of [false, true]) {
     const { game, messages } = fixture();
     Object.assign(game.player, { x: 10, y: 10 });
-    const target = createZombie(10, 10.6);
+    const target = createZombie(10, 10.95);
     target.state = "chase";
     game.zombies.push(target);
     Object.assign(game.player.combat, { enabled: true, targetId: target.id });
     const initialHp = target.hp;
-    game.random = () => 1;
-    game.combat.update(game, .01);
-    game.combat.update(game, .19);
+    const attack = beginSwing(game);
+    game.elapsed = .2;
+    game.combat.update(game, .2);
     assert.equal(target.hp, initialHp);
-    assert.ok(messages.includes("Verfehlt"));
+    assert.ok(messages.includes("HIEB GEHT INS LEERE"));
+    target.y = 10.6;
     if (equipBetweenStrikes) {
       const knife = createItem("kitchen_knife");
       addItem(game.player, knife);
       equipItem(game.player, knife.id);
     }
-    game.random = () => .25;
+    game.elapsed = .6;
     game.combat.update(game, .4);
-    assert.equal(game.player.combat.pendingAttack, 0);
+    assert.equal(attack.cancelled, equipBetweenStrikes);
+    assert.equal(attack.nextContact, equipBetweenStrikes ? 1 : 2);
     assert.equal(target.hp < initialHp, !equipBetweenStrikes);
   }
 });
 
 test("combat ends on a kill or lost pursuit and does not attack a later selected zombie", () => {
   const { game, target } = executionFixture();
-  Object.assign(game.player.combat, { enabled: true, pendingAttack: .1, pendingTargetId: target.id });
+  const attack = beginSwing(game);
   game.killZombie(target);
-  assert.equal(game.player.combat.enabled, false); assert.equal(game.player.combat.pendingAttack, 0);
+  assert.equal(game.player.combat.enabled, false); assert.equal(attack.cancelled, true);
   const next = createZombie(10, 10.8); game.zombies.push(next); game.combat.selectTarget(game, next);
   game.combat.update(game, .2);
-  assert.equal(game.player.combat.pendingAttack, 0);
+  assert.equal(game.combat.activeMelee(game), null);
   next.state = "chase"; game.player.combat.enabled = true; game.player.combat.hadPursuit = false;
   game.combat.update(game, .01);
   next.state = "search"; next.sightMemory = { visible: false };
   game.combat.update(game, .05);
-  assert.equal(game.player.combat.enabled, false); assert.equal(game.player.combat.pendingAttack, 0);
+  assert.equal(game.player.combat.enabled, false); assert.equal(game.combat.activeMelee(game), null);
 });
 
 test("arriving at a manual retreat does not restart a normal attack before perception catches up", () => {
@@ -380,7 +496,7 @@ test("arriving at a manual retreat does not restart a normal attack before perce
   target.state = "chase"; target.sightMemory = { visible: true }; game.player.combat.enabled = true;
   game.setDestination({ x: 9.85, y: 10 }); runMovement(game);
   game.combat.update(game, .01);
-  assert.equal(game.player.combat.pendingAttack, 0);
+  assert.equal(game.combat.activeMelee(game), null);
   target.state = "search"; target.sightMemory.visible = false;
   game.combat.update(game, .01);
   assert.equal(game.player.combat.enabled, false);
@@ -418,12 +534,12 @@ test("an improvised dressing can be replaced without consuming material for stal
 
 test("loading an existing save clears stale attack intent and recalculates clean dressing effects", () => {
   const { game, target } = executionFixture();
-  Object.assign(game.player.combat, { enabled: true, pendingAttack: .1, pendingTargetId: target.id });
+  beginSwing(game);
   game.player.wounds = [{ id: "saved", type: "scratch", ageMinutes: 0, bleed: .026, bandaged: true }];
   game.player.bleeding = .026 * .08;
   const saved = game.serialize(); game.saveStore = { read: () => structuredClone(saved) };
   assert.equal(game.load(), true);
-  assert.equal(game.player.combat.enabled, false); assert.equal(game.player.combat.pendingAttack, 0);
+  assert.equal(game.player.combat.enabled, false); assert.equal(game.player.combat.meleeAttack, null);
   assert.equal(game.player.combat.targetId, target.id);
   assert.equal(game.player.bleeding, 0); assert.equal(game.player.wounds[0].id, "saved");
 });

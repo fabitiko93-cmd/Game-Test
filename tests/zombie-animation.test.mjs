@@ -3,7 +3,7 @@ import test from "node:test";
 import { readFile, readdir, stat } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { createInitialZombies, createZombie, ZombieSystem, ZOMBIE_ATTACK } from "../docs/src/ai.js";
-import { ZombieAnimator, zombieAnimationState, zombieDirection, zombieVariant } from "../docs/src/zombie-animation.js";
+import { ZombieAnimator, zombieAnimationState, zombieDirection, zombieVariant, ZOMBIE_ANIMATION } from "../docs/src/zombie-animation.js";
 import { ZombieSprites } from "../docs/src/zombie-sprites.js";
 
 const metadata = JSON.parse(await readFile(new URL("../docs/assets/zombies/atlas.json", import.meta.url)));
@@ -29,33 +29,30 @@ test("states distinguish rest, alert, ambient shuffle, investigation and pursuit
   z.state = "suspicious"; assert.equal(zombieAnimationState(z), "alert");
 });
 
-test("attack pose follows the actual windup, hit and recovery without changing damage timing", () => {
+test("attack pose retimes the authored contact to the actual windup and recovery", () => {
   const z = createZombie(0, 0), animator = new ZombieAnimator(metadata), system = new ZombieSystem(null);
-  const game = { player: { x: .5, y: 0 }, world: { hasLineOfSight: () => true }, hits: 0,
+  const game = { player: { x: .5, y: 0 }, zombies: [z], elapsed: 0, world: { hasLineOfSight: () => true }, hits: 0,
     onZombieAttack() { this.hits++; } };
   z.state = "chase";
   animator.sample(z, 0);
-  system.updateAttack(z, game, 0, .5, 1);
+  system.updateAttack(z, game, 1);
   const attack = animator.sample(z, 0);
   assert.match(attack.clip, /^attack_/); assert.equal(attack.progress, 0);
-  z.attackCooldown -= .27; system.updateAttack(z, game, .27, .5, 1);
+  game.elapsed = ZOMBIE_ATTACK.windup - .01; system.resolveAttacks(game);
   assert.equal(game.hits, 0);
-  z.attackCooldown -= .02; system.updateAttack(z, game, .02, .5, 1);
+  game.elapsed = ZOMBIE_ATTACK.windup; system.resolveAttacks(game);
   assert.equal(game.hits, 1);
-  assert.ok(Math.abs(animator.sample(z, .29).progress-.29/1.4) < 1e-9);
-  z.attackCooldown = ZOMBIE_ATTACK.cooldown-.28;
-  const contact = animator.sample(z, .29);
+  const contact = animator.sample(z, game.elapsed);
   const clip = metadata.variants[contact.variant][contact.clip];
   assert.equal(Math.floor(contact.progress*clip.frames+1e-9), clip.hitFrame);
-  assert.equal(clip.hitTime, ZOMBIE_ATTACK.windup);
-  assert.ok(Math.abs(clip.sourceHit-clip.sourceStart-ZOMBIE_ATTACK.windup) < 1e-9,
-    "the windup uses authored speed instead of fast-forwarding the entire action");
-  assert.ok((clip.sourceDuration-clip.sourceHit)/(clip.playbackDuration-clip.hitTime) < 1.4,
-    "recovery is calm rather than the old 3.2x playback");
-  z.attackCooldown = ZOMBIE_ATTACK.cooldown-1.41;
+  assert.equal(clip.hitTime, ZOMBIE_ANIMATION.authoredContactAt);
+  game.elapsed += .02; system.resolveAttacks(game);
+  assert.equal(game.hits, 1, "the same contact cannot resolve a second time");
+  assert.ok(animator.sample(z, game.elapsed).progress > contact.progress);
+  game.elapsed = ZOMBIE_ATTACK.cooldown; system.resolveAttacks(game);
   assert.equal(zombieAnimationState(z), "alert");
-  z.attackCooldown = 0; animator.sample(z, 1.42);
-  system.updateAttack(z, game, 0, .5, 1);
+  animator.sample(z, 1.42);
+  system.updateAttack(z, game, 1);
   assert.notEqual(animator.sample(z, 1.42).clip, attack.clip, "successive strikes alternate arms");
   const second = animator.sample(z, 1.42);
   z.attackCooldown = .04; animator.sample(z, 2.8);

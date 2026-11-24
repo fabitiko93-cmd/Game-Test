@@ -18,6 +18,8 @@ export function serialize(game) {
   if(player.combat.reload)player.combat.attackCooldown=Math.min(player.combat.attackCooldown||0,.12);
   delete player.combat.reload;
   delete player.combat.shotImpulse;
+  delete player.combat.meleeAttack;
+  delete player.combat.retreat;
   player.navigation = {
     path: [],
     destination: null,
@@ -27,7 +29,9 @@ export function serialize(game) {
     manualUntil: 0,
     source: null,
   };
-  const zombies = deepCopy(game.zombies).map(zombie => ({ ...zombie, path: [] }));
+  const zombies = deepCopy(game.zombies).map(({ attack, ...zombie }) => ({
+    ...zombie, path: [], attackWindup: 0, attackCooldown: 0,
+  }));
   return {
     seed: game.world.seed,
     minutes: game.minutes,
@@ -70,9 +74,13 @@ export function load(game) {
     zombie.desiredFacingY ??= zombie.facingY ?? 1;
     zombie.stimulus ??= null;
     zombie.hitKick ??= 0;
+    zombie.attack = null;
+    zombie.attackWindup = 0;
+    zombie.attackCooldown = 0;
   }
   game.player.navigation ||= { path: [], destination: null, interactionId: null, runRequested: false, guided: false, manualUntil: 0 };
-  game.player.combat ||= { enabled: false, targetId: null, attackCooldown: 0, attackTimer: 0, pendingAttack: 0, pendingTargetId: null, aim: 0, recoil: 0 };
+  game.player.combat ||= { enabled: false, targetId: null, attackCooldown: 0, attackTimer: 0, aim: 0, recoil: 0 };
+  game.player.combat.meleeAttack = null;
   game.combat.end(game, { keepTarget: true });
   game.player.bleeding = totalBleeding(game.player);
   game.player.equipment ||= { mainHand: null, offHand: null, head: null, torso: null, legs: null, feet: null, back: null };

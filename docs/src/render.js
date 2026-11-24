@@ -25,6 +25,7 @@ import { CharacterInspection } from './character-inspection.js';
 import {drawWeaponLight} from './weapon-light.js';
 import {createTracer,drawMuzzleFlashes,drawShotTrails,shotEnd,updateShotEffects} from './gunshot-effects.js';
 import {humanCorpseMetadata} from './corpse-appearance.js';
+import { ZOMBIE_ATTACK } from './ai.js';
 
 export class Renderer {
   constructor(canvas) {
@@ -762,6 +763,7 @@ export class Renderer {
     const ctx = this.ctx;
     const p = this.withImpact(this.iso(zombie.x, zombie.y), zombie, .11);
     const bob = zombie.moving ? Math.sin(this.frame * .22 + zombie.phase) * 1.2 : 0;
+    if (zombie.attackWindup > 0 && zombie.attack) this.drawZombieWindup(zombie);
     if (this.selectedId === zombie.id) this.drawSelection(zombie.x, zombie.y, .5);
     if (!this.zombieModels?.draw(ctx, zombie, game.elapsed, p)
       && !this.zombieSprites.draw(ctx, zombie, game.elapsed, p)) this.drawZombieFallback(zombie, p, bob);
@@ -772,6 +774,28 @@ export class Renderer {
       ctx.fillRect(p.x - 13, p.y - 46, 26 * zombie.hp / zombie.maxHp, 3);
     }
     this.hotspots.push({ id: zombie.id, kind: "zombie", ref: zombie, x: p.x, y: p.y - 20, radius: 25 });
+  }
+
+  drawZombieWindup(zombie) {
+    const ctx = this.ctx;
+    const origin = this.iso(zombie.x, zombie.y), { direction } = zombie.attack;
+    const heading = Math.atan2(direction.y, direction.x);
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(origin.x, origin.y);
+    for (let i = 0; i <= 8; i++) {
+      const angle = heading + (i / 4 - 1) * ZOMBIE_ATTACK.halfAngle;
+      const point = this.iso(zombie.x + Math.cos(angle) * ZOMBIE_ATTACK.reach,
+        zombie.y + Math.sin(angle) * ZOMBIE_ATTACK.reach);
+      ctx.lineTo(point.x, point.y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = "rgba(205,112,64,.22)";
+    ctx.strokeStyle = "rgba(246,154,92,.72)";
+    ctx.lineWidth = 1.5;
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
   }
 
   drawZombieFallback(zombie, p, bob) {
